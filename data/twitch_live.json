@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-18T18:36:52Z",
+  "generated_at": "2026-09-18T21:12:26Z",
   "source": "Twitch Helix API",
   "coverage": {
     "global_stream_sample_size": 1000,
@@ -13,68 +13,60 @@
   },
   "top_games": [
     {
-      "game_id": "21779",
-      "game_name": "League of Legends",
-      "streamer_count": 42,
-      "viewer_count": 271253,
-      "language_streamers": {
-        "en": 11,
-        "fr": 8,
-        "zh": 4,
-        "es": 3,
-        "de": 3,
-        "ru": 3,
-        "it": 2,
-        "pl": 2,
-        "el": 2,
-        "cs": 1,
-        "uk": 1,
-        "hu": 1,
-        "pt": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/21779-{width}x{height}.jpg",
-      "igdb_id": "115"
-    },
-    {
       "game_id": "18122",
       "game_name": "World of Warcraft",
-      "streamer_count": 65,
-      "viewer_count": 151183,
+      "streamer_count": 69,
+      "viewer_count": 208661,
       "language_streamers": {
-        "en": 38,
-        "ru": 8,
-        "es": 5,
-        "de": 5,
-        "fr": 3,
+        "en": 43,
+        "de": 8,
+        "es": 7,
+        "ru": 3,
         "pl": 2,
         "pt": 2,
         "cs": 1,
-        "sv": 1
+        "fr": 1,
+        "sv": 1,
+        "tr": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/18122-{width}x{height}.jpg",
       "igdb_id": "123"
     },
     {
+      "game_id": "516575",
+      "game_name": "VALORANT",
+      "streamer_count": 29,
+      "viewer_count": 159502,
+      "language_streamers": {
+        "en": 17,
+        "de": 4,
+        "zh": 4,
+        "pt": 2,
+        "fr": 1,
+        "es": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/516575-{width}x{height}.jpg",
+      "igdb_id": "126459"
+    },
+    {
       "game_id": "123184772",
       "game_name": "EA Sports FC 27",
-      "streamer_count": 57,
-      "viewer_count": 133349,
+      "streamer_count": 53,
+      "viewer_count": 155960,
       "language_streamers": {
-        "en": 15,
-        "de": 13,
-        "es": 4,
-        "fr": 4,
-        "it": 4,
+        "de": 12,
+        "en": 9,
+        "fr": 7,
+        "it": 5,
         "pl": 4,
-        "hu": 3,
+        "es": 4,
         "pt": 3,
-        "ru": 1,
+        "hu": 3,
+        "uk": 2,
         "ar": 1,
-        "zh": 1,
         "da": 1,
-        "nl": 1,
-        "uk": 1,
-        "sv": 1
+        "no": 1,
+        "ru": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/123184772_IGDB-{width}x{height}.jpg",
       "igdb_id": "408819"
@@ -82,13 +74,13 @@
     {
       "game_id": "30921",
       "game_name": "Rocket League",
-      "streamer_count": 25,
-      "viewer_count": 112309,
+      "streamer_count": 26,
+      "viewer_count": 150487,
       "language_streamers": {
         "en": 9,
         "fr": 6,
         "es": 5,
-        "ar": 3,
+        "ar": 4,
         "pl": 1,
         "pt": 1
       },
@@ -98,121 +90,92 @@
     {
       "game_id": "32982",
       "game_name": "Grand Theft Auto V",
-      "streamer_count": 48,
-      "viewer_count": 90189,
+      "streamer_count": 69,
+      "viewer_count": 127555,
       "language_streamers": {
-        "en": 26,
-        "de": 6,
-        "ja": 3,
+        "en": 30,
+        "fr": 16,
+        "de": 11,
         "sv": 3,
+        "ru": 3,
         "pl": 2,
-        "it": 2,
-        "ru": 2,
-        "fr": 1,
+        "it": 1,
+        "el": 1,
         "other": 1,
-        "da": 1,
-        "el": 1
+        "da": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/32982_IGDB-{width}x{height}.jpg",
       "igdb_id": "1020"
     },
     {
-      "game_id": "516575",
-      "game_name": "VALORANT",
-      "streamer_count": 34,
-      "viewer_count": 77266,
-      "language_streamers": {
-        "en": 13,
-        "zh": 9,
-        "fr": 3,
-        "pt": 3,
-        "de": 2,
-        "es": 2,
-        "ja": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/516575-{width}x{height}.jpg",
-      "igdb_id": "126459"
-    },
-    {
       "game_id": "743893402",
       "game_name": "WARDOGS",
-      "streamer_count": 36,
-      "viewer_count": 58022,
+      "streamer_count": 33,
+      "viewer_count": 58199,
       "language_streamers": {
-        "en": 14,
+        "en": 12,
+        "pt": 5,
         "de": 4,
-        "fr": 4,
-        "pt": 4,
-        "zh": 3,
+        "ru": 3,
         "ja": 3,
-        "ru": 2,
-        "cs": 1,
-        "it": 1
+        "zh": 2,
+        "fr": 2,
+        "it": 1,
+        "cs": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/743893402_IGDB-{width}x{height}.jpg",
       "igdb_id": "388285"
     },
     {
+      "game_id": "401587136",
+      "game_name": "Arena Breakout: Infinite",
+      "streamer_count": 19,
+      "viewer_count": 50053,
+      "language_streamers": {
+        "ru": 8,
+        "en": 7,
+        "pt": 2,
+        "es": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/401587136_IGDB-{width}x{height}.jpg",
+      "igdb_id": "298915"
+    },
+    {
+      "game_id": "21779",
+      "game_name": "League of Legends",
+      "streamer_count": 27,
+      "viewer_count": 49739,
+      "language_streamers": {
+        "en": 11,
+        "fr": 6,
+        "es": 3,
+        "de": 2,
+        "el": 2,
+        "ru": 2,
+        "zh-hk": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/21779-{width}x{height}.jpg",
+      "igdb_id": "115"
+    },
+    {
       "game_id": "27471",
       "game_name": "Minecraft",
-      "streamer_count": 19,
-      "viewer_count": 44205,
+      "streamer_count": 17,
+      "viewer_count": 24909,
       "language_streamers": {
-        "en": 9,
-        "de": 5,
-        "ru": 4,
+        "en": 12,
+        "de": 3,
+        "ru": 1,
         "nl": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/27471_IGDB-{width}x{height}.jpg",
       "igdb_id": "135400"
     },
     {
-      "game_id": "1267582829",
-      "game_name": "Aniimo",
-      "streamer_count": 13,
-      "viewer_count": 31318,
-      "language_streamers": {
-        "fr": 4,
-        "en": 4,
-        "ru": 2,
-        "ja": 2,
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1267582829_IGDB-{width}x{height}.jpg",
-      "igdb_id": "348202"
-    },
-    {
-      "game_id": "27546",
-      "game_name": "World of Tanks",
-      "streamer_count": 12,
-      "viewer_count": 28676,
-      "language_streamers": {
-        "en": 5,
-        "de": 2,
-        "pl": 2,
-        "hu": 2,
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/27546_IGDB-{width}x{height}.jpg",
-      "igdb_id": "1184"
-    },
-    {
-      "game_id": "1264310518",
-      "game_name": "Marvel Rivals",
-      "streamer_count": 9,
-      "viewer_count": 21740,
-      "language_streamers": {
-        "en": 8,
-        "ar": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1264310518_IGDB-{width}x{height}.jpg",
-      "igdb_id": "294041"
-    },
-    {
       "game_id": "151959766",
       "game_name": "Nomad Drive",
       "streamer_count": 1,
-      "viewer_count": 20397,
+      "viewer_count": 22923,
       "language_streamers": {
         "de": 1
       },
@@ -222,15 +185,13 @@
     {
       "game_id": "33214",
       "game_name": "Fortnite",
-      "streamer_count": 15,
+      "streamer_count": 10,
       "viewer_count": 19813,
       "language_streamers": {
         "en": 6,
-        "fr": 2,
-        "it": 2,
-        "es": 2,
-        "ru": 1,
         "de": 1,
+        "fr": 1,
+        "it": 1,
         "pt": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/33214-{width}x{height}.jpg",
@@ -239,62 +200,71 @@
     {
       "game_id": "513143",
       "game_name": "Teamfight Tactics",
-      "streamer_count": 11,
-      "viewer_count": 16461,
+      "streamer_count": 8,
+      "viewer_count": 16387,
       "language_streamers": {
-        "en": 3,
-        "ja": 2,
-        "pt": 2,
-        "fr": 2,
-        "de": 1,
-        "pl": 1
+        "en": 4,
+        "pt": 1,
+        "ja": 1,
+        "es": 1,
+        "fr": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/513143-{width}x{height}.jpg",
       "igdb_id": "120176"
     },
     {
-      "game_id": "511399",
-      "game_name": "Super Mario Maker 2",
-      "streamer_count": 1,
-      "viewer_count": 12291,
+      "game_id": "460630",
+      "game_name": "Rainbow Six Siege",
+      "streamer_count": 4,
+      "viewer_count": 15280,
       "language_streamers": {
-        "ja": 1
+        "en": 4
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/511399_IGDB-{width}x{height}.jpg",
-      "igdb_id": "115276"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/460630-{width}x{height}.jpg",
+      "igdb_id": "7360"
     },
     {
-      "game_id": "493057",
-      "game_name": "PUBG: BATTLEGROUNDS",
-      "streamer_count": 5,
-      "viewer_count": 12153,
+      "game_id": "29452",
+      "game_name": "Virtual Casino",
+      "streamer_count": 15,
+      "viewer_count": 14033,
       "language_streamers": {
+        "pt": 9,
         "ru": 3,
-        "en": 1,
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/29452_IGDB-{width}x{height}.jpg",
+      "igdb_id": "45517"
+    },
+    {
+      "game_id": "67637",
+      "game_name": "Until Dawn",
+      "streamer_count": 1,
+      "viewer_count": 13055,
+      "language_streamers": {
         "de": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/493057-{width}x{height}.jpg",
-      "igdb_id": "27789"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/67637_IGDB-{width}x{height}.jpg",
+      "igdb_id": "7609"
     },
     {
-      "game_id": "401587136",
-      "game_name": "Arena Breakout: Infinite",
-      "streamer_count": 9,
-      "viewer_count": 12151,
+      "game_id": "27546",
+      "game_name": "World of Tanks",
+      "streamer_count": 7,
+      "viewer_count": 12489,
       "language_streamers": {
-        "ru": 5,
-        "en": 2,
-        "de": 1,
-        "pt": 1
+        "en": 4,
+        "pl": 2,
+        "uk": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/401587136_IGDB-{width}x{height}.jpg",
-      "igdb_id": "298915"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/27546_IGDB-{width}x{height}.jpg",
+      "igdb_id": "1184"
     },
     {
       "game_id": "461221",
       "game_name": "MARVEL Contest of Champions",
       "streamer_count": 5,
-      "viewer_count": 11871,
+      "viewer_count": 12178,
       "language_streamers": {
         "en": 3,
         "es": 2
@@ -303,37 +273,49 @@
       "igdb_id": "28107"
     },
     {
-      "game_id": "491931",
-      "game_name": "Escape from Tarkov",
-      "streamer_count": 12,
-      "viewer_count": 11546,
+      "game_id": "508455",
+      "game_name": "Valheim",
+      "streamer_count": 8,
+      "viewer_count": 11657,
       "language_streamers": {
-        "en": 9,
-        "ru": 2,
-        "ja": 1
+        "en": 7,
+        "pt": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/491931_IGDB-{width}x{height}.jpg",
-      "igdb_id": "15536"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/508455_IGDB-{width}x{height}.jpg",
+      "igdb_id": "104967"
     },
     {
-      "game_id": "515024",
-      "game_name": "Diablo IV",
-      "streamer_count": 6,
-      "viewer_count": 11456,
+      "game_id": "771448419",
+      "game_name": "Aion 2",
+      "streamer_count": 11,
+      "viewer_count": 11608,
       "language_streamers": {
-        "en": 3,
-        "de": 1,
-        "ru": 1,
+        "en": 5,
+        "ru": 2,
+        "ja": 2,
+        "it": 1,
         "fr": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/515024-{width}x{height}.jpg",
-      "igdb_id": "125165"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/771448419_IGDB-{width}x{height}.jpg",
+      "igdb_id": "117297"
+    },
+    {
+      "game_id": "515025",
+      "game_name": "Overwatch",
+      "streamer_count": 8,
+      "viewer_count": 10619,
+      "language_streamers": {
+        "en": 7,
+        "ar": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/515025-{width}x{height}.jpg",
+      "igdb_id": "125174"
     },
     {
       "game_id": "539102438",
       "game_name": "Watch Your Plastic Duck",
       "streamer_count": 1,
-      "viewer_count": 11327,
+      "viewer_count": 10534,
       "language_streamers": {
         "en": 1
       },
@@ -341,10 +323,58 @@
       "igdb_id": "218659"
     },
     {
+      "game_id": "511399",
+      "game_name": "Super Mario Maker 2",
+      "streamer_count": 1,
+      "viewer_count": 10155,
+      "language_streamers": {
+        "ja": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/511399_IGDB-{width}x{height}.jpg",
+      "igdb_id": "115276"
+    },
+    {
+      "game_id": "1267582829",
+      "game_name": "Aniimo",
+      "streamer_count": 5,
+      "viewer_count": 9567,
+      "language_streamers": {
+        "en": 2,
+        "de": 2,
+        "ja": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1267582829_IGDB-{width}x{height}.jpg",
+      "igdb_id": "348202"
+    },
+    {
+      "game_id": "515024",
+      "game_name": "Diablo IV",
+      "streamer_count": 6,
+      "viewer_count": 9495,
+      "language_streamers": {
+        "en": 5,
+        "de": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/515024-{width}x{height}.jpg",
+      "igdb_id": "125165"
+    },
+    {
+      "game_id": "1413930024",
+      "game_name": "Active Matter",
+      "streamer_count": 6,
+      "viewer_count": 8602,
+      "language_streamers": {
+        "ru": 4,
+        "en": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1413930024_IGDB-{width}x{height}.jpg",
+      "igdb_id": "322158"
+    },
+    {
       "game_id": "1057274213",
       "game_name": "Gaggl",
       "streamer_count": 1,
-      "viewer_count": 11234,
+      "viewer_count": 8275,
       "language_streamers": {
         "en": 1
       },
@@ -352,44 +382,33 @@
       "igdb_id": "306442"
     },
     {
-      "game_id": "29452",
-      "game_name": "Virtual Casino",
-      "streamer_count": 11,
-      "viewer_count": 10134,
+      "game_id": "1294658629",
+      "game_name": "R.E.P.O.",
+      "streamer_count": 3,
+      "viewer_count": 8006,
       "language_streamers": {
-        "pt": 8,
-        "ru": 3
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/29452_IGDB-{width}x{height}.jpg",
-      "igdb_id": "45517"
-    },
-    {
-      "game_id": "460630",
-      "game_name": "Rainbow Six Siege",
-      "streamer_count": 1,
-      "viewer_count": 9584,
-      "language_streamers": {
+        "ru": 2,
         "en": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/460630-{width}x{height}.jpg",
-      "igdb_id": "7360"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1294658629_IGDB-{width}x{height}.jpg",
+      "igdb_id": "332780"
     },
     {
-      "game_id": "1413930024",
-      "game_name": "Active Matter",
-      "streamer_count": 7,
-      "viewer_count": 8096,
+      "game_id": "1264310518",
+      "game_name": "Marvel Rivals",
+      "streamer_count": 3,
+      "viewer_count": 7809,
       "language_streamers": {
-        "ru": 7
+        "en": 3
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1413930024_IGDB-{width}x{height}.jpg",
-      "igdb_id": "322158"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1264310518_IGDB-{width}x{height}.jpg",
+      "igdb_id": "294041"
     },
     {
       "game_id": "509509",
       "game_name": "DEADPOOL",
       "streamer_count": 1,
-      "viewer_count": 7333,
+      "viewer_count": 6369,
       "language_streamers": {
         "en": 1
       },
@@ -397,104 +416,346 @@
       "igdb_id": "1919"
     },
     {
+      "game_id": "490242481",
+      "game_name": "GRAIN ROT",
+      "streamer_count": 4,
+      "viewer_count": 5965,
+      "language_streamers": {
+        "en": 4
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/490242481_IGDB-{width}x{height}.jpg",
+      "igdb_id": "400575"
+    },
+    {
+      "game_id": "31339",
+      "game_name": "Project Zomboid",
+      "streamer_count": 5,
+      "viewer_count": 5958,
+      "language_streamers": {
+        "en": 3,
+        "de": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/31339_IGDB-{width}x{height}.jpg",
+      "igdb_id": "3189"
+    },
+    {
+      "game_id": "23311496",
+      "game_name": "Clive Barker's Hellraiser: Revival",
+      "streamer_count": 2,
+      "viewer_count": 5895,
+      "language_streamers": {
+        "en": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/23311496_IGDB-{width}x{height}.jpg",
+      "igdb_id": "356552"
+    },
+    {
+      "game_id": "138585",
+      "game_name": "Hearthstone",
+      "streamer_count": 6,
+      "viewer_count": 5869,
+      "language_streamers": {
+        "en": 4,
+        "fr": 1,
+        "ja": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/138585-{width}x{height}.jpg",
+      "igdb_id": "1279"
+    },
+    {
+      "game_id": "1230742965",
+      "game_name": "TCG Card Shop Simulator",
+      "streamer_count": 4,
+      "viewer_count": 5628,
+      "language_streamers": {
+        "en": 4
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1230742965_IGDB-{width}x{height}.jpg",
+      "igdb_id": "309862"
+    },
+    {
+      "game_id": "491931",
+      "game_name": "Escape from Tarkov",
+      "streamer_count": 7,
+      "viewer_count": 5352,
+      "language_streamers": {
+        "en": 5,
+        "ru": 1,
+        "es": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/491931_IGDB-{width}x{height}.jpg",
+      "igdb_id": "15536"
+    },
+    {
+      "game_id": "518184",
+      "game_name": "Phasmophobia",
+      "streamer_count": 6,
+      "viewer_count": 5351,
+      "language_streamers": {
+        "en": 6
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/518184_IGDB-{width}x{height}.jpg",
+      "igdb_id": "132516"
+    },
+    {
+      "game_id": "1503830969",
+      "game_name": "Sniper Dan",
+      "streamer_count": 1,
+      "viewer_count": 5324,
+      "language_streamers": {
+        "fr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1503830969_IGDB-{width}x{height}.jpg",
+      "igdb_id": "388436"
+    },
+    {
+      "game_id": "602040818",
+      "game_name": "NBA 2K27",
+      "streamer_count": 6,
+      "viewer_count": 5006,
+      "language_streamers": {
+        "en": 6
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/602040818_IGDB-{width}x{height}.jpg",
+      "igdb_id": "408823"
+    },
+    {
+      "game_id": "1075816708",
+      "game_name": "Serve or Die",
+      "streamer_count": 2,
+      "viewer_count": 4654,
+      "language_streamers": {
+        "fr": 1,
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1075816708_IGDB-{width}x{height}.jpg",
+      "igdb_id": "403886"
+    },
+    {
+      "game_id": "15631",
+      "game_name": "Grand Theft Auto: Vice City",
+      "streamer_count": 1,
+      "viewer_count": 4626,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/15631_IGDB-{width}x{height}.jpg",
+      "igdb_id": "733"
+    },
+    {
+      "game_id": "499634",
+      "game_name": "Crypto",
+      "streamer_count": 3,
+      "viewer_count": 4562,
+      "language_streamers": {
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/499634-{width}x{height}.jpg",
+      "igdb_id": "76760"
+    },
+    {
+      "game_id": "75101830",
+      "game_name": "Marvel's Wolverine",
+      "streamer_count": 7,
+      "viewer_count": 4413,
+      "language_streamers": {
+        "en": 3,
+        "fr": 3,
+        "ru": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/75101830_IGDB-{width}x{height}.jpg",
+      "igdb_id": "168667"
+    },
+    {
       "game_id": "512710",
       "game_name": "Call of Duty: Warzone",
-      "streamer_count": 8,
-      "viewer_count": 6928,
+      "streamer_count": 6,
+      "viewer_count": 4331,
       "language_streamers": {
-        "en": 6,
-        "es": 1,
+        "en": 3,
+        "fr": 2,
         "de": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/512710-{width}x{height}.jpg",
       "igdb_id": "131800"
     },
     {
-      "game_id": "1099705332",
-      "game_name": "Tomodachi Life: Living the Dream",
-      "streamer_count": 1,
-      "viewer_count": 6664,
+      "game_id": "779192097",
+      "game_name": "Fire Emblem: Fortune's Weave",
+      "streamer_count": 3,
+      "viewer_count": 4202,
       "language_streamers": {
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1099705332_IGDB-{width}x{height}.jpg",
-      "igdb_id": "337036"
-    },
-    {
-      "game_id": "491487",
-      "game_name": "Dead by Daylight",
-      "streamer_count": 6,
-      "viewer_count": 6432,
-      "language_streamers": {
-        "en": 4,
-        "ru": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/491487-{width}x{height}.jpg",
-      "igdb_id": "18866"
-    },
-    {
-      "game_id": "515025",
-      "game_name": "Overwatch",
-      "streamer_count": 5,
-      "viewer_count": 6424,
-      "language_streamers": {
-        "en": 5
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/515025-{width}x{height}.jpg",
-      "igdb_id": "125174"
-    },
-    {
-      "game_id": "508455",
-      "game_name": "Valheim",
-      "streamer_count": 7,
-      "viewer_count": 6360,
-      "language_streamers": {
-        "en": 5,
-        "pt": 1,
+        "en": 2,
         "ja": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/508455_IGDB-{width}x{height}.jpg",
-      "igdb_id": "104967"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/779192097_IGDB-{width}x{height}.jpg",
+      "igdb_id": "366896"
+    },
+    {
+      "game_id": "32959",
+      "game_name": "Heroes of the Storm",
+      "streamer_count": 2,
+      "viewer_count": 4181,
+      "language_streamers": {
+        "en": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/32959_IGDB-{width}x{height}.jpg",
+      "igdb_id": "7313"
+    },
+    {
+      "game_id": "417528",
+      "game_name": "Albion Online",
+      "streamer_count": 5,
+      "viewer_count": 4179,
+      "language_streamers": {
+        "en": 3,
+        "pt": 1,
+        "es": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/417528_IGDB-{width}x{height}.jpg",
+      "igdb_id": "19698"
     },
     {
       "game_id": "490377",
       "game_name": "Sea of Thieves",
-      "streamer_count": 5,
-      "viewer_count": 6204,
+      "streamer_count": 4,
+      "viewer_count": 4099,
       "language_streamers": {
-        "en": 4,
+        "en": 3,
         "fr": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/490377-{width}x{height}.jpg",
       "igdb_id": "11137"
     },
     {
-      "game_id": "468533702",
-      "game_name": "Soulframe",
-      "streamer_count": 1,
-      "viewer_count": 6028,
+      "game_id": "687129551",
+      "game_name": "Trackmania",
+      "streamer_count": 2,
+      "viewer_count": 3967,
       "language_streamers": {
-        "en": 1
+        "en": 2
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/468533702_IGDB-{width}x{height}.jpg",
-      "igdb_id": "209643"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/687129551-{width}x{height}.jpg",
+      "igdb_id": "133807"
     },
     {
-      "game_id": "518184",
-      "game_name": "Phasmophobia",
+      "game_id": "2124871354",
+      "game_name": "RuneScape: Dragonwilds",
+      "streamer_count": 2,
+      "viewer_count": 3816,
+      "language_streamers": {
+        "de": 1,
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2124871354_IGDB-{width}x{height}.jpg",
+      "igdb_id": "337712"
+    },
+    {
+      "game_id": "491487",
+      "game_name": "Dead by Daylight",
       "streamer_count": 5,
-      "viewer_count": 5411,
+      "viewer_count": 3772,
+      "language_streamers": {
+        "en": 2,
+        "ru": 2,
+        "ar": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/491487-{width}x{height}.jpg",
+      "igdb_id": "18866"
+    },
+    {
+      "game_id": "902998079",
+      "game_name": "Halloween: The Game",
+      "streamer_count": 4,
+      "viewer_count": 3717,
+      "language_streamers": {
+        "en": 4
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/902998079_IGDB-{width}x{height}.jpg",
+      "igdb_id": "362096"
+    },
+    {
+      "game_id": "2005329090",
+      "game_name": "Jinro Metropolis",
+      "streamer_count": 1,
+      "viewer_count": 3421,
+      "language_streamers": {
+        "ja": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2005329090_IGDB-{width}x{height}.jpg",
+      "igdb_id": "325996"
+    },
+    {
+      "game_id": "1763263",
+      "game_name": "nanos world",
+      "streamer_count": 2,
+      "viewer_count": 3410,
+      "language_streamers": {
+        "fr": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1763263_IGDB-{width}x{height}.jpg",
+      "igdb_id": "152927"
+    },
+    {
+      "game_id": "511224",
+      "game_name": "Apex Legends",
+      "streamer_count": 3,
+      "viewer_count": 3336,
+      "language_streamers": {
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/511224-{width}x{height}.jpg",
+      "igdb_id": "114795"
+    },
+    {
+      "game_id": "2132205352",
+      "game_name": "Deadlock",
+      "streamer_count": 5,
+      "viewer_count": 3252,
       "language_streamers": {
         "en": 5
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/518184_IGDB-{width}x{height}.jpg",
-      "igdb_id": "132516"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2132205352_IGDB-{width}x{height}.jpg",
+      "igdb_id": "301298"
+    },
+    {
+      "game_id": "494184",
+      "game_name": "Mobile Legends: Bang Bang",
+      "streamer_count": 4,
+      "viewer_count": 3212,
+      "language_streamers": {
+        "ru": 4
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/494184_IGDB-{width}x{height}.jpg",
+      "igdb_id": "79392"
+    },
+    {
+      "game_id": "19357",
+      "game_name": "Guild Wars 2",
+      "streamer_count": 3,
+      "viewer_count": 3033,
+      "language_streamers": {
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/19357_IGDB-{width}x{height}.jpg",
+      "igdb_id": "1183"
+    },
+    {
+      "game_id": "327598602",
+      "game_name": "Onimusha: Way of the Sword",
+      "streamer_count": 1,
+      "viewer_count": 2984,
+      "language_streamers": {
+        "zh": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/327598602_IGDB-{width}x{height}.jpg",
+      "igdb_id": "325602"
     },
     {
       "game_id": "510389",
       "game_name": "Shakes and Fidget",
       "streamer_count": 3,
-      "viewer_count": 5224,
+      "viewer_count": 2980,
       "language_streamers": {
         "de": 2,
         "pl": 1
@@ -503,413 +764,91 @@
       "igdb_id": "18090"
     },
     {
-      "game_id": "417528",
-      "game_name": "Albion Online",
-      "streamer_count": 5,
-      "viewer_count": 5101,
-      "language_streamers": {
-        "en": 2,
-        "pt": 2,
-        "es": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/417528_IGDB-{width}x{height}.jpg",
-      "igdb_id": "19698"
-    },
-    {
-      "game_id": "499634",
-      "game_name": "Crypto",
-      "streamer_count": 4,
-      "viewer_count": 4666,
-      "language_streamers": {
-        "en": 4
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/499634-{width}x{height}.jpg",
-      "igdb_id": "76760"
-    },
-    {
-      "game_id": "15631",
-      "game_name": "Grand Theft Auto: Vice City",
-      "streamer_count": 1,
-      "viewer_count": 4641,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/15631_IGDB-{width}x{height}.jpg",
-      "igdb_id": "733"
-    },
-    {
-      "game_id": "1294658629",
-      "game_name": "R.E.P.O.",
-      "streamer_count": 5,
-      "viewer_count": 4624,
-      "language_streamers": {
-        "ru": 3,
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1294658629_IGDB-{width}x{height}.jpg",
-      "igdb_id": "332780"
-    },
-    {
-      "game_id": "494184",
-      "game_name": "Mobile Legends: Bang Bang",
-      "streamer_count": 3,
-      "viewer_count": 4584,
-      "language_streamers": {
-        "ru": 3
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/494184_IGDB-{width}x{height}.jpg",
-      "igdb_id": "79392"
-    },
-    {
-      "game_id": "687129551",
-      "game_name": "Trackmania",
-      "streamer_count": 3,
-      "viewer_count": 4378,
-      "language_streamers": {
-        "en": 3
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/687129551-{width}x{height}.jpg",
-      "igdb_id": "133807"
-    },
-    {
-      "game_id": "1935520090",
-      "game_name": "IdleOn",
-      "streamer_count": 1,
-      "viewer_count": 4239,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1935520090_IGDB-{width}x{height}.jpg",
-      "igdb_id": "143440"
-    },
-    {
-      "game_id": "417892",
-      "game_name": "Z1: Battle Royale",
-      "streamer_count": 2,
-      "viewer_count": 4154,
-      "language_streamers": {
-        "fr": 1,
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/417892_IGDB-{width}x{height}.jpg",
-      "igdb_id": "18094"
-    },
-    {
-      "game_id": "459931",
-      "game_name": "Old School RuneScape",
-      "streamer_count": 5,
-      "viewer_count": 4052,
-      "language_streamers": {
-        "en": 5
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/459931_IGDB-{width}x{height}.jpg",
-      "igdb_id": "79824"
-    },
-    {
-      "game_id": "2132205352",
-      "game_name": "Deadlock",
-      "streamer_count": 5,
-      "viewer_count": 4021,
-      "language_streamers": {
-        "en": 5
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2132205352_IGDB-{width}x{height}.jpg",
-      "igdb_id": "301298"
-    },
-    {
-      "game_id": "2005329090",
-      "game_name": "Jinro Metropolis",
-      "streamer_count": 1,
-      "viewer_count": 3933,
-      "language_streamers": {
-        "ja": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2005329090_IGDB-{width}x{height}.jpg",
-      "igdb_id": "325996"
-    },
-    {
-      "game_id": "31339",
-      "game_name": "Project Zomboid",
-      "streamer_count": 4,
-      "viewer_count": 3926,
-      "language_streamers": {
-        "de": 2,
-        "en": 1,
-        "es": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/31339_IGDB-{width}x{height}.jpg",
-      "igdb_id": "3189"
-    },
-    {
-      "game_id": "1230742965",
-      "game_name": "TCG Card Shop Simulator",
-      "streamer_count": 1,
-      "viewer_count": 3735,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1230742965_IGDB-{width}x{height}.jpg",
-      "igdb_id": "309862"
-    },
-    {
-      "game_id": "511224",
-      "game_name": "Apex Legends",
-      "streamer_count": 4,
-      "viewer_count": 3472,
-      "language_streamers": {
-        "en": 2,
-        "fr": 1,
-        "zh": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/511224-{width}x{height}.jpg",
-      "igdb_id": "114795"
-    },
-    {
-      "game_id": "779192097",
-      "game_name": "Fire Emblem: Fortune's Weave",
-      "streamer_count": 2,
-      "viewer_count": 3454,
-      "language_streamers": {
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/779192097_IGDB-{width}x{height}.jpg",
-      "igdb_id": "366896"
-    },
-    {
-      "game_id": "327598602",
-      "game_name": "Onimusha: Way of the Sword",
-      "streamer_count": 1,
-      "viewer_count": 3451,
-      "language_streamers": {
-        "zh": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/327598602_IGDB-{width}x{height}.jpg",
-      "igdb_id": "325602"
-    },
-    {
-      "game_id": "263490",
-      "game_name": "Rust",
-      "streamer_count": 5,
-      "viewer_count": 3406,
-      "language_streamers": {
-        "es": 3,
-        "en": 1,
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/263490_IGDB-{width}x{height}.jpg",
-      "igdb_id": "3277"
-    },
-    {
-      "game_id": "1931693784",
-      "game_name": "Pokémon Champions",
-      "streamer_count": 3,
-      "viewer_count": 3329,
-      "language_streamers": {
-        "es": 1,
-        "fr": 1,
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1931693784_IGDB-{width}x{height}.jpg",
-      "igdb_id": "333568"
-    },
-    {
-      "game_id": "951949934",
-      "game_name": "The Sinking City 2",
-      "streamer_count": 1,
-      "viewer_count": 3121,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/951949934_IGDB-{width}x{height}.jpg",
-      "igdb_id": "289696"
-    },
-    {
-      "game_id": "1846293708",
-      "game_name": "Fields of Mistria",
-      "streamer_count": 1,
-      "viewer_count": 3113,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1846293708_IGDB-{width}x{height}.jpg",
-      "igdb_id": "226035"
-    },
-    {
-      "game_id": "1678532194",
-      "game_name": "EA Sports College Football 27",
-      "streamer_count": 2,
-      "viewer_count": 3088,
-      "language_streamers": {
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1678532194_IGDB-{width}x{height}.jpg",
-      "igdb_id": "400601"
-    },
-    {
-      "game_id": "456845141",
-      "game_name": "Zenless Zone Zero",
-      "streamer_count": 2,
-      "viewer_count": 3060,
-      "language_streamers": {
-        "en": 1,
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/456845141_IGDB-{width}x{height}.jpg",
-      "igdb_id": "200551"
-    },
-    {
-      "game_id": "771448419",
-      "game_name": "Aion 2",
-      "streamer_count": 3,
-      "viewer_count": 2979,
-      "language_streamers": {
-        "en": 3
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/771448419_IGDB-{width}x{height}.jpg",
-      "igdb_id": "117297"
-    },
-    {
-      "game_id": "65632",
-      "game_name": "DayZ",
-      "streamer_count": 4,
-      "viewer_count": 2867,
-      "language_streamers": {
-        "en": 4
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/65632_IGDB-{width}x{height}.jpg",
-      "igdb_id": "2117"
-    },
-    {
       "game_id": "19619",
       "game_name": "Tibia",
-      "streamer_count": 4,
-      "viewer_count": 2755,
+      "streamer_count": 5,
+      "viewer_count": 2959,
       "language_streamers": {
-        "pt": 4
+        "pt": 4,
+        "en": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/19619_IGDB-{width}x{height}.jpg",
       "igdb_id": "9596"
     },
     {
-      "game_id": "19357",
-      "game_name": "Guild Wars 2",
+      "game_id": "2692",
+      "game_name": "Super Mario 64",
+      "streamer_count": 3,
+      "viewer_count": 2908,
+      "language_streamers": {
+        "en": 2,
+        "es": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2692_IGDB-{width}x{height}.jpg",
+      "igdb_id": "1074"
+    },
+    {
+      "game_id": "263490",
+      "game_name": "Rust",
       "streamer_count": 2,
-      "viewer_count": 2715,
+      "viewer_count": 2820,
       "language_streamers": {
-        "en": 2
+        "en": 1,
+        "es": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/19357_IGDB-{width}x{height}.jpg",
-      "igdb_id": "1183"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/263490_IGDB-{width}x{height}.jpg",
+      "igdb_id": "3277"
     },
     {
-      "game_id": "1642629214",
-      "game_name": "lily's world XD",
+      "game_id": "366937751",
+      "game_name": "The bird of the North",
       "streamer_count": 1,
-      "viewer_count": 2537,
+      "viewer_count": 2746,
       "language_streamers": {
-        "ru": 1
+        "fr": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1642629214_IGDB-{width}x{height}.jpg",
-      "igdb_id": "323462"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/366937751_IGDB-{width}x{height}.jpg",
+      "igdb_id": "403905"
     },
     {
-      "game_id": "501028374",
-      "game_name": "Teach My Little Sister How to Drive",
-      "streamer_count": 1,
-      "viewer_count": 2474,
-      "language_streamers": {
-        "ja": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/501028374_IGDB-{width}x{height}.jpg",
-      "igdb_id": "373092"
-    },
-    {
-      "game_id": "602040818",
-      "game_name": "NBA 2K27",
+      "game_id": "512953",
+      "game_name": "ELDEN RING",
       "streamer_count": 3,
-      "viewer_count": 2355,
+      "viewer_count": 2743,
       "language_streamers": {
-        "en": 3
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/602040818_IGDB-{width}x{height}.jpg",
-      "igdb_id": "408823"
-    },
-    {
-      "game_id": "138585",
-      "game_name": "Hearthstone",
-      "streamer_count": 3,
-      "viewer_count": 2347,
-      "language_streamers": {
-        "ja": 1,
-        "fr": 1,
+        "fr": 2,
         "en": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/138585-{width}x{height}.jpg",
-      "igdb_id": "1279"
-    },
-    {
-      "game_id": "1435206302",
-      "game_name": "Slay the Spire II",
-      "streamer_count": 1,
-      "viewer_count": 2257,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1435206302_IGDB-{width}x{height}.jpg",
-      "igdb_id": "296831"
-    },
-    {
-      "game_id": "23020",
-      "game_name": "ROBLOX",
-      "streamer_count": 3,
-      "viewer_count": 2220,
-      "language_streamers": {
-        "es": 1,
-        "fr": 1,
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/23020_IGDB-{width}x{height}.jpg",
-      "igdb_id": "17269"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-{width}x{height}.jpg",
+      "igdb_id": "119133"
     },
     {
       "game_id": "502829",
       "game_name": "R2 Online: Reign of Revolution",
-      "streamer_count": 2,
-      "viewer_count": 2210,
+      "streamer_count": 3,
+      "viewer_count": 2718,
       "language_streamers": {
-        "ru": 2
+        "ru": 3
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/502829_IGDB-{width}x{height}.jpg",
       "igdb_id": "91269"
     },
     {
-      "game_id": "33180",
-      "game_name": "The Last of Us",
-      "streamer_count": 2,
-      "viewer_count": 2209,
-      "language_streamers": {
-        "ru": 1,
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/33180_IGDB-{width}x{height}.jpg",
-      "igdb_id": "1009"
-    },
-    {
-      "game_id": "490959",
-      "game_name": "Zwift",
+      "game_id": "489335",
+      "game_name": "Outer Wilds",
       "streamer_count": 1,
-      "viewer_count": 2163,
+      "viewer_count": 2684,
       "language_streamers": {
-        "fr": 1
+        "ru": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/490959_IGDB-{width}x{height}.jpg",
-      "igdb_id": "300513"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/489335_IGDB-{width}x{height}.jpg",
+      "igdb_id": "11737"
     },
     {
       "game_id": "12839",
       "game_name": "Heroes of Might and Magic III: The Restoration of Erathia",
       "streamer_count": 4,
-      "viewer_count": 2104,
+      "viewer_count": 2579,
       "language_streamers": {
         "ru": 4
       },
@@ -917,165 +856,169 @@
       "igdb_id": "364"
     },
     {
-      "game_id": "2124871354",
-      "game_name": "RuneScape: Dragonwilds",
-      "streamer_count": 1,
-      "viewer_count": 2096,
-      "language_streamers": {
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2124871354_IGDB-{width}x{height}.jpg",
-      "igdb_id": "337712"
-    },
-    {
       "game_id": "493997",
       "game_name": "Super Mario Odyssey",
-      "streamer_count": 2,
-      "viewer_count": 2093,
+      "streamer_count": 3,
+      "viewer_count": 2532,
       "language_streamers": {
-        "en": 2
+        "en": 3
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/493997_IGDB-{width}x{height}.jpg",
       "igdb_id": "26758"
     },
     {
-      "game_id": "2133072147",
-      "game_name": "Mir Korabley",
+      "game_id": "951949934",
+      "game_name": "The Sinking City 2",
       "streamer_count": 1,
-      "viewer_count": 2091,
+      "viewer_count": 2482,
       "language_streamers": {
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2133072147_IGDB-{width}x{height}.jpg",
-      "igdb_id": "243611"
-    },
-    {
-      "game_id": "499003",
-      "game_name": "VRChat",
-      "streamer_count": 2,
-      "viewer_count": 2071,
-      "language_streamers": {
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/499003_IGDB-{width}x{height}.jpg",
-      "igdb_id": "33615"
-    },
-    {
-      "game_id": "542011385",
-      "game_name": "Horror Globes",
-      "streamer_count": 1,
-      "viewer_count": 2046,
-      "language_streamers": {
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/542011385_IGDB-{width}x{height}.jpg",
-      "igdb_id": "140063"
-    },
-    {
-      "game_id": "71375",
-      "game_name": "Star Citizen",
-      "streamer_count": 1,
-      "viewer_count": 1993,
-      "language_streamers": {
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/71375_IGDB-{width}x{height}.jpg",
-      "igdb_id": "1595"
-    },
-    {
-      "game_id": "1282866981",
-      "game_name": "Delta Force",
-      "streamer_count": 2,
-      "viewer_count": 1969,
-      "language_streamers": {
-        "ru": 1,
         "en": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1282866981_IGDB-{width}x{height}.jpg",
-      "igdb_id": "262186"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/951949934_IGDB-{width}x{height}.jpg",
+      "igdb_id": "289696"
     },
     {
-      "game_id": "123710355",
-      "game_name": "DRAGON QUEST VII Reimagined",
+      "game_id": "1642629214",
+      "game_name": "lily's world XD",
       "streamer_count": 1,
-      "viewer_count": 1893,
-      "language_streamers": {
-        "ja": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/123710355_IGDB-{width}x{height}.jpg",
-      "igdb_id": "366884"
-    },
-    {
-      "game_id": "23311496",
-      "game_name": "Clive Barker's Hellraiser: Revival",
-      "streamer_count": 1,
-      "viewer_count": 1798,
+      "viewer_count": 2450,
       "language_streamers": {
         "fr": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/23311496_IGDB-{width}x{height}.jpg",
-      "igdb_id": "356552"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1642629214_IGDB-{width}x{height}.jpg",
+      "igdb_id": "323462"
     },
     {
-      "game_id": "514888",
-      "game_name": "Crusader Kings III",
+      "game_id": "65632",
+      "game_name": "DayZ",
+      "streamer_count": 4,
+      "viewer_count": 2444,
+      "language_streamers": {
+        "en": 4
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/65632_IGDB-{width}x{height}.jpg",
+      "igdb_id": "2117"
+    },
+    {
+      "game_id": "19423",
+      "game_name": "Heavy Rain",
       "streamer_count": 1,
-      "viewer_count": 1626,
+      "viewer_count": 2389,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/19423_IGDB-{width}x{height}.jpg",
+      "igdb_id": "493"
+    },
+    {
+      "game_id": "459931",
+      "game_name": "Old School RuneScape",
+      "streamer_count": 3,
+      "viewer_count": 2344,
+      "language_streamers": {
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/459931_IGDB-{width}x{height}.jpg",
+      "igdb_id": "79824"
+    },
+    {
+      "game_id": "493057",
+      "game_name": "PUBG: BATTLEGROUNDS",
+      "streamer_count": 3,
+      "viewer_count": 2334,
+      "language_streamers": {
+        "ru": 2,
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/493057-{width}x{height}.jpg",
+      "igdb_id": "27789"
+    },
+    {
+      "game_id": "489170",
+      "game_name": "DARK SOULS II: Scholar of the First Sin",
+      "streamer_count": 1,
+      "viewer_count": 2271,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/489170_IGDB-{width}x{height}.jpg",
+      "igdb_id": "8222"
+    },
+    {
+      "game_id": "1661671460",
+      "game_name": "Rehaunted",
+      "streamer_count": 1,
+      "viewer_count": 2182,
       "language_streamers": {
         "de": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/514888_IGDB-{width}x{height}.jpg",
-      "igdb_id": "124954"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1661671460_IGDB-{width}x{height}.jpg",
+      "igdb_id": "410924"
     },
     {
-      "game_id": "1554543571",
-      "game_name": "Photomaly",
-      "streamer_count": 1,
-      "viewer_count": 1625,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1554543571_IGDB-{width}x{height}.jpg",
-      "igdb_id": "386035"
-    },
-    {
-      "game_id": "493887283",
-      "game_name": "Casino",
+      "game_id": "2012789438",
+      "game_name": "Call of Duty: Black Ops 7",
       "streamer_count": 3,
-      "viewer_count": 1608,
+      "viewer_count": 2078,
       "language_streamers": {
-        "ru": 3
+        "en": 2,
+        "fr": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/493887283_IGDB-{width}x{height}.jpg",
-      "igdb_id": "54797"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2012789438-{width}x{height}.jpg",
+      "igdb_id": "348220"
     },
     {
-      "game_id": "1137736106",
-      "game_name": "Main Sequence",
+      "game_id": "460951",
+      "game_name": "Geometry Dash",
       "streamer_count": 1,
-      "viewer_count": 1550,
+      "viewer_count": 2043,
       "language_streamers": {
         "en": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1137736106_IGDB-{width}x{height}.jpg",
-      "igdb_id": "371514"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/460951_IGDB-{width}x{height}.jpg",
+      "igdb_id": "11642"
     },
     {
-      "game_id": "611523398",
-      "game_name": "Crococo",
-      "streamer_count": 1,
-      "viewer_count": 1428,
+      "game_id": "417892",
+      "game_name": "Z1: Battle Royale",
+      "streamer_count": 2,
+      "viewer_count": 1919,
       "language_streamers": {
+        "en": 1,
+        "fr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/417892_IGDB-{width}x{height}.jpg",
+      "igdb_id": "18094"
+    },
+    {
+      "game_id": "491168",
+      "game_name": "Clash Royale",
+      "streamer_count": 3,
+      "viewer_count": 1849,
+      "language_streamers": {
+        "de": 1,
+        "it": 1,
         "ru": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/611523398_IGDB-{width}x{height}.jpg",
-      "igdb_id": "406883"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/491168_IGDB-{width}x{height}.jpg",
+      "igdb_id": "15707"
+    },
+    {
+      "game_id": "24238",
+      "game_name": "New Super Mario Bros. Wii",
+      "streamer_count": 2,
+      "viewer_count": 1815,
+      "language_streamers": {
+        "fr": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/24238_IGDB-{width}x{height}.jpg",
+      "igdb_id": "2178"
     },
     {
       "game_id": "19976",
       "game_name": "MapleStory",
       "streamer_count": 1,
-      "viewer_count": 1413,
+      "viewer_count": 1769,
       "language_streamers": {
         "en": 1
       },
@@ -1083,45 +1026,131 @@
       "igdb_id": "9804"
     },
     {
-      "game_id": "1065240035",
-      "game_name": "Unusual Tales: After Bark",
-      "streamer_count": 2,
-      "viewer_count": 1407,
+      "game_id": "1622846332",
+      "game_name": "Animaly Bar: NO HUMANITY!",
+      "streamer_count": 1,
+      "viewer_count": 1745,
       "language_streamers": {
-        "en": 1,
         "de": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1065240035_IGDB-{width}x{height}.jpg",
-      "igdb_id": "405824"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1622846332_IGDB-{width}x{height}.jpg",
+      "igdb_id": "402714"
     },
     {
-      "game_id": "490242481",
-      "game_name": "GRAIN ROT",
+      "game_id": "123710355",
+      "game_name": "DRAGON QUEST VII Reimagined",
       "streamer_count": 1,
-      "viewer_count": 1406,
+      "viewer_count": 1712,
+      "language_streamers": {
+        "ja": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/123710355_IGDB-{width}x{height}.jpg",
+      "igdb_id": "366884"
+    },
+    {
+      "game_id": "499003",
+      "game_name": "VRChat",
+      "streamer_count": 2,
+      "viewer_count": 1695,
+      "language_streamers": {
+        "en": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/499003_IGDB-{width}x{height}.jpg",
+      "igdb_id": "33615"
+    },
+    {
+      "game_id": "1541757778",
+      "game_name": "Claire a la Mode",
+      "streamer_count": 1,
+      "viewer_count": 1595,
       "language_streamers": {
         "en": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/490242481_IGDB-{width}x{height}.jpg",
-      "igdb_id": "400575"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1541757778_IGDB-{width}x{height}.jpg",
+      "igdb_id": "325941"
     },
     {
-      "game_id": "491168",
-      "game_name": "Clash Royale",
-      "streamer_count": 2,
-      "viewer_count": 1400,
+      "game_id": "493887283",
+      "game_name": "Casino",
+      "streamer_count": 3,
+      "viewer_count": 1568,
       "language_streamers": {
-        "es": 1,
-        "de": 1
+        "ru": 3
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/491168_IGDB-{width}x{height}.jpg",
-      "igdb_id": "15707"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/493887283_IGDB-{width}x{height}.jpg",
+      "igdb_id": "54797"
+    },
+    {
+      "game_id": "745589378",
+      "game_name": "Balatro",
+      "streamer_count": 2,
+      "viewer_count": 1564,
+      "language_streamers": {
+        "en": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/745589378_IGDB-{width}x{height}.jpg",
+      "igdb_id": "251833"
+    },
+    {
+      "game_id": "518584827",
+      "game_name": "NHL 27",
+      "streamer_count": 1,
+      "viewer_count": 1564,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/518584827_IGDB-{width}x{height}.jpg",
+      "igdb_id": "408771"
+    },
+    {
+      "game_id": "1936054038",
+      "game_name": "Little Nightmares III",
+      "streamer_count": 1,
+      "viewer_count": 1545,
+      "language_streamers": {
+        "pl": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1936054038_IGDB-{width}x{height}.jpg",
+      "igdb_id": "262529"
+    },
+    {
+      "game_id": "18846",
+      "game_name": "Garry's Mod",
+      "streamer_count": 2,
+      "viewer_count": 1512,
+      "language_streamers": {
+        "fr": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/18846_IGDB-{width}x{height}.jpg",
+      "igdb_id": "3278"
+    },
+    {
+      "game_id": "1457501816",
+      "game_name": "Cat Mail Co.",
+      "streamer_count": 1,
+      "viewer_count": 1512,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1457501816_IGDB-{width}x{height}.jpg",
+      "igdb_id": "406739"
+    },
+    {
+      "game_id": "13425",
+      "game_name": "White Day: A Labyrinth Named School",
+      "streamer_count": 1,
+      "viewer_count": 1459,
+      "language_streamers": {
+        "fr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/13425_IGDB-{width}x{height}.jpg",
+      "igdb_id": "110590"
     },
     {
       "game_id": "639699690",
       "game_name": "Nioh 3",
       "streamer_count": 1,
-      "viewer_count": 1390,
+      "viewer_count": 1433,
       "language_streamers": {
         "ru": 1
       },
@@ -1129,114 +1158,72 @@
       "igdb_id": "347123"
     },
     {
-      "game_id": "998306791",
-      "game_name": "Super Puzzled Cat",
-      "streamer_count": 1,
-      "viewer_count": 1386,
+      "game_id": "1702520304",
+      "game_name": "Path of Exile 2",
+      "streamer_count": 2,
+      "viewer_count": 1395,
       "language_streamers": {
-        "en": 1
+        "en": 1,
+        "ru": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/998306791_IGDB-{width}x{height}.jpg",
-      "igdb_id": "296403"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1702520304_IGDB-{width}x{height}.jpg",
+      "igdb_id": "125642"
     },
     {
-      "game_id": "1836308895",
-      "game_name": "How to Make an Atomic Bomb in Your Garden",
-      "streamer_count": 1,
-      "viewer_count": 1375,
+      "game_id": "505045",
+      "game_name": "DOFUS Touch",
+      "streamer_count": 2,
+      "viewer_count": 1388,
       "language_streamers": {
-        "en": 1
+        "fr": 2
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1836308895_IGDB-{width}x{height}.jpg",
-      "igdb_id": "391727"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/505045_IGDB-{width}x{height}.jpg",
+      "igdb_id": "96289"
     },
     {
-      "game_id": "1122982998",
-      "game_name": "Dark Souls: Remastered",
-      "streamer_count": 1,
-      "viewer_count": 1310,
+      "game_id": "1931693784",
+      "game_name": "Pokémon Champions",
+      "streamer_count": 2,
+      "viewer_count": 1370,
       "language_streamers": {
+        "en": 1,
         "fr": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1122982998_IGDB-{width}x{height}.jpg",
-      "igdb_id": "81085"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1931693784_IGDB-{width}x{height}.jpg",
+      "igdb_id": "333568"
     },
     {
-      "game_id": "32502",
-      "game_name": "World of Warships",
+      "game_id": "514888",
+      "game_name": "Crusader Kings III",
+      "streamer_count": 1,
+      "viewer_count": 1369,
+      "language_streamers": {
+        "de": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/514888_IGDB-{width}x{height}.jpg",
+      "igdb_id": "124954"
+    },
+    {
+      "game_id": "1678532194",
+      "game_name": "EA Sports College Football 27",
       "streamer_count": 2,
-      "viewer_count": 1273,
+      "viewer_count": 1361,
       "language_streamers": {
-        "de": 2
+        "en": 2
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/32502_IGDB-{width}x{height}.jpg",
-      "igdb_id": "5587"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1678532194_IGDB-{width}x{height}.jpg",
+      "igdb_id": "400601"
     },
     {
-      "game_id": "29307",
-      "game_name": "Path of Exile",
+      "game_id": "1290551545",
+      "game_name": "Backseat",
       "streamer_count": 1,
-      "viewer_count": 1270,
+      "viewer_count": 1297,
       "language_streamers": {
-        "en": 1
+        "pl": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/29307_IGDB-{width}x{height}.jpg",
-      "igdb_id": "1911"
-    },
-    {
-      "game_id": "32959",
-      "game_name": "Heroes of the Storm",
-      "streamer_count": 1,
-      "viewer_count": 1259,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/32959_IGDB-{width}x{height}.jpg",
-      "igdb_id": "7313"
-    },
-    {
-      "game_id": "513181",
-      "game_name": "Genshin Impact",
-      "streamer_count": 1,
-      "viewer_count": 1208,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/513181_IGDB-{width}x{height}.jpg",
-      "igdb_id": "119277"
-    },
-    {
-      "game_id": "1966055328",
-      "game_name": "Fears to Fathom - Scratch Creek",
-      "streamer_count": 1,
-      "viewer_count": 1143,
-      "language_streamers": {
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1966055328_IGDB-{width}x{height}.jpg",
-      "igdb_id": "348971"
-    },
-    {
-      "game_id": "326849848",
-      "game_name": "MOLDRISE",
-      "streamer_count": 1,
-      "viewer_count": 1124,
-      "language_streamers": {
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/326849848_IGDB-{width}x{height}.jpg",
-      "igdb_id": "405165"
-    },
-    {
-      "game_id": "489170",
-      "game_name": "DARK SOULS II: Scholar of the First Sin",
-      "streamer_count": 1,
-      "viewer_count": 1121,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/489170_IGDB-{width}x{height}.jpg",
-      "igdb_id": "8222"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1290551545_IGDB-{width}x{height}.jpg",
+      "igdb_id": "311545"
     }
   ],
   "tracked_games": []
