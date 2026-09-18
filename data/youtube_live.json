@@ -1,19 +1,136 @@
 {
-  "generated_at": "2026-09-18T15:56:02Z",
+  "generated_at": "2026-09-18T15:56:56Z",
   "source": "YouTube Data API v3",
   "coverage": {
     "search_calls_per_run": 3,
     "estimated_daily_search_calls_at_hourly_schedule": 72,
     "search_term_count": 20,
     "discovery_mode": "recent_candidates_fallback",
-    "candidate_video_count": 0,
-    "live_gaming_stream_sample_size": 0,
+    "candidate_video_count": 50,
+    "live_gaming_stream_sample_size": 4,
     "known_game_dictionary_size": 100,
-    "matched_stream_count": 0,
-    "unmatched_stream_count": 0,
+    "matched_stream_count": 1,
+    "unmatched_stream_count": 3,
     "location_note": "Taiwan/Asia classification uses the YouTube channel's associated country when the channel owner has configured one. It is not precise physical location."
   },
-  "top_games": [],
-  "streams": [],
-  "unmatched_streams": []
+  "top_games": [
+    {
+      "game_name": "League of Legends",
+      "global": {
+        "streamer_count": 1,
+        "viewer_count": 3559
+      },
+      "asia": {
+        "streamer_count": 1,
+        "viewer_count": 3559
+      },
+      "taiwan": {
+        "streamer_count": 0,
+        "viewer_count": 0
+      },
+      "unknown_country_streamers": 0
+    }
+  ],
+  "streams": [
+    {
+      "video_id": "gMkuV5hh7-s",
+      "title": "HEARTSTEEL - Live My Life ft. Anderson .Paak, BAEKHYUN, Connor Price, Nic D (Official Music Video)",
+      "channel_id": "UC2t5bjwHdUX4vM2g8TRDq5g",
+      "channel_title": "League of Legends",
+      "channel_country": "US",
+      "region": "other",
+      "concurrent_viewers": 0,
+      "game_name": null,
+      "published_at": "2026-09-18T15:55:06Z",
+      "actual_start_time": "2026-09-18T15:55:06Z",
+      "thumbnail_url": "https://i.ytimg.com/vi/gMkuV5hh7-s/hqdefault.jpg",
+      "watch_url": "https://www.youtube.com/watch?v=gMkuV5hh7-s"
+    },
+    {
+      "video_id": "wY3q07-EkC0",
+      "title": "◤  League of Legends  ◢　フレックスランクいくぞ！   ◤ぶいすぽっ！ #龍巻ちせ ⁠◢",
+      "channel_id": "UCoW8qQy80mKH0RJTKAK-nNA",
+      "channel_title": "龍巻ちせ / Tatsumaki Chise",
+      "channel_country": "JP",
+      "region": "asia",
+      "concurrent_viewers": 3559,
+      "game_name": "League of Legends",
+      "published_at": "2026-09-18T11:17:54Z",
+      "actual_start_time": "2026-09-18T12:00:09Z",
+      "thumbnail_url": "https://i.ytimg.com/vi/wY3q07-EkC0/hqdefault_live.jpg",
+      "watch_url": "https://www.youtube.com/watch?v=wY3q07-EkC0"
+    },
+    {
+      "video_id": "tqFf3Tcj2hM",
+      "title": "2026 LEC SUMMER SPLIT - PLAYOFFS - DÍA 5",
+      "channel_id": "UCREdaAMF06mp7bNjNmUrLqA",
+      "channel_title": "LES - Liga Española de League of Legends",
+      "channel_country": "ES",
+      "region": "other",
+      "concurrent_viewers": 2636,
+      "game_name": null,
+      "published_at": "2026-09-18T09:30:58Z",
+      "actual_start_time": "2026-09-18T14:18:52Z",
+      "thumbnail_url": "https://i.ytimg.com/vi/tqFf3Tcj2hM/hqdefault_live.jpg",
+      "watch_url": "https://www.youtube.com/watch?v=tqFf3Tcj2hM"
+    },
+    {
+      "video_id": "PNv3UoWAwIY",
+      "title": "🟢VIERTELFINALE - LIVE AUS NIZZA MIT GÄSTEN!🟢 LEC Summer Playoffs 2026 Tag 6 🟢 #WatchLEC🟢",
+      "channel_id": "UCYXZkXt3qNRyK5hebGgSqjA",
+      "channel_title": "TolkinLoL",
+      "channel_country": "DE",
+      "region": "other",
+      "concurrent_viewers": 859,
+      "game_name": null,
+      "published_at": "2026-09-18T09:29:28Z",
+      "actual_start_time": "2026-09-18T14:49:28Z",
+      "thumbnail_url": "https://i.ytimg.com/vi/PNv3UoWAwIY/hqdefault_live.jpg",
+      "watch_url": "https://www.youtube.com/watch?v=PNv3UoWAwIY"
+    }
+  ],
+  "unmatched_streams": [
+    {
+      "video_id": "gMkuV5hh7-s",
+      "title": "HEARTSTEEL - Live My Life ft. Anderson .Paak, BAEKHYUN, Connor Price, Nic D (Official Music Video)",
+      "channel_id": "UC2t5bjwHdUX4vM2g8TRDq5g",
+      "channel_title": "League of Legends",
+      "channel_country": "US",
+      "region": "other",
+      "concurrent_viewers": 0,
+      "game_name": null,
+      "published_at": "2026-09-18T15:55:06Z",
+      "actual_start_time": "2026-09-18T15:55:06Z",
+      "thumbnail_url": "https://i.ytimg.com/vi/gMkuV5hh7-s/hqdefault.jpg",
+      "watch_url": "https://www.youtube.com/watch?v=gMkuV5hh7-s"
+    },
+    {
+      "video_id": "tqFf3Tcj2hM",
+      "title": "2026 LEC SUMMER SPLIT - PLAYOFFS - DÍA 5",
+      "channel_id": "UCREdaAMF06mp7bNjNmUrLqA",
+      "channel_title": "LES - Liga Española de League of Legends",
+      "channel_country": "ES",
+      "region": "other",
+      "concurrent_viewers": 2636,
+      "game_name": null,
+      "published_at": "2026-09-18T09:30:58Z",
+      "actual_start_time": "2026-09-18T14:18:52Z",
+      "thumbnail_url": "https://i.ytimg.com/vi/tqFf3Tcj2hM/hqdefault_live.jpg",
+      "watch_url": "https://www.youtube.com/watch?v=tqFf3Tcj2hM"
+    },
+    {
+      "video_id": "PNv3UoWAwIY",
+      "title": "🟢VIERTELFINALE - LIVE AUS NIZZA MIT GÄSTEN!🟢 LEC Summer Playoffs 2026 Tag 6 🟢 #WatchLEC🟢",
+      "channel_id": "UCYXZkXt3qNRyK5hebGgSqjA",
+      "channel_title": "TolkinLoL",
+      "channel_country": "DE",
+      "region": "other",
+      "concurrent_viewers": 859,
+      "game_name": null,
+      "published_at": "2026-09-18T09:29:28Z",
+      "actual_start_time": "2026-09-18T14:49:28Z",
+      "thumbnail_url": "https://i.ytimg.com/vi/PNv3UoWAwIY/hqdefault_live.jpg",
+      "watch_url": "https://www.youtube.com/watch?v=PNv3UoWAwIY"
+    }
+  ]
 }
