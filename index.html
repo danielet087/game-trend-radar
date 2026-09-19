@@ -64,15 +64,14 @@
 <header class="topbar">
   <div class="brand"><div class="mark" aria-hidden="true">✦</div><span>GAME TREND RADAR</span></div>
   <nav class="nav" aria-label="主要導覽"><span class="active">發售月曆</span><span>Steam 新作觀察</span></nav>
-  <div class="pill"><span class="pill-dot"></span> STEAM RELEASE WATCH</div>
 </header>
 <div class="spotlight-panels">
   <section class="panel spotlight" aria-labelledby="releasedTitle">
-    <div class="panel-header"><div><div class="section-heading"><span class="glyph">✓</span><h2 id="releasedTitle"><a href="./released.html">近期已上市</a></h2></div><p class="sub">近 30 天 · Followers 超過 3,000</p></div><div class="spotlight-actions"><span class="count" id="releasedCount">0 款</span><a class="view-all" href="./released.html" aria-label="查看全部近期已上市遊戲">查看全部 →</a></div></div>
+    <div class="panel-header"><div><div class="section-heading"><span class="glyph">✓</span><h2 id="releasedTitle"><a href="./released.html">近期上市</a></h2></div><p class="sub">近 30 天 · Followers 超過 3,000</p></div><div class="spotlight-actions"><span class="count" id="releasedCount">0 款</span><a class="view-all" href="./released.html" aria-label="查看全部近期上市遊戲">查看全部 →</a></div></div>
     <div class="cards" id="releasedCards"></div>
   </section>
   <section class="panel spotlight" aria-labelledby="upcomingTitle">
-    <div class="panel-header"><div><div class="section-heading"><span class="glyph">↗</span><h2 id="upcomingTitle"><a href="./upcoming.html">最近快要上市</a></h2></div><p class="sub">未來 45 天 · 依上市日期排列</p></div><div class="spotlight-actions"><span class="count" id="upcomingCount">0 款</span><a class="view-all" href="./upcoming.html" aria-label="查看全部最近快要上市遊戲">查看全部 →</a></div></div>
+    <div class="panel-header"><div><div class="section-heading"><span class="glyph">↗</span><h2 id="upcomingTitle"><a href="./upcoming.html">即將上市</a></h2></div><p class="sub">未來 45 天 · 依上市日期排列</p></div><div class="spotlight-actions"><span class="count" id="upcomingCount">0 款</span><a class="view-all" href="./upcoming.html" aria-label="查看全部即將上市遊戲">查看全部 →</a></div></div>
     <div class="cards" id="upcomingCards"></div>
   </section>
 </div>
@@ -89,7 +88,7 @@
 </section>
 
 </div>
-<footer class="footnote"><span id="updateStatus" role="status" aria-live="polite">正在讀取遊戲資料…</span><br>資料來源：Steam Store 發售資訊、Steam Community Followers。月曆顯示具備明確日期、至少 5,000 Followers 的遊戲；近期已上市另依實際驗證的 Followers 選取。本站與 Valve / Steam 無官方隸屬關係。</footer>
+<footer class="footnote">資料來源：Steam Store 發售資訊、Steam Community Followers。月曆顯示具備明確日期、至少 5,000 Followers 的遊戲；近期上市另依實際驗證的 Followers 選取。本站與 Valve / Steam 無官方隸屬關係。</footer>
 </main>
 <script>
 (() => {
@@ -113,7 +112,7 @@ function renderCalendar(){const y=model.year,m=model.month,days=new Date(Date.UT
 function render(){renderCalendar();const releaseCutoff=iso(clock.getUTCFullYear(),clock.getUTCMonth(),clock.getUTCDate()-30);const released=Array.from(new Map(model.recent.filter(g=>g.date<=today&&g.date>=releaseCutoff&&g.followers>3000).map(g=>[g.appid,g])).values()).sort((a,b)=>b.followers-a.followers||b.date.localeCompare(a.date));const upcoming=model.games.filter(g=>g.date>=today&&g.date<=iso(clock.getUTCFullYear(),clock.getUTCMonth(),clock.getUTCDate()+45)).sort((a,b)=>a.date.localeCompare(b.date)||b.followers-a.followers);setText("releasedCount",released.length+" 款");setText("upcomingCount",upcoming.length+" 款");renderCards("releasedCards",released,"recent");renderCards("upcomingCards",upcoming,"upcoming")}
 function monthStep(diff){const next=new Date(Date.UTC(model.year,model.month+diff,1));model.year=next.getUTCFullYear();model.month=next.getUTCMonth();renderCalendar()}
 el("prevBtn").addEventListener("click",()=>monthStep(-1));el("nextBtn").addEventListener("click",()=>monthStep(1));el("todayBtn").addEventListener("click",()=>{model.year=clock.getUTCFullYear();model.month=clock.getUTCMonth();renderCalendar()});
-async function load(){const found=await Promise.all(paths.map(async path=>{try{const response=await fetch(path+"?t="+Math.floor(Date.now()/300000),{cache:"no-store"});if(!response.ok)return null;const data=await response.json();return Array.isArray(data.games)?data:null}catch(error){console.warn("Cannot load Steam dataset:",path,error);return null}}));const [official,preview]=found;const chosen=official||preview;if(!chosen){el("notice").classList.add("show");setText("notice","Steam 遊戲清單尚未公開：已建立前端介面，正在等待包含遊戲名稱與明確發售日期的 Steam JSON。Followers checkpoint 只有 AppID、人數與查詢時間，不能直接作為月曆資料。");setText("updateStatus","等待 Steam 遊戲資料");render();return}const translations=new Map((preview?.games||[]).map(item=>[Number(item.appid),item]));model.games=Array.from(new Map(chosen.games.map(item=>normalize(item,false,translations.get(Number(item.appid)))).filter(Boolean).map(g=>[g.appid,g])).values());model.games.sort((a,b)=>b.followers-a.followers);model.recent=Array.isArray(preview?.recent_games)?preview.recent_games.map(g=>normalize(g,true)).filter(g=>g&&g.followers>3000&&["tracked_release","direct_release"].includes(g.recentSource)):[];model.scanned=Number.isFinite(Number(preview?.checkpoint_count))?Number(preview.checkpoint_count):null;model.updatedAt=chosen.generated_at||chosen.updated_at||null;model.source=official?"official":"preview";const stamp=model.updatedAt?new Date(model.updatedAt).toLocaleString("zh-TW",{timeZone:"Asia/Taipei",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}):"時間未知";setText("updateStatus","資料更新："+stamp+(official?"":"・初始化預覽"));if(!official){el("notice").classList.add("show");setText("notice","目前顯示已保存 Followers 中，能取得明確上市日期且 ≥ 5,000 關注的遊戲。完整一年遊戲清單仍在初始化，後續會自動擴充。")}render()}
+async function load(){const found=await Promise.all(paths.map(async path=>{try{const response=await fetch(path+"?t="+Math.floor(Date.now()/300000),{cache:"no-store"});if(!response.ok)return null;const data=await response.json();return Array.isArray(data.games)?data:null}catch(error){console.warn("Cannot load Steam dataset:",path,error);return null}}));const [official,preview]=found;const chosen=official||preview;if(!chosen){el("notice").classList.add("show");setText("notice","Steam 遊戲清單尚未公開：已建立前端介面，正在等待包含遊戲名稱與明確發售日期的 Steam JSON。Followers checkpoint 只有 AppID、人數與查詢時間，不能直接作為月曆資料。");render();return}const translations=new Map((preview?.games||[]).map(item=>[Number(item.appid),item]));model.games=Array.from(new Map(chosen.games.map(item=>normalize(item,false,translations.get(Number(item.appid)))).filter(Boolean).map(g=>[g.appid,g])).values());model.games.sort((a,b)=>b.followers-a.followers);model.recent=Array.isArray(preview?.recent_games)?preview.recent_games.map(g=>normalize(g,true)).filter(g=>g&&g.followers>3000&&["tracked_release","direct_release"].includes(g.recentSource)):[];model.scanned=Number.isFinite(Number(preview?.checkpoint_count))?Number(preview.checkpoint_count):null;model.updatedAt=chosen.generated_at||chosen.updated_at||null;model.source=official?"official":"preview";if(!official){el("notice").classList.add("show");setText("notice","目前顯示已保存 Followers 中，能取得明確上市日期且 ≥ 5,000 關注的遊戲。完整一年遊戲清單仍在初始化，後續會自動擴充。")}render()}
 load();
 })();
 </script>
