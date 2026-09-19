@@ -1,13 +1,17 @@
 {
-  "generated_at": "2026-09-19T05:14:21Z",
-  "source": "Steam Store appdetails + private follower checkpoint; recent popular releases: Steam Store top_sellers",
+  "generated_at": "2026-09-19T06:02:19Z",
+  "source": "Steam Store metadata + private Followers checkpoint + Steam new-releases scan",
   "is_partial_preview": true,
-  "checkpoint_count": 765,
-  "checkpoint_updated_at": "2026-09-19T05:11:05Z",
-  "qualified_checkpoint_count": 27,
-  "exact_date_games_count": 27,
+  "checkpoint_count": 800,
+  "checkpoint_updated_at": "2026-09-19T05:28:35Z",
+  "qualified_checkpoint_count": 29,
+  "exact_date_games_count": 29,
   "missing_or_ambiguous_release_date": 0,
   "min_followers": 5000,
+  "recent_min_followers_exclusive": 3000,
+  "recent_new_candidates_seen": 200,
+  "recent_new_follower_requests": 0,
+  "recent_candidates_checked": 1,
   "games": [
     {
       "appid": 1488490,
@@ -83,6 +87,36 @@
       "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3493540/e67abf270c1db285387ef9787e783dcb3dd89823/capsule_231x87.jpg?t=1789729374",
       "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3493540/4c179a79a6286b15575ca3f1a6ca620e5d159b19/header.jpg?t=1789729374",
       "store_url": "https://store.steampowered.com/app/3493540/"
+    },
+    {
+      "appid": 3010850,
+      "name": "Gears of War: E-Day",
+      "name_en": "Gears of War: E-Day",
+      "name_zh_tw": null,
+      "release_raw": "6 Oct, 2026",
+      "release_start": "2026-10-06",
+      "release_end": "2026-10-06",
+      "release_precision": "day",
+      "followers": 47104,
+      "follower_checked_at": "2026-09-19T05:18:04Z",
+      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3010850/d0917fcdbf27faffb3380f6f67e71e90f84b7ed5/capsule_231x87.jpg?t=1789676311",
+      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3010850/1abb0c5ef76c14f463dd6e3964adb64f984237d2/header.jpg?t=1789676311",
+      "store_url": "https://store.steampowered.com/app/3010850/"
+    },
+    {
+      "appid": 4078430,
+      "name": "STAR WARS: Galactic Racer™",
+      "name_en": "STAR WARS: Galactic Racer™",
+      "name_zh_tw": "星際大戰：銀河賽車手™",
+      "release_raw": "6 Oct, 2026",
+      "release_start": "2026-10-06",
+      "release_end": "2026-10-06",
+      "release_precision": "day",
+      "followers": 31618,
+      "follower_checked_at": "2026-09-19T05:20:34Z",
+      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4078430/13ac6002a7cd1c867f8bf2f650101fe9d91ce4f9/capsule_231x87.jpg?t=1789466347",
+      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4078430/97215eb609882139ce6a28419116be23fcf5ac86/header.jpg?t=1789466347",
+      "store_url": "https://store.steampowered.com/app/4078430/"
     },
     {
       "appid": 1912410,
@@ -415,54 +449,5 @@
       "store_url": "https://store.steampowered.com/app/3699590/"
     }
   ],
-  "recent_games": [
-    {
-      "appid": 1867240,
-      "name": "WARDOGS",
-      "name_en": "WARDOGS",
-      "name_zh_tw": null,
-      "release_raw": "10 Sep, 2026",
-      "release_start": "2026-09-10",
-      "release_end": "2026-09-10",
-      "release_precision": "day",
-      "followers": null,
-      "follower_checked_at": null,
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1867240/11d3bb7607c5568c61108fe70e7c670b4940269e/capsule_231x87.jpg?t=1789503126",
-      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1867240/59d4daf753bd5d982e6675f7eee363bc817c574e/header.jpg?t=1789503126",
-      "store_url": "https://store.steampowered.com/app/1867240/",
-      "recent_source": "top_sellers"
-    },
-    {
-      "appid": 4090260,
-      "name": "Lifeguard Holic",
-      "name_en": "Lifeguard Holic",
-      "name_zh_tw": "救生員狂熱",
-      "release_raw": "16 Sep, 2026",
-      "release_start": "2026-09-16",
-      "release_end": "2026-09-16",
-      "release_precision": "day",
-      "followers": null,
-      "follower_checked_at": null,
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4090260/509f94dc6e4e136a92f19bdc6524fd2cef03e227/capsule_231x87.jpg?t=1789610491",
-      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4090260/9527d2a74eb35bdf0c8f8e4c5c5eb8769ef1f641/header.jpg?t=1789610491",
-      "store_url": "https://store.steampowered.com/app/4090260/",
-      "recent_source": "top_sellers"
-    },
-    {
-      "appid": 4225980,
-      "name": "Trails in the Sky 2nd Chapter",
-      "name_en": "Trails in the Sky 2nd Chapter",
-      "name_zh_tw": "空之軌跡 the 2nd",
-      "release_raw": "16 Sep, 2026",
-      "release_start": "2026-09-16",
-      "release_end": "2026-09-16",
-      "release_precision": "day",
-      "followers": null,
-      "follower_checked_at": null,
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4225980/30e1d016966bd8a050e8548991b1a2bb64a934f6/capsule_231x87.jpg?t=1789409245",
-      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4225980/4d0a1769f70fbdd8d1d84d0ce06c21bb5c2d0790/header.jpg?t=1789409245",
-      "store_url": "https://store.steampowered.com/app/4225980/",
-      "recent_source": "top_sellers"
-    }
-  ]
+  "recent_games": []
 }
