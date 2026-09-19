@@ -9,6 +9,11 @@ Steam 新作關注度與遊戲發售月曆（純靜態網站）。
 - 點選標籤或遊戲卡片可開啟 Steam 商店。
 - 首頁「近期已上市／最近快要上市」各有「查看全部」連結，分別前往 `released.html` 與 `upcoming.html`。兩頁會列出其區間內全部符合條件的遊戲（不受首頁最多三款的限制），可搜尋名稱／AppID、依日期或 Followers 排序，並可返回月曆；近期黑馬標籤只顯示於經驗證的直接上市遊戲。
 
+## 上市日期（台灣時間）
+- 首頁月曆、近期上市、即將上市、指定日期清單均使用台灣時間（Asia/Taipei，UTC+8）判斷「今天」與日期區間。
+- 私有後端 Steam 搜尋指定台灣區（`cc=TW`）。若 Steam 提供具有時區的精確發售時間（Unix timestamp 或 ISO datetime），轉換成台灣日期；若 Steam 只公告日期，維持台灣區商店列出的日期，不假設美西 10:00、不任意加一天。
+- `generated_at` 仍使用 UTC ISO 時間戳作為資料紀錄，與遊戲上市日期的顯示時區不同。
+
 ## 公開資料
 - `data/steam_preview.json`：初始化中的暫存預覽。私有後端從 steam-state checkpoint 中篩選 Followers >= 5000 的 AppID，補 Store 名稱、封面、精確發售日期；另外掃描 Steam New Releases，只公開已發售且 Followers > 3000 的近期遊戲，不會公開完整 checkpoint。
 - `data/steam_upcoming.json`：Steam 初始化成功後正式發布的遊戲資料（優先使用）。
