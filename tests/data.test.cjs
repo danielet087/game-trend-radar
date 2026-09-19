@@ -1,0 +1,131 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const D = require("../assets/radar-data-v1.js");
+const game = (overrides) => ({
+  appid: 10,
+  name: "Test game",
+  release_start: "2026-09-20",
+  release_precision: "day",
+  followers: 5000,
+  ...overrides,
+});
+
+test("Taipei midnight rolls over without shifting date-only releases", () => {
+  assert.equal(D.todayInTaipei(new Date("2026-09-19T15:59:59Z")), "2026-09-19");
+  assert.equal(D.todayInTaipei(new Date("2026-09-19T16:00:00Z")), "2026-09-20");
+  assert.equal(D.normalize(game()).date, "2026-09-20");
+});
+test("calendar dates must be real, exact days", () => {
+  for (const value of [
+    "2026-02-29",
+    "2026-09-31",
+    "2026-13-01",
+    "2026-9-1",
+    "invalid",
+  ])
+    assert.equal(D.validDate(value), false);
+  assert.equal(D.validDate("2028-02-29"), true);
+  assert.equal(D.normalize(game({ release_precision: "month" })), null);
+});
+test("upcoming keeps the inclusive 5,000 follower threshold and rejects missing data", () => {
+  assert.ok(D.normalize(game({ followers: 5000 })));
+  for (const followers of [4999, null, undefined, Infinity, "bad"])
+    assert.equal(D.normalize(game({ followers })), null);
+  for (const appid of [0, -1, 1.5, "bad"])
+    assert.equal(D.normalize(game({ appid })), null);
+});
+test("recent releases require provenance and strictly more than 3,000 followers", () => {
+  assert.equal(
+    D.normalize(
+      game({ followers: 3000, recent_source: "tracked_release" }),
+      true,
+    ),
+    null,
+  );
+  assert.equal(D.normalize(game({ followers: 50000 }), true), null);
+  assert.ok(
+    D.normalize(
+      game({ followers: 3001, recent_source: "tracked_release" }),
+      true,
+    ),
+  );
+  assert.equal(
+    D.normalize(game({ recent_source: "direct_release" }), true).darkHorse,
+    false,
+  );
+  assert.equal(
+    D.normalize(
+      game({
+        recent_source: "direct_release",
+        first_week_qualified_at: "2026-09-21T00:00:00Z",
+      }),
+      true,
+    ).darkHorse,
+    true,
+  );
+});
+test("source preference, localization and de-duplication preserve verified official records", () => {
+  const official = { games: [game(), game()], generated_at: "official" };
+  const preview = {
+    games: [game({ name_zh_tw: "測試遊戲", followers: 90000 })],
+    recent_games: [],
+  };
+  const data = D.datasets(official, preview);
+  assert.equal(data.games.length, 1);
+  assert.equal(data.games[0].name, "測試遊戲");
+  assert.equal(data.games[0].followers, 5000);
+  assert.equal(data.updated, "official");
+  assert.equal(D.datasets({ games: [] }, preview).games.length, 0);
+  assert.equal(D.datasets(null, preview).source, "preview");
+  assert.equal(D.datasets(null, null), null);
+});
+test("image paths are resolved for Steam assets; executable and untrusted origins are rejected", () => {
+  assert.equal(
+    D.imageURL("hash/capsule_231x87.jpg", 10),
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/10/hash/capsule_231x87.jpg",
+  );
+  assert.equal(
+    D.imageURL("https://shared.fastly.steamstatic.com/a.jpg", 10),
+    "https://shared.fastly.steamstatic.com/a.jpg",
+  );
+  for (const url of [
+    "javascript:alert(1)",
+    "http://shared.akamai.steamstatic.com/a.jpg",
+    "https://steamstatic.com.evil.test/a.jpg",
+    "//evil.test/a.jpg",
+  ])
+    assert.equal(D.imageURL(url, 10), "");
+  const result = D.normalize(
+    game({ capsule_image: "hash/capsule.jpg" }),
+    false,
+    { header_image: "https://shared.fastly.steamstatic.com/header.jpg" },
+  );
+  assert.equal(result.art, "https://shared.fastly.steamstatic.com/header.jpg");
+});
+test("45-day upcoming and 30-day recent ranges use Taipei date boundaries", () => {
+  const today = "2026-09-20";
+  const rows = [-31, -30, -1, 0, 45, 46].map((days, index) => ({
+    appid: index + 1,
+    date: D.offsetDate(today, days),
+  }));
+  const data = { games: rows, recent: rows };
+  assert.deepEqual(
+    D.selectGames(data, "upcoming", today).map((g) => g.appid),
+    [4, 5],
+  );
+  assert.deepEqual(
+    D.selectGames(data, "released", today).map((g) => g.appid),
+    [2, 3, 4],
+  );
+  assert.deepEqual(
+    D.selectGames(data, "date", today, today).map((g) => g.appid),
+    [4],
+  );
+});
+test("malformed rows do not erase the valid published dataset", () => {
+  const data = D.datasets(
+    { games: [null, {}, game(), game({ appid: 20, followers: 4999 })] },
+    { games: [null], recent_games: [] },
+  );
+  assert.equal(data.games.length, 1);
+});
