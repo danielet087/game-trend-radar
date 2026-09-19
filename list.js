@@ -8,7 +8,7 @@ const todayMatch=dateText.match(/(\d{4})\D(\d{2})\D(\d{2})/);
 const today=todayMatch?todayMatch.slice(1).join("-"):new Date().toISOString().slice(0,10);
 const start=new Date(today+"T12:00:00Z");
 const dateOffset=days=>new Date(start.getTime()+days*86400000).toISOString().slice(0,10);
-const model={items:[],updatedAt:null,source:""};
+const model={items:[]};
 const validDate=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!Number.isNaN(Date.parse(s+"T12:00:00Z"))&&new Date(s+"T12:00:00Z").toISOString().slice(0,10)===s;
 function normalize(raw,recent=false,translation=null){
  if(!raw||typeof raw!=="object")return null;
@@ -67,7 +67,7 @@ async function load(){
  }));
  const [official,preview]=results;
  const source=official||preview;
- if(!source){el("updateStatus").textContent="等待 Steam 公開資料，請稍後再試。";display([]);return}
+ if(!source){display([]);return}
  let items;
  if(mode==="released"){
   items=Array.isArray(preview?.recent_games)?preview.recent_games.map(row=>normalize(row,true)).filter(Boolean)
@@ -78,10 +78,6 @@ async function load(){
    .filter(g=>g.date>=today&&g.date<=dateOffset(45));
  }
  model.items=Array.from(new Map(items.map(g=>[g.appid,g])).values());
- model.updatedAt=(mode==="released"?preview?.generated_at:null)||source.generated_at||source.updated_at||null;
- model.source=mode==="released"?"Steam 最近上市資料":official?"正式 Steam 資料":"初始化預覽";
- const stamp=model.updatedAt?new Date(model.updatedAt).toLocaleString("zh-TW",{timeZone:"Asia/Taipei",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}):"時間未知";
- el("updateStatus").textContent="資料更新："+stamp+" · "+model.source+"。點擊遊戲卡片可前往 Steam 商店。";
  display(model.items);
 }
 load();
