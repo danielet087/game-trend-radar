@@ -1,38 +1,175 @@
 <!doctype html>
-<html lang="zh-Hant">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="dark">
-<meta name="description" content="未來 45 天內即將推出且 Followers 至少 5,000 的遊戲，依發售日整理。">
-<title>即將上市｜Game Trend Radar</title>
-<link rel="stylesheet" href="./list.css?v=2">
-</head>
-<body data-mode="upcoming">
-<main class="page">
-  <header class="topbar">
-    <a class="brand" href="./index.html" aria-label="回到 Game Trend Radar 首頁"><span class="mark" aria-hidden="true">✦</span><span>GAME TREND RADAR</span></a>
-    <a class="home-link" href="./index.html">← 返回發售月曆</a>
-  </header>
-  <div class="heading">
-    <h1>即將上市</h1>
-    <p>未來 45 天內即將推出且 Followers 至少 5,000 的遊戲，依發售日整理。 日期與更新區間均依台灣時間（UTC+8）計算。</p>
-  </div>
-  <div class="progress-note" id="followerProgress" role="status" hidden></div>
-  <nav class="tabs" aria-label="Steam 遊戲清單">
-    <a class="tab" href="./released.html">近期上市</a>
-    <a class="tab active" href="./upcoming.html" aria-current="page">即將上市</a>
-  </nav>
-  <section class="panel" aria-label="即將上市完整清單">
-    <div class="toolbar">
-      <strong>全部遊戲</strong><span class="count" id="gameCount" role="status">載入中…</span>
-      <span class="tool-spacer"></span>
-      <input id="searchInput" class="input" type="search" placeholder="搜尋遊戲名稱或 AppID" aria-label="搜尋遊戲名稱或 AppID" autocomplete="off">
-      <select id="sortSelect" class="select" aria-label="排序方式"><option value="date">上市日期最近</option><option value="followers">Followers 最高</option></select>
-    </div>
-    <div class="list" id="fullList" aria-live="polite"><div class="empty">正在讀取 Steam 遊戲資料…</div></div>
-  </section>
-</main>
-<script src="./list-view-v6-3stage-20260920.js" defer></script>
-</body>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#f7f7f0" />
+    <meta
+      name="description"
+      content="未來 45 天的新作，找到值得等待的下一款。 Steam 新作關注度、發售月曆與收藏清單，日期以台灣時間為準。"
+    />
+    <title>即將上市｜Game Trend Radar</title>
+    <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/radar-ui-v1.css" />
+    <script src="./assets/radar-data-v1.js" defer></script>
+    <script src="./assets/radar-ui-v1.js" defer></script>
+  </head>
+  <body data-page="upcoming">
+    <a class="skip-link" href="#mainContent">跳到主要內容</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="./index.html" aria-label="Game Trend Radar 首頁"
+          ><img
+            src="./assets/radar-mark.svg"
+            width="40"
+            height="40"
+            alt=""
+          /><span
+            >GAME TREND <b>RADAR<span class="brand-dot">.</span></b></span
+          ></a
+        >
+        <nav class="main-nav" aria-label="主要導覽">
+          <a href="./index.html">發售月曆</a
+          ><a href="./upcoming.html" aria-current="page">即將上市</a
+          ><a href="./released.html">近期上市</a
+          ><a href="./saved.html"
+            >我的收藏 <span class="saved-count" data-saved-count>0</span></a
+          >
+        </nav>
+        <span class="header-tag"
+          >發現遊戲的下一站 <span aria-hidden="true">↗</span></span
+        >
+      </div>
+    </header>
+    <main class="page-shell" id="mainContent">
+      <section class="page-heading">
+        <a class="back-link" id="backCalendar" href="./index.html"
+          >← 返回發售月曆</a
+        >
+        <p class="eyebrow">YOUR GAME DISCOVERY</p>
+        <h1 id="pageTitle">即將上市</h1>
+        <p>未來 45 天的新作，找到值得等待的下一款。</p>
+        <p class="scope-note" id="scopeNote"></p>
+      </section>
+      <div class="data-status" id="dataStatus" role="status">
+        <span class="signal-dot"></span
+        ><span id="updateText">正在與新作相遇…</span>
+        <details id="dataDetails">
+          <summary>關於資料</summary>
+          <div class="data-detail-content">
+            <p id="coverageText">
+              清單以已驗證的 Steam Followers 與明確上市日期為準。
+            </p>
+            <p>
+              關注人數不等同願望清單數。日期依 Steam
+              台灣區公告與台灣時間（UTC+8）呈現；實際上市時間請以商店為準。
+            </p>
+          </div>
+        </details>
+      </div>
+      <div class="notice" id="notice" hidden role="alert"></div>
+      <section
+        class="explorer"
+        id="releaseCalendar"
+        aria-labelledby="explorerTitle"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">FIND YOUR NEXT FAVORITE</p>
+            <h2 id="explorerTitle">探索遊戲</h2>
+          </div>
+          <span class="timezone">台灣時間 UTC+8</span>
+        </div>
+        <div class="explorer-panel">
+          <div class="filter-bar">
+            <label class="search-box"
+              ><svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m16 16 5 5" /></svg
+              ><span class="sr-only">搜尋遊戲名稱或 AppID</span
+              ><input
+                id="searchInput"
+                type="search"
+                placeholder="搜尋遊戲名稱或 AppID…"
+                autocomplete="off"
+              /><kbd aria-hidden="true">/</kbd></label
+            ><label class="select-wrap"
+              ><span class="sr-only">最低關注人數</span
+              ><select id="followersFilter">
+                <option value="5000">全部關注度</option>
+                <option value="10000">1 萬人以上</option>
+                <option value="50000">5 萬人以上</option>
+              </select></label
+            ><button class="filter-chip" id="savedFilter" aria-pressed="false">
+              ♡ 只看收藏
+            </button>
+          </div>
+          <div class="results-bar">
+            <p id="resultCount" role="status">正在讀取遊戲資料…</p>
+            <button class="reset-button" id="resetFilters" hidden>
+              清除篩選</button
+            ><label class="sort-wrap" id="sortWrap"
+              ><span>排序</span
+              ><select id="sortSelect" aria-label="排序方式">
+                <option value="date">上市日期最近</option>
+                <option value="followers">關注人數最多</option>
+                <option value="name">遊戲名稱 A–Z</option>
+              </select></label
+            >
+          </div>
+          <div id="calendarArea" hidden>
+            <div class="weekdays" aria-hidden="true">
+              <span>日</span><span>一</span><span>二</span><span>三</span
+              ><span>四</span><span>五</span><span>六</span>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="calendar-help">
+              <span><i></i> 當日關注度最高</span
+              ><span>點日期看完整清單・點遊戲前往 Steam ↗</span>
+            </div>
+          </div>
+          <div class="games-grid" id="gamesGrid" aria-busy="true"></div>
+          <div class="load-more-wrap" id="loadMoreWrap" hidden>
+            <button id="loadMore" class="button secondary">
+              載入更多遊戲 ↓
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="bottom-note">
+        <span class="mini-radar" aria-hidden="true">◎</span>
+        <div>
+          <strong>讓每一份期待，都有個位置。</strong>
+          <p>點擊遊戲旁的愛心，即可收藏在這個瀏覽器。無須登入。</p>
+        </div>
+        <a href="./saved.html" class="text-link">我的收藏 ↗</a>
+      </section>
+      <noscript
+        ><p class="notice">
+          請啟用 JavaScript 以查看遊戲資料、使用搜尋與收藏功能。
+        </p></noscript
+      >
+    </main>
+    <footer class="site-footer">
+      <div>
+        <a class="footer-brand" href="./index.html"
+          >GAME TREND RADAR<span>◎</span></a
+        >
+        <p>
+          資料來源：Steam 商店與 Steam Community。<br />遊戲名稱與封面屬各自權利人所有；本站與
+          Valve / Steam 無官方隸屬關係。
+        </p>
+      </div>
+      <a href="#mainContent" class="back-top">回到頂端 ↑</a>
+    </footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
 </html>

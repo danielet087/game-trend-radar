@@ -1,0 +1,152 @@
+/* Shared, presentation-only adapter for the existing public Steam JSON contract. */
+(function (root) {
+  "use strict";
+  const DAY = 86400000;
+  const validDate = (value) =>
+    typeof value === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+    Number.isFinite(Date.parse(value + "T12:00:00Z")) &&
+    new Date(value + "T12:00:00Z").toISOString().slice(0, 10) === value;
+  function todayInTaipei(now = new Date()) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Taipei",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(now);
+    return ["year", "month", "day"]
+      .map((key) => parts.find((part) => part.type === key).value)
+      .join("-");
+  }
+  const offsetDate = (date, days) =>
+    new Date(Date.parse(date + "T12:00:00Z") + days * DAY)
+      .toISOString()
+      .slice(0, 10);
+  function imageURL(value, appid) {
+    if (typeof value !== "string" || !value.trim()) return "";
+    try {
+      const url = new URL(
+        value,
+        `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appid}/`,
+      );
+      return url.protocol === "https:" &&
+        /(^|\.)(steamstatic\.com|steamcdn-a\.akamaihd\.net)$/.test(url.hostname)
+        ? url.href
+        : "";
+    } catch {
+      return "";
+    }
+  }
+  function normalize(raw, recent = false, translated = null) {
+    if (!raw || typeof raw !== "object") return null;
+    const date = raw.release_start || raw.release_date;
+    const followers = raw.followers == null ? NaN : Number(raw.followers);
+    const appid = Number(raw.appid);
+    if (
+      !validDate(date) ||
+      (raw.release_precision && raw.release_precision !== "day") ||
+      !Number.isInteger(appid) ||
+      appid <= 0 ||
+      !Number.isFinite(followers)
+    )
+      return null;
+    if (
+      recent
+        ? !(
+            followers > 3000 &&
+            ["tracked_release", "direct_release"].includes(raw.recent_source)
+          )
+        : followers < 5000
+    )
+      return null;
+    const nameEn = String(
+      raw.name_en || raw.name || translated?.name_en || translated?.name || "",
+    ).trim();
+    const name = String(
+      raw.name_zh_tw ||
+        translated?.name_zh_tw ||
+        nameEn ||
+        `Steam App ${appid}`,
+    ).trim();
+    const images = [
+      raw.header_image,
+      translated?.header_image,
+      raw.capsule_image,
+      translated?.capsule_image,
+    ]
+      .map((value) => imageURL(value, appid))
+      .filter(Boolean);
+    return {
+      appid,
+      name,
+      nameEn,
+      date,
+      followers,
+      art: images[0] || "",
+      recent,
+      darkHorse:
+        recent &&
+        raw.recent_source === "direct_release" &&
+        !!raw.first_week_qualified_at,
+      link: `https://store.steampowered.com/app/${appid}/`,
+    };
+  }
+  const unique = (items) =>
+    Array.from(new Map(items.map((game) => [game.appid, game])).values());
+  function datasets(official, preview) {
+    const chosen = official || preview;
+    if (!chosen) return null;
+    const translations = new Map(
+      (preview?.games || [])
+        .filter(Boolean)
+        .map((game) => [Number(game.appid), game]),
+    );
+    return {
+      games: unique(
+        chosen.games
+          .map((game) =>
+            normalize(game, false, translations.get(Number(game?.appid))),
+          )
+          .filter(Boolean),
+      ),
+      recent: unique(
+        (preview?.recent_games || [])
+          .map((game) => normalize(game, true))
+          .filter(Boolean),
+      ),
+      updated: chosen.generated_at || chosen.updated_at || null,
+      recentUpdated: preview?.generated_at || null,
+      partial:
+        !!chosen.is_partial_preview ||
+        chosen.initialization?.complete === false,
+      initialization: chosen.initialization || null,
+      recentAvailable: !!preview && Array.isArray(preview.recent_games),
+      source: official ? "official" : "preview",
+    };
+  }
+  function selectGames(data, mode, today, date = null) {
+    if (mode === "released")
+      return data.recent.filter(
+        (game) => game.date >= offsetDate(today, -30) && game.date <= today,
+      );
+    if (mode === "upcoming")
+      return data.games.filter(
+        (game) => game.date >= today && game.date <= offsetDate(today, 45),
+      );
+    if (mode === "date") return data.games.filter((game) => game.date === date);
+    if (mode === "saved") return unique([...data.games, ...data.recent]);
+    return data.games;
+  }
+  const api = {
+    validDate,
+    todayInTaipei,
+    offsetDate,
+    imageURL,
+    normalize,
+    unique,
+    datasets,
+    selectGames,
+  };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else root.RadarData = api;
+})(typeof window !== "undefined" ? window : globalThis);
