@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-19T11:47:46.922873+00:00",
+  "generated_at": "2026-09-19T16:22:56.709902+00:00",
   "source": {
     "catalog": "Steam IStoreQueryService/Query day-filter, TW",
     "followers": "Steam Community game-group memberCount"
@@ -18,17 +18,29 @@
     "candidate_count": 11467,
     "next_follower_index": 685,
     "coverage_exhaustive": false,
+    "prefilter_threshold": 4000,
+    "prefilter_next_index": 885,
+    "prefilter_complete": false,
     "last_attempt": {
       "phase": "followers",
       "candidate_count": 11467,
-      "start_index": 628,
+      "start_index": 685,
       "next_index": 685,
-      "fresh_follower_requests": 50,
-      "cached_reuses": 7,
+      "fresh_follower_requests": 5,
+      "priority_fresh_requests": 5,
+      "cached_reuses": 0,
       "failures": 0,
       "rate_limit_events": 0,
-      "qualified_this_batch": 2,
-      "published_games_total": 48
+      "qualified_this_batch": 0,
+      "published_games_total": 48,
+      "prefilter_start_index": 685,
+      "prefilter_next_index": 885,
+      "prefilter_screened": 200,
+      "prefilter_priority": 200,
+      "prefilter_missing": 200,
+      "prefilter_complete": false,
+      "priority_remaining": 185,
+      "backfill_started": false
     }
   },
   "count": 48,
