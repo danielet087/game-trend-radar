@@ -75,7 +75,8 @@ async function load(){
   const date=new Date(official.generated_at||"");
   const time=Number.isFinite(date.getTime())?new Intl.DateTimeFormat("zh-TW",{timeZone:"Asia/Taipei",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(date):"待確認";
   const last=batch.phase==="followers"?" · 上批新查 "+number.format(batch.fresh_follower_requests||0)+" 筆、沿用快取 "+number.format(batch.cached_reuses||0)+" 筆":"";
-  const prefilter=init.prefilter_next_index==null?"":" · 第三方 ≥"+number.format(init.prefilter_threshold||4000)+" 優先初篩 "+number.format(init.prefilter_next_index)+"/"+number.format(total)+" 筆";
+  const screened=init.prefilter_screened_count==null?Math.max(0,(Number(init.prefilter_next_index)||0)-(Number(init.next_follower_index)||0)):Number(init.prefilter_screened_count)||0;
+  const prefilter=init.prefilter_next_index==null?"":" · 第三方 ≥"+number.format(init.prefilter_threshold||4000)+" 初篩 "+number.format(screened)+"/"+number.format(total)+" 筆";
   progress.textContent="全年候選 "+number.format(total)+" 筆"+prefilter+" · Steam 官方完整複查游標 "+number.format(checked)+" 筆 · 全年度合格 "+number.format(official.count||0)+" 款"+last+" · 最後更新（台灣）"+time+"。本頁只列出未來 45 天官方驗證合格遊戲。";
   progress.hidden=false;
  }
