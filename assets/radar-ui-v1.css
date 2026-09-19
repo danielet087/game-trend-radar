@@ -774,7 +774,6 @@ summary:focus-visible {
   white-space: nowrap;
 }
 .explorer {
-  scroll-margin-top: 110px;
   margin: 0 0 40px;
 }
 .explorer-panel {
@@ -1518,7 +1517,7 @@ body[data-page="saved"] .page-heading h1 {
     flex-basis: 100%;
   }
   .search-box input {
-    font-size: 14px;
+    font-size: 16px;
   }
   .search-box kbd {
     display: none;
@@ -1603,9 +1602,6 @@ body[data-page="saved"] .page-heading h1 {
     left: 0;
     right: auto;
     width: 310px;
-  }
-  .explorer {
-    scroll-margin-top: 138px;
   }
   .page-heading {
     padding-top: 24px;
@@ -1797,8 +1793,8 @@ body[data-page="saved"] .page-heading h1 {
     aspect-ratio: 460/215;
   }
   .save-button {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     right: 8px;
     top: 8px;
   }
