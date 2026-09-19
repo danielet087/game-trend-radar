@@ -51,6 +51,12 @@
  .spotlight .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
  .spotlight .game-card:nth-child(3){display:none}
 }
+
+.spotlight-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.view-all{font-size:11px;white-space:nowrap;color:var(--green);border:1px solid #6aaa8770;border-radius:9px;padding:7px 9px;background:#84c6a40b;font-weight:700}
+.view-all:hover{background:#a6e7c51c;border-color:#90ddb6}
+.section-heading a:hover{color:var(--green)}
+@media(max-width:700px){.spotlight-actions{gap:6px}.view-all{padding:6px 8px}}
 </style>
 </head>
 <body>
@@ -62,11 +68,11 @@
 </header>
 <div class="spotlight-panels">
   <section class="panel spotlight" aria-labelledby="releasedTitle">
-    <div class="panel-header"><div><div class="section-heading"><span class="glyph">✓</span><h2 id="releasedTitle">近期已上市</h2></div><p class="sub">近 30 天 · Followers 超過 3,000</p></div><span class="count" id="releasedCount">0 款</span></div>
+    <div class="panel-header"><div><div class="section-heading"><span class="glyph">✓</span><h2 id="releasedTitle"><a href="./released.html">近期已上市</a></h2></div><p class="sub">近 30 天 · Followers 超過 3,000</p></div><div class="spotlight-actions"><span class="count" id="releasedCount">0 款</span><a class="view-all" href="./released.html" aria-label="查看全部近期已上市遊戲">查看全部 →</a></div></div>
     <div class="cards" id="releasedCards"></div>
   </section>
   <section class="panel spotlight" aria-labelledby="upcomingTitle">
-    <div class="panel-header"><div><div class="section-heading"><span class="glyph">↗</span><h2 id="upcomingTitle">最近快要上市</h2></div><p class="sub">未來 45 天 · 依上市日期排列</p></div><span class="count" id="upcomingCount">0 款</span></div>
+    <div class="panel-header"><div><div class="section-heading"><span class="glyph">↗</span><h2 id="upcomingTitle"><a href="./upcoming.html">最近快要上市</a></h2></div><p class="sub">未來 45 天 · 依上市日期排列</p></div><div class="spotlight-actions"><span class="count" id="upcomingCount">0 款</span><a class="view-all" href="./upcoming.html" aria-label="查看全部最近快要上市遊戲">查看全部 →</a></div></div>
     <div class="cards" id="upcomingCards"></div>
   </section>
 </div>
