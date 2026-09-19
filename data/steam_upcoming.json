@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-19T06:17:06Z",
+  "generated_at": "2026-09-19T06:54:28Z",
   "source": {
     "catalog": "Steam Store coming-soon search results_html",
     "followers": "Steam Community game-group memberCount"
@@ -7,6 +7,7 @@
   "filter": {
     "country": "TW",
     "release_horizon_days": 365,
+    "release_date_timezone": "Asia/Taipei",
     "min_followers": 5000,
     "unknown_release_dates_included": false
   },
@@ -16,7 +17,7 @@
     "anchor_date": "2026-09-19",
     "segment_months": 2,
     "total_segments": 6,
-    "next_segment": 1,
+    "next_segment": 2,
     "completed_segments": [
       {
         "segment": 0,
@@ -25,23 +26,32 @@
         "completed_at": "2026-09-19T06:17:06Z",
         "candidate_count": 892,
         "qualified_count": 39
+      },
+      {
+        "segment": 1,
+        "window_start": "2026-11-19",
+        "window_end": "2027-01-18",
+        "completed_at": "2026-09-19T06:54:26Z",
+        "candidate_count": 0,
+        "qualified_count": 0
       }
     ],
     "last_attempt": {
-      "segment": 0,
-      "window_start": "2026-09-19",
-      "window_end": "2026-11-18",
-      "attempted_at": "2026-09-19T06:17:06Z",
+      "segment": 1,
+      "window_start": "2026-11-19",
+      "window_end": "2027-01-18",
+      "attempted_at": "2026-09-19T06:54:26Z",
       "status": "complete",
-      "candidate_count": 892,
-      "qualified_count": 39,
-      "follower_failures": 0
+      "candidate_count": 0,
+      "qualified_count": 0,
+      "follower_failures": 0,
+      "initial_batch_count": 1
     }
   },
   "latest_collection": {
-    "candidate_count": 892,
-    "fresh_follower_requests": 182,
-    "cached_follower_reuses": 710,
+    "candidate_count": 0,
+    "fresh_follower_requests": 0,
+    "cached_follower_reuses": 0,
     "follower_failures": 0,
     "failed_follower_appids": [],
     "rate_limit_events": 0,
@@ -51,8 +61,8 @@
     "checkpoint_branch": "steam-state",
     "checkpoint_every": 5,
     "initialization_cache_reuse": true,
-    "max_fresh_requests_per_run": 600,
-    "processed_candidate_count": 892,
+    "max_fresh_requests_per_run": 50,
+    "processed_candidate_count": 0,
     "paused_due_to_fresh_request_budget": false,
     "remaining_unchecked_candidates": 0
   },
@@ -722,6 +732,10 @@
       "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/"
     }
   ],
-  "release_times_refreshed_at": "2026-09-19T06:46:01Z",
-  "release_time_provider": "Steam IStoreBrowseService/GetItems"
+  "release_time_lookup": {
+    "provider": "Steam IStoreBrowseService/GetItems",
+    "country": "TW",
+    "timestamps_found": 39,
+    "timezone": "Asia/Taipei"
+  }
 }
