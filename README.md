@@ -4,12 +4,12 @@ Steam 新作關注度與遊戲發售月曆（純靜態網站）。
 
 ## 首頁
 - 月曆：每個發售日期最多兩個遊戲名稱標籤，依 Steam Followers 由高到低選取；其餘顯示 +N 款。
-- 近期已上市：近 30 天已上市的追蹤遊戲，補充 Steam Store 暢銷榜／新品資訊；不把暢銷榜排名誤寫成 Followers。
+- 近期已上市：近 30 天經 Steam Store 確認已發售、Followers **嚴格大於 3,000** 的遊戲；包含原本 Upcoming 追蹤遊戲與直接上架的新作。只依已查詢的 Followers 排序，不用 Steam 暢銷榜填補。
 - 最近快要上市：未來 45 天內的遊戲，依發售日排序。
 - 點選標籤或遊戲卡片可開啟 Steam 商店。
 
 ## 公開資料
-- `data/steam_preview.json`：初始化中的暫存預覽。私有後端從 steam-state checkpoint 中篩選 Followers >= 5000 的 AppID，補 Store 名稱、封面、精確發售日期後才發布；不會公開 Followers < 5000 的完整 checkpoint。
+- `data/steam_preview.json`：初始化中的暫存預覽。私有後端從 steam-state checkpoint 中篩選 Followers >= 5000 的 AppID，補 Store 名稱、封面、精確發售日期；另外掃描 Steam New Releases，只公開已發售且 Followers > 3000 的近期遊戲，不會公開完整 checkpoint。
 - `data/steam_upcoming.json`：Steam 初始化成功後正式發布的遊戲資料（優先使用）。
 - `data/twitch_live.json`、`data/youtube_live.json`：直播平台資料，首頁尚未使用。
 
