@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Game Trend Radar｜查看指定日期所有符合關注度門檻的 Steam 發售遊戲。">
+<title>當日發售遊戲｜Game Trend Radar</title>
+<link rel="stylesheet" href="./list.css?v=3">
+<style>
+.date-link{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px;color:var(--green);font-size:12px}
+.date-link:hover{text-decoration:underline}
+.heading h1{font-variant-numeric:tabular-nums}
+.date-details{font-size:12px;color:var(--muted);margin-top:9px;line-height:1.6}
+</style>
+</head>
+<body>
+<main class="page">
+<header class="topbar">
+  <a class="brand" href="./index.html" aria-label="回到 Game Trend Radar 首頁"><span class="mark" aria-hidden="true">✦</span><span>GAME TREND RADAR</span></a>
+  <a class="home-link" id="backCalendar" href="./index.html">← 返回發售月曆</a>
+</header>
+<section class="heading">
+  <div class="date-link">遊戲發售月曆 / 日期清單</div>
+  <h1 id="dateTitle">當日發售遊戲</h1>
+  <p class="date-details">這一天符合 Steam Followers 門檻的完整遊戲清單，不限月曆顯示的兩款。</p>
+</section>
+<section class="panel" aria-label="指定日期的 Steam 發售遊戲">
+  <div class="toolbar">
+    <strong>全部遊戲</strong><span class="count" id="gameCount" role="status">載入中…</span>
+    <span class="tool-spacer"></span>
+    <input id="searchInput" class="input" type="search" placeholder="搜尋遊戲名稱或 AppID" aria-label="搜尋遊戲名稱或 AppID" autocomplete="off">
+    <select id="sortSelect" class="select" aria-label="排序方式"><option value="followers">Followers 最高</option><option value="name">遊戲名稱</option></select>
+  </div>
+  <div id="fullList" class="list" aria-live="polite"><div class="empty">正在讀取 Steam 遊戲資料…</div></div>
+</section>
+</main>
+<script src="./date-view-20260919.js" defer></script>
+</body>
+</html>
