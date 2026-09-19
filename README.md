@@ -7,6 +7,7 @@ Steam 新作關注度與遊戲發售月曆（純靜態網站）。
 - 近期已上市：近 30 天經 Steam Store 確認已發售、Followers **嚴格大於 3,000** 的遊戲；包含原本 Upcoming 追蹤遊戲與直接上架的新作。直接上架遊戲在發售日到第 7 天內查得超過 3,000 Followers 時加入，標示「近期黑馬」，並保留至上市滿 30 天；首週未達門檻的遊戲不會在超過一週後才以黑馬加入。只依已查詢的 Followers 排序，不用 Steam 暢銷榜填補。
 - 最近快要上市：未來 45 天內的遊戲，依發售日排序。
 - 點選標籤或遊戲卡片可開啟 Steam 商店。
+- 首頁「近期已上市／最近快要上市」各有「查看全部」連結，分別前往 `released.html` 與 `upcoming.html`。兩頁會列出其區間內全部符合條件的遊戲（不受首頁最多三款的限制），可搜尋名稱／AppID、依日期或 Followers 排序，並可返回月曆；近期黑馬標籤只顯示於經驗證的直接上市遊戲。
 
 ## 公開資料
 - `data/steam_preview.json`：初始化中的暫存預覽。私有後端從 steam-state checkpoint 中篩選 Followers >= 5000 的 AppID，補 Store 名稱、封面、精確發售日期；另外掃描 Steam New Releases，只公開已發售且 Followers > 3000 的近期遊戲，不會公開完整 checkpoint。
