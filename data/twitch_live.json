@@ -1,232 +1,503 @@
 {
-  "generated_at": "2026-09-19T18:10:48Z",
+  "generated_at": "2026-09-19T20:56:04Z",
   "source": "Twitch Helix API",
   "coverage": {
-    "global_stream_sample_size": 99,
+    "global_stream_sample_size": 1000,
     "global_stream_pages": 10,
     "global_metrics_are_sampled": true,
     "global_game_filter": "Twitch categories with a non-empty IGDB game ID",
     "tracked_game_stream_pages": 50,
-    "tracked_game_count": 48,
-    "tracked_game_matches": 38,
+    "tracked_game_count": 138,
+    "tracked_game_matches": 118,
     "region_note": "Twitch Helix exposes broadcast language but not broadcaster physical location. No Taiwan/Asia location inference is applied in this dataset."
   },
   "top_games": [
     {
-      "game_id": "30921",
-      "game_name": "Rocket League",
-      "streamer_count": 8,
-      "viewer_count": 103940,
-      "language_streamers": {
-        "en": 3,
-        "ar": 3,
-        "fr": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/30921-{width}x{height}.jpg",
-      "igdb_id": "11198"
-    },
-    {
-      "game_id": "21779",
-      "game_name": "League of Legends",
-      "streamer_count": 6,
-      "viewer_count": 101900,
-      "language_streamers": {
-        "en": 2,
-        "fr": 2,
-        "zh": 1,
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/21779-{width}x{height}.jpg",
-      "igdb_id": "115"
-    },
-    {
       "game_id": "18122",
       "game_name": "World of Warcraft",
-      "streamer_count": 4,
-      "viewer_count": 51153,
+      "streamer_count": 62,
+      "viewer_count": 154197,
       "language_streamers": {
-        "en": 4
+        "en": 38,
+        "de": 9,
+        "es": 7,
+        "fr": 3,
+        "ru": 2,
+        "cs": 1,
+        "pl": 1,
+        "pt": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/18122-{width}x{height}.jpg",
       "igdb_id": "123"
     },
     {
+      "game_id": "21779",
+      "game_name": "League of Legends",
+      "streamer_count": 40,
+      "viewer_count": 118997,
+      "language_streamers": {
+        "en": 16,
+        "es": 6,
+        "fr": 6,
+        "de": 3,
+        "ru": 2,
+        "el": 2,
+        "zh": 1,
+        "pt": 1,
+        "it": 1,
+        "bg": 1,
+        "ja": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/21779-{width}x{height}.jpg",
+      "igdb_id": "115"
+    },
+    {
+      "game_id": "30921",
+      "game_name": "Rocket League",
+      "streamer_count": 25,
+      "viewer_count": 118214,
+      "language_streamers": {
+        "en": 11,
+        "fr": 5,
+        "es": 5,
+        "ar": 3,
+        "pt": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/30921-{width}x{height}.jpg",
+      "igdb_id": "11198"
+    },
+    {
       "game_id": "32982",
       "game_name": "Grand Theft Auto V",
-      "streamer_count": 5,
-      "viewer_count": 43710,
+      "streamer_count": 66,
+      "viewer_count": 106529,
       "language_streamers": {
-        "en": 4,
-        "pl": 1
+        "en": 23,
+        "de": 19,
+        "fr": 12,
+        "pl": 3,
+        "ru": 3,
+        "ja": 2,
+        "sv": 2,
+        "nl": 1,
+        "other": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/32982_IGDB-{width}x{height}.jpg",
       "igdb_id": "1020"
     },
     {
-      "game_id": "27471",
-      "game_name": "Minecraft",
-      "streamer_count": 4,
-      "viewer_count": 41587,
-      "language_streamers": {
-        "en": 2,
-        "es": 1,
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/27471_IGDB-{width}x{height}.jpg",
-      "igdb_id": "135400"
-    },
-    {
-      "game_id": "460630",
-      "game_name": "Rainbow Six Siege",
-      "streamer_count": 2,
-      "viewer_count": 38930,
-      "language_streamers": {
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/460630-{width}x{height}.jpg",
-      "igdb_id": "7360"
-    },
-    {
       "game_id": "123184772",
       "game_name": "EA Sports FC 27",
-      "streamer_count": 4,
-      "viewer_count": 24729,
+      "streamer_count": 43,
+      "viewer_count": 75026,
       "language_streamers": {
-        "de": 1,
-        "en": 1,
-        "es": 1,
-        "fr": 1
+        "de": 12,
+        "fr": 8,
+        "en": 7,
+        "it": 5,
+        "pl": 4,
+        "es": 2,
+        "hu": 2,
+        "pt": 1,
+        "uk": 1,
+        "ru": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/123184772_IGDB-{width}x{height}.jpg",
       "igdb_id": "408819"
     },
     {
-      "game_id": "2124871354",
-      "game_name": "RuneScape: Dragonwilds",
-      "streamer_count": 2,
-      "viewer_count": 16715,
+      "game_id": "460630",
+      "game_name": "Rainbow Six Siege",
+      "streamer_count": 10,
+      "viewer_count": 57814,
       "language_streamers": {
-        "en": 2
+        "en": 5,
+        "pt": 5
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2124871354_IGDB-{width}x{height}.jpg",
-      "igdb_id": "337712"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/460630-{width}x{height}.jpg",
+      "igdb_id": "7360"
     },
     {
       "game_id": "743893402",
       "game_name": "WARDOGS",
-      "streamer_count": 2,
-      "viewer_count": 16603,
+      "streamer_count": 34,
+      "viewer_count": 53795,
       "language_streamers": {
-        "en": 2
+        "en": 7,
+        "de": 6,
+        "ja": 6,
+        "ru": 5,
+        "zh": 3,
+        "es": 2,
+        "fr": 2,
+        "no": 1,
+        "th": 1,
+        "cs": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/743893402_IGDB-{width}x{height}.jpg",
       "igdb_id": "388285"
     },
     {
-      "game_id": "635536552",
-      "game_name": "Touhou Koumakyou: New Classic - The Embodiment of Scarlet Devil",
-      "streamer_count": 1,
-      "viewer_count": 11622,
+      "game_id": "33214",
+      "game_name": "Fortnite",
+      "streamer_count": 17,
+      "viewer_count": 41552,
       "language_streamers": {
-        "ja": 1
+        "en": 10,
+        "it": 2,
+        "fr": 2,
+        "pl": 1,
+        "de": 1,
+        "es": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/635536552_IGDB-{width}x{height}.jpg",
-      "igdb_id": "405461"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/33214-{width}x{height}.jpg",
+      "igdb_id": "1905"
     },
     {
       "game_id": "1413930024",
       "game_name": "Active Matter",
-      "streamer_count": 2,
-      "viewer_count": 11140,
+      "streamer_count": 12,
+      "viewer_count": 38682,
       "language_streamers": {
-        "ru": 1,
-        "en": 1
+        "en": 8,
+        "ru": 2,
+        "de": 2
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1413930024_IGDB-{width}x{height}.jpg",
       "igdb_id": "322158"
     },
     {
-      "game_id": "27546",
-      "game_name": "World of Tanks",
-      "streamer_count": 1,
-      "viewer_count": 9208,
+      "game_id": "2124871354",
+      "game_name": "RuneScape: Dragonwilds",
+      "streamer_count": 17,
+      "viewer_count": 35726,
       "language_streamers": {
-        "en": 1
+        "en": 17
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/27546_IGDB-{width}x{height}.jpg",
-      "igdb_id": "1184"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2124871354_IGDB-{width}x{height}.jpg",
+      "igdb_id": "337712"
     },
     {
       "game_id": "516575",
       "game_name": "VALORANT",
-      "streamer_count": 1,
-      "viewer_count": 8821,
+      "streamer_count": 22,
+      "viewer_count": 24298,
       "language_streamers": {
-        "zh": 1
+        "en": 11,
+        "zh": 3,
+        "de": 2,
+        "fr": 2,
+        "pt": 2,
+        "ja": 1,
+        "es": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/516575-{width}x{height}.jpg",
       "igdb_id": "126459"
     },
     {
-      "game_id": "1267582829",
-      "game_name": "Aniimo",
-      "streamer_count": 2,
-      "viewer_count": 8569,
+      "game_id": "512953",
+      "game_name": "ELDEN RING",
+      "streamer_count": 5,
+      "viewer_count": 23996,
       "language_streamers": {
-        "de": 2
+        "en": 2,
+        "ru": 2,
+        "ja": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1267582829_IGDB-{width}x{height}.jpg",
-      "igdb_id": "348202"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-{width}x{height}.jpg",
+      "igdb_id": "119133"
     },
     {
       "game_id": "1264310518",
       "game_name": "Marvel Rivals",
-      "streamer_count": 1,
-      "viewer_count": 8240,
+      "streamer_count": 10,
+      "viewer_count": 20351,
       "language_streamers": {
-        "en": 1
+        "en": 9,
+        "ar": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1264310518_IGDB-{width}x{height}.jpg",
       "igdb_id": "294041"
     },
     {
-      "game_id": "848738657",
-      "game_name": "Sunken Realms",
-      "streamer_count": 1,
-      "viewer_count": 7563,
+      "game_id": "1267582829",
+      "game_name": "Aniimo",
+      "streamer_count": 7,
+      "viewer_count": 20006,
       "language_streamers": {
-        "en": 1
+        "de": 2,
+        "es": 2,
+        "en": 1,
+        "fr": 1,
+        "ja": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/848738657_IGDB-{width}x{height}.jpg",
-      "igdb_id": "197140"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1267582829_IGDB-{width}x{height}.jpg",
+      "igdb_id": "348202"
     },
     {
-      "game_id": "1099705332",
-      "game_name": "Tomodachi Life: Living the Dream",
-      "streamer_count": 1,
-      "viewer_count": 7299,
+      "game_id": "27471",
+      "game_name": "Minecraft",
+      "streamer_count": 20,
+      "viewer_count": 19466,
       "language_streamers": {
+        "en": 13,
+        "nl": 4,
+        "fr": 1,
+        "ru": 1,
+        "de": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/27471_IGDB-{width}x{height}.jpg",
+      "igdb_id": "135400"
+    },
+    {
+      "game_id": "491931",
+      "game_name": "Escape from Tarkov",
+      "streamer_count": 10,
+      "viewer_count": 13938,
+      "language_streamers": {
+        "en": 5,
+        "ru": 3,
+        "ja": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/491931_IGDB-{width}x{height}.jpg",
+      "igdb_id": "15536"
+    },
+    {
+      "game_id": "508455",
+      "game_name": "Valheim",
+      "streamer_count": 7,
+      "viewer_count": 13884,
+      "language_streamers": {
+        "en": 5,
+        "fr": 1,
         "ru": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1099705332_IGDB-{width}x{height}.jpg",
-      "igdb_id": "337036"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/508455_IGDB-{width}x{height}.jpg",
+      "igdb_id": "104967"
     },
     {
-      "game_id": "538054672",
-      "game_name": "TEKKEN 8",
+      "game_id": "29452",
+      "game_name": "Virtual Casino",
+      "streamer_count": 14,
+      "viewer_count": 13417,
+      "language_streamers": {
+        "pt": 10,
+        "ru": 4
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/29452_IGDB-{width}x{height}.jpg",
+      "igdb_id": "45517"
+    },
+    {
+      "game_id": "27546",
+      "game_name": "World of Tanks",
+      "streamer_count": 6,
+      "viewer_count": 11339,
+      "language_streamers": {
+        "en": 2,
+        "pl": 2,
+        "de": 1,
+        "fr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/27546_IGDB-{width}x{height}.jpg",
+      "igdb_id": "1184"
+    },
+    {
+      "game_id": "515024",
+      "game_name": "Diablo IV",
+      "streamer_count": 7,
+      "viewer_count": 9832,
+      "language_streamers": {
+        "en": 5,
+        "de": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/515024-{width}x{height}.jpg",
+      "igdb_id": "125165"
+    },
+    {
+      "game_id": "511399",
+      "game_name": "Super Mario Maker 2",
+      "streamer_count": 2,
+      "viewer_count": 9390,
+      "language_streamers": {
+        "ja": 1,
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/511399_IGDB-{width}x{height}.jpg",
+      "igdb_id": "115276"
+    },
+    {
+      "game_id": "539102438",
+      "game_name": "Watch Your Plastic Duck",
       "streamer_count": 1,
-      "viewer_count": 5170,
+      "viewer_count": 9221,
       "language_streamers": {
         "en": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/538054672_IGDB-{width}x{height}.jpg",
-      "igdb_id": "217590"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/539102438_IGDB-{width}x{height}.jpg",
+      "igdb_id": "218659"
+    },
+    {
+      "game_id": "513143",
+      "game_name": "Teamfight Tactics",
+      "streamer_count": 8,
+      "viewer_count": 9100,
+      "language_streamers": {
+        "en": 3,
+        "fr": 2,
+        "pt": 1,
+        "es": 1,
+        "ja": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/513143-{width}x{height}.jpg",
+      "igdb_id": "120176"
+    },
+    {
+      "game_id": "515025",
+      "game_name": "Overwatch",
+      "streamer_count": 6,
+      "viewer_count": 8987,
+      "language_streamers": {
+        "en": 6
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/515025-{width}x{height}.jpg",
+      "igdb_id": "125174"
+    },
+    {
+      "game_id": "401587136",
+      "game_name": "Arena Breakout: Infinite",
+      "streamer_count": 8,
+      "viewer_count": 8748,
+      "language_streamers": {
+        "ru": 5,
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/401587136_IGDB-{width}x{height}.jpg",
+      "igdb_id": "298915"
+    },
+    {
+      "game_id": "1931693784",
+      "game_name": "Pokémon Champions",
+      "streamer_count": 5,
+      "viewer_count": 8573,
+      "language_streamers": {
+        "en": 3,
+        "es": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1931693784_IGDB-{width}x{height}.jpg",
+      "igdb_id": "333568"
+    },
+    {
+      "game_id": "587576339",
+      "game_name": "Fright Train",
+      "streamer_count": 2,
+      "viewer_count": 7053,
+      "language_streamers": {
+        "en": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/587576339_IGDB-{width}x{height}.jpg",
+      "igdb_id": "376511"
+    },
+    {
+      "game_id": "779192097",
+      "game_name": "Fire Emblem: Fortune's Weave",
+      "streamer_count": 7,
+      "viewer_count": 6563,
+      "language_streamers": {
+        "en": 6,
+        "it": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/779192097_IGDB-{width}x{height}.jpg",
+      "igdb_id": "366896"
+    },
+    {
+      "game_id": "7528",
+      "game_name": "Pokémon Gold Version",
+      "streamer_count": 1,
+      "viewer_count": 6297,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/7528_IGDB-{width}x{height}.jpg",
+      "igdb_id": "1558"
+    },
+    {
+      "game_id": "489335",
+      "game_name": "Outer Wilds",
+      "streamer_count": 1,
+      "viewer_count": 6097,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/489335_IGDB-{width}x{height}.jpg",
+      "igdb_id": "11737"
+    },
+    {
+      "game_id": "511224",
+      "game_name": "Apex Legends",
+      "streamer_count": 8,
+      "viewer_count": 5863,
+      "language_streamers": {
+        "en": 6,
+        "fr": 1,
+        "zh": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/511224-{width}x{height}.jpg",
+      "igdb_id": "114795"
+    },
+    {
+      "game_id": "1959325619",
+      "game_name": "Spiritus Sancti",
+      "streamer_count": 2,
+      "viewer_count": 5809,
+      "language_streamers": {
+        "es": 1,
+        "de": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1959325619_IGDB-{width}x{height}.jpg",
+      "igdb_id": "394248"
+    },
+    {
+      "game_id": "152082588",
+      "game_name": "Farming Incremental But With Guns",
+      "streamer_count": 1,
+      "viewer_count": 5768,
+      "language_streamers": {
+        "fr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/152082588_IGDB-{width}x{height}.jpg",
+      "igdb_id": "399536"
+    },
+    {
+      "game_id": "512710",
+      "game_name": "Call of Duty: Warzone",
+      "streamer_count": 9,
+      "viewer_count": 5630,
+      "language_streamers": {
+        "en": 5,
+        "fr": 1,
+        "de": 1,
+        "pt": 1,
+        "es": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/512710-{width}x{height}.jpg",
+      "igdb_id": "131800"
+    },
+    {
+      "game_id": "11557",
+      "game_name": "The Legend of Zelda: Ocarina of Time",
+      "streamer_count": 3,
+      "viewer_count": 5528,
+      "language_streamers": {
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/11557_IGDB-{width}x{height}.jpg",
+      "igdb_id": "1029"
     },
     {
       "game_id": "15631",
       "game_name": "Grand Theft Auto: Vice City",
       "streamer_count": 1,
-      "viewer_count": 4973,
+      "viewer_count": 5508,
       "language_streamers": {
         "en": 1
       },
@@ -234,54 +505,102 @@
       "igdb_id": "733"
     },
     {
-      "game_id": "1931693784",
-      "game_name": "Pokémon Champions",
-      "streamer_count": 1,
-      "viewer_count": 4790,
+      "game_id": "1763263",
+      "game_name": "nanos world",
+      "streamer_count": 3,
+      "viewer_count": 5258,
       "language_streamers": {
-        "en": 1
+        "fr": 3
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1931693784_IGDB-{width}x{height}.jpg",
-      "igdb_id": "333568"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1763263_IGDB-{width}x{height}.jpg",
+      "igdb_id": "152927"
     },
     {
-      "game_id": "493057",
-      "game_name": "PUBG: BATTLEGROUNDS",
-      "streamer_count": 1,
-      "viewer_count": 4635,
+      "game_id": "491168",
+      "game_name": "Clash Royale",
+      "streamer_count": 3,
+      "viewer_count": 5213,
       "language_streamers": {
-        "en": 1
+        "es": 1,
+        "en": 1,
+        "ru": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/493057-{width}x{height}.jpg",
-      "igdb_id": "27789"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/491168_IGDB-{width}x{height}.jpg",
+      "igdb_id": "15707"
     },
     {
-      "game_id": "512953",
-      "game_name": "ELDEN RING",
+      "game_id": "30028",
+      "game_name": "The Elder Scrolls V: Skyrim",
       "streamer_count": 1,
-      "viewer_count": 4517,
+      "viewer_count": 4722,
       "language_streamers": {
         "en": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-{width}x{height}.jpg",
-      "igdb_id": "119133"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/30028_IGDB-{width}x{height}.jpg",
+      "igdb_id": "472"
     },
     {
-      "game_id": "1661671460",
-      "game_name": "Rehaunted",
+      "game_id": "767864507",
+      "game_name": "Dragon Quest Heroes: Torneko's Mystery Dungeon Classic HD",
       "streamer_count": 1,
-      "viewer_count": 4421,
+      "viewer_count": 4070,
       "language_streamers": {
-        "en": 1
+        "ja": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1661671460_IGDB-{width}x{height}.jpg",
-      "igdb_id": "410924"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/767864507_IGDB-{width}x{height}.jpg",
+      "igdb_id": "417182"
+    },
+    {
+      "game_id": "491487",
+      "game_name": "Dead by Daylight",
+      "streamer_count": 6,
+      "viewer_count": 3994,
+      "language_streamers": {
+        "en": 4,
+        "ru": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/491487-{width}x{height}.jpg",
+      "igdb_id": "18866"
+    },
+    {
+      "game_id": "32959",
+      "game_name": "Heroes of the Storm",
+      "streamer_count": 2,
+      "viewer_count": 3866,
+      "language_streamers": {
+        "en": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/32959_IGDB-{width}x{height}.jpg",
+      "igdb_id": "7313"
+    },
+    {
+      "game_id": "417528",
+      "game_name": "Albion Online",
+      "streamer_count": 3,
+      "viewer_count": 3625,
+      "language_streamers": {
+        "en": 2,
+        "pt": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/417528_IGDB-{width}x{height}.jpg",
+      "igdb_id": "19698"
+    },
+    {
+      "game_id": "460951",
+      "game_name": "Geometry Dash",
+      "streamer_count": 2,
+      "viewer_count": 3488,
+      "language_streamers": {
+        "en": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/460951_IGDB-{width}x{height}.jpg",
+      "igdb_id": "11642"
     },
     {
       "game_id": "15512",
       "game_name": "Star Wars: Jedi Knight - Jedi Academy",
       "streamer_count": 1,
-      "viewer_count": 4420,
+      "viewer_count": 3480,
       "language_streamers": {
         "en": 1
       },
@@ -289,59 +608,683 @@
       "igdb_id": "153"
     },
     {
-      "game_id": "33214",
-      "game_name": "Fortnite",
-      "streamer_count": 1,
-      "viewer_count": 4324,
+      "game_id": "294203615",
+      "game_name": "Wer Wird Millionär?",
+      "streamer_count": 2,
+      "viewer_count": 3389,
       "language_streamers": {
-        "en": 1
+        "de": 2
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/33214-{width}x{height}.jpg",
-      "igdb_id": "1905"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/294203615_IGDB-{width}x{height}.jpg",
+      "igdb_id": "315964"
     },
     {
-      "game_id": "767864507",
-      "game_name": "Dragon Quest Heroes: Torneko's Mystery Dungeon Classic HD",
+      "game_id": "499634",
+      "game_name": "Crypto",
+      "streamer_count": 3,
+      "viewer_count": 3363,
+      "language_streamers": {
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/499634-{width}x{height}.jpg",
+      "igdb_id": "76760"
+    },
+    {
+      "game_id": "2005329090",
+      "game_name": "Jinro Metropolis",
       "streamer_count": 1,
-      "viewer_count": 4309,
+      "viewer_count": 3312,
       "language_streamers": {
         "ja": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/767864507_IGDB-{width}x{height}.jpg",
-      "igdb_id": "417182"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2005329090_IGDB-{width}x{height}.jpg",
+      "igdb_id": "325996"
+    },
+    {
+      "game_id": "1966055328",
+      "game_name": "Fears to Fathom - Scratch Creek",
+      "streamer_count": 2,
+      "viewer_count": 3101,
+      "language_streamers": {
+        "fr": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1966055328_IGDB-{width}x{height}.jpg",
+      "igdb_id": "348971"
+    },
+    {
+      "game_id": "417892",
+      "game_name": "Z1: Battle Royale",
+      "streamer_count": 4,
+      "viewer_count": 3010,
+      "language_streamers": {
+        "en": 2,
+        "fr": 1,
+        "de": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/417892_IGDB-{width}x{height}.jpg",
+      "igdb_id": "18094"
+    },
+    {
+      "game_id": "460316",
+      "game_name": "Brawlhalla",
+      "streamer_count": 1,
+      "viewer_count": 2947,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/460316_IGDB-{width}x{height}.jpg",
+      "igdb_id": "10233"
+    },
+    {
+      "game_id": "339050343",
+      "game_name": "[HERROR] Gas Station Case",
+      "streamer_count": 1,
+      "viewer_count": 2933,
+      "language_streamers": {
+        "fr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/339050343_IGDB-{width}x{height}.jpg",
+      "igdb_id": "369486"
+    },
+    {
+      "game_id": "138585",
+      "game_name": "Hearthstone",
+      "streamer_count": 4,
+      "viewer_count": 2931,
+      "language_streamers": {
+        "en": 2,
+        "fr": 1,
+        "ru": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/138585-{width}x{height}.jpg",
+      "igdb_id": "1279"
+    },
+    {
+      "game_id": "12839",
+      "game_name": "Heroes of Might and Magic III: The Restoration of Erathia",
+      "streamer_count": 4,
+      "viewer_count": 2928,
+      "language_streamers": {
+        "ru": 4
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/12839_IGDB-{width}x{height}.jpg",
+      "igdb_id": "364"
+    },
+    {
+      "game_id": "19357",
+      "game_name": "Guild Wars 2",
+      "streamer_count": 3,
+      "viewer_count": 2920,
+      "language_streamers": {
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/19357_IGDB-{width}x{height}.jpg",
+      "igdb_id": "1183"
+    },
+    {
+      "game_id": "490377",
+      "game_name": "Sea of Thieves",
+      "streamer_count": 3,
+      "viewer_count": 2914,
+      "language_streamers": {
+        "en": 2,
+        "fr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/490377-{width}x{height}.jpg",
+      "igdb_id": "11137"
+    },
+    {
+      "game_id": "1869211376",
+      "game_name": "Pokémon Añil",
+      "streamer_count": 1,
+      "viewer_count": 2846,
+      "language_streamers": {
+        "es": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1869211376_IGDB-{width}x{height}.jpg",
+      "igdb_id": "241776"
+    },
+    {
+      "game_id": "518184",
+      "game_name": "Phasmophobia",
+      "streamer_count": 3,
+      "viewer_count": 2795,
+      "language_streamers": {
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/518184_IGDB-{width}x{height}.jpg",
+      "igdb_id": "132516"
+    },
+    {
+      "game_id": "278888515",
+      "game_name": "Gartic Phone",
+      "streamer_count": 1,
+      "viewer_count": 2737,
+      "language_streamers": {
+        "ru": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/278888515_IGDB-{width}x{height}.jpg",
+      "igdb_id": "140781"
+    },
+    {
+      "game_id": "502829",
+      "game_name": "R2 Online: Reign of Revolution",
+      "streamer_count": 3,
+      "viewer_count": 2629,
+      "language_streamers": {
+        "ru": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/502829_IGDB-{width}x{height}.jpg",
+      "igdb_id": "91269"
+    },
+    {
+      "game_id": "490744",
+      "game_name": "Stardew Valley",
+      "streamer_count": 2,
+      "viewer_count": 2618,
+      "language_streamers": {
+        "en": 1,
+        "fr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/490744_IGDB-{width}x{height}.jpg",
+      "igdb_id": "17000"
+    },
+    {
+      "game_id": "687129551",
+      "game_name": "Trackmania",
+      "streamer_count": 2,
+      "viewer_count": 2607,
+      "language_streamers": {
+        "en": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/687129551-{width}x{height}.jpg",
+      "igdb_id": "133807"
+    },
+    {
+      "game_id": "2010156204",
+      "game_name": "Can I Come In?",
+      "streamer_count": 1,
+      "viewer_count": 2570,
+      "language_streamers": {
+        "fr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2010156204-{width}x{height}.jpg",
+      "igdb_id": "415368"
+    },
+    {
+      "game_id": "515580",
+      "game_name": "TREPANG²",
+      "streamer_count": 1,
+      "viewer_count": 2519,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/515580_IGDB-{width}x{height}.jpg",
+      "igdb_id": "126212"
+    },
+    {
+      "game_id": "19423",
+      "game_name": "Heavy Rain",
+      "streamer_count": 1,
+      "viewer_count": 2464,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/19423_IGDB-{width}x{height}.jpg",
+      "igdb_id": "493"
+    },
+    {
+      "game_id": "499003",
+      "game_name": "VRChat",
+      "streamer_count": 3,
+      "viewer_count": 2401,
+      "language_streamers": {
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/499003_IGDB-{width}x{height}.jpg",
+      "igdb_id": "33615"
+    },
+    {
+      "game_id": "19554",
+      "game_name": "iRacing",
+      "streamer_count": 4,
+      "viewer_count": 2348,
+      "language_streamers": {
+        "pt": 1,
+        "es": 1,
+        "en": 1,
+        "ru": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/19554_IGDB-{width}x{height}.jpg",
+      "igdb_id": "8204"
+    },
+    {
+      "game_id": "24241",
+      "game_name": "FINAL FANTASY XIV ONLINE",
+      "streamer_count": 4,
+      "viewer_count": 2243,
+      "language_streamers": {
+        "en": 4
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/24241_IGDB-{width}x{height}.jpg",
+      "igdb_id": "386"
+    },
+    {
+      "game_id": "71375",
+      "game_name": "Star Citizen",
+      "streamer_count": 2,
+      "viewer_count": 2207,
+      "language_streamers": {
+        "de": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/71375_IGDB-{width}x{height}.jpg",
+      "igdb_id": "1595"
+    },
+    {
+      "game_id": "464339927",
+      "game_name": "ARC Raiders",
+      "streamer_count": 3,
+      "viewer_count": 2197,
+      "language_streamers": {
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/464339927-{width}x{height}.jpg",
+      "igdb_id": "185258"
+    },
+    {
+      "game_id": "263490",
+      "game_name": "Rust",
+      "streamer_count": 3,
+      "viewer_count": 2167,
+      "language_streamers": {
+        "es": 2,
+        "de": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/263490_IGDB-{width}x{height}.jpg",
+      "igdb_id": "3277"
+    },
+    {
+      "game_id": "745589378",
+      "game_name": "Balatro",
+      "streamer_count": 3,
+      "viewer_count": 2148,
+      "language_streamers": {
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/745589378_IGDB-{width}x{height}.jpg",
+      "igdb_id": "251833"
+    },
+    {
+      "game_id": "1702520304",
+      "game_name": "Path of Exile 2",
+      "streamer_count": 2,
+      "viewer_count": 2135,
+      "language_streamers": {
+        "en": 1,
+        "ru": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1702520304_IGDB-{width}x{height}.jpg",
+      "igdb_id": "125642"
+    },
+    {
+      "game_id": "602040818",
+      "game_name": "NBA 2K27",
+      "streamer_count": 3,
+      "viewer_count": 2132,
+      "language_streamers": {
+        "en": 2,
+        "es": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/602040818_IGDB-{width}x{height}.jpg",
+      "igdb_id": "408823"
+    },
+    {
+      "game_id": "9618",
+      "game_name": "Pokémon Trading Card Game",
+      "streamer_count": 2,
+      "viewer_count": 2115,
+      "language_streamers": {
+        "en": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/9618_IGDB-{width}x{height}.jpg",
+      "igdb_id": "4567"
+    },
+    {
+      "game_id": "493997",
+      "game_name": "Super Mario Odyssey",
+      "streamer_count": 1,
+      "viewer_count": 2111,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/493997_IGDB-{width}x{height}.jpg",
+      "igdb_id": "26758"
+    },
+    {
+      "game_id": "2132205352",
+      "game_name": "Deadlock",
+      "streamer_count": 3,
+      "viewer_count": 2077,
+      "language_streamers": {
+        "en": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2132205352_IGDB-{width}x{height}.jpg",
+      "igdb_id": "301298"
+    },
+    {
+      "game_id": "461221",
+      "game_name": "MARVEL Contest of Champions",
+      "streamer_count": 2,
+      "viewer_count": 2039,
+      "language_streamers": {
+        "es": 1,
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/461221_IGDB-{width}x{height}.jpg",
+      "igdb_id": "28107"
+    },
+    {
+      "game_id": "1074044196",
+      "game_name": "Alan Wake II",
+      "streamer_count": 1,
+      "viewer_count": 1980,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1074044196_IGDB-{width}x{height}.jpg",
+      "igdb_id": "185246"
+    },
+    {
+      "game_id": "19619",
+      "game_name": "Tibia",
+      "streamer_count": 3,
+      "viewer_count": 1975,
+      "language_streamers": {
+        "pt": 3
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/19619_IGDB-{width}x{height}.jpg",
+      "igdb_id": "9596"
+    },
+    {
+      "game_id": "493057",
+      "game_name": "PUBG: BATTLEGROUNDS",
+      "streamer_count": 2,
+      "viewer_count": 1941,
+      "language_streamers": {
+        "ru": 1,
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/493057-{width}x{height}.jpg",
+      "igdb_id": "27789"
+    },
+    {
+      "game_id": "1924027539",
+      "game_name": "Dragon Quest VI: Maboroshi no Daichi",
+      "streamer_count": 1,
+      "viewer_count": 1895,
+      "language_streamers": {
+        "ja": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1924027539_IGDB-{width}x{height}.jpg",
+      "igdb_id": "145497"
+    },
+    {
+      "game_id": "490655",
+      "game_name": "Pokémon GO",
+      "streamer_count": 1,
+      "viewer_count": 1828,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/490655_IGDB-{width}x{height}.jpg",
+      "igdb_id": "12515"
+    },
+    {
+      "game_id": "490292",
+      "game_name": "DARK SOULS III",
+      "streamer_count": 1,
+      "viewer_count": 1819,
+      "language_streamers": {
+        "ru": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/490292_IGDB-{width}x{height}.jpg",
+      "igdb_id": "11133"
+    },
+    {
+      "game_id": "489635",
+      "game_name": "ARK: Survival Evolved",
+      "streamer_count": 1,
+      "viewer_count": 1728,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/489635-{width}x{height}.jpg",
+      "igdb_id": "10239"
+    },
+    {
+      "game_id": "670138298",
+      "game_name": "Madden NFL 27",
+      "streamer_count": 2,
+      "viewer_count": 1611,
+      "language_streamers": {
+        "en": 1,
+        "other": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/670138298_IGDB-{width}x{height}.jpg",
+      "igdb_id": "400379"
+    },
+    {
+      "game_id": "386821",
+      "game_name": "Black Desert",
+      "streamer_count": 3,
+      "viewer_count": 1610,
+      "language_streamers": {
+        "en": 1,
+        "ru": 1,
+        "pt": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/386821_IGDB-{width}x{height}.jpg",
+      "igdb_id": "6292"
+    },
+    {
+      "game_id": "31339",
+      "game_name": "Project Zomboid",
+      "streamer_count": 3,
+      "viewer_count": 1493,
+      "language_streamers": {
+        "en": 2,
+        "es": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/31339_IGDB-{width}x{height}.jpg",
+      "igdb_id": "3189"
+    },
+    {
+      "game_id": "295042126",
+      "game_name": "Woodo",
+      "streamer_count": 1,
+      "viewer_count": 1484,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/295042126_IGDB-{width}x{height}.jpg",
+      "igdb_id": "145078"
+    },
+    {
+      "game_id": "23311496",
+      "game_name": "Clive Barker's Hellraiser: Revival",
+      "streamer_count": 1,
+      "viewer_count": 1438,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/23311496_IGDB-{width}x{height}.jpg",
+      "igdb_id": "356552"
+    },
+    {
+      "game_id": "532149986",
+      "game_name": "Shady Job",
+      "streamer_count": 1,
+      "viewer_count": 1424,
+      "language_streamers": {
+        "ru": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/532149986_IGDB-{width}x{height}.jpg",
+      "igdb_id": "410622"
+    },
+    {
+      "game_id": "2094865572",
+      "game_name": "SMITE 2",
+      "streamer_count": 2,
+      "viewer_count": 1411,
+      "language_streamers": {
+        "en": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2094865572-{width}x{height}.jpg",
+      "igdb_id": "282566"
+    },
+    {
+      "game_id": "380978759",
+      "game_name": "Escape from Tarkov: Arena",
+      "streamer_count": 1,
+      "viewer_count": 1409,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/380978759_IGDB-{width}x{height}.jpg",
+      "igdb_id": "203610"
+    },
+    {
+      "game_id": "19348",
+      "game_name": "Mirror's Edge",
+      "streamer_count": 1,
+      "viewer_count": 1402,
+      "language_streamers": {
+        "ru": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/19348_IGDB-{width}x{height}.jpg",
+      "igdb_id": "1051"
+    },
+    {
+      "game_id": "1217522406",
+      "game_name": "Dawson Oaks Trailer Park",
+      "streamer_count": 1,
+      "viewer_count": 1315,
+      "language_streamers": {
+        "fr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1217522406_IGDB-{width}x{height}.jpg",
+      "igdb_id": "408337"
+    },
+    {
+      "game_id": "29056",
+      "game_name": "Knight Online",
+      "streamer_count": 1,
+      "viewer_count": 1303,
+      "language_streamers": {
+        "tr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/29056_IGDB-{width}x{height}.jpg",
+      "igdb_id": "19795"
+    },
+    {
+      "game_id": "394568",
+      "game_name": "RimWorld",
+      "streamer_count": 2,
+      "viewer_count": 1296,
+      "language_streamers": {
+        "en": 2
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/394568-{width}x{height}.jpg",
+      "igdb_id": "9789"
+    },
+    {
+      "game_id": "1517377137",
+      "game_name": "RV There Yet?",
+      "streamer_count": 2,
+      "viewer_count": 1292,
+      "language_streamers": {
+        "ru": 1,
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1517377137_IGDB-{width}x{height}.jpg",
+      "igdb_id": "373580"
+    },
+    {
+      "game_id": "510749898",
+      "game_name": "Obsessed: Night Shift",
+      "streamer_count": 1,
+      "viewer_count": 1234,
+      "language_streamers": {
+        "pl": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/510749898_IGDB-{width}x{height}.jpg",
+      "igdb_id": "365267"
+    },
+    {
+      "game_id": "510389",
+      "game_name": "Shakes and Fidget",
+      "streamer_count": 1,
+      "viewer_count": 1201,
+      "language_streamers": {
+        "de": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/510389_IGDB-{width}x{height}.jpg",
+      "igdb_id": "18090"
     }
   ],
   "tracked_games": [
-    {
-      "steam_appid": 1636440,
-      "steam_name": "SILENT HILL: Townfall",
-      "twitch_game_id": "1960720223",
-      "twitch_name": "SILENT HILL: townfall",
-      "matched": true,
-      "streamer_count": 2,
-      "viewer_count": 7382,
-      "language_streamers": {
-        "de": 1,
-        "fr": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1960720223_IGDB-{width}x{height}.jpg",
-      "igdb_id": "222342"
-    },
     {
       "steam_appid": 1551980,
       "steam_name": "Clive Barker's Hellraiser: Revival",
       "twitch_game_id": "23311496",
       "twitch_name": "Clive Barker's Hellraiser: Revival",
       "matched": true,
-      "streamer_count": 33,
-      "viewer_count": 1201,
+      "streamer_count": 42,
+      "viewer_count": 1986,
       "language_streamers": {
-        "en": 20,
-        "ru": 12,
-        "fr": 1
+        "en": 26,
+        "ru": 4,
+        "es": 4,
+        "fr": 3,
+        "pt": 2,
+        "nl": 1,
+        "other": 1,
+        "cs": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/23311496_IGDB-{width}x{height}.jpg",
       "igdb_id": "356552"
+    },
+    {
+      "steam_appid": 3259780,
+      "steam_name": "FINAL FANTASY RESONANCE",
+      "twitch_game_id": "1954784138",
+      "twitch_name": "Final Fantasy Resonance",
+      "matched": true,
+      "streamer_count": 17,
+      "viewer_count": 49,
+      "language_streamers": {
+        "en": 11,
+        "fr": 4,
+        "de": 1,
+        "es": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1954784138_IGDB-{width}x{height}.jpg",
+      "igdb_id": "405454"
+    },
+    {
+      "steam_appid": 3883570,
+      "steam_name": "Invokyr",
+      "twitch_game_id": "1987792797",
+      "twitch_name": "Invokyr",
+      "matched": true,
+      "streamer_count": 4,
+      "viewer_count": 16,
+      "language_streamers": {
+        "ru": 3,
+        "fr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1987792797_IGDB-{width}x{height}.jpg",
+      "igdb_id": "359277"
     },
     {
       "steam_appid": 2333000,
@@ -350,12 +1293,99 @@
       "twitch_name": "Silver Pines",
       "matched": true,
       "streamer_count": 1,
-      "viewer_count": 337,
+      "viewer_count": 13,
       "language_streamers": {
-        "ru": 1
+        "en": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2142646770_IGDB-{width}x{height}.jpg",
       "igdb_id": "313597"
+    },
+    {
+      "steam_appid": 3314580,
+      "steam_name": "Trash Day",
+      "twitch_game_id": "499919202",
+      "twitch_name": "Trash Day",
+      "matched": true,
+      "streamer_count": 1,
+      "viewer_count": 8,
+      "language_streamers": {
+        "es": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/499919202_IGDB-{width}x{height}.jpg",
+      "igdb_id": "406477"
+    },
+    {
+      "steam_appid": 2223980,
+      "steam_name": "Nomad Drive",
+      "twitch_game_id": "151959766",
+      "twitch_name": "Nomad Drive",
+      "matched": true,
+      "streamer_count": 5,
+      "viewer_count": 7,
+      "language_streamers": {
+        "ru": 2,
+        "en": 2,
+        "tr": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/151959766_IGDB-{width}x{height}.jpg",
+      "igdb_id": "340570"
+    },
+    {
+      "steam_appid": 3431300,
+      "steam_name": "Slow Roads",
+      "twitch_game_id": "1756506412",
+      "twitch_name": "Slow Roads",
+      "matched": true,
+      "streamer_count": 1,
+      "viewer_count": 7,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1756506412_IGDB-{width}x{height}.jpg",
+      "igdb_id": "222796"
+    },
+    {
+      "steam_appid": 1675260,
+      "steam_name": "Among the Trolls",
+      "twitch_game_id": "1223527977",
+      "twitch_name": "Among the Trolls",
+      "matched": true,
+      "streamer_count": 1,
+      "viewer_count": 6,
+      "language_streamers": {
+        "de": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1223527977_IGDB-{width}x{height}.jpg",
+      "igdb_id": "201754"
+    },
+    {
+      "steam_appid": 3486530,
+      "steam_name": "Stupid Never Dies",
+      "twitch_game_id": "723030544",
+      "twitch_name": "Stupid Never Dies",
+      "matched": true,
+      "streamer_count": 2,
+      "viewer_count": 3,
+      "language_streamers": {
+        "en": 1,
+        "ja": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/723030544_IGDB-{width}x{height}.jpg",
+      "igdb_id": "381212"
+    },
+    {
+      "steam_appid": 4171850,
+      "steam_name": "Trees Hate You",
+      "twitch_game_id": "795788384",
+      "twitch_name": "Trees Hate You",
+      "matched": true,
+      "streamer_count": 1,
+      "viewer_count": 3,
+      "language_streamers": {
+        "en": 1
+      },
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/795788384_IGDB-{width}x{height}.jpg",
+      "igdb_id": "382400"
     },
     {
       "steam_appid": 3010850,
@@ -363,44 +1393,27 @@
       "twitch_game_id": "1663723394",
       "twitch_name": "Gears of War: E-Day",
       "matched": true,
-      "streamer_count": 3,
-      "viewer_count": 37,
+      "streamer_count": 1,
+      "viewer_count": 1,
       "language_streamers": {
-        "en": 2,
-        "es": 1
+        "fr": 1
       },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1663723394_IGDB-{width}x{height}.jpg",
       "igdb_id": "305160"
     },
     {
-      "steam_appid": 3883570,
-      "steam_name": "Invokyr",
-      "twitch_game_id": "1987792797",
-      "twitch_name": "Invokyr",
-      "matched": true,
-      "streamer_count": 6,
-      "viewer_count": 32,
-      "language_streamers": {
-        "en": 4,
-        "cs": 1,
-        "fr": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1987792797_IGDB-{width}x{height}.jpg",
-      "igdb_id": "359277"
-    },
-    {
-      "steam_appid": 4705510,
-      "steam_name": "Happy Wheels",
-      "twitch_game_id": "309493",
-      "twitch_name": "Happy Wheels",
+      "steam_appid": 2121510,
+      "steam_name": "Tenebris Somnia",
+      "twitch_game_id": "31355766",
+      "twitch_name": "Tenebris Somnia",
       "matched": true,
       "streamer_count": 1,
-      "viewer_count": 12,
+      "viewer_count": 1,
       "language_streamers": {
         "en": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/309493_IGDB-{width}x{height}.jpg",
-      "igdb_id": "28227"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/31355766_IGDB-{width}x{height}.jpg",
+      "igdb_id": "216692"
     },
     {
       "steam_appid": 2288340,
@@ -413,6 +1426,18 @@
       "language_streamers": {},
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/404069058_IGDB-{width}x{height}.jpg",
       "igdb_id": "381247"
+    },
+    {
+      "steam_appid": 2522120,
+      "steam_name": "Airframe Ultra",
+      "twitch_game_id": "52876876",
+      "twitch_name": "Airframe Ultra",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/52876876_IGDB-{width}x{height}.jpg",
+      "igdb_id": "257450"
     },
     {
       "steam_appid": 1167820,
@@ -439,6 +1464,66 @@
       "igdb_id": "398961"
     },
     {
+      "steam_appid": 3224600,
+      "steam_name": "Am I Nima",
+      "twitch_game_id": "1892320206",
+      "twitch_name": "Am I Nima",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1892320206_IGDB-{width}x{height}.jpg",
+      "igdb_id": "329692"
+    },
+    {
+      "steam_appid": 2179480,
+      "steam_name": "Ardem",
+      "twitch_game_id": "1302651766",
+      "twitch_name": "Ardem",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1302651766_IGDB-{width}x{height}.jpg",
+      "igdb_id": "260389"
+    },
+    {
+      "steam_appid": 1154960,
+      "steam_name": "Ardenfall",
+      "twitch_game_id": "135267187",
+      "twitch_name": "Ardenfall",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/135267187_IGDB-{width}x{height}.jpg",
+      "igdb_id": "191817"
+    },
+    {
+      "steam_appid": 1803110,
+      "steam_name": "ASCENDANT",
+      "twitch_game_id": "996086584",
+      "twitch_name": "Ascendant",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/996086584_IGDB-{width}x{height}.jpg",
+      "igdb_id": "264917"
+    },
+    {
+      "steam_appid": 2210150,
+      "steam_name": "At Fate's End",
+      "twitch_game_id": "977686690",
+      "twitch_name": "At Fate's End",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/977686690_IGDB-{width}x{height}.jpg",
+      "igdb_id": "348205"
+    },
+    {
       "steam_appid": 2916700,
       "steam_name": "Attack on Titan 3 / A.O.T. 3",
       "twitch_game_id": null,
@@ -447,6 +1532,66 @@
       "streamer_count": 0,
       "viewer_count": 0,
       "language_streamers": {}
+    },
+    {
+      "steam_appid": 3743140,
+      "steam_name": "Battleplan",
+      "twitch_game_id": "1705095488",
+      "twitch_name": "Battleplan",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1705095488_IGDB-{width}x{height}.jpg",
+      "igdb_id": "375578"
+    },
+    {
+      "steam_appid": 1313230,
+      "steam_name": "Beautiful Light",
+      "twitch_game_id": "518769",
+      "twitch_name": "Beautiful Light",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/518769_IGDB-{width}x{height}.jpg",
+      "igdb_id": "137217"
+    },
+    {
+      "steam_appid": 2562390,
+      "steam_name": "Benny's Backrooms",
+      "twitch_game_id": "1343122280",
+      "twitch_name": "Benny's Backrooms",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1343122280_IGDB-{width}x{height}.jpg",
+      "igdb_id": "303109"
+    },
+    {
+      "steam_appid": 2295060,
+      "steam_name": "Beyond These Stars",
+      "twitch_game_id": "1930335036",
+      "twitch_name": "Beyond These Stars",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1930335036_IGDB-{width}x{height}.jpg",
+      "igdb_id": "239002"
+    },
+    {
+      "steam_appid": 2055770,
+      "steam_name": "Bloody Hell Hotel",
+      "twitch_game_id": "321539993",
+      "twitch_name": "Bloody Hell Hotel",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/321539993_IGDB-{width}x{height}.jpg",
+      "igdb_id": "213557"
     },
     {
       "steam_appid": 3936420,
@@ -461,6 +1606,30 @@
       "igdb_id": "374501"
     },
     {
+      "steam_appid": 1868210,
+      "steam_name": "Bunker Builder Simulator",
+      "twitch_game_id": "1619985481",
+      "twitch_name": "Bunker Builder Simulator",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1619985481_IGDB-{width}x{height}.jpg",
+      "igdb_id": "217503"
+    },
+    {
+      "steam_appid": 1490930,
+      "steam_name": "Capital Command",
+      "twitch_game_id": "1238508950",
+      "twitch_name": "Capital Command",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1238508950_IGDB-{width}x{height}.jpg",
+      "igdb_id": "153495"
+    },
+    {
       "steam_appid": 3031880,
       "steam_name": "Car Park Capital",
       "twitch_game_id": "2100615846",
@@ -471,6 +1640,30 @@
       "language_streamers": {},
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2100615846_IGDB-{width}x{height}.jpg",
       "igdb_id": "344093"
+    },
+    {
+      "steam_appid": 4231820,
+      "steam_name": "Castlevania: Belmont's Curse",
+      "twitch_game_id": "1736572793",
+      "twitch_name": "Castlevania: Belmont's Curse",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1736572793_IGDB-{width}x{height}.jpg",
+      "igdb_id": "389434"
+    },
+    {
+      "steam_appid": 3569420,
+      "steam_name": "Chained Beasts",
+      "twitch_game_id": "1318239577",
+      "twitch_name": "Chained Beasts",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1318239577_IGDB-{width}x{height}.jpg",
+      "igdb_id": "344588"
     },
     {
       "steam_appid": 3669870,
@@ -485,6 +1678,88 @@
       "igdb_id": "225582"
     },
     {
+      "steam_appid": 3204330,
+      "steam_name": "County of Fortune",
+      "twitch_game_id": "1099625029",
+      "twitch_name": "County of Fortune",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1099625029_IGDB-{width}x{height}.jpg",
+      "igdb_id": "327218"
+    },
+    {
+      "steam_appid": 3581230,
+      "steam_name": "Cozy Game Restoration",
+      "twitch_game_id": "1299143577",
+      "twitch_name": "Cozy Game Restoration",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1299143577_IGDB-{width}x{height}.jpg",
+      "igdb_id": "394023"
+    },
+    {
+      "steam_appid": 2022610,
+      "steam_name": "CRETE",
+      "twitch_game_id": "1602823371",
+      "twitch_name": "CRETE",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1602823371_IGDB-{width}x{height}.jpg",
+      "igdb_id": "211383"
+    },
+    {
+      "steam_appid": 2512880,
+      "steam_name": "CrisisX",
+      "twitch_game_id": "843638183",
+      "twitch_name": "CrisisX",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/843638183_IGDB-{width}x{height}.jpg",
+      "igdb_id": "313921"
+    },
+    {
+      "steam_appid": 2468200,
+      "steam_name": "DDoD",
+      "twitch_game_id": "791576221",
+      "twitch_name": "DDoD",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/791576221_IGDB-{width}x{height}.jpg",
+      "igdb_id": "361039"
+    },
+    {
+      "steam_appid": 771800,
+      "steam_name": "Deadstick - Bush Pilot Simulator",
+      "twitch_game_id": null,
+      "twitch_name": null,
+      "matched": false,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {}
+    },
+    {
+      "steam_appid": 2871520,
+      "steam_name": "Deep Dish Dungeon",
+      "twitch_game_id": "857210695",
+      "twitch_name": "Deep Dish Dungeon",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/857210695_IGDB-{width}x{height}.jpg",
+      "igdb_id": "298680"
+    },
+    {
       "steam_appid": 2710040,
       "steam_name": "Delverium",
       "twitch_game_id": "304877876",
@@ -495,6 +1770,18 @@
       "language_streamers": {},
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/304877876_IGDB-{width}x{height}.jpg",
       "igdb_id": "291342"
+    },
+    {
+      "steam_appid": 1394650,
+      "steam_name": "Detained: Too Good for School",
+      "twitch_game_id": "1292074760",
+      "twitch_name": "Detained: Too Good for School",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1292074760_IGDB-{width}x{height}.jpg",
+      "igdb_id": "152148"
     },
     {
       "steam_appid": 4739040,
@@ -531,6 +1818,18 @@
       "igdb_id": "168654"
     },
     {
+      "steam_appid": 2409320,
+      "steam_name": "Drill Keeper",
+      "twitch_game_id": "1691513691",
+      "twitch_name": "Drill Keeper",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1691513691_IGDB-{width}x{height}.jpg",
+      "igdb_id": "253370"
+    },
+    {
       "steam_appid": 1426870,
       "steam_name": "Dune Mechanic : Survive The Steampunk Era",
       "twitch_game_id": null,
@@ -563,6 +1862,30 @@
       "language_streamers": {}
     },
     {
+      "steam_appid": 2738170,
+      "steam_name": "Edge of Memories",
+      "twitch_game_id": "1845002061",
+      "twitch_name": "Edge of Memories",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1845002061_IGDB-{width}x{height}.jpg",
+      "igdb_id": "333201"
+    },
+    {
+      "steam_appid": 2295170,
+      "steam_name": "Emberville",
+      "twitch_game_id": "1692723000",
+      "twitch_name": "Emberville",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1692723000_IGDB-{width}x{height}.jpg",
+      "igdb_id": "272981"
+    },
+    {
       "steam_appid": 3464000,
       "steam_name": "Eropsychosis: The Project Elysiara",
       "twitch_game_id": null,
@@ -571,6 +1894,42 @@
       "streamer_count": 0,
       "viewer_count": 0,
       "language_streamers": {}
+    },
+    {
+      "steam_appid": 2556470,
+      "steam_name": "Fantastic Haven",
+      "twitch_game_id": "651218227",
+      "twitch_name": "Fantastic Haven",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/651218227_IGDB-{width}x{height}.jpg",
+      "igdb_id": "267590"
+    },
+    {
+      "steam_appid": 1779610,
+      "steam_name": "Farm Renovator",
+      "twitch_game_id": "735862889",
+      "twitch_name": "Farm Renovator",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/735862889-{width}x{height}.jpg",
+      "igdb_id": "216618"
+    },
+    {
+      "steam_appid": 1872970,
+      "steam_name": "Food Truck Empire",
+      "twitch_game_id": "600247176",
+      "twitch_name": "Food Truck Empire",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/600247176_IGDB-{width}x{height}.jpg",
+      "igdb_id": "194743"
     },
     {
       "steam_appid": 1215940,
@@ -585,6 +1944,74 @@
       "igdb_id": "136299"
     },
     {
+      "steam_appid": 1672320,
+      "steam_name": "Fragile Existence",
+      "twitch_game_id": "1078432050",
+      "twitch_name": "Fragile Existence",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1078432050_IGDB-{width}x{height}.jpg",
+      "igdb_id": "173020"
+    },
+    {
+      "steam_appid": 4005870,
+      "steam_name": "FreshWomen - Season 3",
+      "twitch_game_id": null,
+      "twitch_name": null,
+      "matched": false,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {}
+    },
+    {
+      "steam_appid": 2189430,
+      "steam_name": "Gilded Destiny",
+      "twitch_game_id": "1808763609",
+      "twitch_name": "Gilded Destiny",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1808763609_IGDB-{width}x{height}.jpg",
+      "igdb_id": "236528"
+    },
+    {
+      "steam_appid": 2052300,
+      "steam_name": "Glaciered",
+      "twitch_game_id": "2011162801",
+      "twitch_name": "Glaciered",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2011162801_IGDB-{width}x{height}.jpg",
+      "igdb_id": "211671"
+    },
+    {
+      "steam_appid": 2239670,
+      "steam_name": "Glory To The Heroes™",
+      "twitch_game_id": null,
+      "twitch_name": null,
+      "matched": false,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {}
+    },
+    {
+      "steam_appid": 4251460,
+      "steam_name": "Godzilla: Destroy All Monsters Melee Remastered",
+      "twitch_game_id": "1205758390",
+      "twitch_name": "Godzilla: Destroy All Monsters Melee Remastered",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1205758390_IGDB-{width}x{height}.jpg",
+      "igdb_id": "404939"
+    },
+    {
       "steam_appid": 4358690,
       "steam_name": "Graveyard Keeper 2",
       "twitch_game_id": null,
@@ -595,8 +2022,124 @@
       "language_streamers": {}
     },
     {
+      "steam_appid": 4705510,
+      "steam_name": "Happy Wheels",
+      "twitch_game_id": "309493",
+      "twitch_name": "Happy Wheels",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/309493_IGDB-{width}x{height}.jpg",
+      "igdb_id": "28227"
+    },
+    {
+      "steam_appid": 1892100,
+      "steam_name": "HEART ABYSS",
+      "twitch_game_id": "331528806",
+      "twitch_name": "HEART ABYSS",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/331528806_IGDB-{width}x{height}.jpg",
+      "igdb_id": "197240"
+    },
+    {
+      "steam_appid": 3161310,
+      "steam_name": "Hela: of Mice & Magic",
+      "twitch_game_id": "9774905",
+      "twitch_name": "Hela: Of Mice & Magic",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/9774905_IGDB-{width}x{height}.jpg",
+      "igdb_id": "314449"
+    },
+    {
+      "steam_appid": 2362070,
+      "steam_name": "Hollow Home",
+      "twitch_game_id": "79453836",
+      "twitch_name": "Hollow Home",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/79453836_IGDB-{width}x{height}.jpg",
+      "igdb_id": "265621"
+    },
+    {
+      "steam_appid": 3727090,
+      "steam_name": "Horses of Hoofprint Bay",
+      "twitch_game_id": "910348674",
+      "twitch_name": "Horses of Hoofprint Bay",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/910348674_IGDB-{width}x{height}.jpg",
+      "igdb_id": "376483"
+    },
+    {
+      "steam_appid": 4358660,
+      "steam_name": "Hull Rupture",
+      "twitch_game_id": "171019267",
+      "twitch_name": "Hull Rupture",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/171019267_IGDB-{width}x{height}.jpg",
+      "igdb_id": "399255"
+    },
+    {
+      "steam_appid": 1728620,
+      "steam_name": "IKUMA - The Frozen Compass",
+      "twitch_game_id": "1134634134",
+      "twitch_name": "IKUMA - The Frozen Compass",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1134634134_IGDB-{width}x{height}.jpg",
+      "igdb_id": "339619"
+    },
+    {
       "steam_appid": 3850550,
       "steam_name": "Isekai: Waifu Overlord",
+      "twitch_game_id": null,
+      "twitch_name": null,
+      "matched": false,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {}
+    },
+    {
+      "steam_appid": 1447250,
+      "steam_name": "Junxions",
+      "twitch_game_id": "2100948309",
+      "twitch_name": "Junxions",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2100948309_IGDB-{width}x{height}.jpg",
+      "igdb_id": "304932"
+    },
+    {
+      "steam_appid": 2203290,
+      "steam_name": "KaiJu Girls",
+      "twitch_game_id": null,
+      "twitch_name": null,
+      "matched": false,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {}
+    },
+    {
+      "steam_appid": 1818660,
+      "steam_name": "Kalyskah",
       "twitch_game_id": null,
       "twitch_name": null,
       "matched": false,
@@ -617,6 +2160,110 @@
       "igdb_id": "394375"
     },
     {
+      "steam_appid": 2065580,
+      "steam_name": "Kitsune: The Journey of Adashino",
+      "twitch_game_id": "1045037234",
+      "twitch_name": "Kitsune: The Journey of Adashino",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1045037234_IGDB-{width}x{height}.jpg",
+      "igdb_id": "217024"
+    },
+    {
+      "steam_appid": 4450390,
+      "steam_name": "Laguna Rosa: A long story with reckless consequences",
+      "twitch_game_id": null,
+      "twitch_name": null,
+      "matched": false,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {}
+    },
+    {
+      "steam_appid": 2365790,
+      "steam_name": "Let's Build a Dungeon",
+      "twitch_game_id": "1857071940",
+      "twitch_name": "Let's Build a Dungeon",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1857071940_IGDB-{width}x{height}.jpg",
+      "igdb_id": "314389"
+    },
+    {
+      "steam_appid": 2320980,
+      "steam_name": "Loftia",
+      "twitch_game_id": "1939255262",
+      "twitch_name": "Loftia",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1939255262_IGDB-{width}x{height}.jpg",
+      "igdb_id": "252774"
+    },
+    {
+      "steam_appid": 2355020,
+      "steam_name": "Lost Hellden",
+      "twitch_game_id": "1260787675",
+      "twitch_name": "Lost Hellden",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1260787675_IGDB-{width}x{height}.jpg",
+      "igdb_id": "285768"
+    },
+    {
+      "steam_appid": 2595110,
+      "steam_name": "Love Nest",
+      "twitch_game_id": null,
+      "twitch_name": null,
+      "matched": false,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {}
+    },
+    {
+      "steam_appid": 1727760,
+      "steam_name": "Mars Tactics",
+      "twitch_game_id": "240432063",
+      "twitch_name": "Mars Tactics",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/240432063_IGDB-{width}x{height}.jpg",
+      "igdb_id": "189333"
+    },
+    {
+      "steam_appid": 1207360,
+      "steam_name": "Medieval Frontiers",
+      "twitch_game_id": "114230103",
+      "twitch_name": "Medieval Frontiers",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/114230103_IGDB-{width}x{height}.jpg",
+      "igdb_id": "127709"
+    },
+    {
+      "steam_appid": 2287430,
+      "steam_name": "Metropolis 1998",
+      "twitch_game_id": "1983029816",
+      "twitch_name": "Metropolis 1998",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1983029816_IGDB-{width}x{height}.jpg",
+      "igdb_id": "244305"
+    },
+    {
       "steam_appid": 1912410,
       "steam_name": "Minecraft Dungeons II",
       "twitch_game_id": "2042681592",
@@ -627,6 +2274,18 @@
       "language_streamers": {},
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2042681592_IGDB-{width}x{height}.jpg",
       "igdb_id": "395525"
+    },
+    {
+      "steam_appid": 2988120,
+      "steam_name": "Never Be Alone",
+      "twitch_game_id": "1683035940",
+      "twitch_name": "Never Be Alone",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1683035940-{width}x{height}.jpg",
+      "igdb_id": "310840"
     },
     {
       "steam_appid": 1488490,
@@ -653,6 +2312,28 @@
       "igdb_id": "80411"
     },
     {
+      "steam_appid": 4094350,
+      "steam_name": "Online: 404",
+      "twitch_game_id": "1146818652",
+      "twitch_name": "Online: 404",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1146818652_IGDB-{width}x{height}.jpg",
+      "igdb_id": "403155"
+    },
+    {
+      "steam_appid": 1505940,
+      "steam_name": "Orc Warchief: Strategy Story",
+      "twitch_game_id": null,
+      "twitch_name": null,
+      "matched": false,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {}
+    },
+    {
       "steam_appid": 499170,
       "steam_name": "Order of the Sinking Star",
       "twitch_game_id": "718286993",
@@ -663,6 +2344,30 @@
       "language_streamers": {},
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/718286993_IGDB-{width}x{height}.jpg",
       "igdb_id": "381222"
+    },
+    {
+      "steam_appid": 1622130,
+      "steam_name": "Our Life: Now & Forever",
+      "twitch_game_id": "1763844399",
+      "twitch_name": "Our Life: Now & Forever",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1763844399_IGDB-{width}x{height}.jpg",
+      "igdb_id": "187392"
+    },
+    {
+      "steam_appid": 2929250,
+      "steam_name": "over the hill",
+      "twitch_game_id": "2088318578",
+      "twitch_name": "over the hill",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2088318578_IGDB-{width}x{height}.jpg",
+      "igdb_id": "329124"
     },
     {
       "steam_appid": 2680280,
@@ -689,6 +2394,38 @@
       "igdb_id": "302147"
     },
     {
+      "steam_appid": 4115450,
+      "steam_name": "Phantom Blade Zero",
+      "twitch_game_id": null,
+      "twitch_name": null,
+      "matched": false,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {}
+    },
+    {
+      "steam_appid": 3219030,
+      "steam_name": "Planet Zoo 2",
+      "twitch_game_id": "1510789205",
+      "twitch_name": "Planet Zoo 2",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1510789205_IGDB-{width}x{height}.jpg",
+      "igdb_id": "402959"
+    },
+    {
+      "steam_appid": 2528410,
+      "steam_name": "Price for Freedom: Gold and Sand",
+      "twitch_game_id": null,
+      "twitch_name": null,
+      "matched": false,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {}
+    },
+    {
       "steam_appid": 4084710,
       "steam_name": "Rayman Legends Retold",
       "twitch_game_id": "436018782",
@@ -713,6 +2450,18 @@
       "igdb_id": "231488"
     },
     {
+      "steam_appid": 1579210,
+      "steam_name": "Riot Control Simulator",
+      "twitch_game_id": "1161473284",
+      "twitch_name": "Riot Control Simulator",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1161473284_IGDB-{width}x{height}.jpg",
+      "igdb_id": "155742"
+    },
+    {
       "steam_appid": 4094660,
       "steam_name": "Rivage",
       "twitch_game_id": "325262960",
@@ -725,6 +2474,66 @@
       "igdb_id": "380416"
     },
     {
+      "steam_appid": 1747470,
+      "steam_name": "Road Diner Simulator",
+      "twitch_game_id": "221427844",
+      "twitch_name": "Road Diner Simulator",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/221427844_IGDB-{width}x{height}.jpg",
+      "igdb_id": "190463"
+    },
+    {
+      "steam_appid": 1661330,
+      "steam_name": "SacriFire",
+      "twitch_game_id": "716985498",
+      "twitch_name": "SacriFire",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/716985498_IGDB-{width}x{height}.jpg",
+      "igdb_id": "152268"
+    },
+    {
+      "steam_appid": 1173980,
+      "steam_name": "Shadow of the Road",
+      "twitch_game_id": "1514501794",
+      "twitch_name": "Shadow of the Road",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1514501794_IGDB-{width}x{height}.jpg",
+      "igdb_id": "124209"
+    },
+    {
+      "steam_appid": 1687540,
+      "steam_name": "Showa American Story",
+      "twitch_game_id": "1182378745",
+      "twitch_name": "Showa American Story",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1182378745_IGDB-{width}x{height}.jpg",
+      "igdb_id": "186613"
+    },
+    {
+      "steam_appid": 1636440,
+      "steam_name": "SILENT HILL: Townfall",
+      "twitch_game_id": "1960720223",
+      "twitch_name": "SILENT HILL: townfall",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1960720223_IGDB-{width}x{height}.jpg",
+      "igdb_id": "222342"
+    },
+    {
       "steam_appid": 632950,
       "steam_name": "SiN Reloaded",
       "twitch_game_id": null,
@@ -735,16 +2544,16 @@
       "language_streamers": {}
     },
     {
-      "steam_appid": 3431300,
-      "steam_name": "Slow Roads",
-      "twitch_game_id": "1756506412",
-      "twitch_name": "Slow Roads",
+      "steam_appid": 1362000,
+      "steam_name": "Skyclimbers",
+      "twitch_game_id": "2012524994",
+      "twitch_name": "Skyclimbers",
       "matched": true,
       "streamer_count": 0,
       "viewer_count": 0,
       "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1756506412_IGDB-{width}x{height}.jpg",
-      "igdb_id": "222796"
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2012524994_IGDB-{width}x{height}.jpg",
+      "igdb_id": "135823"
     },
     {
       "steam_appid": 1706510,
@@ -759,6 +2568,18 @@
       "igdb_id": "189014"
     },
     {
+      "steam_appid": 3469910,
+      "steam_name": "Star Trek: Outposts Unknown",
+      "twitch_game_id": "1019366883",
+      "twitch_name": "Star Trek: Outposts Unknown",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1019366883_IGDB-{width}x{height}.jpg",
+      "igdb_id": "405102"
+    },
+    {
       "steam_appid": 4078430,
       "steam_name": "STAR WARS: Galactic Racer™",
       "twitch_game_id": null,
@@ -767,6 +2588,18 @@
       "streamer_count": 0,
       "viewer_count": 0,
       "language_streamers": {}
+    },
+    {
+      "steam_appid": 2826790,
+      "steam_name": "Stormforge",
+      "twitch_game_id": "166041966",
+      "twitch_name": "Stormforge",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/166041966_IGDB-{width}x{height}.jpg",
+      "igdb_id": "305188"
     },
     {
       "steam_appid": 4260840,
@@ -781,6 +2614,54 @@
       "igdb_id": "325599"
     },
     {
+      "steam_appid": 2153760,
+      "steam_name": "Stronghold 4",
+      "twitch_game_id": "1887788993",
+      "twitch_name": "Stronghold 4",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1887788993_IGDB-{width}x{height}.jpg",
+      "igdb_id": "405145"
+    },
+    {
+      "steam_appid": 2464520,
+      "steam_name": "Surviving Deponia",
+      "twitch_game_id": "2032948953",
+      "twitch_name": "Surviving Deponia",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2032948953_IGDB-{width}x{height}.jpg",
+      "igdb_id": "252793"
+    },
+    {
+      "steam_appid": 1355900,
+      "steam_name": "Tattered Banners",
+      "twitch_game_id": "385369830",
+      "twitch_name": "Tattered Banners",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/385369830_IGDB-{width}x{height}.jpg",
+      "igdb_id": "387214"
+    },
+    {
+      "steam_appid": 2411280,
+      "steam_name": "The Bornless",
+      "twitch_game_id": "881239349",
+      "twitch_name": "The Bornless",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/881239349_IGDB-{width}x{height}.jpg",
+      "igdb_id": "194855"
+    },
+    {
       "steam_appid": 2796640,
       "steam_name": "The Magus Circle",
       "twitch_game_id": "663649923",
@@ -791,6 +2672,30 @@
       "language_streamers": {},
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/663649923-{width}x{height}.jpg",
       "igdb_id": "295074"
+    },
+    {
+      "steam_appid": 969330,
+      "steam_name": "The Way of Wrath",
+      "twitch_game_id": "516660",
+      "twitch_name": "The Way of Wrath",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/516660_IGDB-{width}x{height}.jpg",
+      "igdb_id": "117329"
+    },
+    {
+      "steam_appid": 2967950,
+      "steam_name": "The Witch's Bakery",
+      "twitch_game_id": "1535357725",
+      "twitch_name": "The Witch's Bakery",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1535357725_IGDB-{width}x{height}.jpg",
+      "igdb_id": "278824"
     },
     {
       "steam_appid": 3493540,
@@ -817,6 +2722,30 @@
       "igdb_id": "309799"
     },
     {
+      "steam_appid": 2411200,
+      "steam_name": "Underkeep",
+      "twitch_game_id": "215102198",
+      "twitch_name": "Underkeep",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/215102198_IGDB-{width}x{height}.jpg",
+      "igdb_id": "389458"
+    },
+    {
+      "steam_appid": 2828710,
+      "steam_name": "Valor Mortis",
+      "twitch_game_id": "847310440",
+      "twitch_name": "Valor Mortis",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/847310440_IGDB-{width}x{height}.jpg",
+      "igdb_id": "361833"
+    },
+    {
       "steam_appid": 3255500,
       "steam_name": "Ved: Recure",
       "twitch_game_id": "1672475789",
@@ -829,6 +2758,18 @@
       "igdb_id": "321207"
     },
     {
+      "steam_appid": 3115160,
+      "steam_name": "Warhammer 40,000: Boltgun 2",
+      "twitch_game_id": "546222566",
+      "twitch_name": "Warhammer 40,000: Boltgun 2",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/546222566_IGDB-{width}x{height}.jpg",
+      "igdb_id": "344669"
+    },
+    {
       "steam_appid": 2272360,
       "steam_name": "Warhammer 40,000: Dawn of War IV",
       "twitch_game_id": "367978322",
@@ -839,6 +2780,30 @@
       "language_streamers": {},
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/367978322_IGDB-{width}x{height}.jpg",
       "igdb_id": "361859"
+    },
+    {
+      "steam_appid": 4258290,
+      "steam_name": "We Are So Cooked",
+      "twitch_game_id": "1265222540",
+      "twitch_name": "We Are So Cooked",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1265222540_IGDB-{width}x{height}.jpg",
+      "igdb_id": "388377"
+    },
+    {
+      "steam_appid": 2315050,
+      "steam_name": "We Were Here Tomorrow",
+      "twitch_game_id": "803237359",
+      "twitch_name": "We Were Here Tomorrow",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/803237359_IGDB-{width}x{height}.jpg",
+      "igdb_id": "393015"
     },
     {
       "steam_appid": 3699590,
@@ -865,6 +2830,18 @@
       "igdb_id": "341034"
     },
     {
+      "steam_appid": 1846700,
+      "steam_name": "Witchbrook",
+      "twitch_game_id": "506347",
+      "twitch_name": "Witchbrook",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/506347_IGDB-{width}x{height}.jpg",
+      "igdb_id": "67195"
+    },
+    {
       "steam_appid": 4072240,
       "steam_name": "Woman Simulator",
       "twitch_game_id": "610706148",
@@ -875,6 +2852,30 @@
       "language_streamers": {},
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/610706148_IGDB-{width}x{height}.jpg",
       "igdb_id": "378548"
+    },
+    {
+      "steam_appid": 2402470,
+      "steam_name": "World of Anterra",
+      "twitch_game_id": "2042239012",
+      "twitch_name": "World of Anterra",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2042239012_IGDB-{width}x{height}.jpg",
+      "igdb_id": "215413"
+    },
+    {
+      "steam_appid": 950660,
+      "steam_name": "WRAITH OPS",
+      "twitch_game_id": "1353665550",
+      "twitch_name": "WRAITH OPS",
+      "matched": true,
+      "streamer_count": 0,
+      "viewer_count": 0,
+      "language_streamers": {},
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1353665550_IGDB-{width}x{height}.jpg",
+      "igdb_id": "165574"
     },
     {
       "steam_appid": 3918200,
