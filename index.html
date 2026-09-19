@@ -91,20 +91,20 @@
   <div class="weekdays" aria-hidden="true"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
   <div id="calendar" class="calendar"></div>
   <div class="notice" id="notice" role="status"></div>
-  <div class="calendar-footer"><span class="legend"><span class="square"></span> 當日關注排名第 1</span><span class="legend"><span class="square secondary"></span> 當日關注排名第 2</span><span>點日期查看當天完整清單；點遊戲名稱前往 Steam 商店</span></div>
+  <div class="calendar-footer"><span class="legend"><span class="square"></span> 當日關注排名第 1</span><span class="legend"><span class="square secondary"></span> 當日關注排名第 2</span><span>日期以台灣時間（UTC+8）為準；點日期查看當天完整清單，點遊戲名稱前往 Steam 商店</span></div>
 </section>
 
 </div>
-<footer class="footnote">資料來源：Steam Store 發售資訊、Steam Community Followers。月曆顯示具備明確日期、至少 5,000 Followers 的遊戲；近期上市另依實際驗證的 Followers 選取。本站與 Valve / Steam 無官方隸屬關係。</footer>
+<footer class="footnote">資料來源：Steam 台灣區商店發售資訊、Steam Community Followers。今日與日期區間以台灣時間計算；未公開確切發售時刻的遊戲保留 Steam 商店公告日期，不擅自加一天。月曆顯示具備明確日期、至少 5,000 Followers 的遊戲；近期上市另依實際驗證的 Followers 選取。本站與 Valve / Steam 無官方隸屬關係。</footer>
 </main>
 <script>
 (() => {
 "use strict";
 const paths=["./data/steam_upcoming.json","./data/steam_preview.json"];
 const el=id=>document.getElementById(id);
-const nowText=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
-const parts=nowText.match(/(\d{4})\D(\d{2})\D(\d{2})/);
-const today=parts?parts.slice(1).join("-"):new Date().toISOString().slice(0,10);
+const taipeiParts=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+const taipeiPart=type=>taipeiParts.find(part=>part.type===type)?.value||"";
+const today=[taipeiPart("year"),taipeiPart("month"),taipeiPart("day")].join("-");
 const clock=new Date(today+"T12:00:00Z");
 const requestedMonth=new URLSearchParams(location.search).get("month");
 const validMonth=typeof requestedMonth==="string"&&/^(19|20|21)\d{2}-(0[1-9]|1[0-2])$/.test(requestedMonth);
