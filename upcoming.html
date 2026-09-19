@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="未來 45 天內即將推出且 Followers 至少 5,000 的遊戲，依發售日整理。">
+<title>最近快要上市｜Game Trend Radar</title>
+<link rel="stylesheet" href="./list.css">
+</head>
+<body data-mode="upcoming">
+<main class="page">
+  <header class="topbar">
+    <a class="brand" href="./index.html" aria-label="回到 Game Trend Radar 首頁"><span class="mark" aria-hidden="true">✦</span><span>GAME TREND RADAR</span></a>
+    <a class="home-link" href="./index.html">← 返回發售月曆</a>
+  </header>
+  <div class="heading">
+    <div class="eyebrow">STEAM RELEASE WATCH</div>
+    <h1>最近快要上市</h1>
+    <p>未來 45 天內即將推出且 Followers 至少 5,000 的遊戲，依發售日整理。</p>
+  </div>
+  <nav class="tabs" aria-label="Steam 遊戲清單">
+    <a class="tab" href="./released.html">近期已上市</a>
+    <a class="tab active" href="./upcoming.html" aria-current="page">最近快要上市</a>
+    <a class="tab" href="./index.html">發售月曆</a>
+  </nav>
+  <section class="panel" aria-label="最近快要上市完整清單">
+    <div class="toolbar">
+      <strong>全部遊戲</strong><span class="count" id="gameCount" role="status">載入中…</span>
+      <span class="tool-spacer"></span>
+      <input id="searchInput" class="input" type="search" placeholder="搜尋遊戲名稱或 AppID" aria-label="搜尋遊戲名稱或 AppID" autocomplete="off">
+      <select id="sortSelect" class="select" aria-label="排序方式"><option value="date">上市日期最近</option><option value="followers">Followers 最高</option></select>
+    </div>
+    <div class="list" id="fullList" aria-live="polite"><div class="empty">正在讀取 Steam 遊戲資料…</div></div>
+  </section>
+  <footer class="status" id="updateStatus" role="status">正在讀取資料…</footer>
+</main>
+<script src="./list.js" defer></script>
+</body>
+</html>
