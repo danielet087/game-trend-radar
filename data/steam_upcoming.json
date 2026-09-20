@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-20T11:49:54.388Z",
+  "generated_at": "2026-09-20T16:11:26.818Z",
   "source": {
     "catalog": "Steam IStoreQueryService/Query day-filter, TW",
     "followers": "Steam Community game-group memberCount"
@@ -44,7 +44,7 @@
       "prefilter_complete": true
     }
   },
-  "count": 98,
+  "count": 100,
   "games": [
     {
       "appid": 2769570,
@@ -3804,6 +3804,45 @@
       "tags_count_stored": 10
     },
     {
+      "appid": 4348910,
+      "name": "Probably Stolen - Cyberpunk Shopkeeper Sim",
+      "name_en": "Probably Stolen - Cyberpunk Shopkeeper Sim",
+      "name_zh_tw": null,
+      "name_zh_cn": null,
+      "release_raw": "28 Oct, 2026",
+      "release_start": "2026-10-28",
+      "release_end": "2026-10-28",
+      "release_precision": "day",
+      "release_display_precision": "date_full",
+      "followers": 9700,
+      "followers_source": "SteamDB",
+      "followers_source_url": "https://steamdb.info/upcoming/?week=2026W44",
+      "followers_observed_at": "2026-09-20T16:11:26.818Z",
+      "followers_provenance": "third_party_public_steam_hub_follows",
+      "follower_checked_at": null,
+      "store_url": "https://store.steampowered.com/app/4348910/?l=tchinese",
+      "community_url": "https://steamcommunity.com/app/4348910/",
+      "release_date_timezone": "Asia/Taipei",
+      "release_date_basis": "steamdb_explicit_utc_release_time_crosschecked_with_steam_store",
+      "release_time_utc": "2026-10-28T15:55:00Z",
+      "release_time_source": "https://steamdb.info/app/4348910/",
+      "language_support": {
+        "tchinese": false,
+        "schinese": true,
+        "english": true
+      },
+      "sexual_content_screened": true,
+      "sexual_content_screening_source": "https://store.steampowered.com/app/4348910/?l=tchinese",
+      "sexual_content_screening_basis": "Steam official content note concerns drug/alcohol use and cyberpunk crime, not sexual content",
+      "app_type": "Game",
+      "discovered_by": "chatgpt_daily_web_search_2026_09_21",
+      "data_sources": {
+        "follows": "https://steamdb.info/upcoming/?week=2026W44",
+        "official_store": "https://store.steampowered.com/app/4348910/?l=tchinese",
+        "release_metadata": "https://steamdb.info/app/4348910/"
+      }
+    },
+    {
       "appid": 2067820,
       "name": "RetroSpace",
       "release_raw": "1 Oct, 2026",
@@ -4350,6 +4389,45 @@
       "store_release_date_reported": "2026-09-24",
       "store_release_date_reported_source": "https://store.steampowered.com/app/1374860/",
       "tags_count_stored": 10
+    },
+    {
+      "appid": 3960600,
+      "name": "Warrior Cats: Clans of the Forest",
+      "name_en": "Warrior Cats: Clans of the Forest",
+      "name_zh_tw": null,
+      "name_zh_cn": null,
+      "release_raw": "23 Oct, 2026",
+      "release_start": "2026-10-24",
+      "release_end": "2026-10-24",
+      "release_precision": "day",
+      "release_display_precision": "date_full",
+      "followers": 8367,
+      "followers_source": "SteamDB",
+      "followers_source_url": "https://steamdb.info/upcoming/?week=2026W43",
+      "followers_observed_at": "2026-09-20T16:11:26.818Z",
+      "followers_provenance": "third_party_public_steam_hub_follows",
+      "follower_checked_at": null,
+      "store_url": "https://store.steampowered.com/app/3960600/?l=tchinese",
+      "community_url": "https://steamcommunity.com/app/3960600/",
+      "release_date_timezone": "Asia/Taipei",
+      "release_date_basis": "steamdb_explicit_utc_release_time_crosschecked_with_steam_store",
+      "release_time_utc": "2026-10-23T16:00:00Z",
+      "release_time_source": "https://steamdb.info/app/3960600/",
+      "language_support": {
+        "tchinese": false,
+        "schinese": false,
+        "english": true
+      },
+      "sexual_content_screened": true,
+      "sexual_content_screening_source": "https://store.steampowered.com/app/3960600/?l=tchinese",
+      "sexual_content_screening_basis": "Family-friendly Warrior Cats novel based fantasy adventure, rated E10+ for fantasy violence",
+      "app_type": "Game",
+      "discovered_by": "chatgpt_daily_web_search_2026_09_21",
+      "data_sources": {
+        "follows": "https://steamdb.info/upcoming/?week=2026W43",
+        "official_store": "https://store.steampowered.com/app/3960600/?l=tchinese",
+        "release_metadata": "https://steamdb.info/app/3960600/"
+      }
     },
     {
       "appid": 4253770,
@@ -6073,10 +6151,10 @@
   "language_support_checked_at": "2026-09-20T06:33:39Z",
   "language_support_source": "Steam Store Browse GetItems supported_languages + English/tchinese/schinese TW names",
   "language_support_summary": {
-    "total": 98,
+    "total": 100,
     "traditional_supported": 58,
-    "simplified_only": 19,
-    "neither_chinese": 21,
+    "simplified_only": 20,
+    "neither_chinese": 22,
     "unpublished_support": 0,
     "zh_tw_titles": 28,
     "zh_cn_titles": 47
@@ -6143,20 +6221,21 @@
     }
   },
   "latest_web_discovery": {
-    "checked_at": "2026-09-20T11:49:54.388Z",
+    "checked_at": "2026-09-20T16:11:26.818Z",
     "range_taiwan": {
-      "start": "2026-09-20",
-      "end": "2027-09-19"
+      "start": "2026-09-21",
+      "end": "2027-09-20"
     },
     "appids_added": [
-      4814120
+      4348910,
+      3960600
     ],
-    "items_added": 1,
-    "previous_public_count": 97,
-    "public_count": 98,
+    "items_added": 2,
+    "previous_public_count": 98,
+    "public_count": 100,
     "annual_coverage_complete": false,
-    "report_location": "https://github.com/danielet087/game-trend-radar-backend/blob/main/reports/steam_one_run_13_month_search_20260920.json",
-    "follows_source": "SteamDB, 23878 on inspected charts page",
-    "method": "web search over 13 month terms + individual official Steam verification; no GitHub Actions"
+    "report_location": "https://github.com/danielet087/game-trend-radar-backend/blob/main/reports/steam_daily_sync_20260921_0010_taipei.json",
+    "follows_source": "SteamDB, third party",
+    "method": "individual verified public web pages; no GitHub Actions"
   }
 }
