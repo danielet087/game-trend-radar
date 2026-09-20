@@ -4934,6 +4934,12 @@ html {
   justify-content: center;
   white-space: nowrap;
   line-height: 1.4;
+  opacity: 1;
+  transform: translateY(0);
+}
+.game-card .steam-store-link:hover {
+  transform: scale(1.04);
+  background: var(--lime);
 }
 .game-card .countdown {
   pointer-events: none;
