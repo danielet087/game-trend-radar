@@ -407,13 +407,13 @@
       "followers": 10789,
       "follower_checked_at": "2026-09-18T23:03:40Z",
       "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4705510/c5e87568b6d7a5b000e4641c973fb721db1c4252/capsule_231x87.jpg?t=1789585374",
-      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4705510/acd7fedba57cc1d506f18886ae6c937f754da6c1/header.jpg?t=1789585374",
+      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4705510/acd7fedba57cc1d506f18886ae6c937f754da6c1/header.jpg?t=1789884931",
       "store_url": "https://store.steampowered.com/app/4705510/",
       "release_date_timezone": "Asia/Taipei",
       "release_date_basis": "steam_store_browse_release_time",
       "release_time_utc": "2026-09-21T14:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
-      "main_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4705510/a8561b95320fbf49e1c9c045f7acbd55f0513038/capsule_616x353.jpg?t=1789585374",
+      "main_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4705510/a8561b95320fbf49e1c9c045f7acbd55f0513038/capsule_616x353.jpg?t=1789884931",
       "release_display_precision": "date_full",
       "language_support": {
         "tchinese": false,
@@ -653,13 +653,13 @@
       "followers": 6388,
       "follower_checked_at": "2026-09-19T00:28:10Z",
       "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3431300/64dd6475a7d4cfc6d500e7577efc738b3415a959/capsule_231x87.jpg?t=1789779589",
-      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3431300/3cb295b7e9e7d2eedf4b474d151e60edb7210338/header.jpg?t=1789873921",
+      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3431300/3cb295b7e9e7d2eedf4b474d151e60edb7210338/header.jpg?t=1789875900",
       "store_url": "https://store.steampowered.com/app/3431300/",
       "release_date_timezone": "Asia/Taipei",
       "release_date_basis": "steam_store_browse_release_time",
       "release_time_utc": "2026-09-23T17:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
-      "main_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3431300/227c316d235a0605a54bceda432375c061dbfb12/capsule_616x353.jpg?t=1789873921",
+      "main_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3431300/227c316d235a0605a54bceda432375c061dbfb12/capsule_616x353.jpg?t=1789875900",
       "release_display_precision": "date_full",
       "language_support": {
         "tchinese": false,
@@ -840,5 +840,34 @@
     "unpublished_support": 0,
     "zh_tw_titles": 8,
     "zh_cn_titles": 15
-  }
+  },
+  "steam_live_collection_test": {
+    "collected_at": "2026-09-20T08:25:35Z",
+    "store_provider": "Steam IStoreBrowseService/GetItems (TW)",
+    "official_followers_provider": "Steam Community memberslistxml",
+    "store_appids_checked": 96,
+    "public_games": 29,
+    "release_precision_verified": 29,
+    "artwork_headers_fetched": 29,
+    "artwork_main_capsules_fetched": 29,
+    "language_summary": {
+      "total": 29,
+      "traditional_supported": 15,
+      "simplified_only": 7,
+      "neither_chinese": 7,
+      "unpublished_support": 0,
+      "zh_tw_titles": 8,
+      "zh_cn_titles": 15
+    },
+    "follower_sample": [
+      {
+        "appid": 2769570,
+        "old": 140298,
+        "new": null,
+        "status": "rate_limited"
+      }
+    ],
+    "follower_values_updated_in_file": 0
+  },
+  "steam_store_metadata_checked_at": "2026-09-20T08:25:35Z"
 }
