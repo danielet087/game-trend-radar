@@ -184,13 +184,18 @@
     body.append(title);
     if (game.nameEn && game.nameEn !== game.name)
       body.append(node("p", "card-english", game.nameEn));
-    const language = node(
-      "span",
-      `card-language language-${game.languageStatus}`,
-      game.languageBadge,
-    );
-    language.title = "Steam 商店公布的遊戲支援語言；配音與字幕支援另以商店為準";
-    body.append(language);
+    const languages = node("div", "card-languages");
+    languages.setAttribute("aria-label", "Steam 遊戲支援語言");
+    for (const badge of game.languageBadges) {
+      const language = node(
+        "span",
+        `card-language language-${badge.status}`,
+        badge.label,
+      );
+      language.title = "Steam 公布的遊戲語言支援；介面、字幕及配音的詳細項目請以商店為準";
+      languages.append(language);
+    }
+    body.append(languages);
     if (game.darkHorse) {
       const badge = node("span", "dark-horse", "近期黑馬");
       badge.title = "直接上市，並於發售首週內確認超過 3,000 人關注";
