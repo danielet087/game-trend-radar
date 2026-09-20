@@ -62,12 +62,41 @@
     const nameEn = String(
       raw.name_en || raw.name || translated?.name_en || translated?.name || "",
     ).trim();
-    const name = String(
-      raw.name_zh_tw ||
-        translated?.name_zh_tw ||
-        nameEn ||
-        `Steam App ${appid}`,
+    // Language support comes from Steam's game-level supported_languages,
+    // not from which language the Store description was translated into.
+    const languages = raw.language_support || translated?.language_support || null;
+    const nameTw = String(
+      raw.name_zh_tw || translated?.name_zh_tw || "",
     ).trim();
+    const nameCn = String(
+      raw.name_zh_cn || translated?.name_zh_cn || "",
+    ).trim();
+    const useTw = !!nameTw && (languages ? languages.tchinese === true : true);
+    const useCn = !!nameCn && (languages ? languages.schinese === true : true);
+    const name = String(
+      (useTw && nameTw) ||
+      (useCn && nameCn) ||
+      nameEn ||
+      `Steam App ${appid}`,
+    ).trim();
+    const languageBadge = !languages ||
+      languages.tchinese == null ||
+      languages.schinese == null
+      ? "語言待確認"
+      : languages.tchinese
+        ? "支援繁體中文"
+        : languages.schinese
+          ? "支援簡體中文"
+          : "未標示支援中文";
+    const languageStatus = !languages ||
+      languages.tchinese == null ||
+      languages.schinese == null
+      ? "unknown"
+      : languages.tchinese
+        ? "traditional"
+        : languages.schinese
+          ? "simplified"
+          : "other";
     // Steam's small capsule is only 231x87; stretching it over a large
     // homepage/card banner makes it visibly soft. Prefer store header assets.
     // Modern Steam assets can have a different hash for header vs capsule, so
@@ -95,6 +124,11 @@
       appid,
       name,
       nameEn,
+      nameTw,
+      nameCn,
+      languages,
+      languageBadge,
+      languageStatus,
       date,
       followers,
       art: images[0] || "",
