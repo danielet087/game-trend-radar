@@ -1,9 +1,7 @@
 name: Probe Steam game languages once
 
+# One-time Store metadata probe finished. Manual-only.
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/probe-steam-game-languages-once.yml"]
   workflow_dispatch:
 
 permissions:
