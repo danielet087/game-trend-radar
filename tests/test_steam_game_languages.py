@@ -36,6 +36,21 @@ class SteamGameLanguageTests(unittest.TestCase):
             "tchinese": None, "schinese": None, "english": None,
         })
 
+    def test_when_none_of_chinese_or_english_find_actual_other_languages(self):
+        self.assertEqual(
+            read_support({"supported_languages": [
+                {"elanguage": 10, "supported": True},
+                {"elanguage": 12, "supported": True},
+                {"elanguage": 6, "supported": False},
+                {"elanguage": 7, "supported": False},
+                {"elanguage": 0, "supported": False},
+            ]}),
+            {
+                "tchinese": False, "schinese": False, "english": False,
+                "other_languages": ["日文", "波蘭文"],
+            },
+        )
+
     def test_store_chinese_titles_only_if_real_localized_han_name(self):
         self.assertEqual(official_chinese_title("神鬼寓言"), "神鬼寓言")
         self.assertEqual(official_chinese_title("《夜城狂想》Nivalis Nights"),
