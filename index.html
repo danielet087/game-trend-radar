@@ -17,9 +17,10 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=2.5.0" />
+    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.0.0" />
     <script src="./assets/radar-data-v1.js?v=2.5.1" defer></script>
-    <script src="./assets/radar-play-v2.js?v=2.5.0" defer></script>
+    <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
+    <script src="./assets/radar-play-v2.js?v=3.0.0" defer></script>
   </head>
   <body data-page="home">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -60,135 +61,16 @@
       </div>
     </header>
     <main class="page-shell" id="mainContent">
-      <section class="hero" aria-labelledby="pageTitle">
-        <div class="hero-copy">
-          <p class="eyebrow">
-            <span class="signal-dot"></span> STEAM 新作觀測站
-          </p>
-          <h1 id="pageTitle">下一款心動，<br /><span>提前發現。</span></h1>
-          <p class="hero-description">
-            追蹤遊戲熱度，收藏發售日。<br
-              class="mobile-break"
-            />你的下一場冒險，從這裡開始。
-          </p>
-          <a class="button primary" href="#releaseCalendar"
-            >探索發售月曆 <span aria-hidden="true">↗</span></a
-          >
+      <header class="workspace-heading">
+        <div>
+          <p class="eyebrow">RELEASE CALENDAR</p>
+          <h1 id="pageTitle">發售月曆</h1>
+          <p>追蹤遊戲熱度，收藏發售日。你的下一場冒險，從這裡開始。</p>
         </div>
-        <div
-          class="feature-stage"
-          id="featureStage"
-          role="region"
-          aria-label="焦點遊戲輪播"
-          aria-roledescription="輪播"
+        <a class="workspace-shortcut" href="./saved.html"
+          >打開我的收藏 <span aria-hidden="true">↗</span></a
         >
-          <div class="stage-orbit" aria-hidden="true"></div>
-          <span class="stage-spark spark-a" aria-hidden="true">✳</span
-          ><span class="stage-spark spark-b" aria-hidden="true">✳</span>
-          <span class="stage-stamp" aria-hidden="true"
-            >NEXT<br />ADVENTURE<span>↗</span></span
-          >
-          <div class="feature-stack" id="featureStack" aria-busy="true">
-            <div class="feature-placeholder">
-              <span>◎</span>
-              <p>正在與新作相遇…</p>
-            </div>
-          </div>
-          <div class="feature-controls" id="featureControls" hidden>
-            <button
-              class="round-control"
-              id="featurePrev"
-              aria-label="上一款焦點遊戲"
-            >
-              ←
-            </button>
-            <div
-              id="featureDots"
-              class="feature-dots"
-              role="group"
-              aria-label="選擇焦點遊戲"
-            ></div>
-            <button
-              class="round-control"
-              id="featureNext"
-              aria-label="下一款焦點遊戲"
-            >
-              →</button
-            ><button
-              class="round-control play-control"
-              id="featurePlay"
-              aria-label="暫停焦點輪播"
-              aria-pressed="true"
-            >
-              Ⅱ</button
-            ><span
-              id="featureNumber"
-              class="feature-number"
-              aria-hidden="true"
-            ></span>
-          </div>
-          <p class="sr-only" id="featureAnnouncement" role="status"></p>
-        </div>
-        <div class="hero-scroll" aria-hidden="true">
-          <span>SCROLL TO DISCOVER</span><b>↓</b>
-        </div>
-      </section>
-      <div class="adventure-ribbon" aria-hidden="true">
-        <div class="ribbon-track">
-          <span
-            >GAME TREND RADAR <i>✳</i> NEXT ADVENTURE
-            <i>↗</i> 好遊戲，值得期待 <i>✳</i> </span
-          ><span
-            >GAME TREND RADAR <i>✳</i> NEXT ADVENTURE
-            <i>↗</i> 好遊戲，值得期待 <i>✳</i>
-          </span>
-        </div>
-      </div>
-      <section class="stats" aria-label="目前收錄摘要">
-        <div class="stat">
-          <span class="stat-icon blue" aria-hidden="true">◎</span>
-          <div>
-            <span class="stat-label">已收錄的新作</span
-            ><strong id="totalCount">—</strong><span class="stat-unit">款</span>
-          </div>
-          <span class="stat-note">5,000+ 人關注</span>
-        </div>
-        <div class="stat">
-          <span class="stat-icon orange" aria-hidden="true">↗</span>
-          <div>
-            <span class="stat-label">45 天內即將登場</span
-            ><strong id="upcomingCount">—</strong
-            ><span class="stat-unit">款</span>
-          </div>
-          <span class="stat-note">下一波新鮮事</span>
-        </div>
-        <div class="stat">
-          <span class="stat-icon green" aria-hidden="true">✓</span>
-          <div>
-            <span class="stat-label">近 30 天已上市</span
-            ><strong id="releasedCount">—</strong
-            ><span class="stat-unit">款</span>
-          </div>
-          <span class="stat-note">3,000+ 人關注</span>
-        </div>
-      </section>
-      <section class="spotlight-section" aria-labelledby="spotlightTitle">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">COMING SOON</p>
-            <h2 id="spotlightTitle">即將登場，先放進雷達</h2>
-          </div>
-          <a class="text-link" href="./upcoming.html"
-            >查看全部 <span aria-hidden="true">↗</span></a
-          >
-        </div>
-        <div class="spotlight-grid" id="spotlightGames" aria-busy="true">
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
-        </div>
-      </section>
+      </header>
       <div class="data-status" id="dataStatus" role="status">
         <span class="signal-dot"></span
         ><span id="updateText">正在與新作相遇…</span>
@@ -209,15 +91,8 @@
       <section
         class="explorer"
         id="releaseCalendar"
-        aria-labelledby="explorerTitle"
+        aria-labelledby="pageTitle"
       >
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">MARK YOUR CALENDAR</p>
-            <h2 id="explorerTitle">發售月曆</h2>
-          </div>
-          <span class="timezone">台灣時間 UTC+8</span>
-        </div>
         <div class="explorer-panel">
           <div class="calendar-toolbar">
             <div class="month-controls">
@@ -229,6 +104,15 @@
                 →</button
               ><button class="quiet-button" id="todayButton">本月</button>
             </div>
+            <label class="month-jump"
+              ><span>跳至</span
+              ><input
+                type="month"
+                id="monthPicker"
+                aria-label="選擇發售月份"
+                min="1900-01"
+                max="2199-12"
+            /></label>
             <div class="view-switch" role="group" aria-label="顯示方式">
               <button id="calendarView" aria-pressed="true">▦ 月曆</button
               ><button id="listView" aria-pressed="false">☷ 清單</button>
@@ -287,6 +171,23 @@
               載入更多遊戲 ↓
             </button>
           </div>
+        </div>
+      </section>
+      <section class="spotlight-section" aria-labelledby="spotlightTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">COMING SOON</p>
+            <h2 id="spotlightTitle">即將登場，先放進雷達</h2>
+          </div>
+          <a class="text-link" href="./upcoming.html"
+            >查看全部 <span aria-hidden="true">↗</span></a
+          >
+        </div>
+        <div class="spotlight-grid" id="spotlightGames" aria-busy="true">
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
         </div>
       </section>
       <section class="recent-section" aria-labelledby="recentTitle">

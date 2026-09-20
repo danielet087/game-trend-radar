@@ -65,6 +65,9 @@
     });
   }
   function toggleSave(appid, name) {
+    const previousCards = [...$("gamesGrid").querySelectorAll(".game-card")];
+    const activeCard = document.activeElement?.closest(".game-card");
+    const activeIndex = previousCards.indexOf(activeCard);
     if (saved.has(appid)) saved.delete(appid);
     else saved.add(appid);
     let durable = true;
@@ -74,7 +77,18 @@
       durable = false;
     }
     updateSavedControls();
-    if (mode === "saved" || model.savedOnly) renderExplorer();
+    if (mode === "saved" || model.savedOnly) {
+      renderExplorer();
+      if (activeIndex >= 0) {
+        const cards = $("gamesGrid").querySelectorAll(".game-card");
+        const target =
+          cards[Math.min(activeIndex, cards.length - 1)]?.querySelector(
+            "[data-save]",
+          ) || $("resultCount");
+        if (target === $("resultCount")) target.tabIndex = -1;
+        target.focus({ preventScroll: true });
+      }
+    }
     celebrateSave(appid);
     notify(
       durable
@@ -119,11 +133,15 @@
     link.setAttribute("aria-label", `查看 ${game.name} 的遊戲資訊`);
     return link;
   }
-  // Remember unavailable Steam CDN URLs across cards, hero and dialog.
+  // Remember unavailable Steam CDN URLs across cards.
   // A modern hashed capsule does not imply the same hash for header.jpg.
   const failedArtwork = new Set();
   function loadGameArtwork(image, game, onExhausted) {
-    const sources = game.artSources?.length ? game.artSources : game.art ? [game.art] : [];
+    const sources = game.artSources?.length
+      ? game.artSources
+      : game.art
+        ? [game.art]
+        : [];
     let next = 0;
     function advance() {
       while (next < sources.length && failedArtwork.has(sources[next])) next++;
@@ -150,7 +168,10 @@
       img.alt = "";
       img.loading = "lazy";
       img.decoding = "async";
-      fallback.hidden = true;
+      img.addEventListener("load", () => {
+        fallback.hidden = true;
+        img.classList.add("art-loaded");
+      });
       loadGameArtwork(img, game, () => {
         img.remove();
         fallback.hidden = false;
@@ -192,7 +213,8 @@
         `card-language language-${badge.status}`,
         badge.label,
       );
-      language.title = "Steam 公布的遊戲語言支援；介面、字幕及配音的詳細項目請以商店為準";
+      language.title =
+        "Steam 公布的遊戲語言支援；介面、字幕及配音的詳細項目請以商店為準";
       languages.append(language);
     }
     body.append(languages);
@@ -219,7 +241,6 @@
     arrow.setAttribute("aria-hidden", "true");
     steam.append(arrow);
     card.append(cover, body, detail, save, steam);
-    addTilt(card);
     return card;
   }
   function empty(title, text, action = null) {
@@ -277,14 +298,8 @@
     const recent = D.selectGames(data, "released", today).sort(
       (a, b) => b.followers - a.followers || b.date.localeCompare(a.date),
     );
-    $("totalCount").textContent = number.format(data.games.length);
-    $("upcomingCount").textContent = number.format(upcoming.length);
-    $("releasedCount").textContent = data.recentAvailable
-      ? number.format(recent.length)
-      : "—";
     $("spotlightGames").replaceChildren(...upcoming.slice(0, 4).map(makeCard));
     $("spotlightGames").setAttribute("aria-busy", "false");
-    renderFeature(upcoming);
     revealCards($("spotlightGames"));
     if (!upcoming.length)
       $("spotlightGames").append(
@@ -294,6 +309,7 @@
         ),
       );
     $("recentGames").replaceChildren(...recent.slice(0, 3).map(makeCard));
+    revealCards($("recentGames"));
     if (!recent.length)
       $("recentGames").append(
         empty(
@@ -386,6 +402,7 @@
           (day === today ? " today" : ""),
       );
       const dayGames = inMonth ? byDate.get(day) || [] : [];
+      if (dayGames.length) cell.classList.add("has-games");
       const link = node("a", "date-link", Number(day.slice(-2)));
       link.href = `./date.html?date=${day}`;
       link.setAttribute("aria-label", `${day} 發售遊戲完整清單`);
@@ -434,6 +451,7 @@
       );
       $("listView").setAttribute("aria-pressed", String(model.view === "list"));
       $("sortWrap").hidden = model.view === "calendar";
+      $("monthPicker").value = model.month;
       $("monthLabel").textContent =
         `${model.month.slice(0, 4)} 年 ${Number(model.month.slice(5))} 月`;
     }
@@ -450,6 +468,9 @@
       : "資料暫時無法讀取";
     if (mode === "home") renderCalendar(items);
     $("gamesGrid").setAttribute("aria-busy", "false");
+    $("gamesGrid")
+      .querySelectorAll(".reveal-pending")
+      .forEach((card) => revealObserver?.unobserve(card));
     $("gamesGrid").replaceChildren(
       ...items.slice(0, model.limit).map(makeCard),
     );
@@ -485,6 +506,7 @@
       }
       $("gamesGrid").append(empty(title, text, action));
     }
+    if (mode !== "home" || model.view === "list") revealCards($("gamesGrid"));
     updateSavedControls();
   }
   function resetFilters() {
@@ -550,6 +572,14 @@
     }
     $("prevMonth").addEventListener("click", () => stepMonth(-1));
     $("nextMonth").addEventListener("click", () => stepMonth(1));
+    $("monthPicker").addEventListener("change", (event) => {
+      if (!monthPattern.test(event.target.value)) {
+        event.target.value = model.month;
+        return;
+      }
+      model.month = event.target.value;
+      changeFilters();
+    });
     $("todayButton").addEventListener("click", () => {
       model.month = today.slice(0, 7);
       changeFilters();
@@ -629,7 +659,6 @@
         $("notice").append(retry);
         $("notice").hidden = false;
         if (mode === "home") {
-          renderFeature([]);
           $("spotlightGames").replaceChildren(
             empty("新作資料暫時無法讀取", "請使用下方「重新讀取」再試一次。"),
           );
@@ -654,85 +683,33 @@
       renderExplorer();
     }
   }
-  // Motion has one global switch; no animation is required to read or operate the site.
-  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  let motionOn = !reducedMotion.matches;
-  let featureGames = [];
-  let featureIndex = 0;
-  let featurePlaying = true;
-  let featureHover = false;
-  let featureTimer = null;
+  let motionOn = window.RadarMotion?.enabled !== false;
   let revealObserver = null;
-  function updateMotion() {
-    document.body.classList.toggle("motion-on", motionOn);
-    document.body.classList.toggle("motion-off", !motionOn);
-    const button = $("motionToggle");
-    button.setAttribute("aria-pressed", String(motionOn));
-    button.setAttribute(
-      "aria-label",
-      motionOn ? "關閉動態效果" : "開啟動態效果",
-    );
-    button.title = button.getAttribute("aria-label");
-    button.querySelector("span").textContent = motionOn
-      ? "動態 ON"
-      : "動態 OFF";
-    button
-      .querySelector("path")
-      .setAttribute("d", motionOn ? "M9 5v14M15 5v14" : "m8 5 11 7-11 7Z");
-    if (!motionOn)
-      document
-        .querySelectorAll(".reveal-pending")
-        .forEach((el) => el.classList.add("is-visible"));
-    scheduleFeature();
-  }
   function setupMotion() {
-    try {
-      if (localStorage.getItem("game-trend-radar:motion:v2") === "off")
-        motionOn = false;
-    } catch {}
-    $("motionToggle").addEventListener("click", () => {
-      motionOn = !motionOn;
-      try {
-        localStorage.setItem(
-          "game-trend-radar:motion:v2",
-          motionOn ? "on" : "off",
-        );
-      } catch {}
-      updateMotion();
-    });
-    reducedMotion.addEventListener?.("change", (event) => {
-      if (event.matches) {
-        motionOn = false;
-        updateMotion();
-      }
+    document.addEventListener("radar:motionchange", () => {
+      motionOn = window.RadarMotion.enabled;
+      if (!motionOn)
+        document.querySelectorAll(".reveal-pending").forEach((el) => {
+          el.classList.remove("reveal-pending", "is-visible");
+          el.style.transitionDelay = "";
+        });
     });
     if ("IntersectionObserver" in window) {
       revealObserver = new IntersectionObserver(
         (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("is-visible");
-              revealObserver.unobserve(entry.target);
-              setTimeout(() => {
-                entry.target.classList.remove("reveal-pending", "is-visible");
-                entry.target.style.transitionDelay = "";
-              }, 850);
-            }
-          });
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            entry.target.classList.add("is-visible");
+            revealObserver.unobserve(entry.target);
+            setTimeout(() => {
+              entry.target.classList.remove("reveal-pending", "is-visible");
+              entry.target.style.transitionDelay = "";
+            }, 650);
+          }
         },
-        { threshold: 0.08, rootMargin: "0px 0px -20px 0px" },
+        { threshold: 0.04 },
       );
-      document
-        .querySelectorAll(
-          ".section-heading, .stats, .bottom-note, .page-heading",
-        )
-        .forEach((el) => {
-          el.classList.add("reveal-pending");
-          revealObserver.observe(el);
-        });
     }
-    updateMotion();
-    document.addEventListener("visibilitychange", scheduleFeature);
   }
   function revealCards(area) {
     if (!revealObserver || !motionOn) return;
@@ -740,31 +717,6 @@
       card.style.transitionDelay = Math.min(index % 4, 3) * 45 + "ms";
       card.classList.add("reveal-pending");
       revealObserver.observe(card);
-    });
-  }
-  function addTilt(card) {
-    let frame = null;
-    card.addEventListener("pointermove", (event) => {
-      if (!motionOn || event.pointerType !== "mouse") return;
-      cancelAnimationFrame(frame);
-      const x = event.clientX,
-        y = event.clientY;
-      frame = requestAnimationFrame(() => {
-        const rect = card.getBoundingClientRect();
-        card.style.setProperty(
-          "--tilt-x",
-          ((0.5 - (y - rect.top) / rect.height) * 5).toFixed(2) + "deg",
-        );
-        card.style.setProperty(
-          "--tilt-y",
-          (((x - rect.left) / rect.width - 0.5) * 5).toFixed(2) + "deg",
-        );
-      });
-    });
-    card.addEventListener("pointerleave", () => {
-      cancelAnimationFrame(frame);
-      card.style.setProperty("--tilt-x", "0deg");
-      card.style.setProperty("--tilt-y", "0deg");
     });
   }
   function celebrateSave(appid) {
@@ -782,210 +734,7 @@
       setTimeout(() => badge.classList.remove("bounce"), 700);
     });
   }
-  function featureImage(game) {
-    const image = node("img");
-    image.alt = "";
-    image.decoding = "async";
-    loadGameArtwork(image, game, () =>
-      image.replaceWith(node("span", "cover-placeholder")),
-    );
-    return image;
-  }
-  function renderFeature(upcoming) {
-    if (!$("featureStack")) return;
-    // Prefer readable existing header artwork; all selections remain actual verified records.
-    featureGames = [...upcoming]
-      .sort(
-        (a, b) =>
-          Number(b.hasVerifiedHeader) - Number(a.hasVerifiedHeader) ||
-          b.followers - a.followers,
-      )
-      .slice(0, 4);
-    const stack = $("featureStack");
-    stack.replaceChildren();
-    stack.setAttribute("aria-busy", "false");
-    $("featureDots").replaceChildren();
-    if (!featureGames.length) {
-      const fallback = node("div", "feature-placeholder");
-      fallback.append(
-        node("span", "", "◎"),
-        node("p", "", "下一波新作，正在路上"),
-      );
-      stack.append(fallback);
-      $("featureControls").hidden = true;
-      clearTimeout(featureTimer);
-      return;
-    }
-    featureIndex = 0;
-    featureGames.forEach((game, index) => {
-      const slide = node("article", "feature-slide");
-      slide.id = "featureSlide" + index;
-      slide.setAttribute(
-        "aria-label",
-        `${index + 1} / ${featureGames.length}：${game.name}`,
-      );
-      slide.hidden = index !== 0;
-      const cover = detailLink(game, "feature-cover");
-      if (game.art) cover.append(featureImage(game));
-      else cover.append(node("span", "cover-placeholder"));
-      cover.append(node("span", "feature-chip", "焦點新作"));
-      const body = node("div", "feature-body");
-      const heading = node("h2");
-      const titleLink = detailLink(game, "");
-      titleLink.textContent = game.name;
-      titleLink.title = game.name;
-      heading.append(titleLink);
-      const metadata = node("div", "feature-meta");
-      const release = node("time", "", game.date.replaceAll("-", "/"));
-      release.dateTime = game.date;
-      const follows = node("span");
-      follows.append(
-        node("strong", "", number.format(game.followers)),
-        node("small", "", "人關注"),
-      );
-      metadata.append(release, follows);
-      const open = externalLink(game, "feature-open");
-      open.textContent = "↗";
-      body.append(heading, metadata, open);
-      slide.append(cover, body);
-      stack.append(slide);
-      const dot = node("button", "feature-dot");
-      dot.type = "button";
-      dot.setAttribute("aria-label", `顯示焦點遊戲：${game.name}`);
-      dot.setAttribute("aria-pressed", String(index === 0));
-      dot.setAttribute("aria-controls", slide.id);
-      dot.addEventListener("click", () => showFeature(index, true));
-      $("featureDots").append(dot);
-    });
-    $("featureControls").hidden = featureGames.length < 2;
-    $("featureNumber").textContent =
-      `01 / ${String(featureGames.length).padStart(2, "0")}`;
-    scheduleFeature();
-  }
-  function showFeature(index, manual = false) {
-    if (!featureGames.length) return;
-    featureIndex = (index + featureGames.length) % featureGames.length;
-    $("featureStack")
-      .querySelectorAll(".feature-slide")
-      .forEach((slide, i) => {
-        slide.hidden = i !== featureIndex;
-        slide.classList.remove("is-entering");
-        if (i === featureIndex && motionOn) {
-          void slide.offsetWidth;
-          slide.classList.add("is-entering");
-        }
-      });
-    $("featureDots")
-      .querySelectorAll("button")
-      .forEach((dot, i) =>
-        dot.setAttribute("aria-pressed", String(i === featureIndex)),
-      );
-    $("featureNumber").textContent =
-      `${String(featureIndex + 1).padStart(2, "0")} / ${String(featureGames.length).padStart(2, "0")}`;
-    if (manual)
-      $("featureAnnouncement").textContent =
-        `目前焦點：${featureGames[featureIndex].name}`;
-    scheduleFeature();
-  }
-  function scheduleFeature() {
-    clearTimeout(featureTimer);
-    if (!$("featurePlay")) return;
-    const active = featurePlaying && motionOn;
-    $("featurePlay").setAttribute("aria-pressed", String(active));
-    $("featurePlay").setAttribute(
-      "aria-label",
-      active ? "暫停焦點輪播" : "播放焦點輪播",
-    );
-    $("featurePlay").textContent = active ? "Ⅱ" : "▷";
-    if (
-      active &&
-      featureGames.length > 1 &&
-      !featureHover &&
-      !document.hidden
-    ) {
-      featureTimer = setTimeout(() => showFeature(featureIndex + 1), 6500);
-    }
-  }
-  function setupFeature() {
-    if (!$("featureStage")) return;
-    const stage = $("featureStage");
-    $("featurePrev").addEventListener("click", () =>
-      showFeature(featureIndex - 1, true),
-    );
-    $("featureNext").addEventListener("click", () =>
-      showFeature(featureIndex + 1, true),
-    );
-    $("featurePlay").addEventListener("click", () => {
-      if (!motionOn) {
-        motionOn = true;
-        featurePlaying = true;
-        updateMotion();
-      } else {
-        featurePlaying = !featurePlaying;
-        scheduleFeature();
-      }
-    });
-    stage.addEventListener("pointerenter", (event) => {
-      if (event.pointerType === "mouse") {
-        featureHover = true;
-        scheduleFeature();
-      }
-    });
-    stage.addEventListener("pointerleave", () => {
-      featureHover = stage.contains(document.activeElement);
-      scheduleFeature();
-    });
-    stage.addEventListener("focusin", () => {
-      featureHover = true;
-      scheduleFeature();
-    });
-    stage.addEventListener("focusout", (event) => {
-      if (!stage.contains(event.relatedTarget)) {
-        featureHover = false;
-        scheduleFeature();
-      }
-    });
-    let touch = null,
-      swiped = false;
-    stage.addEventListener("pointerdown", (event) => {
-      if (event.pointerType === "touch") {
-        touch = { x: event.clientX, y: event.clientY };
-        swiped = false;
-      }
-    });
-    stage.addEventListener("pointerup", (event) => {
-      if (!touch) return;
-      const dx = event.clientX - touch.x,
-        dy = event.clientY - touch.y;
-      touch = null;
-      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-        swiped = true;
-        showFeature(featureIndex + (dx < 0 ? 1 : -1), true);
-      }
-    });
-    stage.addEventListener("pointercancel", () => {
-      touch = null;
-    });
-    stage.addEventListener(
-      "click",
-      (event) => {
-        if (swiped) {
-          event.preventDefault();
-          event.stopPropagation();
-          swiped = false;
-        }
-      },
-      true,
-    );
-    stage.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-        event.preventDefault();
-        showFeature(featureIndex + (event.key === "ArrowRight" ? 1 : -1), true);
-      }
-    });
-  }
   setupMotion();
-  setupFeature();
   updateSavedControls();
   renderExplorer();
   load();
