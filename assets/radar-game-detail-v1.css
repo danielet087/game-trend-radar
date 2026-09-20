@@ -121,3 +121,57 @@ body[data-page="game"] { background: #f6f7f0; }
   line-height: 1.8;
   margin-top: 3px;
 }
+
+
+/* Separate, readable language tags for games supporting both Chinese scripts. */
+.game-language-pills,
+.game-language-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+.game-language-pills .game-language-kicker {
+  display: inline-flex;
+  align-items: center;
+}
+.game-page-kicker .game-language-kicker.language-traditional {
+  background: #e5f5e9;
+  border-color: #a8d5b7;
+  color: #2b6647;
+}
+.game-page-kicker .game-language-kicker.language-simplified {
+  background: #eaf0ff;
+  border-color: #bfd0fa;
+  color: #3658a2;
+}
+.game-page-kicker .game-language-kicker.language-english,
+.game-page-kicker .game-language-kicker.language-other,
+.game-page-kicker .game-language-kicker.language-unknown {
+  background: #f0f1f5;
+  border-color: #d5dae4;
+  color: #647187;
+}
+.game-language-badges .game-language-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid #a8d5b7;
+  background: #e5f5e9;
+  color: #2b6647;
+  font-size: 12px;
+  font-weight: 900;
+}
+.game-language-badges .game-language-chip.language-simplified {
+  background: #eaf0ff;
+  border-color: #bfd0fa;
+  color: #3658a2;
+}
+.game-language-badges .game-language-chip.language-english,
+.game-language-badges .game-language-chip.language-other,
+.game-language-badges .game-language-chip.language-unknown {
+  background: #f0f1f5;
+  border-color: #d5dae4;
+  color: #647187;
+}
