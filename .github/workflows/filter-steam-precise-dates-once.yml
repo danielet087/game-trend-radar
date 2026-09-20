@@ -1,10 +1,7 @@
 name: One-time filter exact Steam release dates
 
-# Single authorized wake for cleanup; change back to manual-only after launch.
+# Approved one-time run launched; manual-only now, no cron or push triggers.
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/filter-steam-precise-dates-once.yml"]
   workflow_dispatch:
 
 permissions:
