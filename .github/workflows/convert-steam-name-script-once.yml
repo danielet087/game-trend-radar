@@ -1,10 +1,8 @@
 name: One-time convert displayed Steam titles to Traditional
 
 # Single explicitly requested update, then manual-only; no recurring schedule.
+# Authorized conversion finished; keep this workflow manual-only.
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/convert-steam-name-script-once.yml"]
   workflow_dispatch:
 
 permissions:
