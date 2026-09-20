@@ -113,6 +113,26 @@
     a.setAttribute("aria-label", `在 Steam 開啟 ${game.name}（另開分頁）`);
     return a;
   }
+  // Remember unavailable Steam CDN URLs across cards, hero and dialog.
+  // A modern hashed capsule does not imply the same hash for header.jpg.
+  const failedArtwork = new Set();
+  function loadGameArtwork(image, game, onExhausted) {
+    const sources = game.artSources?.length ? game.artSources : game.art ? [game.art] : [];
+    let next = 0;
+    function advance() {
+      while (next < sources.length && failedArtwork.has(sources[next])) next++;
+      if (next === sources.length) {
+        onExhausted();
+        return;
+      }
+      image.src = sources[next++];
+    }
+    image.addEventListener("error", () => {
+      failedArtwork.add(image.src);
+      advance();
+    });
+    advance();
+  }
   function makeCard(game) {
     const card = node("article", "game-card");
     const cover = externalLink(game, "cover-link");
@@ -124,16 +144,11 @@
       img.alt = "";
       img.loading = "lazy";
       img.decoding = "async";
-      img.src = game.art;
-      img.addEventListener(
-        "error",
-        () => {
-          img.remove();
-          fallback.hidden = false;
-        },
-        { once: true },
-      );
       fallback.hidden = true;
+      loadGameArtwork(img, game, () => {
+        img.remove();
+        fallback.hidden = false;
+      });
       cover.append(img);
     }
     const days = Math.round(
@@ -755,13 +770,10 @@
   }
   function featureImage(game) {
     const image = node("img");
-    image.src = game.art;
     image.alt = "";
     image.decoding = "async";
-    image.addEventListener(
-      "error",
-      () => image.replaceWith(node("span", "cover-placeholder")),
-      { once: true },
+    loadGameArtwork(image, game, () =>
+      image.replaceWith(node("span", "cover-placeholder")),
     );
     return image;
   }
@@ -771,7 +783,7 @@
     featureGames = [...upcoming]
       .sort(
         (a, b) =>
-          Number(/header/.test(b.art)) - Number(/header/.test(a.art)) ||
+          Number(b.hasVerifiedHeader) - Number(a.hasVerifiedHeader) ||
           b.followers - a.followers,
       )
       .slice(0, 4);
