@@ -1,0 +1,50 @@
+name: Probe Steam Traditional Chinese official names once
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/probe-steam-tchinese-title-once.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check requests
+      - name: Compare Steam English and tchinese store title response
+        run: |
+          python - <<'PY'
+          import requests,json
+          s=requests.Session()
+          s.headers["User-Agent"]="GameTrendRadarLocaleProbe/1.0"
+          ids=[2769570,4115450,1488490,1912410,4019220,632950,4358690]
+          for lang in ("english","tchinese"):
+            payload={"ids":[{"appid":x} for x in ids],
+                     "context":{"country_code":"TW","language":lang,"steam_realm":1},
+                     "data_request":{"include_basic_info":True}}
+            response=s.get("https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
+              params={"input_json":json.dumps(payload,separators=(",",":"))},timeout=30)
+            print("BROWSE",lang,response.status_code,flush=True)
+            if response.ok:
+              for row in (response.json().get("response") or {}).get("store_items") or []:
+                print("NAME",lang,row.get("appid"),repr(row.get("name")),
+                      "DESC",repr(str((row.get("basic_info") or {}).get("short_description") or "")[:80]),flush=True)
+          for id_ in ids[:3]:
+            for lang in ("english","tchinese"):
+              try:
+                response=s.get("https://store.steampowered.com/api/appdetails",
+                  params={"appids":id_,"cc":"TW","l":lang,"filters":"basic"},timeout=25)
+                item=(response.json().get(str(id_)) or {})
+                print("APPDETAILS",id_,lang,response.status_code,item.get("success"),
+                      repr((item.get("data") or {}).get("name")),flush=True)
+              except Exception as err:
+                print("APPDETAILS_ERROR",id_,lang,type(err).__name__,str(err)[:120])
+          PY
