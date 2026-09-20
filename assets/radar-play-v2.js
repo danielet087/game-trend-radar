@@ -342,7 +342,7 @@
     const items = source.filter(
       (game) =>
         (!term ||
-          `${game.name} ${game.nameEn} ${game.appid}`
+          `${game.name} ${game.nameEn} ${game.nameOriginalTw || ""} ${game.nameOriginalCn || ""} ${game.appid}`
             .toLocaleLowerCase()
             .includes(term)) &&
         game.followers >= min &&
