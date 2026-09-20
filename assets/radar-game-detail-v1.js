@@ -150,6 +150,20 @@
     $("gameTitle").textContent = game.name;
     $("gameEnglish").hidden = !game.nameEn || game.nameEn === game.name;
     $("gameEnglish").textContent = game.nameEn === game.name ? "" : game.nameEn;
+    $("gameLanguagePill").textContent = game.languageBadge;
+    $("gameLanguagePill").dataset.language = game.languageStatus;
+    $("gameLanguageBadge").textContent = game.languageBadge;
+    $("gameLanguageLine").dataset.language = game.languageStatus;
+    $("gameLanguageDescription").textContent =
+      game.languageStatus === "traditional"
+        ? game.languages?.schinese
+          ? "Steam 商店標示支援繁體中文與簡體中文；遊戲名稱優先使用繁中版本。"
+          : "Steam 商店標示支援繁體中文；遊戲名稱優先使用繁中版本。"
+        : game.languageStatus === "simplified"
+          ? "Steam 商店標示支援簡體中文、未標示支援繁體中文；名稱使用官方簡中版本（如有）。"
+          : game.languageStatus === "other"
+            ? "Steam 商店目前未標示支援繁體中文或簡體中文；名稱保留英文／其他官方名稱。"
+            : "Steam 商店尚未提供可確認的語言清單，暫不推定支援中文。";
     $("gameDate").textContent = game.date.replaceAll("-", "/");
     $("gameFollowers").textContent = number.format(game.followers);
     $("gameAppId").textContent = `Steam AppID：${game.appid}`;
