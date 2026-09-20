@@ -1,9 +1,7 @@
 name: One-time localize Steam names to official TW titles
 
+# One-time update launched; manual-only thereafter.
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/refresh-steam-zh-tw-names-once.yml"]
   workflow_dispatch:
 
 permissions:
