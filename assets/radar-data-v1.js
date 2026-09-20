@@ -72,7 +72,12 @@
     // homepage/card banner makes it visibly soft. Prefer store header assets.
     // Modern Steam assets can have a different hash for header vs capsule, so
     // NEVER replace the capsule filename inside its hashed URL.
-    const suppliedHeader = [raw.header_image, translated?.header_image]
+    const suppliedHeader = [
+      raw.main_capsule_image,
+      raw.header_image,
+      translated?.main_capsule_image,
+      translated?.header_image,
+    ]
       .map((value) => imageURL(value, appid))
       .filter(Boolean);
     const fallbackHeaders = [
