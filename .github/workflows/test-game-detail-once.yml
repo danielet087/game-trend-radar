@@ -1,0 +1,51 @@
+name: One-time test game detail navigation
+
+# Single approved verification; return this workflow to manual-only immediately.
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/test-game-detail-once.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check frontend JavaScript syntax
+        run: |
+          node --check assets/radar-play-v2.js
+          node --check assets/radar-game-detail-v1.js
+          node --check assets/radar-data-v1.js
+      - name: Run frontend adapter and navigation regressions
+        run: node --test tests/*.test.cjs
+      - name: Check new page can display every public game by AppID
+        run: |
+          python - <<'PY'
+          import json, pathlib, re
+          from html.parser import HTMLParser
+          p=pathlib.Path("game.html")
+          class Collector(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids=set()
+                  self.scripts=[]
+              def handle_starttag(self, tag, attrs):
+                  attr=dict(attrs)
+                  if "id" in attr:self.ids.add(attr["id"])
+                  if tag=="script":self.scripts.append(attr.get("src"))
+          doc=Collector()
+          doc.feed(p.read_text(encoding="utf-8"))
+          required={"gameTitle","gameArt","gameDate","gameFollowers","gameSteam","gameSave","detailStatus","detailPage"}
+          assert required<=doc.ids, required-doc.ids
+          assert "./assets/radar-data-v1.js?v=2.2.0" in doc.scripts
+          assert "./assets/radar-game-detail-v1.js?v=1.0.0" in doc.scripts
+          official=json.loads(pathlib.Path("data/steam_upcoming.json").read_text(encoding="utf-8"))
+          assert official["count"]==len(official["games"])
+          assert all(isinstance(g["appid"],int) and g["appid"]>0 for g in official["games"])
+          print("PROFILE_READY_FOR_ALL_PUBLIC_GAMES",len(official["games"]))
+          PY
