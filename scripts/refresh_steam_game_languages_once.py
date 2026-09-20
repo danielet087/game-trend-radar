@@ -21,6 +21,18 @@ import requests
 LOG = logging.getLogger(__name__)
 STORE = "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/"
 LANGUAGES = {"english": 0, "schinese": 6, "tchinese": 7}
+# Steam ELanguage IDs; keep other-language labels only when all three
+# preferred languages are absent, rather than pretending an English fallback.
+OTHER_LANGUAGE_NAMES = {
+    1: "德文", 2: "法文", 3: "義大利文", 4: "韓文",
+    5: "西班牙文", 8: "俄文", 9: "泰文", 10: "日文",
+    11: "葡萄牙文", 12: "波蘭文", 13: "丹麥文",
+    14: "荷蘭文", 15: "芬蘭文", 16: "挪威文",
+    17: "瑞典文", 18: "匈牙利文", 19: "捷克文",
+    20: "羅馬尼亞文", 21: "土耳其文", 22: "巴西葡萄牙文",
+    23: "保加利亞文", 24: "希臘文", 25: "阿拉伯文",
+    26: "烏克蘭文", 27: "拉丁美洲西班牙文", 28: "越南文",
+}
 BATCH = 30
 HAN = re.compile(r"[\u3400-\u9fff]")
 
@@ -43,11 +55,20 @@ def read_support(row: dict) -> dict[str, bool | None]:
         and type(item.get("elanguage")) is int
         and item.get("supported") is True
     }
-    return {
+    result = {
         "tchinese": LANGUAGES["tchinese"] in allowed,
         "schinese": LANGUAGES["schinese"] in allowed,
         "english": LANGUAGES["english"] in allowed,
     }
+    if not any(result.values()):
+        others = [
+            OTHER_LANGUAGE_NAMES[lang]
+            for lang in sorted(allowed)
+            if lang in OTHER_LANGUAGE_NAMES
+        ]
+        if others:
+            result["other_languages"] = others
+    return result
 
 
 def fetch_metadata(session: requests.Session, ids: list[int],
