@@ -1,9 +1,7 @@
 name: Probe Steam Traditional Chinese official names once
 
+# One-time locale check completed. Manual-only from now on.
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/probe-steam-tchinese-title-once.yml"]
   workflow_dispatch:
 
 permissions:
