@@ -76,3 +76,48 @@ body[data-page="game"] { background: #f6f7f0; }
 @media (prefers-reduced-motion: reduce) {
   .game-related-link, .game-breadcrumb { transition: none; }
 }
+
+/* Steam Store game language support: interface/support flag, not Store locale. */
+.game-page-kicker .game-language-kicker {
+  background: #e5f5e9;
+  border-color: #a8d5b7;
+  color: #2b6647;
+}
+.game-page-kicker .game-language-kicker[data-language="simplified"] {
+  background: #eaf0ff;
+  border-color: #bfd0fa;
+  color: #3658a2;
+}
+.game-page-kicker .game-language-kicker[data-language="other"],
+.game-page-kicker .game-language-kicker[data-language="unknown"] {
+  background: #f0f1f5;
+  border-color: #d5dae4;
+  color: #647187;
+}
+.game-language-line {
+  border: 1px solid #bad7c8;
+  background: #ecf8f0;
+  border-radius: 15px;
+  padding: 14px 16px;
+}
+.game-language-line[data-language="simplified"] {
+  border-color: #c6d3f5;
+  background: #eef2ff;
+}
+.game-language-line[data-language="other"],
+.game-language-line[data-language="unknown"] {
+  border-color: #d7deea;
+  background: #f4f5f8;
+}
+.game-language-line strong {
+  display: block;
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 900;
+}
+.game-language-line p {
+  color: #526478;
+  font-size: 11px;
+  line-height: 1.8;
+  margin-top: 3px;
+}
