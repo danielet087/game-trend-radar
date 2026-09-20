@@ -807,6 +807,7 @@
       const heading = node("h2");
       const titleLink = externalLink(game, "");
       titleLink.textContent = game.name;
+      titleLink.title = game.name;
       heading.append(titleLink);
       const metadata = node("div", "feature-meta");
       const release = node("time", "", game.date.replaceAll("-", "/"));
