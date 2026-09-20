@@ -1,0 +1,96 @@
+name: Collect live Steam data and update Git once
+
+# One explicitly requested end-to-end test; remove push after it launches.
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/collect-live-steam-to-git-once.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: steam-live-test-to-git
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout public GitHub source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install small Steam Store client and traditional text converter
+        run: python -m pip install --disable-pip-version-check requests opencc-python-reimplemented
+      - name: Test live Steam XML and fail-safe date gating offline
+        run: |
+          python -m unittest discover -s tests -p "test_steam_live_collection.py" -v
+          python -m unittest discover -s tests -p "test_steam_game_languages.py" -v
+          python -m unittest discover -s tests -p "test_chinese_script_conversion.py" -v
+          node --test tests/data.test.cjs
+      - name: Validate program syntax
+        run: |
+          python -m py_compile scripts/collect_live_steam_to_git_once.py
+          node --check assets/radar-data-v1.js
+          node --check assets/radar-play-v2.js
+          node --check assets/radar-game-detail-v1.js
+      - name: Collect actual Steam Store metadata plus max two official Followers
+        run: python -m scripts.collect_live_steam_to_git_once --data-dir data
+      - name: Prove that only verified Steam metadata was changed
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          allowed={
+              "name_en","name_zh_tw","name_zh_cn","language_support",
+              "name_zh_tw_traditional","name_zh_cn_traditional","name_en_traditional",
+              "header_image","main_capsule_image","followers","follower_checked_at"
+          }
+          added={"steam_live_collection_test","steam_store_metadata_checked_at"}
+          for filename in ("steam_upcoming.json","steam_preview.json"):
+              path="data/"+filename
+              before=json.loads(subprocess.check_output(
+                  ["git","show","HEAD:"+path],text=True))
+              after=json.loads(Path(path).read_text(encoding="utf-8"))
+              assert len(before["games"])==len(after["games"])
+              assert {k:v for k,v in before.items() if k!="games"}=={
+                  k:v for k,v in after.items() if k not in added|{"games"}}
+              for old,new in zip(before["games"],after["games"]):
+                  assert old["appid"]==new["appid"]
+                  assert {k:v for k,v in old.items() if k not in allowed}=={
+                      k:v for k,v in new.items() if k not in allowed}
+                  if old["followers"]!=new["followers"]:
+                      assert any(
+                          x["appid"]==old["appid"]
+                          and x["status"]=="verified"
+                          and x["new"]==new["followers"]
+                          for x in after["steam_live_collection_test"]["follower_sample"]
+                      )
+              if filename=="steam_upcoming.json":
+                  assert after["count"]==len(after["games"])==96
+                  assert all(row["release_display_precision"]=="date_full"
+                             and int(row["followers"])>=5000
+                             and row.get("header_image")
+                             and row.get("main_capsule_image")
+                             for row in after["games"])
+              assert after["steam_live_collection_test"]["store_appids_checked"] >= 96
+              print("GIT_PUBLIC_DATA_VALIDATED",filename,
+                    "games",len(after["games"]),
+                    "follower_samples",after["steam_live_collection_test"]["follower_sample"],
+                    "store_checked_at",after["steam_store_metadata_checked_at"],
+                    flush=True)
+          PY
+      - name: Commit and push actual collected Steam JSON to GitHub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/steam_upcoming.json data/steam_preview.json
+          git diff --cached --quiet && { echo "No Steam data to publish"; exit 1; } || test "$?" -eq 1
+          git commit -m "data: collect live Steam TW Store metadata and official Followers samples [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
