@@ -105,6 +105,25 @@ test("image paths are resolved for Steam assets; executable and untrusted origin
   assert.equal(result.artSources.at(-1),
     "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/10/hash/capsule.jpg");
 });
+test("a source-provided Traditional Chinese header wins over an English main capsule", () => {
+  const en = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4814120/hash/capsule_616x353.jpg";
+  const tw = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4814120/twhash/header_tchinese.jpg";
+  const record = game({
+    appid: 4814120,
+    language_support: { tchinese: true, english: true },
+    main_capsule_image: en,
+    header_image: tw,
+  });
+  const traditional = D.normalize(record);
+  assert.equal(traditional.art, tw);
+  assert.equal(traditional.artSources[1], en);
+  const english = D.normalize({
+    ...record,
+    language_support: { tchinese: false, english: true },
+  });
+  assert.equal(english.art, en);
+});
+
 test("prefer known Steam header, then discover larger legacy images, finally use real hashed capsule", () => {
   const record = D.normalize(game({
     appid: 2769570,
