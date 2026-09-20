@@ -1,0 +1,30 @@
+{
+  "executed_at": "2026-09-20T09:34:56Z",
+  "mode": "one_time_direct_steam_live_refresh",
+  "timezone": "Asia/Taipei",
+  "scope": "refresh_existing_public_titles_not_full_year_rediscovery",
+  "source": "Steam Store Browse TW and Steam Community XML",
+  "prior_full_year_candidates": 11467,
+  "before": 96,
+  "after": 96,
+  "added": 0,
+  "removed": 0,
+  "store_appids_queried": 96,
+  "date_changed_count": 0,
+  "date_changes": [],
+  "official_followers_attempted": 1,
+  "official_followers_updates": [],
+  "official_followers_errors": [
+    {
+      "appid": 4739040,
+      "status": "HTTP 429; stopped official XML lookups"
+    }
+  ],
+  "rules": {
+    "min_followers": 5000,
+    "exact_release_date": true,
+    "region": "TW",
+    "adult_filter": "retain_existing_screened_data",
+    "preserve_localized_names": true
+  }
+}
