@@ -150,20 +150,34 @@
     $("gameTitle").textContent = game.name;
     $("gameEnglish").hidden = !game.nameEn || game.nameEn === game.name;
     $("gameEnglish").textContent = game.nameEn === game.name ? "" : game.nameEn;
-    $("gameLanguagePill").textContent = game.languageBadge;
-    $("gameLanguagePill").dataset.language = game.languageStatus;
-    $("gameLanguageBadge").textContent = game.languageBadge;
+    const languagePill = $("gameLanguagePill");
+    const languageBadges = $("gameLanguageBadge");
+    languagePill.replaceChildren();
+    languageBadges.replaceChildren();
+    for (const badge of game.languageBadges) {
+      const pill = document.createElement("span");
+      pill.className = `game-small-pill game-language-kicker language-${badge.status}`;
+      pill.textContent = badge.label;
+      languagePill.append(pill);
+      const chip = document.createElement("span");
+      chip.className = `game-language-chip language-${badge.status}`;
+      chip.textContent = badge.label;
+      languageBadges.append(chip);
+    }
+    const bothChinese =
+      game.languages?.tchinese === true && game.languages?.schinese === true;
     $("gameLanguageLine").dataset.language = game.languageStatus;
-    $("gameLanguageDescription").textContent =
-      game.languageStatus === "traditional"
-        ? game.languages?.schinese
-          ? "Steam 商店標示支援繁體中文與簡體中文；遊戲名稱優先使用繁中版本。"
-          : "Steam 商店標示支援繁體中文；遊戲名稱優先使用繁中版本。"
+    $("gameLanguageDescription").textContent = bothChinese
+      ? "Steam 商店標示同時支援繁中與簡中。遊戲名稱優先使用 Steam 公布的繁中版本（如有）。"
+      : game.languageStatus === "traditional"
+        ? "Steam 商店標示支援繁中；名稱優先使用 Steam 官方繁中版本（如有）。"
         : game.languageStatus === "simplified"
-          ? "Steam 商店標示支援簡體中文、未標示支援繁體中文；名稱使用官方簡中版本（如有）。"
-          : game.languageStatus === "other"
-            ? "Steam 商店目前未標示支援繁體中文或簡體中文；名稱保留英文／其他官方名稱。"
-            : "Steam 商店尚未提供可確認的語言清單，暫不推定支援中文。";
+          ? "Steam 商店標示支援簡中；名稱優先使用 Steam 官方簡中版本（如有）。"
+          : game.languageStatus === "english"
+            ? "Steam 商店未標示支援繁中或簡中，但有支援英文。"
+            : game.languageStatus === "other"
+              ? "Steam 商店未標示支援繁中、簡中或英文；顯示商店公布的其他支援語言。"
+              : "Steam 尚未提供足以確認的語言資訊；請以官方商店語言表為準。";
     $("gameDate").textContent = game.date.replaceAll("-", "/");
     $("gameFollowers").textContent = number.format(game.followers);
     $("gameAppId").textContent = `Steam AppID：${game.appid}`;
