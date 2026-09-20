@@ -4991,3 +4991,32 @@ html {
 @media (max-width: 640px) {
   .card-language { margin-top: 7px; padding: 4px 8px; font-size: 9px; }
 }
+
+
+/* Every supported Chinese script gets its own badge, with neutral fallbacks. */
+.card-languages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+  min-width: 0;
+}
+.card-languages .card-language {
+  margin-top: 0;
+}
+.card-language.language-english {
+  background: #f0f2fa;
+  color: #52617c;
+  border-color: #cfd7e8;
+}
+.card-language.language-english::before {
+  content: "✓";
+}
+.card-language.language-unknown::before {
+  content: "?";
+}
+@media (max-width: 640px) {
+  .card-languages { gap: 5px; margin-top: 7px; }
+  .card-languages .card-language { margin-top: 0; }
+}
