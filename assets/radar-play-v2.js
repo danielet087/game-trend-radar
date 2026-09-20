@@ -113,6 +113,12 @@
     a.setAttribute("aria-label", `在 Steam 開啟 ${game.name}（另開分頁）`);
     return a;
   }
+  function detailLink(game, className = "") {
+    const link = node("a", className);
+    link.href = `./game.html?appid=${game.appid}`;
+    link.setAttribute("aria-label", `查看 ${game.name} 的遊戲資訊`);
+    return link;
+  }
   // Remember unavailable Steam CDN URLs across cards, hero and dialog.
   // A modern hashed capsule does not imply the same hash for header.jpg.
   const failedArtwork = new Set();
@@ -135,7 +141,7 @@
   }
   function makeCard(game) {
     const card = node("article", "game-card");
-    const cover = externalLink(game, "cover-link");
+    const cover = node("div", "cover-link");
     const fallback = node("span", "cover-placeholder");
     fallback.setAttribute("aria-hidden", "true");
     cover.append(fallback);
@@ -173,11 +179,8 @@
     );
     save.setAttribute("aria-pressed", String(saved.has(game.appid)));
     const body = node("div", "card-body");
-    const title = node("h3", "card-title");
-    const titleLink = externalLink(game, "");
-    titleLink.textContent = game.name;
-    titleLink.title = game.name;
-    title.append(titleLink);
+    const title = node("h3", "card-title", game.name);
+    title.title = game.name;
     body.append(title);
     if (game.nameEn && game.nameEn !== game.name)
       body.append(node("p", "card-english", game.nameEn));
@@ -197,14 +200,13 @@
     followers.append(node("small", "", "人關注"));
     meta.append(time, followers);
     body.append(meta);
-    const peek = node("button", "quick-view", "快速查看");
-    peek.type = "button";
-    peek.dataset.peek = game.appid;
-    peek.setAttribute("aria-label", `快速查看 ${game.name}`);
+    const detail = detailLink(game, "card-detail-link");
+    const steam = externalLink(game, "steam-store-link");
+    steam.textContent = "Steam 商店";
     const arrow = node("span", "", "↗");
     arrow.setAttribute("aria-hidden", "true");
-    peek.append(arrow);
-    card.append(cover, save, body, peek);
+    steam.append(arrow);
+    card.append(cover, body, detail, save, steam);
     addTilt(card);
     return card;
   }
@@ -381,7 +383,7 @@
       }
       cell.append(link);
       dayGames.slice(0, 2).forEach((game, rank) => {
-        const tag = externalLink(game, "day-game" + (rank ? " second" : ""));
+        const tag = detailLink(game, "day-game" + (rank ? " second" : ""));
         tag.textContent = game.name;
         tag.title = `${game.name} · ${number.format(game.followers)} 人關注`;
         cell.append(tag);
@@ -811,13 +813,13 @@
         `${index + 1} / ${featureGames.length}：${game.name}`,
       );
       slide.hidden = index !== 0;
-      const cover = externalLink(game, "feature-cover");
+      const cover = detailLink(game, "feature-cover");
       if (game.art) cover.append(featureImage(game));
       else cover.append(node("span", "cover-placeholder"));
       cover.append(node("span", "feature-chip", "焦點新作"));
       const body = node("div", "feature-body");
       const heading = node("h2");
-      const titleLink = externalLink(game, "");
+      const titleLink = detailLink(game, "");
       titleLink.textContent = game.name;
       titleLink.title = game.name;
       heading.append(titleLink);
@@ -887,8 +889,7 @@
       active &&
       featureGames.length > 1 &&
       !featureHover &&
-      !document.hidden &&
-      !$("gameDialog").open
+      !document.hidden
     ) {
       featureTimer = setTimeout(() => showFeature(featureIndex + 1), 6500);
     }
@@ -971,95 +972,8 @@
       }
     });
   }
-  function openGame(appid) {
-    const game = [
-      ...(model.data?.games || []),
-      ...(model.data?.recent || []),
-    ].find((item) => item.appid === appid);
-    if (!game) return;
-    const dialog = $("gameDialog"),
-      content = $("dialogContent");
-    content.replaceChildren();
-    const art = node("div", "dialog-art");
-    art.append(
-      game.art ? featureImage(game) : node("span", "cover-placeholder"),
-    );
-    const body = node("div", "dialog-body");
-    body.append(node("p", "eyebrow", "GAME SPOTLIGHT"));
-    const title = node("h2", "", game.name);
-    title.id = "dialogTitle";
-    body.append(title);
-    if (game.nameEn && game.nameEn !== game.name)
-      body.append(node("p", "dialog-english", game.nameEn));
-    const metrics = node("dl", "dialog-metrics");
-    for (const [label, value] of [
-      ["上市日期・台灣", game.date.replaceAll("-", "/")],
-      ["Steam 關注人數", number.format(game.followers)],
-    ]) {
-      const metric = node("div");
-      metric.append(node("dt", "", label), node("dd", "", value));
-      metrics.append(metric);
-    }
-    body.append(metrics);
-    const actions = node("div", "dialog-actions");
-    const steam = externalLink(game, "button primary");
-    steam.textContent = "前往 Steam 商店 ↗";
-    const save = node("button", "save-button");
-    save.type = "button";
-    save.dataset.save = game.appid;
-    save.dataset.name = game.name;
-    save.innerHTML = heart;
-    save.append(
-      node("span", "save-label", saved.has(game.appid) ? "已收藏" : "加入收藏"),
-    );
-    actions.append(steam, save);
-    body.append(
-      actions,
-      node(
-        "p",
-        "dialog-note",
-        "關注人數不等同願望清單數。實際上市時間請以 Steam 商店為準。",
-      ),
-    );
-    content.append(art, body);
-    updateSavedControls();
-    dialog.showModal();
-    scheduleFeature();
-    if (motionOn && dialog.animate)
-      dialog.animate(
-        [
-          {
-            opacity: 0,
-            transform: "translateY(25px) scale(.94) rotate(-2deg)",
-          },
-          { opacity: 1, transform: "translateY(0) scale(1) rotate(0deg)" },
-        ],
-        { duration: 350, easing: "cubic-bezier(.16,1,.3,1)" },
-      );
-  }
-  function setupDialog() {
-    $("closeDialog").addEventListener("click", () => $("gameDialog").close());
-    $("gameDialog").addEventListener("close", scheduleFeature);
-    $("gameDialog").addEventListener("click", (event) => {
-      if (event.target !== $("gameDialog")) return;
-      const box = $("gameDialog").getBoundingClientRect();
-      if (
-        event.clientX < box.left ||
-        event.clientX > box.right ||
-        event.clientY < box.top ||
-        event.clientY > box.bottom
-      )
-        $("gameDialog").close();
-    });
-    document.addEventListener("click", (event) => {
-      const trigger = event.target.closest("button[data-peek]");
-      if (trigger) openGame(Number(trigger.dataset.peek));
-    });
-  }
-
   setupMotion();
   setupFeature();
-  setupDialog();
   updateSavedControls();
   renderExplorer();
   load();
