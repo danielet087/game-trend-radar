@@ -1,0 +1,48 @@
+name: Probe Steam official public display dates once
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/probe-steam-display-date-once.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check requests
+      - name: Check Steam releasedate precision from real store display field
+        run: |
+          python - <<'PY'
+          import requests,json
+          s=requests.Session()
+          s.headers.update({"User-Agent":"Mozilla/5.0 (compatible; GameTrendRadar/1.0)"})
+          cases=[1846700,2769570,3727390,1488490]
+          inp={"ids":[{"appid":v} for v in cases],"context":{"country_code":"TW","language":"english","steam_realm":1},"data_request":{"include_release":True,"include_basic_info":True}}
+          try:
+              resp=s.get("https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",params={"input_json":json.dumps(inp,separators=(",",":"))},timeout=25)
+              print("BROWSE_HTTP",resp.status_code)
+              if resp.ok:
+                  for x in (resp.json().get("response") or {}).get("store_items") or []:
+                      print("BROWSE_ITEM",x.get("appid"),json.dumps(x.get("release") or {},ensure_ascii=False)[:2000])
+          except requests.RequestException as e:
+              print("BROWSE_FAILED",type(e).__name__,str(e)[:140])
+          for app in cases[:3]:
+              try:
+                  resp=s.get("https://store.steampowered.com/api/appdetails",params={"appids":app,"cc":"tw","l":"english","filters":"basic"},timeout=20)
+                  print("APPDETAILS_HTTP",app,resp.status_code)
+                  if resp.ok:
+                      item=(resp.json().get(str(app)) or {})
+                      data=item.get("data") or {}
+                      print("APPDETAILS",app,item.get("success"),json.dumps(data.get("release_date") or {},ensure_ascii=False)[:500])
+              except (requests.RequestException,ValueError) as e:
+                  print("APPDETAILS_FAILED",app,type(e).__name__,str(e)[:140])
+          PY
