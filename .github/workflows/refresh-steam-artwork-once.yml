@@ -1,12 +1,8 @@
 name: One-time Steam artwork refresh
 
-# One controlled initial wake; switched back to manual-only immediately after
-# the run has started. No schedule and no Followers queries.
+# One-time image update workflow is manual-only after its first approved run.
+# No schedule, push trigger or Followers queries.
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/refresh-steam-artwork-once.yml"
   workflow_dispatch:
 
 permissions:
