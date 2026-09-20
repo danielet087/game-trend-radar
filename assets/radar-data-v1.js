@@ -79,24 +79,31 @@
       nameEn ||
       `Steam App ${appid}`,
     ).trim();
-    const languageBadge = !languages ||
-      languages.tchinese == null ||
-      languages.schinese == null
-      ? "語言待確認"
-      : languages.tchinese
-        ? "支援繁體中文"
-        : languages.schinese
-          ? "支援簡體中文"
-          : "未標示支援中文";
-    const languageStatus = !languages ||
-      languages.tchinese == null ||
-      languages.schinese == null
-      ? "unknown"
-      : languages.tchinese
-        ? "traditional"
-        : languages.schinese
-          ? "simplified"
-          : "other";
+    // Independent badges: a game supporting both Chinese scripts gets BOTH.
+    // Steam's supported_languages flags describe the game itself, not the
+    // translated Store page or which language its marketing title uses.
+    const languageBadges = [];
+    if (languages?.tchinese === true)
+      languageBadges.push({ label: "支援繁中", status: "traditional" });
+    if (languages?.schinese === true)
+      languageBadges.push({ label: "支援簡中", status: "simplified" });
+    if (!languageBadges.length) {
+      if (languages?.english === true)
+        languageBadges.push({ label: "支援英文", status: "english" });
+      else if (Array.isArray(languages?.other_languages) &&
+        languages.other_languages.length)
+        languageBadges.push({
+          label: `支援${String(languages.other_languages[0]).trim()}`,
+          status: "other",
+        });
+      else
+        languageBadges.push({
+          label: "語言支援待確認",
+          status: "unknown",
+        });
+    }
+    const languageBadge = languageBadges.map((badge) => badge.label).join("・");
+    const languageStatus = languageBadges[0].status;
     // Steam's small capsule is only 231x87; stretching it over a large
     // homepage/card banner makes it visibly soft. Prefer store header assets.
     // Modern Steam assets can have a different hash for header vs capsule, so
@@ -127,6 +134,7 @@
       nameTw,
       nameCn,
       languages,
+      languageBadges,
       languageBadge,
       languageStatus,
       date,
