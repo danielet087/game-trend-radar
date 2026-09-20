@@ -2958,7 +2958,7 @@ html {
 .saved-count.bounce {
   animation: heart-pop 0.6s var(--spring);
 }
-.quick-view {
+.steam-store-link {
   position: absolute;
   left: 11px;
   top: calc((100cqw) * 0.51);
@@ -2979,15 +2979,15 @@ html {
 .game-card {
   container-type: inline-size;
 }
-.quick-view {
+.steam-store-link {
   top: auto;
   bottom: calc(100% - (100cqw * 235 / 460) + 10px);
 }
-.quick-view:hover {
+.steam-store-link:hover {
   background: var(--lime);
   transform: scale(1.04);
 }
-.quick-view span {
+.steam-store-link span {
   padding-left: 8px;
 }
 .spotlight-grid .game-card:nth-child(2) {
@@ -3641,12 +3641,12 @@ html {
   }
 }
 @media (hover: hover) and (pointer: fine) {
-  .quick-view {
+  .steam-store-link {
     opacity: 0;
     transform: translateY(6px);
   }
-  .game-card:hover .quick-view,
-  .game-card:focus-within .quick-view {
+  .game-card:hover .steam-store-link,
+  .game-card:focus-within .steam-store-link {
     opacity: 1;
     transform: translateY(0);
   }
@@ -4342,7 +4342,7 @@ html {
     font-size: 9px;
     padding: 6px 10px;
   }
-  .spotlight-grid .quick-view {
+  .spotlight-grid .steam-store-link {
     opacity: 1;
     transform: none;
     font-size: 10px;
@@ -4533,7 +4533,7 @@ html {
     max-width: 95px;
     box-shadow: 1px 1px 0 var(--ink);
   }
-  .games-grid .quick-view {
+  .games-grid .steam-store-link {
     top: auto;
     bottom: 8px;
     left: 5px;
@@ -4544,7 +4544,7 @@ html {
     transform: none;
     box-shadow: 1px 1px 0 var(--ink);
   }
-  .games-grid .quick-view span {
+  .games-grid .steam-store-link span {
     padding-left: 4px;
   }
   .games-grid .card-english {
@@ -4865,7 +4865,7 @@ html {
     margin-top: 4px;
     display: block;
   }
-  .games-grid .quick-view {
+  .games-grid .steam-store-link {
     font-size: 8px;
     padding: 5px 6px;
   }
@@ -4903,5 +4903,44 @@ html {
   }
   .feature-slide.is-entering {
     animation: none !important;
+  }
+}
+
+
+/* Card navigation: the entire surface leads to this site's game detail.
+   The two explicit controls sit above it, so Steam and Save never misnavigate. */
+.game-card .card-detail-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.game-card .card-detail-link:focus-visible {
+  outline: 4px solid var(--blue);
+  outline-offset: 5px;
+}
+.game-card:focus-within {
+  border-color: var(--blue);
+}
+.game-card .save-button {
+  z-index: 4;
+}
+.game-card .steam-store-link {
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.game-card .countdown {
+  pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .game-card:focus-within .steam-store-link {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
