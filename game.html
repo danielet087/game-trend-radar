@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#3652ed" />
+    <meta name="description" content="查看 Steam 新作的正式發售日、關注人數與官方商店資訊。" />
+    <title>遊戲資訊｜Game Trend Radar</title>
+    <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=2.3.0" />
+    <link rel="stylesheet" href="./assets/radar-game-detail-v1.css?v=1.0.0" />
+    <script src="./assets/radar-data-v1.js?v=2.2.0" defer></script>
+    <script src="./assets/radar-game-detail-v1.js?v=1.0.0" defer></script>
+  </head>
+  <body data-page="game">
+    <a class="skip-link" href="#mainContent">跳到主要內容</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="./index.html" aria-label="Game Trend Radar 首頁">
+          <img src="./assets/radar-mark.svg" width="40" height="40" alt="" />
+          <span>GAME TREND <b>RADAR<span class="brand-dot">.</span></b></span>
+        </a>
+        <nav class="main-nav" aria-label="主要導覽">
+          <a href="./index.html">發售月曆</a>
+          <a href="./upcoming.html">即將上市</a>
+          <a href="./released.html">近期上市</a>
+          <a href="./saved.html">我的收藏 <span class="saved-count" data-saved-count>0</span></a>
+        </nav>
+        <span class="header-tag">每款期待，都值得多看一眼 <span aria-hidden="true">↗</span></span>
+      </div>
+    </header>
+    <main class="game-page-shell" id="mainContent">
+      <a class="game-breadcrumb" id="gameBack" href="./index.html">← 返回遊戲清單</a>
+      <div id="detailStatus" class="game-profile-status" role="status" aria-live="polite">
+        <strong id="detailStatusTitle">正在取得遊戲資訊…</strong>
+        <p id="detailStatusMessage">馬上帶你認識這款遊戲。</p>
+        <a id="detailStatusBack" href="./index.html" hidden>返回發售月曆 ↗</a>
+      </div>
+      <div id="detailPage" hidden>
+        <div class="game-page-kicker">
+          <span class="game-small-pill">GAME PROFILE</span>
+          <span class="game-small-pill" id="gameState">新作觀測中</span>
+        </div>
+        <h1 class="game-page-title" id="gameTitle"></h1>
+        <p class="game-page-en" id="gameEnglish" hidden></p>
+        <p class="game-page-lead">把發售時間、遊戲熱度與 Steam 官方頁面，放在一起慢慢看。</p>
+        <div class="game-detail-layout">
+          <div class="game-detail-art" id="gameArt">
+            <span class="game-cover-corner">STEAM 新作觀測站 ◎</span>
+          </div>
+          <section class="game-profile-panel" aria-labelledby="gameProfileHeading">
+            <p class="eyebrow">ON YOUR RADAR</p>
+            <h2 id="gameProfileHeading">先認識這款遊戲</h2>
+            <div class="game-profile-metrics">
+              <div class="game-profile-metric">
+                <span>上市日期・台灣</span>
+                <strong id="gameDate"></strong>
+                <small id="gameCountdown"></small>
+              </div>
+              <div class="game-profile-metric">
+                <span>Steam 關注人數</span>
+                <strong id="gameFollowers"></strong>
+                <small>來自 Steam Community</small>
+              </div>
+            </div>
+            <p class="game-profile-id" id="gameAppId"></p>
+            <div class="game-profile-actions">
+              <a class="button primary" id="gameSteam" target="_blank" rel="noopener noreferrer">前往 Steam 商店 ↗</a>
+              <button class="game-profile-save" type="button" id="gameSave" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.6 5.6 0 0 0-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"/></svg>
+                <span id="gameSaveLabel">加入收藏</span>
+              </button>
+            </div>
+            <p class="game-profile-note" id="gameSaveHint" role="status" aria-live="polite">關注人數不等於願望清單數；實際發售時間請以 Steam 商店為準。</p>
+          </section>
+        </div>
+        <div class="game-detail-sections">
+          <section class="game-detail-section">
+            <p class="eyebrow">THE RELEASE</p>
+            <h2>發售資訊</h2>
+            <p>本站僅收錄 Steam 商店對外公布明確年月日的遊戲。發售日期可能調整，仍以 Steam 官方公告為準。</p>
+          </section>
+          <section class="game-detail-section">
+            <p class="eyebrow">THE NEXT STEP</p>
+            <h2>更多遊戲資訊</h2>
+            <p>這是遊戲資訊頁的初版，後續可以加入玩法介紹、開發商、遊戲類型、影片和直播熱度等內容。</p>
+          </section>
+        </div>
+        <section class="game-related" id="gameRelated" aria-labelledby="gameRelatedTitle" hidden>
+          <div class="game-related-head">
+            <h2 id="gameRelatedTitle">同一段時間，也可以看看</h2>
+            <p>再認識幾款發售日相近的新作 ↗</p>
+          </div>
+          <div class="game-related-grid" id="gameRelatedGrid"></div>
+        </section>
+      </div>
+      <noscript><p class="notice">請啟用 JavaScript 以查看遊戲資訊。</p></noscript>
+    </main>
+    <footer class="site-footer">
+      <div>
+        <a class="footer-brand" href="./index.html">GAME TREND RADAR<span>◎</span></a>
+        <p>資料來源：Steam 商店與 Steam Community。<br />遊戲名稱與封面屬各自權利人所有；本站與 Valve / Steam 無官方隸屬關係。</p>
+      </div>
+      <a href="#mainContent" class="back-top">回到頂端 ↑</a>
+    </footer>
+  </body>
+</html>
