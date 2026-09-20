@@ -1,0 +1,71 @@
+name: One-time localize Steam names to official TW titles
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/refresh-steam-zh-tw-names-once.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: steam-localize-public-titles
+  cancel-in-progress: false
+
+jobs:
+  localize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout already filtered 96 public games
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install lightweight Steam Store HTTP client
+        run: python -m pip install --disable-pip-version-check requests
+      - name: Unit test only official Steam names and English fallback
+        run: python -m unittest discover -s tests -p "test_steam_traditional_names.py" -v
+      - name: Validate existing frontend presentation adapter
+        run: node --test tests/data.test.cjs
+      - name: Get tchinese names for public Steam games only
+        run: python -m scripts.refresh_steam_traditional_names_once --data-dir data
+      - name: Verify no dates, Followers or images changed
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          safe={"name_en","name_zh_tw"}
+          for filename in ("steam_upcoming.json","steam_preview.json"):
+              path="data/"+filename
+              prior=json.loads(subprocess.check_output(
+                  ["git","show","HEAD:"+path],text=True))
+              updated=json.loads(Path(path).read_text(encoding="utf-8"))
+              assert len(prior["games"])==len(updated["games"])
+              for before,after in zip(prior["games"],updated["games"]):
+                  assert before["appid"]==after["appid"]
+                  assert {k:v for k,v in before.items() if k not in safe}=={
+                      k:v for k,v in after.items() if k not in safe}
+                  assert after["name_en"]==(before.get("name_en") or before["name"]).strip()
+              assert {k:v for k,v in prior.items() if k!="games"}=={
+                  k:v for k,v in updated.items()
+                  if k not in ("games","official_zh_tw_titles_checked_at","official_zh_tw_titles_provider")}
+              print("VALIDATED_TITLES",filename,
+                    len(updated["games"]),"official_zh_tw",
+                    sum(bool(g.get("name_zh_tw")) for g in updated["games"]),
+                    flush=True)
+          PY
+      - name: Publish only the public title metadata
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/steam_upcoming.json data/steam_preview.json
+          if git diff --cached --quiet; then
+            echo "No new localized names"
+          else
+            git commit -m "data: show official Steam Traditional Chinese names where available [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
