@@ -1,0 +1,85 @@
+name: One-time refresh Steam game language support
+
+# One approved update of game interface languages & Steam zh-CN/zh-TW titles.
+# Return to manual-only as soon as the one-time run starts.
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/refresh-steam-language-support-once.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: steam-language-support-once
+  cancel-in-progress: false
+
+jobs:
+  languages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tiny Store metadata client
+        run: python -m pip install --disable-pip-version-check requests
+      - name: Confirm language enum and no false Store-translation claims
+        run: python -m unittest discover -s tests -p "test_steam_game_languages.py" -v
+      - name: Confirm frontend title priority and all existing data tests
+        run: node --test tests/data.test.cjs
+      - name: Check browser JavaScript syntax
+        run: |
+          node --check assets/radar-data-v1.js
+          node --check assets/radar-play-v2.js
+          node --check assets/radar-game-detail-v1.js
+      - name: Fetch Steam Store official supported languages and locale titles only
+        run: python -m scripts.refresh_steam_game_languages_once --data-dir data
+      - name: Validate every title/date/follower/image/eligibility invariant
+        run: |
+          python - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          allowed={"name_en","name_zh_tw","name_zh_cn","language_support"}
+          added={"language_support_checked_at","language_support_source","language_support_summary"}
+          for filename in ("steam_upcoming.json","steam_preview.json"):
+              path="data/"+filename
+              original=json.loads(subprocess.check_output(["git","show","HEAD:"+path],text=True))
+              updated=json.loads(Path(path).read_text(encoding="utf-8"))
+              assert len(original["games"])==len(updated["games"])
+              assert len(updated["games"])>0
+              assert {k:v for k,v in original.items() if k not in ("games","recent_games")}=={
+                  k:v for k,v in updated.items() if k not in added|{"games","recent_games"}}
+              for key in ("games","recent_games"):
+                  old=original.get(key) or []
+                  new=updated.get(key) or []
+                  assert len(old)==len(new)
+                  for before,after in zip(old,new):
+                      assert before["appid"]==after["appid"]
+                      assert {k:v for k,v in before.items() if k not in allowed}=={
+                          k:v for k,v in after.items() if k not in allowed}
+                      assert after["name_en"]==(before.get("name_en") or before["name"]).strip()
+                      support=after["language_support"]
+                      assert set(support)=={"tchinese","schinese","english"}
+                      assert all(value is None or type(value) is bool for value in support.values())
+              stats=updated["language_support_summary"]
+              assert stats["total"]==len(updated["games"])
+              assert sum(stats[key] for key in (
+                  "traditional_supported","simplified_only",
+                  "neither_chinese","unpublished_support"))==stats["total"]
+              print("VERIFIED_LANGUAGE_DATA",filename,json.dumps(stats,ensure_ascii=False),flush=True)
+          PY
+      - name: Publish only Steam title and language fields
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/steam_upcoming.json data/steam_preview.json
+          if git diff --cached --quiet; then
+            echo "No language metadata changes"
+          else
+            git commit -m "data: official Steam game language support and localized titles [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
