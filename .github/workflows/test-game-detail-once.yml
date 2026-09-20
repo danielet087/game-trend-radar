@@ -1,10 +1,8 @@
 name: One-time test game detail navigation
 
 # Single approved verification; return this workflow to manual-only immediately.
+# Verification complete; no automatic triggers.
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/test-game-detail-once.yml"]
   workflow_dispatch:
 
 permissions:
