@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light" />
-    <meta name="theme-color" content="#f7f7f0" />
+    <meta name="theme-color" content="#3652ed" />
     <meta
       name="description"
       content="近 30 天發售的遊戲，看看你錯過了哪些新鮮事。 Steam 新作關注度、發售月曆與收藏清單，日期以台灣時間為準。"
@@ -17,9 +17,9 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/radar-ui-v1.css" />
+    <link rel="stylesheet" href="./assets/radar-play-v2.css" />
     <script src="./assets/radar-data-v1.js" defer></script>
-    <script src="./assets/radar-ui-v1.js" defer></script>
+    <script src="./assets/radar-play-v2.js" defer></script>
   </head>
   <body data-page="released">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -43,7 +43,18 @@
             >我的收藏 <span class="saved-count" data-saved-count>0</span></a
           >
         </nav>
-        <span class="header-tag"
+        <button
+          class="motion-toggle"
+          id="motionToggle"
+          type="button"
+          aria-pressed="true"
+          aria-label="關閉動態效果"
+          title="關閉動態效果"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 5v14M15 5v14" /></svg
+          ><span>動態 ON</span></button
+        ><span class="header-tag"
           >發現遊戲的下一站 <span aria-hidden="true">↗</span></span
         >
       </div>
@@ -170,6 +181,17 @@
       </div>
       <a href="#mainContent" class="back-top">回到頂端 ↑</a>
     </footer>
+    <dialog class="game-dialog" id="gameDialog" aria-labelledby="dialogTitle">
+      <button
+        class="dialog-close"
+        id="closeDialog"
+        aria-label="關閉遊戲預覽"
+        type="button"
+      >
+        ×
+      </button>
+      <div id="dialogContent"></div>
+    </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
 </html>
