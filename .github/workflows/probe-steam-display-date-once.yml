@@ -1,9 +1,7 @@
 name: Probe Steam official public display dates once
 
+# One-shot diagnostic completed; no automatic triggers.
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/probe-steam-display-date-once.yml"]
   workflow_dispatch:
 
 permissions:
