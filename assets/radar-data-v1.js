@@ -68,14 +68,24 @@
         nameEn ||
         `Steam App ${appid}`,
     ).trim();
-    const images = [
-      raw.header_image,
-      translated?.header_image,
-      raw.capsule_image,
-      translated?.capsule_image,
-    ]
+    // Steam's small capsule is only 231x87; stretching it over a large
+    // homepage/card banner makes it visibly soft. Prefer store header assets.
+    // Modern Steam assets can have a different hash for header vs capsule, so
+    // NEVER replace the capsule filename inside its hashed URL.
+    const suppliedHeader = [raw.header_image, translated?.header_image]
       .map((value) => imageURL(value, appid))
       .filter(Boolean);
+    const fallbackHeaders = [
+      `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`,
+      `https://cdn.akamai.steamstatic.com/steam/apps/${appid}/header.jpg`,
+      `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/capsule_616x353.jpg`,
+    ];
+    const smallCapsules = [raw.capsule_image, translated?.capsule_image]
+      .map((value) => imageURL(value, appid))
+      .filter(Boolean);
+    const images = Array.from(new Set([
+      ...suppliedHeader, ...fallbackHeaders, ...smallCapsules,
+    ]));
     return {
       appid,
       name,
@@ -83,6 +93,8 @@
       date,
       followers,
       art: images[0] || "",
+      artSources: images,
+      hasVerifiedHeader: suppliedHeader.length > 0,
       recent,
       darkHorse:
         recent &&
