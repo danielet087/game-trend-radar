@@ -1,9 +1,7 @@
 name: Probe Steam sexual-content metadata once
 
+# Inspection finished; manual-only, no automatic collection.
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/probe-steam-content-rating-once.yml"]
   workflow_dispatch:
 
 permissions:
