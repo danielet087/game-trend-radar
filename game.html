@@ -44,7 +44,7 @@
         <div class="game-page-kicker">
           <span class="game-small-pill">GAME PROFILE</span>
           <span class="game-small-pill" id="gameState">新作觀測中</span>
-          <span class="game-small-pill game-language-kicker" id="gameLanguagePill">語言資訊待確認</span>
+          <span class="game-language-pills" id="gameLanguagePill" aria-label="Steam 遊戲支援語言"><span class="game-small-pill game-language-kicker">語言資訊待確認</span></span>
         </div>
         <h1 class="game-page-title" id="gameTitle"></h1>
         <p class="game-page-en" id="gameEnglish" hidden></p>
@@ -69,7 +69,7 @@
               </div>
             </div>
             <div class="game-language-line" id="gameLanguageLine">
-              <strong id="gameLanguageBadge">語言資訊待確認</strong>
+              <div class="game-language-badges" id="gameLanguageBadge" aria-label="遊戲支援語言"><span class="game-language-chip">語言資訊待確認</span></div>
               <p id="gameLanguageDescription">資料以 Steam 商店公布的語言支援為準。</p>
             </div>
             <p class="game-profile-id" id="gameAppId"></p>
