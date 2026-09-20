@@ -1,0 +1,30 @@
+name: Verify Traditional title display once
+
+# User-requested one-time regression only; switch back to manual-only.
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/verify-traditional-display-once.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax-check all edited frontend scripts
+        run: |
+          node --check assets/radar-data-v1.js
+          node --check assets/radar-play-v2.js
+          node --check assets/radar-game-detail-v1.js
+      - name: Check Simplified-to-Traditional display and language support are independent
+        run: node --test tests/data.test.cjs
+      - name: Confirm cards and game detail page use correct navigation
+        run: |
+          grep -q 'const detail = detailLink(game, "card-detail-link")' assets/radar-play-v2.js
+          grep -q 'steam.textContent = "Steam 商店"' assets/radar-play-v2.js
+          test -f game.html
