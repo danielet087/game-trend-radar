@@ -1,0 +1,72 @@
+name: One-time filter exact Steam release dates
+
+# Single authorized wake for cleanup; change back to manual-only after launch.
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/filter-steam-precise-dates-once.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: steam-date-precision-cleanup
+  cancel-in-progress: false
+
+jobs:
+  filter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout published catalogue
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install lightweight Store client
+        run: python -m pip install --disable-pip-version-check requests
+      - name: Check date_full vs date_year and quarter logic
+        run: python -m unittest discover -s tests -p "test_steam_precise_dates.py" -v
+      - name: Check other frontend data invariants
+        run: node --test tests/data.test.cjs
+      - name: Screen full public catalogue by Steam displayed release-date precision
+        run: python -m scripts.filter_precise_steam_dates_once --data-dir data
+      - name: Verify followers, image URLs, release dates and screening outcome are unchanged for remaining games
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          for filename in ("steam_upcoming.json", "steam_preview.json"):
+              path="data/"+filename
+              before=json.loads(subprocess.check_output(
+                  ["git","show","HEAD:"+path], text=True))
+              after=json.loads(Path(path).read_text(encoding="utf-8"))
+              old={int(row["appid"]):row for row in before["games"]}
+              new={int(row["appid"]):row for row in after["games"]}
+              assert len(new)<len(old)
+              assert len(new)==len(after["games"])
+              assert new.keys()<=old.keys()
+              for appid,row in new.items():
+                  assert row["release_display_precision"]=="date_full"
+                  original=dict(row)
+                  original.pop("release_display_precision")
+                  assert original==old[appid], (filename,appid)
+              if filename=="steam_upcoming.json":
+                  assert after["count"]==len(new)
+                  assert after["initialization"]==before["initialization"]
+                  assert after["filter"]==before["filter"]
+                  assert all(row["followers"]>=5000 for row in new.values())
+              print("VERIFIED",filename,"original",len(old),"precise",len(new),
+                    "excluded",len(old)-len(new),flush=True)
+          PY
+      - name: Publish only the two public game-list JSON files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/steam_upcoming.json data/steam_preview.json
+          git diff --cached --exit-code && exit 1 || test "$?" -eq 1
+          git commit -m "data: only list Steam games with explicit public release day [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
