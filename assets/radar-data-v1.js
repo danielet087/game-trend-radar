@@ -65,18 +65,33 @@
     // Language support comes from Steam's game-level supported_languages,
     // not from which language the Store description was translated into.
     const languages = raw.language_support || translated?.language_support || null;
+    // Display text is script-converted, but Steam's original tchinese/schinese
+    // names stay untouched for provenance and searching in either script.
     const nameTw = String(
-      raw.name_zh_tw || translated?.name_zh_tw || "",
+      raw.name_zh_tw_traditional ||
+        translated?.name_zh_tw_traditional ||
+        raw.name_zh_tw ||
+        translated?.name_zh_tw ||
+        "",
     ).trim();
     const nameCn = String(
-      raw.name_zh_cn || translated?.name_zh_cn || "",
+      raw.name_zh_cn_traditional ||
+        translated?.name_zh_cn_traditional ||
+        raw.name_zh_cn ||
+        translated?.name_zh_cn ||
+        "",
+    ).trim();
+    const nameEnDisplay = String(
+      raw.name_en_traditional ||
+        translated?.name_en_traditional ||
+        nameEn,
     ).trim();
     const useTw = !!nameTw && (languages ? languages.tchinese === true : true);
     const useCn = !!nameCn && (languages ? languages.schinese === true : true);
     const name = String(
       (useTw && nameTw) ||
       (useCn && nameCn) ||
-      nameEn ||
+      nameEnDisplay ||
       `Steam App ${appid}`,
     ).trim();
     // Independent badges: a game supporting both Chinese scripts gets BOTH.
@@ -133,6 +148,9 @@
       nameEn,
       nameTw,
       nameCn,
+      // Keep source spellings searchable even when shown as Traditional.
+      nameOriginalTw: raw.name_zh_tw || translated?.name_zh_tw || "",
+      nameOriginalCn: raw.name_zh_cn || translated?.name_zh_cn || "",
       languages,
       languageBadges,
       languageBadge,
