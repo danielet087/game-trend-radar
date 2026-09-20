@@ -123,7 +123,17 @@
     // homepage/card banner makes it visibly soft. Prefer store header assets.
     // Modern Steam assets can have a different hash for header vs capsule, so
     // NEVER replace the capsule filename inside its hashed URL.
+    // A game's localized Steam header is often different from its language-neutral
+    // main capsule. Prefer a *source-provided* Traditional Chinese asset when the
+    // game's record explicitly supports Traditional Chinese; retain the main image
+    // as the next fallback. Do not guess locale variants from image filenames.
+    const traditionalHeader = languages?.tchinese === true
+      ? [raw.header_image, translated?.header_image]
+          .map((value) => imageURL(value, appid))
+          .find((value) => /\/header_tchinese\.(?:jpe?g|png)(?:\?|$)/i.test(value))
+      : "";
     const suppliedHeader = [
+      traditionalHeader,
       raw.main_capsule_image,
       raw.header_image,
       translated?.main_capsule_image,
