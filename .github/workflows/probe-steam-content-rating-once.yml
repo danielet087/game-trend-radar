@@ -1,0 +1,59 @@
+name: Probe Steam sexual-content metadata once
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/probe-steam-content-rating-once.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check requests
+      - name: Inspect actual Steam public content descriptors and tag metadata
+        run: |
+          python - <<'PY'
+          import json,requests
+          s=requests.Session()
+          s.headers["User-Agent"]="GameTrendRadarContentFilterProbe/1.0"
+          ids=[1032980,4005870,3850550,3464000,4450390,4072240,4739040,2769570,632950,4019220]
+          for opts in [
+            {"include_basic_info":True,"include_tag_count":30,"include_extra_details":True},
+            {"include_basic_info":True,"include_tag_count":30,"include_ratings":True}
+          ]:
+            payload={"ids":[{"appid":v} for v in ids],
+                     "context":{"country_code":"TW","language":"english","steam_realm":1},
+                     "data_request":opts}
+            try:
+              resp=s.get("https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
+                params={"input_json":json.dumps(payload,separators=(",",":"))},timeout=25)
+              print("BROWSE",opts,"HTTP",resp.status_code,flush=True)
+              if not resp.ok:continue
+              for g in (resp.json().get("response") or {}).get("store_items") or []:
+                print("ITEM",g.get("appid"),"KEYS",list(g.keys()),
+                  "NAME",g.get("name"),"TAGS",g.get("tags"),
+                  "CONTENT",g.get("content_descriptors"),
+                  "BASIC",str(g.get("basic_info"))[:500],
+                  "RATINGS",str(g.get("ratings"))[:300],
+                  flush=True)
+            except Exception as e:print("ERROR",type(e).__name__,str(e)[:200])
+          for appid in ids:
+            try:
+              r=s.get("https://store.steampowered.com/api/appdetails",
+                params={"appids":appid,"cc":"us","l":"english"},timeout=15)
+              v=(r.json().get(str(appid)) or {}).get("data") or {}
+              print("DETAIL",appid,"HTTP",r.status_code,
+                    "DESC",str(v.get("content_descriptors"))[:800],
+                    "GENRES",str(v.get("genres"))[:200],
+                    "SHORT",str(v.get("short_description"))[:180],flush=True)
+            except Exception as e:print("DETAIL_ERROR",appid,type(e).__name__,str(e)[:120])
+          PY
