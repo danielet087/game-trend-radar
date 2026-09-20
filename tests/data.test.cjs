@@ -160,7 +160,11 @@ test("Steam published game-language support controls Traditional > Simplified > 
     language_support: { tchinese: true, schinese: true, english: true },
   }));
   assert.equal(both.name, "繁體名稱");
-  assert.equal(both.languageBadge, "支援繁體中文");
+  assert.equal(both.languageBadge, "支援繁中・支援簡中");
+  assert.deepEqual(both.languageBadges, [
+    { label: "支援繁中", status: "traditional" },
+    { label: "支援簡中", status: "simplified" },
+  ]);
   assert.equal(both.languageStatus, "traditional");
   assert.equal(both.nameEn, "Fable");
   const onlySimplified = D.normalize(game({
@@ -168,20 +172,36 @@ test("Steam published game-language support controls Traditional > Simplified > 
     language_support: { tchinese: false, schinese: true, english: true },
   }));
   assert.equal(onlySimplified.name, "神鬼寓言");
-  assert.equal(onlySimplified.languageBadge, "支援簡體中文");
+  assert.equal(onlySimplified.languageBadge, "支援簡中");
   assert.equal(onlySimplified.languageStatus, "simplified");
   const english = D.normalize(game({
     ...base,
     language_support: { tchinese: false, schinese: false, english: true },
   }));
   assert.equal(english.name, "Fable");
-  assert.equal(english.languageBadge, "未標示支援中文");
+  assert.equal(english.languageBadge, "支援英文");
+  assert.deepEqual(english.languageBadges, [
+    { label: "支援英文", status: "english" },
+  ]);
   const undecided = D.normalize(game({
     name: "Unknown", name_zh_tw: null, name_zh_cn: null,
     language_support: { tchinese: null, schinese: null, english: null },
   }));
-  assert.equal(undecided.languageBadge, "語言待確認");
+  assert.equal(undecided.languageBadge, "語言支援待確認");
   assert.equal(undecided.name, "Unknown");
+  const other = D.normalize(game({
+    ...base,
+    language_support: {
+      tchinese: false, schinese: false, english: false,
+      other_languages: ["日文", "法文"],
+    },
+  }));
+  assert.equal(other.languageBadge, "支援日文");
+  const noKnownLanguage = D.normalize(game({
+    ...base,
+    language_support: { tchinese: false, schinese: false, english: false },
+  }));
+  assert.equal(noKnownLanguage.languageBadge, "語言支援待確認");
 });
 test("Chinese Store page title alone does not imply game supports Chinese language", () => {
   const record = D.normalize(game({
