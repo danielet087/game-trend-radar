@@ -184,6 +184,13 @@
     body.append(title);
     if (game.nameEn && game.nameEn !== game.name)
       body.append(node("p", "card-english", game.nameEn));
+    const language = node(
+      "span",
+      `card-language language-${game.languageStatus}`,
+      game.languageBadge,
+    );
+    language.title = "Steam 商店公布的遊戲支援語言；配音與字幕支援另以商店為準";
+    body.append(language);
     if (game.darkHorse) {
       const badge = node("span", "dark-horse", "近期黑馬");
       badge.title = "直接上市，並於發售首週內確認超過 3,000 人關注";
@@ -509,7 +516,7 @@
     const previous = model.limit;
     model.limit += PAGE_SIZE;
     renderExplorer();
-    $("gamesGrid").querySelectorAll(".card-title a")[previous]?.focus();
+    $("gamesGrid").querySelectorAll(".card-detail-link")[previous]?.focus();
   });
   document.addEventListener("keydown", (event) => {
     if (
