@@ -1,0 +1,54 @@
+name: Probe Steam game languages once
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/probe-steam-game-languages-once.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check requests
+      - name: Inspect trustworthy Steam language support flags and locale names
+        run: |
+          python - <<'PY'
+          import requests, json
+          s=requests.Session()
+          s.headers["User-Agent"]="GameTrendRadarLanguageMetadataProbe/1.0"
+          ids=[4115450,1488490,2769570,632950,4358690]
+          for appid in ids:
+            try:
+              r=s.get("https://store.steampowered.com/api/appdetails",
+                params={"appids":appid,"cc":"tw","l":"english"},timeout=25)
+              data=(r.json().get(str(appid)) or {}).get("data") or {}
+              print("APPDETAILS",appid,r.status_code,
+                    "name",repr(data.get("name")),
+                    "languages",repr(data.get("supported_languages")),
+                    "lang_keys",[k for k in data.keys() if "lang" in k],flush=True)
+            except Exception as err:
+              print("APPDETAILS_ERROR",appid,type(err).__name__,str(err)[:140],flush=True)
+          for lang in ("english","tchinese","schinese"):
+            payload={"ids":[{"appid":id_} for id_ in ids],
+              "context":{"country_code":"TW","language":lang,"steam_realm":1},
+              "data_request":{"include_basic_info":True,"include_supported_languages":True}}
+            try:
+              resp=s.get("https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
+                params={"input_json":json.dumps(payload,separators=(",",":"))},timeout=25)
+              print("BROWSE",lang,resp.status_code,flush=True)
+              if resp.ok:
+                for row in (resp.json().get("response") or {}).get("store_items") or []:
+                  print("ITEM",lang,row.get("appid"),repr(row.get("name")),
+                    "LANG_FIELDS",{k:v for k,v in row.items() if "lang" in k or "content_descriptor" in k},
+                    flush=True)
+            except Exception as err:print("BROWSE_ERROR",lang,type(err).__name__,str(err)[:130])
+          PY
