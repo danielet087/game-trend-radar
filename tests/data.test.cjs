@@ -147,3 +147,50 @@ test("malformed rows do not erase the valid published dataset", () => {
   );
   assert.equal(data.games.length, 1);
 });
+
+test("Steam published game-language support controls Traditional > Simplified > English title", () => {
+  const base = {
+    name: "Fable",
+    name_en: "Fable",
+    name_zh_tw: "繁體名稱",
+    name_zh_cn: "神鬼寓言",
+  };
+  const both = D.normalize(game({
+    ...base,
+    language_support: { tchinese: true, schinese: true, english: true },
+  }));
+  assert.equal(both.name, "繁體名稱");
+  assert.equal(both.languageBadge, "支援繁體中文");
+  assert.equal(both.languageStatus, "traditional");
+  assert.equal(both.nameEn, "Fable");
+  const onlySimplified = D.normalize(game({
+    ...base,
+    language_support: { tchinese: false, schinese: true, english: true },
+  }));
+  assert.equal(onlySimplified.name, "神鬼寓言");
+  assert.equal(onlySimplified.languageBadge, "支援簡體中文");
+  assert.equal(onlySimplified.languageStatus, "simplified");
+  const english = D.normalize(game({
+    ...base,
+    language_support: { tchinese: false, schinese: false, english: true },
+  }));
+  assert.equal(english.name, "Fable");
+  assert.equal(english.languageBadge, "未標示支援中文");
+  const undecided = D.normalize(game({
+    name: "Unknown", name_zh_tw: null, name_zh_cn: null,
+    language_support: { tchinese: null, schinese: null, english: null },
+  }));
+  assert.equal(undecided.languageBadge, "語言待確認");
+  assert.equal(undecided.name, "Unknown");
+});
+test("Chinese Store page title alone does not imply game supports Chinese language", () => {
+  const record = D.normalize(game({
+    name: "English Game",
+    name_zh_tw: "繁中商店標題",
+    name_zh_cn: "簡中商店標題",
+    language_support: { tchinese: false, schinese: false, english: true },
+  }));
+  assert.equal(record.name, "English Game");
+  assert.equal(record.languages.tchinese, false);
+  assert.equal(record.languages.schinese, false);
+});
