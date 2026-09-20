@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-20T16:11:26.818Z",
+  "generated_at": "2026-09-20T16:18:18.055Z",
   "source": {
     "catalog": "Steam IStoreQueryService/Query day-filter, TW",
     "followers": "Steam Community game-group memberCount"
@@ -4396,9 +4396,9 @@
       "name_en": "Warrior Cats: Clans of the Forest",
       "name_zh_tw": null,
       "name_zh_cn": null,
-      "release_raw": "23 Oct, 2026",
-      "release_start": "2026-10-24",
-      "release_end": "2026-10-24",
+      "release_raw": "2026 年 10 月 23 日",
+      "release_start": "2026-10-23",
+      "release_end": "2026-10-23",
       "release_precision": "day",
       "release_display_precision": "date_full",
       "followers": 8367,
@@ -4410,7 +4410,7 @@
       "store_url": "https://store.steampowered.com/app/3960600/?l=tchinese",
       "community_url": "https://steamcommunity.com/app/3960600/",
       "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steamdb_explicit_utc_release_time_crosschecked_with_steam_store",
+      "release_date_basis": "steam_official_traditional_chinese_store_announced_calendar_date",
       "release_time_utc": "2026-10-23T16:00:00Z",
       "release_time_source": "https://steamdb.info/app/3960600/",
       "language_support": {
@@ -4427,6 +4427,17 @@
         "follows": "https://steamdb.info/upcoming/?week=2026W43",
         "official_store": "https://store.steampowered.com/app/3960600/?l=tchinese",
         "release_metadata": "https://steamdb.info/app/3960600/"
+      },
+      "release_date_source": "https://store.steampowered.com/app/3960600/Warrior_Cats_Clans_of_the_Forest/?l=tchinese",
+      "release_date_verified_at": "2026-09-20T16:18:18.055Z",
+      "release_time_status": "conflicting_source_time_not_used_for_public_calendar_date",
+      "release_time_conflict": {
+        "source": "SteamDB",
+        "source_url": "https://steamdb.info/app/3960600/",
+        "utc_timestamp": "2026-10-23T16:00:00Z",
+        "converted_taiwan_date": "2026-10-24",
+        "official_store_announced_date": "2026-10-23",
+        "resolution": "Display Steam official Taiwan calendar date; retain the SteamDB timestamp as unverified unlock-time data rather than shifting the public date."
       }
     },
     {
