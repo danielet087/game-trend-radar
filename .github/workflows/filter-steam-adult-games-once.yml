@@ -1,10 +1,8 @@
 name: One-time remove explicit sexual Steam games
 
 # Single user-authorized one-time execution; no recurring schedule.
+# One-time run started; manual-only now, no cron or push trigger.
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/filter-steam-adult-games-once.yml"]
   workflow_dispatch:
 
 permissions:
