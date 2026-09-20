@@ -1,10 +1,8 @@
 name: Verify Traditional title display once
 
 # User-requested one-time regression only; switch back to manual-only.
+# Regression completed; only manual execution remains.
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/verify-traditional-display-once.yml"]
   workflow_dispatch:
 
 permissions:
