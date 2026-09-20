@@ -1,0 +1,77 @@
+name: One-time remove explicit sexual Steam games
+
+# Single user-authorized one-time execution; no recurring schedule.
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/filter-steam-adult-games-once.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: steam-explicit-content-cleanup
+  cancel-in-progress: false
+
+jobs:
+  filter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout frontend published data
+        uses: actions/checkout@v4
+      - name: Configure Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install lightweight Steam Store client
+        run: python -m pip install --disable-pip-version-check requests
+      - name: Check explicit content classification offline
+        run: python -m unittest discover -s tests -p "test_steam_adult_filter.py" -v
+      - name: Check existing frontend data tests
+        run: node --test tests/data.test.cjs
+      - name: Screen every published game using actual Steam content descriptors
+        run: python -m scripts.filter_steam_adult_games_once --data-dir data
+      - name: Validate data preservation and exact-date filtering
+        run: |
+          python - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+          for name in ("steam_upcoming.json","steam_preview.json"):
+              path="data/"+name
+              old=json.loads(subprocess.check_output(
+                  ["git","show","HEAD:"+path],text=True))
+              new=json.loads(Path(path).read_text(encoding="utf-8"))
+              before={int(g["appid"]):g for g in old["games"]}
+              after={int(g["appid"]):g for g in new["games"]}
+              assert len(new["games"])==len(after)
+              assert set(after)<=set(before)
+              assert all(after[id]==before[id] for id in after)
+              assert new["sexual_content_filter"]["original_count"]==len(before)
+              assert new["sexual_content_filter"]["excluded_count"]==len(before)-len(after)
+              assert len(after)>0
+              if name=="steam_upcoming.json":
+                  assert len(after)<len(before)
+                  assert new["count"]==len(after)
+                  assert new["initialization"]==old["initialization"]
+                  assert new["release_display_screening"]==old["release_display_screening"]
+                  assert all(g["release_display_precision"]=="date_full" for g in after.values())
+                  assert all(int(g["followers"])>=5000 for g in after.values())
+                  assert all(g.get("header_image") and g.get("main_capsule_image") for g in after.values())
+              print("VERIFIED",name,"original",len(before),"retained",len(after),
+                    "excluded",len(before)-len(after),flush=True)
+          PY
+      - name: Publish only screened public JSON files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/steam_upcoming.json data/steam_preview.json
+          if git diff --cached --quiet; then
+            echo "No content changes"
+          else
+            git commit -m "data: exclude sexually explicit Steam games from public catalogue [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
