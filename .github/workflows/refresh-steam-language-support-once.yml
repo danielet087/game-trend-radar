@@ -2,10 +2,8 @@ name: One-time refresh Steam game language support
 
 # One approved update of game interface languages & Steam zh-CN/zh-TW titles.
 # Return to manual-only as soon as the one-time run starts.
+# Approved single update launched; manual-only now.
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/refresh-steam-language-support-once.yml"]
   workflow_dispatch:
 
 permissions:
