@@ -1,0 +1,74 @@
+name: One-time convert displayed Steam titles to Traditional
+
+# Single explicitly requested update, then manual-only; no recurring schedule.
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/convert-steam-name-script-once.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: steam-traditional-title-display
+  cancel-in-progress: false
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install offline OpenCC converter
+        run: python -m pip install --disable-pip-version-check opencc-python-reimplemented
+      - name: Verify actual game-name conversions and language-support invariants
+        run: |
+          python -m unittest discover -s tests -p "test_chinese_script_conversion.py" -v
+          node --test tests/data.test.cjs
+      - name: Write derived Traditional display titles only
+        run: python -m scripts.convert_public_names_to_traditional_once --data-dir data
+      - name: Verify original Steam names, release dates, content and followers intact
+        run: |
+          python - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          derived={"name_zh_tw_traditional","name_zh_cn_traditional","name_en_traditional"}
+          for filename in ("steam_upcoming.json","steam_preview.json"):
+              path="data/"+filename
+              original=json.loads(subprocess.check_output(["git","show","HEAD:"+path],text=True))
+              current=json.loads(Path(path).read_text(encoding="utf-8"))
+              assert original.keys()==current.keys()
+              for key in original:
+                  if key not in ("games","recent_games"):
+                      assert original[key]==current[key],(filename,key)
+                  else:
+                      assert len(original[key])==len(current[key])
+                      for before,after in zip(original[key],current[key]):
+                          assert before["appid"]==after["appid"]
+                          assert {k:v for k,v in before.items() if k not in derived}=={
+                              k:v for k,v in after.items() if k not in derived}
+              if filename=="steam_upcoming.json":
+                  assert len(current["games"])==96
+                  assert all(x["release_display_precision"]=="date_full" for x in current["games"])
+                  assert all(x["followers"]>=5000 for x in current["games"])
+                  assert all(x.get("header_image") for x in current["games"])
+              print("UNCHANGED_SOURCE_FIELDS",filename,
+                    "converted_cn",sum(x.get("name_zh_cn_traditional")!=x.get("name_zh_cn")
+                    for x in current["games"] if x.get("name_zh_cn")),flush=True)
+          PY
+      - name: Publish only derived Traditional display fields
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/steam_upcoming.json data/steam_preview.json
+          if git diff --cached --quiet; then
+            echo "All titles already converted"
+          else
+            git commit -m "data: retain raw Steam names and add Traditional-script display fields [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
