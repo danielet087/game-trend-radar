@@ -101,6 +101,24 @@ test("image paths are resolved for Steam assets; executable and untrusted origin
     { header_image: "https://shared.fastly.steamstatic.com/header.jpg" },
   );
   assert.equal(result.art, "https://shared.fastly.steamstatic.com/header.jpg");
+  assert.equal(result.hasVerifiedHeader, true);
+  assert.equal(result.artSources.at(-1),
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/10/hash/capsule.jpg");
+});
+test("prefer known Steam header, then discover larger legacy images, finally use real hashed capsule", () => {
+  const record = D.normalize(game({
+    appid: 2769570,
+    capsule_image: "24f6ec304555c95bf5c1ee328ffa9caaea50a4f6/capsule_231x87.jpg",
+  }));
+  assert.equal(record.hasVerifiedHeader, false);
+  assert.equal(record.art, "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2769570/header.jpg");
+  assert.deepEqual(record.artSources.slice(0, 3), [
+    "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2769570/header.jpg",
+    "https://cdn.akamai.steamstatic.com/steam/apps/2769570/header.jpg",
+    "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2769570/capsule_616x353.jpg",
+  ]);
+  assert.equal(record.artSources.at(-1),
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2769570/24f6ec304555c95bf5c1ee328ffa9caaea50a4f6/capsule_231x87.jpg");
 });
 test("45-day upcoming and 30-day recent ranges use Taipei date boundaries", () => {
   const today = "2026-09-20";
