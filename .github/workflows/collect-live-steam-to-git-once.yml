@@ -1,10 +1,8 @@
 name: Collect live Steam data and update Git once
 
 # One explicitly requested end-to-end test; remove push after it launches.
+# Authorized one-time run launched; manual-only, no cron and no push.
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/collect-live-steam-to-git-once.yml"]
   workflow_dispatch:
 
 permissions:
