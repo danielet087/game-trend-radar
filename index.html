@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light" />
-    <meta name="theme-color" content="#f7f7f0" />
+    <meta name="theme-color" content="#3652ed" />
     <meta
       name="description"
       content="把下一款期待，放進你的遊戲日曆。 Steam 新作關注度、發售月曆與收藏清單，日期以台灣時間為準。"
@@ -17,9 +17,9 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/radar-ui-v1.css" />
+    <link rel="stylesheet" href="./assets/radar-play-v2.css" />
     <script src="./assets/radar-data-v1.js" defer></script>
-    <script src="./assets/radar-ui-v1.js" defer></script>
+    <script src="./assets/radar-play-v2.js" defer></script>
   </head>
   <body data-page="home">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -43,7 +43,18 @@
             >我的收藏 <span class="saved-count" data-saved-count>0</span></a
           >
         </nav>
-        <span class="header-tag"
+        <button
+          class="motion-toggle"
+          id="motionToggle"
+          type="button"
+          aria-pressed="true"
+          aria-label="關閉動態效果"
+          title="關閉動態效果"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 5v14M15 5v14" /></svg
+          ><span>動態 ON</span></button
+        ><span class="header-tag"
           >發現遊戲的下一站 <span aria-hidden="true">↗</span></span
         >
       </div>
@@ -64,24 +75,75 @@
             >探索發售月曆 <span aria-hidden="true">↗</span></a
           >
         </div>
-        <div class="hero-art" aria-hidden="true">
-          <div class="orbit orbit-one"></div>
-          <div class="orbit orbit-two"></div>
-          <div class="orbit orbit-three"></div>
-          <div class="orbit-dot dot-one"></div>
-          <div class="orbit-dot dot-two"></div>
-          <div class="radar-core">
-            <img src="./assets/radar-mark.svg" alt="" />
+        <div
+          class="feature-stage"
+          id="featureStage"
+          role="region"
+          aria-label="焦點遊戲輪播"
+          aria-roledescription="輪播"
+        >
+          <div class="stage-orbit" aria-hidden="true"></div>
+          <span class="stage-spark spark-a" aria-hidden="true">✳</span
+          ><span class="stage-spark spark-b" aria-hidden="true">✳</span>
+          <span class="stage-stamp" aria-hidden="true"
+            >NEXT<br />ADVENTURE<span>↗</span></span
+          >
+          <div class="feature-stack" id="featureStack" aria-busy="true">
+            <div class="feature-placeholder">
+              <span>◎</span>
+              <p>正在與新作相遇…</p>
+            </div>
           </div>
-          <div class="floating-label label-top">NEXT ADVENTURE</div>
-          <div class="floating-label label-bottom">
-            好遊戲，值得期待 <span>↗</span>
+          <div class="feature-controls" id="featureControls" hidden>
+            <button
+              class="round-control"
+              id="featurePrev"
+              aria-label="上一款焦點遊戲"
+            >
+              ←
+            </button>
+            <div
+              id="featureDots"
+              class="feature-dots"
+              role="group"
+              aria-label="選擇焦點遊戲"
+            ></div>
+            <button
+              class="round-control"
+              id="featureNext"
+              aria-label="下一款焦點遊戲"
+            >
+              →</button
+            ><button
+              class="round-control play-control"
+              id="featurePlay"
+              aria-label="暫停焦點輪播"
+              aria-pressed="true"
+            >
+              Ⅱ</button
+            ><span
+              id="featureNumber"
+              class="feature-number"
+              aria-hidden="true"
+            ></span>
           </div>
-          <span class="art-spark spark-one">✳</span
-          ><span class="art-spark spark-two">+</span
-          ><span class="orbit-line"></span>
+          <p class="sr-only" id="featureAnnouncement" role="status"></p>
+        </div>
+        <div class="hero-scroll" aria-hidden="true">
+          <span>SCROLL TO DISCOVER</span><b>↓</b>
         </div>
       </section>
+      <div class="adventure-ribbon" aria-hidden="true">
+        <div class="ribbon-track">
+          <span
+            >GAME TREND RADAR <i>✳</i> NEXT ADVENTURE
+            <i>↗</i> 好遊戲，值得期待 <i>✳</i> </span
+          ><span
+            >GAME TREND RADAR <i>✳</i> NEXT ADVENTURE
+            <i>↗</i> 好遊戲，值得期待 <i>✳</i>
+          </span>
+        </div>
+      </div>
       <section class="stats" aria-label="目前收錄摘要">
         <div class="stat">
           <span class="stat-icon blue" aria-hidden="true">◎</span>
@@ -265,6 +327,17 @@
       </div>
       <a href="#mainContent" class="back-top">回到頂端 ↑</a>
     </footer>
+    <dialog class="game-dialog" id="gameDialog" aria-labelledby="dialogTitle">
+      <button
+        class="dialog-close"
+        id="closeDialog"
+        aria-label="關閉遊戲預覽"
+        type="button"
+      >
+        ×
+      </button>
+      <div id="dialogContent"></div>
+    </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
 </html>

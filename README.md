@@ -12,6 +12,8 @@ Steam 新作關注度、發售月曆與個人收藏。純 HTML / CSS / JavaScrip
 
 所有清單都支援中英文名稱／AppID 搜尋、最低關注人數篩選與排序。首頁搜尋限定目前月份。手機預設清單檢視，仍可切回月曆。鍵盤 `/` 聚焦搜尋，Escape 清除搜尋。網址保留月份、檢視與篩選條件。清單以 36 筆分批呈現。
 
+首頁焦點輪播支援左右按鈕、鍵盤方向鍵與手機滑動；游標停留、鍵盤操作或開啟快速預覽時暫停自動播放。遊戲卡片可快速查看上市日期、關注人數與收藏。頁首可關閉動態效果，網站也會尊重裝置的減少動態設定。
+
 ## 日期與收錄條件
 
 - 今日與日期區間都使用 Asia/Taipei（UTC+8）。後端提供的日期直接顯示，不任意加一天；精確時刻的換日由現有後端處理。
@@ -29,7 +31,7 @@ Steam 新作關注度、發售月曆與個人收藏。純 HTML / CSS / JavaScrip
 
 ## 維護
 
-共用程式位於 `assets/radar-data-v1.js`、`assets/radar-ui-v1.js`、`assets/radar-ui-v1.css`。原有舊版 list/date 程式保留，但目前 HTML 已不載入。
+共用程式位於 `assets/radar-data-v1.js`、`assets/radar-play-v2.js`、`assets/radar-play-v2.css`。原有舊版 UI/list/date 程式保留，但目前 HTML 已不載入。
 
 ```sh
 python -m http.server 8000
