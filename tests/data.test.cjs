@@ -214,3 +214,37 @@ test("Chinese Store page title alone does not imply game supports Chinese langua
   assert.equal(record.languages.tchinese, false);
   assert.equal(record.languages.schinese, false);
 });
+
+test("Traditional display names do not alter actual Steam game support or original search spellings", () => {
+  const dressmaker = D.normalize(game({
+    appid: 4019220,
+    name: "Dressmaker",
+    name_en: "Dressmaker",
+    name_zh_cn: "针影裁梦",
+    name_zh_cn_traditional: "針影裁夢",
+    language_support: { tchinese: false, schinese: true, english: true },
+  }));
+  assert.equal(dressmaker.name, "針影裁夢");
+  assert.equal(dressmaker.nameOriginalCn, "针影裁梦");
+  assert.equal(dressmaker.nameEn, "Dressmaker");
+  assert.equal(dressmaker.languageBadge, "支援簡中");
+  assert.equal(dressmaker.languages.tchinese, false);
+  const rivage = D.normalize(game({
+    appid: 4094660,
+    name: "Rivage",
+    name_zh_cn: "她在时间之外",
+    name_zh_cn_traditional: "她在時間之外",
+    language_support: { tchinese: false, schinese: true, english: true },
+  }));
+  assert.equal(rivage.name, "她在時間之外");
+  assert.equal(rivage.languageBadge, "支援簡中");
+  const both = D.normalize(game({
+    name: "Phantom Blade Zero",
+    name_zh_tw: "影之刃零",
+    name_zh_tw_traditional: "影之刃零",
+    name_zh_cn: "影之刃零",
+    language_support: { tchinese: true, schinese: true, english: true },
+  }));
+  assert.equal(both.name, "影之刃零");
+  assert.equal(both.languageBadge, "支援繁中・支援簡中");
+});
