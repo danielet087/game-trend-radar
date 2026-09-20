@@ -29,9 +29,9 @@ TAG_NUDITY = 6650
 TAG_HENTAI = 9130
 # Strong indicators of content purpose, not merely a nonsexual mature rating.
 EXPLICIT_DESCRIPTION = re.compile(
-    r"\\b(?:nsfw|hentai|pornograph(?:y|ic)|erotic(?:a)?|sex game|adult game|"
+    r"\b(?:nsfw|hentai|pornograph(?:y|ic)|erotic(?:a)?|sex game|adult game|"
     r"sexually explicit|explicit sexual|uncensored sexual|sex scenes|"
-    r"sexual acts|lots of sex)\\b", re.I,
+    r"sexual acts|lots of sex)\b", re.I,
 )
 
 
