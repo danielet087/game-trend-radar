@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-21T16:09:29.146Z",
+  "generated_at": "2026-09-21T16:10:38.776Z",
   "source": {
     "catalog": "Steam IStoreQueryService/Query day-filter, TW",
     "followers": "Steam Community game-group memberCount"
@@ -44,7 +44,7 @@
       "prefilter_complete": true
     }
   },
-  "count": 102,
+  "count": 103,
   "games": [
     {
       "appid": 2769570,
@@ -5495,6 +5495,49 @@
       "tags_count_stored": 10
     },
     {
+      "appid": 3846830,
+      "name": "Total War: SHOGUN 2 - Complete Edition",
+      "name_en": "Total War: SHOGUN 2 - Complete Edition",
+      "name_zh_tw": "全軍破敵：幕府將軍2 完整版",
+      "name_zh_cn": null,
+      "name_zh_tw_traditional": "全軍破敵：幕府將軍2 完整版",
+      "release_raw": "2026 年 10 月 13 日",
+      "release_start": "2026-10-13",
+      "release_end": "2026-10-13",
+      "release_precision": "day",
+      "release_display_precision": "date_full",
+      "followers": 6500,
+      "followers_source": "SteamDB",
+      "followers_source_url": "https://steamdb.info/upcoming/?week=2026W42",
+      "followers_observed_at": "2026-09-21T16:10:38.776Z",
+      "followers_provenance": "third_party_public_steam_hub_follows",
+      "follower_checked_at": "2026-09-21T16:10:38.776Z",
+      "capsule_image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3846830/capsule_231x87.jpg",
+      "header_image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3846830/header.jpg",
+      "main_capsule_image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3846830/capsule_616x353.jpg",
+      "store_url": "https://store.steampowered.com/app/3846830/Total_War_SHOGUN_2__Complete_Edition/?l=tchinese",
+      "community_url": "https://steamcommunity.com/app/3846830/",
+      "release_date_timezone": "Asia/Taipei",
+      "release_date_basis": "steam_official_traditional_chinese_store_announced_calendar_date",
+      "release_date_source": "https://store.steampowered.com/app/3846830/Total_War_SHOGUN_2__Edicion_completa/?l=tchinese",
+      "release_date_verified_at": "2026-09-21T16:10:38.776Z",
+      "release_time_status": "official_calendar_date_only_no_trusted_taiwan_unlock_time",
+      "language_support": {
+        "tchinese": true,
+        "schinese": true,
+        "english": true
+      },
+      "sexual_content_screened": true,
+      "sexual_content_screening_source": "https://store.steampowered.com/app/3846830/Total_War_SHOGUN_2__Complete_Edition/",
+      "sexual_content_screening_basis": "Strategy game; ESRB notes mild sexual themes alongside violence/blood/gore, but sexual content is not the primary game content.",
+      "app_type": "Game",
+      "discovered_by": "chatgpt_manual_schedule_run_2026_09_22",
+      "data_sources": {
+        "follows": "https://steamdb.info/upcoming/?week=2026W42",
+        "official_store": "https://store.steampowered.com/app/3846830/Total_War_SHOGUN_2__Edicion_completa/?l=tchinese"
+      }
+    },
+    {
       "appid": 4251460,
       "name": "Godzilla: Destroy All Monsters Melee Remastered",
       "release_raw": "2026-11-03",
@@ -6327,12 +6370,12 @@
   "language_support_checked_at": "2026-09-20T06:33:39Z",
   "language_support_source": "Steam Store Browse GetItems supported_languages + English/tchinese/schinese TW names",
   "language_support_summary": {
-    "total": 102,
-    "traditional_supported": 59,
+    "total": 103,
+    "traditional_supported": 60,
     "simplified_only": 20,
     "neither_chinese": 23,
     "unpublished_support": 0,
-    "zh_tw_titles": 29,
+    "zh_tw_titles": 30,
     "zh_cn_titles": 47
   },
   "steam_live_collection_test": {
@@ -6397,18 +6440,19 @@
     }
   },
   "latest_web_discovery": {
-    "checked_at": "2026-09-21T16:09:29.146Z",
+    "checked_at": "2026-09-21T16:10:38.776Z",
     "range_taiwan": {
       "start": "2026-09-22",
       "end": "2027-03-21"
     },
     "appids_added": [
       3884860,
-      4017880
+      4017880,
+      3846830
     ],
-    "items_added": 2,
+    "items_added": 3,
     "previous_public_count": 100,
-    "public_count": 102,
+    "public_count": 103,
     "six_month_coverage_complete": false,
     "report_location": "https://github.com/danielet087/game-trend-radar-backend/blob/main/reports/steam_daily_sync_20260922_manual_run.json",
     "follows_source": "SteamDB, third party",
