@@ -299,22 +299,30 @@
     $("detailStatus").hidden = true;
     $("detailPage").hidden = false;
   }
+  const LIVE_DATA_ROOT =
+    "https://raw.githubusercontent.com/danielet087/game-trend-radar/main/data/";
   async function readJSON(path) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 15000);
-    try {
-      const response = await fetch(
-        `${path}?t=${Math.floor(Date.now() / 300000)}`,
-        { cache: "no-store", signal: controller.signal },
-      );
-      if (!response.ok) return null;
-      const data = await response.json();
-      return data && Array.isArray(data.games) ? data : null;
-    } catch {
-      return null;
-    } finally {
-      clearTimeout(timer);
+    const filename = path.startsWith("./data/") ? path.slice(7) : "";
+    const sources = filename ? [LIVE_DATA_ROOT + filename, path] : [path];
+    for (const source of sources) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
+      try {
+        const separator = source.includes("?") ? "&" : "?";
+        const response = await fetch(
+          `${source}${separator}t=${Date.now()}`,
+          { cache: "no-store", signal: controller.signal },
+        );
+        if (!response.ok) continue;
+        const data = await response.json();
+        if (data && Array.isArray(data.games)) return data;
+      } catch {
+        /* Try the next source. The Pages copy is the offline fallback. */
+      } finally {
+        clearTimeout(timer);
+      }
     }
+    return null;
   }
   async function main() {
     updateSavedCount();
