@@ -1,22 +1,47 @@
 {
-  "executed_at": "2026-09-20T09:34:56Z",
+  "executed_at": "2026-09-22T01:58:22Z",
   "mode": "one_time_direct_steam_live_refresh",
   "timezone": "Asia/Taipei",
   "scope": "refresh_existing_public_titles_not_full_year_rediscovery",
   "source": "Steam Store Browse TW and Steam Community XML",
   "prior_full_year_candidates": 11467,
-  "before": 96,
-  "after": 96,
+  "before": 103,
+  "after": 103,
   "added": 0,
   "removed": 0,
-  "store_appids_queried": 96,
-  "date_changed_count": 0,
-  "date_changes": [],
+  "store_appids_queried": 103,
+  "date_changed_count": 4,
+  "date_changes": [
+    {
+      "appid": 4019220,
+      "name": "Dressmaker",
+      "from": "2026-09-22",
+      "to": "2026-09-21"
+    },
+    {
+      "appid": 3960600,
+      "name": "Warrior Cats: Clans of the Forest",
+      "from": "2026-10-23",
+      "to": "2026-10-24"
+    },
+    {
+      "appid": 3846830,
+      "name": "Total War: SHOGUN 2 - Complete Edition",
+      "from": "2026-10-13",
+      "to": "2026-10-14"
+    },
+    {
+      "appid": 3884860,
+      "name": "The Wolf Among Us Remastered",
+      "from": "2026-10-29",
+      "to": "2026-10-30"
+    }
+  ],
   "official_followers_attempted": 1,
   "official_followers_updates": [],
   "official_followers_errors": [
     {
-      "appid": 4739040,
+      "appid": 3393110,
       "status": "HTTP 429; stopped official XML lookups"
     }
   ],
