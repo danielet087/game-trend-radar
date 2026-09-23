@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-21T16:10:38.776Z",
+  "generated_at": "2026-09-23T02:18:55.644Z",
   "source": {
     "catalog": "Steam IStoreQueryService/Query day-filter, TW",
     "followers": "Steam Community game-group memberCount"
@@ -4076,9 +4076,9 @@
     {
       "appid": 2712590,
       "name": "Dragon Shelter",
-      "release_raw": "2026-09-25",
-      "release_start": "2026-09-25",
-      "release_end": "2026-09-25",
+      "release_raw": "2026-09-24",
+      "release_start": "2026-09-24",
+      "release_end": "2026-09-24",
       "release_precision": "day",
       "followers": 8968,
       "follower_checked_at": "2026-09-19T00:50:10Z",
@@ -4088,7 +4088,7 @@
       "name_en": "Dragon Shelter",
       "name_zh_tw": null,
       "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_browse_release_time",
+      "release_date_basis": "steam_official_traditional_chinese_store_announced_calendar_date",
       "release_time_utc": "2026-09-24T17:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
       "discovered_by": "IStoreQueryService/Query",
@@ -4132,7 +4132,20 @@
       "categories_source_url": "https://store.steampowered.com/app/2712590/",
       "store_release_date_reported": "2026-09-24",
       "store_release_date_reported_source": "https://store.steampowered.com/app/2712590/",
-      "tags_count_stored": 10
+      "tags_count_stored": 10,
+      "release_date_source": "https://store.steampowered.com/app/2712590/Dragon_Shelter/?l=tchinese",
+      "release_date_verified_at": "2026-09-23T02:18:55.644Z",
+      "release_time_status": "third_party_or_store_api_utc_timestamp_conflicts_with_official_calendar_date",
+      "release_time_conflict": {
+        "utc_timestamp": "2026-09-24T17:00:00Z",
+        "utc_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
+        "utc_to_taiwan_date": "2026-09-25",
+        "official_taiwan_store_date": "2026-09-24",
+        "official_source_url": "https://store.steampowered.com/app/2712590/Dragon_Shelter/?l=tchinese",
+        "previous_date_basis": "steam_store_browse_release_time",
+        "resolution": "Use the publicly announced full date on the Steam Taiwan Traditional Chinese store for the public release date; retain timestamp without claiming an exact Taiwan unlock hour.",
+        "reviewed_at": "2026-09-23T02:18:55.644Z"
+      }
     },
     {
       "appid": 2738170,
@@ -5646,9 +5659,9 @@
     {
       "appid": 3431300,
       "name": "Slow Roads",
-      "release_raw": "2026-09-24",
-      "release_start": "2026-09-24",
-      "release_end": "2026-09-24",
+      "release_raw": "2026-09-23",
+      "release_start": "2026-09-23",
+      "release_end": "2026-09-23",
       "release_precision": "day",
       "followers": 6388,
       "follower_checked_at": "2026-09-19T00:28:10Z",
@@ -5658,7 +5671,7 @@
       "name_en": "Slow Roads",
       "name_zh_tw": null,
       "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_browse_release_time",
+      "release_date_basis": "steam_official_traditional_chinese_store_announced_calendar_date",
       "release_time_utc": "2026-09-23T17:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
       "discovered_by": "IStoreQueryService/Query",
@@ -5696,7 +5709,20 @@
       "genres_source_url": "https://store.steampowered.com/app/3431300/",
       "tags_source_url": "https://store.steampowered.com/app/3431300/",
       "categories_source_url": "https://store.steampowered.com/app/3431300/",
-      "tags_count_stored": 10
+      "tags_count_stored": 10,
+      "release_date_source": "https://store.steampowered.com/app/3431300/Slow_Roads/?l=tchinese",
+      "release_date_verified_at": "2026-09-23T02:18:55.644Z",
+      "release_time_status": "third_party_or_store_api_utc_timestamp_conflicts_with_official_calendar_date",
+      "release_time_conflict": {
+        "utc_timestamp": "2026-09-23T17:00:00Z",
+        "utc_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
+        "utc_to_taiwan_date": "2026-09-24",
+        "official_taiwan_store_date": "2026-09-23",
+        "official_source_url": "https://store.steampowered.com/app/3431300/Slow_Roads/?l=tchinese",
+        "previous_date_basis": "steam_store_browse_release_time",
+        "resolution": "Use the publicly announced full date on the Steam Taiwan Traditional Chinese store for the public release date; retain timestamp without claiming an exact Taiwan unlock hour.",
+        "reviewed_at": "2026-09-23T02:18:55.644Z"
+      }
     },
     {
       "appid": 632950,
