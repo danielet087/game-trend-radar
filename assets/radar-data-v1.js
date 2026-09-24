@@ -95,8 +95,6 @@
     const nameCn = String(
       raw.name_zh_cn_traditional ||
         translated?.name_zh_cn_traditional ||
-        raw.name_zh_cn ||
-        translated?.name_zh_cn ||
         "",
     ).trim();
     const nameEnDisplay = String(
@@ -108,6 +106,8 @@
     // independent. Prefer an available official Traditional Chinese title,
     // then a Simplified title converted into Traditional, then English.
     const name = String(
+      raw.display_name ||
+      translated?.display_name ||
       nameTw ||
       nameCn ||
       nameEnDisplay ||
