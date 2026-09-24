@@ -157,7 +157,7 @@
     });
     advance();
   }
-  function makeCard(game) {
+  function makeCard(game, options = {}) {
     const card = node("article", "game-card");
     const cover = node("div", "cover-link");
     const fallback = node("span", "cover-placeholder");
@@ -166,11 +166,36 @@
     if (game.art) {
       const img = node("img");
       img.alt = "";
-      img.loading = "lazy";
+      img.loading = options.eager ? "eager" : "lazy";
       img.decoding = "async";
+      img.fetchPriority = options.priority ? "high" : "low";
+      img.width = 616;
+      img.height = 288;
+      let upgradeStarted = false;
       img.addEventListener("load", () => {
         fallback.hidden = true;
         img.classList.add("art-loaded");
+        // Render a dependable sharp header/capsule immediately. Only the
+        // first visible hero cards may then try a 2x file on idle; never
+        // block the initial paint waiting for a guessed Steam asset.
+        if (!options.upgrade || upgradeStarted || !game.art2x ||
+            game.art2x === img.currentSrc || failedArtwork.has(game.art2x) ||
+            window.devicePixelRatio < 1.5) return;
+        upgradeStarted = true;
+        const upgrade = () => {
+          if (!img.isConnected) return;
+          const candidate = new Image();
+          candidate.decoding = "async";
+          candidate.onload = () => {
+            if (img.isConnected) img.src = game.art2x;
+          };
+          candidate.onerror = () => failedArtwork.add(game.art2x);
+          candidate.src = game.art2x;
+        };
+        if ("requestIdleCallback" in window)
+          window.requestIdleCallback(upgrade, { timeout: 2500 });
+        else
+          setTimeout(upgrade, 1000);
       });
       loadGameArtwork(img, game, () => {
         img.remove();
@@ -298,7 +323,11 @@
     const recent = D.selectGames(data, "released", today).sort(
       (a, b) => b.followers - a.followers || b.date.localeCompare(a.date),
     );
-    $("spotlightGames").replaceChildren(...upcoming.slice(0, 4).map(makeCard));
+    $("spotlightGames").replaceChildren(
+      ...upcoming.slice(0, 4).map((game, index) =>
+        makeCard(game, { eager: true, priority: index < 2, upgrade: index < 2 }),
+      ),
+    );
     $("spotlightGames").setAttribute("aria-busy", "false");
     revealCards($("spotlightGames"));
     if (!upcoming.length)
@@ -308,7 +337,11 @@
           "目前尚無未來 45 天內符合關注門檻的遊戲。",
         ),
       );
-    $("recentGames").replaceChildren(...recent.slice(0, 3).map(makeCard));
+    $("recentGames").replaceChildren(
+      ...recent.slice(0, 3).map((game, index) =>
+        makeCard(game, { eager: index === 0, priority: false, upgrade: false }),
+      ),
+    );
     revealCards($("recentGames"));
     if (!recent.length)
       $("recentGames").append(
