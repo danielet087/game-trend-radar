@@ -1,7 +1,7 @@
 {
   "appid": 3010850,
   "name": "Gears of War: E-Day",
-  "release_raw": "6 Oct, 2026",
+  "release_raw": "2026-10-07",
   "release_start": "2026-10-07",
   "release_end": "2026-10-07",
   "release_precision": "day",
@@ -11,7 +11,7 @@
   "store_url": "https://store.steampowered.com/app/3010850/",
   "community_url": "https://steamcommunity.com/app/3010850/",
   "release_date_timezone": "Asia/Taipei",
-  "release_date_basis": "steam_store_browse_release_time",
+  "release_date_basis": "steam_store_browse_verified_full_date",
   "release_time_utc": "2026-10-06T16:00:00Z",
   "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
   "storage_version": 2,
@@ -25,5 +25,7 @@
     "english": true
   },
   "display_name": "Gears of War: E-Day",
-  "display_name_source": "english"
+  "display_name_source": "english",
+  "release_display_provider": "Steam IStoreBrowseService/GetItems",
+  "release_date_verified_at": "2026-09-24T16:55:18Z"
 }

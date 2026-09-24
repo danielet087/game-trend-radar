@@ -12,7 +12,7 @@
   "community_url": "https://steamcommunity.com/app/1675260/",
   "name_en": "Among the Trolls",
   "release_date_timezone": "Asia/Taipei",
-  "release_date_basis": "steam_store_query_release_time",
+  "release_date_basis": "steam_store_browse_verified_full_date",
   "release_time_utc": "2026-10-14T15:00:00Z",
   "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
   "discovered_by": "IStoreQueryService/Query",
@@ -22,5 +22,8 @@
   "name_zh_tw_traditional": "《黑森林迷蹤》Among the Trolls",
   "name_zh_cn_traditional": "黑森林迷蹤 Among the Trolls",
   "display_name": "《黑森林迷蹤》Among the Trolls",
-  "display_name_source": "tchinese"
+  "display_name_source": "tchinese",
+  "release_display_precision": "date_full",
+  "release_display_provider": "Steam IStoreBrowseService/GetItems",
+  "release_date_verified_at": "2026-09-24T16:55:18Z"
 }

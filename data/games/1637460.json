@@ -12,7 +12,7 @@
   "community_url": "https://steamcommunity.com/app/1637460/",
   "name_en": "TankRat",
   "release_date_timezone": "Asia/Taipei",
-  "release_date_basis": "steam_store_query_release_time",
+  "release_date_basis": "steam_store_browse_verified_full_date",
   "release_time_utc": "2027-01-15T08:00:00Z",
   "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
   "discovered_by": "IStoreQueryService/Query",
@@ -20,5 +20,8 @@
   "name_zh_cn": "坦克狂途 TankRat",
   "name_zh_cn_traditional": "坦克狂途 TankRat",
   "display_name": "坦克狂途 TankRat",
-  "display_name_source": "schinese_converted"
+  "display_name_source": "schinese_converted",
+  "release_display_precision": "date_full",
+  "release_display_provider": "Steam IStoreBrowseService/GetItems",
+  "release_date_verified_at": "2026-09-24T16:55:18Z"
 }

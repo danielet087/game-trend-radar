@@ -2,7 +2,7 @@
   "version": 2,
   "generated_at": "2026-09-24T14:06:36.668Z",
   "month": "2027-01",
-  "count": 6,
+  "count": 5,
   "games": [
     {
       "appid": 3660710,
@@ -18,18 +18,21 @@
       "community_url": "https://steamcommunity.com/app/3660710/",
       "name_en": "Armatus",
       "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_query_release_time",
+      "release_date_basis": "steam_store_browse_verified_full_date",
       "release_time_utc": "2027-01-07T17:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
       "storage_version": 2,
       "display_name": "Armatus",
-      "display_name_source": "english"
+      "display_name_source": "english",
+      "release_display_precision": "date_full",
+      "release_display_provider": "Steam IStoreBrowseService/GetItems",
+      "release_date_verified_at": "2026-09-24T16:55:18Z"
     },
     {
       "appid": 4260840,
       "name": "STRANGER THAN HEAVEN",
-      "release_raw": "14 Jan, 2027",
+      "release_raw": "2027-01-15",
       "release_start": "2027-01-15",
       "release_end": "2027-01-15",
       "release_precision": "day",
@@ -39,12 +42,15 @@
       "store_url": "https://store.steampowered.com/app/4260840/",
       "community_url": "https://steamcommunity.com/app/4260840/",
       "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_browse_release_time",
+      "release_date_basis": "steam_store_browse_verified_full_date",
       "release_time_utc": "2027-01-15T05:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
       "storage_version": 2,
       "display_name": "STRANGER THAN HEAVEN",
-      "display_name_source": "english"
+      "display_name_source": "english",
+      "release_display_precision": "date_full",
+      "release_display_provider": "Steam IStoreBrowseService/GetItems",
+      "release_date_verified_at": "2026-09-24T16:55:18Z"
     },
     {
       "appid": 4814120,
@@ -66,7 +72,7 @@
       "release_precision": "day",
       "release_display_precision": "date_full",
       "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_browse_release_time",
+      "release_date_basis": "steam_store_browse_verified_full_date",
       "release_time_utc": "2027-01-15T15:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
       "followers": 24775,
@@ -114,7 +120,9 @@
       "small_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4814120/700d5ea448d403ac2b7aa8fc330433bf0623b002/capsule_231x87.jpg?t=1787884647",
       "storage_version": 2,
       "display_name": "無限大",
-      "display_name_source": "tchinese"
+      "display_name_source": "tchinese",
+      "release_display_provider": "Steam IStoreBrowseService/GetItems",
+      "release_date_verified_at": "2026-09-24T16:55:18Z"
     },
     {
       "appid": 1637460,
@@ -130,7 +138,7 @@
       "community_url": "https://steamcommunity.com/app/1637460/",
       "name_en": "TankRat",
       "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_query_release_time",
+      "release_date_basis": "steam_store_browse_verified_full_date",
       "release_time_utc": "2027-01-15T08:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
@@ -138,7 +146,10 @@
       "name_zh_cn": "坦克狂途 TankRat",
       "name_zh_cn_traditional": "坦克狂途 TankRat",
       "display_name": "坦克狂途 TankRat",
-      "display_name_source": "schinese_converted"
+      "display_name_source": "schinese_converted",
+      "release_display_precision": "date_full",
+      "release_display_provider": "Steam IStoreBrowseService/GetItems",
+      "release_date_verified_at": "2026-09-24T16:55:18Z"
     },
     {
       "appid": 1853440,
@@ -154,39 +165,16 @@
       "community_url": "https://steamcommunity.com/app/1853440/",
       "name_en": "Tropico 7",
       "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_query_release_time",
+      "release_date_basis": "steam_store_browse_verified_full_date",
       "release_time_utc": "2027-01-28T18:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
       "storage_version": 2,
       "display_name": "Tropico 7",
-      "display_name_source": "english"
-    },
-    {
-      "appid": 3438920,
-      "name": "VOID DIVER: Escape from the Abyss",
-      "release_raw": "2027-01-31",
-      "release_start": "2027-01-31",
-      "release_end": "2027-01-31",
-      "release_precision": "day",
-      "followers": 12399,
-      "follower_checked_at": "2026-09-20T01:54:12Z",
-      "capsule_image": "4f7a247688477d014f3a1438da68873c771ee46c/capsule_231x87_alt_assets_3.jpg",
-      "store_url": "https://store.steampowered.com/app/3438920/",
-      "community_url": "https://steamcommunity.com/app/3438920/",
-      "name_en": "VOID DIVER: Escape from the Abyss",
-      "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_query_release_time",
-      "release_time_utc": "2027-01-31T08:00:00Z",
-      "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
-      "discovered_by": "IStoreQueryService/Query",
-      "storage_version": 2,
-      "name_zh_tw": "虛空潛者：逃出深淵",
-      "name_zh_cn": "虚空潜者：逃出深渊",
-      "name_zh_tw_traditional": "虛空潛者：逃出深淵",
-      "name_zh_cn_traditional": "虛空潛者：逃出深淵",
-      "display_name": "虛空潛者：逃出深淵",
-      "display_name_source": "tchinese"
+      "display_name_source": "english",
+      "release_display_precision": "date_full",
+      "release_display_provider": "Steam IStoreBrowseService/GetItems",
+      "release_date_verified_at": "2026-09-24T16:55:18Z"
     }
   ]
 }

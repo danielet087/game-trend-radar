@@ -12,7 +12,7 @@
   "community_url": "https://steamcommunity.com/app/3222640/",
   "name_en": "Wild West Pioneers",
   "release_date_timezone": "Asia/Taipei",
-  "release_date_basis": "steam_store_query_release_time",
+  "release_date_basis": "steam_store_browse_verified_full_date",
   "release_time_utc": "2026-09-25T12:00:00Z",
   "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
   "discovered_by": "IStoreQueryService/Query",
@@ -28,5 +28,7 @@
   },
   "name_zh_cn_traditional": "西部拓荒紀",
   "display_name": "西部拓荒紀",
-  "display_name_source": "schinese_converted"
+  "display_name_source": "schinese_converted",
+  "release_display_provider": "Steam IStoreBrowseService/GetItems",
+  "release_date_verified_at": "2026-09-24T16:55:18Z"
 }

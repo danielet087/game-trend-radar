@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "generated_at": "2026-09-24T14:06:36.668Z",
+  "generated_at": "2026-09-24T16:55:18.782072+00:00",
   "source": "Steam AppID-sharded public catalog",
-  "game_count": 235,
+  "game_count": 104,
   "months": [
     "2026-09",
     "2026-10",
@@ -11,9 +11,7 @@
     "2027-01",
     "2027-02",
     "2027-03",
-    "2027-04",
-    "2027-06",
-    "2027-08"
+    "2027-04"
   ],
   "calendar_path": "calendar/{YYYY-MM}.json",
   "game_path": "games/{appid}.json",
@@ -22,5 +20,8 @@
     "released": "lists/released.json"
   },
   "legacy_fallback": "steam_upcoming.json",
-  "exclusion_path": "excluded_appids.json"
+  "exclusion_path": "excluded_appids.json",
+  "release_date_audited": true,
+  "release_date_policy": "future_requires_store_date_full",
+  "release_date_audited_at": "2026-09-24T16:55:18.782072+00:00"
 }

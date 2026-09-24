@@ -1,7 +1,7 @@
 {
   "appid": 2067820,
   "name": "RetroSpace",
-  "release_raw": "1 Oct, 2026",
+  "release_raw": "2026-10-01",
   "release_start": "2026-10-01",
   "release_end": "2026-10-01",
   "release_precision": "day",
@@ -11,7 +11,7 @@
   "store_url": "https://store.steampowered.com/app/2067820/",
   "community_url": "https://steamcommunity.com/app/2067820/",
   "release_date_timezone": "Asia/Taipei",
-  "release_date_basis": "steam_store_browse_release_time",
+  "release_date_basis": "steam_store_browse_verified_full_date",
   "release_time_utc": "2026-10-01T15:00:00Z",
   "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
   "storage_version": 2,
@@ -27,5 +27,7 @@
   },
   "name_zh_cn_traditional": "復古時空",
   "display_name": "復古時空",
-  "display_name_source": "schinese_converted"
+  "display_name_source": "schinese_converted",
+  "release_display_provider": "Steam IStoreBrowseService/GetItems",
+  "release_date_verified_at": "2026-09-24T16:55:18Z"
 }
