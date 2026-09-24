@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "policy": "Temporarily exclude games without a Steam Store publicly announced exact YYYY-MM-DD date.",
+  "appids": [
+    3956640
+  ],
+  "games": [
+    {
+      "appid": 3956640,
+      "reason": "Steam Store displays year 2026; developer says late December, date not fixed; query timestamp 2026-12-31 is not a published day."
+    }
+  ]
+}
