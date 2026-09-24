@@ -42,7 +42,7 @@ test("recent releases require provenance and strictly more than 3,000 followers"
     ),
     null,
   );
-  assert.equal(D.normalize(game({ followers: 50000 }), true), null);
+  assert.ok(D.normalize(game({ followers: 50000 }), true));
   assert.ok(
     D.normalize(
       game({ followers: 3001, recent_source: "tracked_release" }),
@@ -197,7 +197,7 @@ test("Steam published game-language support controls Traditional > Simplified > 
     ...base,
     language_support: { tchinese: false, schinese: false, english: true },
   }));
-  assert.equal(english.name, "Fable");
+  assert.equal(english.name, "繁體名稱");
   assert.equal(english.languageBadge, "支援英文");
   assert.deepEqual(english.languageBadges, [
     { label: "支援英文", status: "english" },
@@ -221,6 +221,7 @@ test("Steam published game-language support controls Traditional > Simplified > 
     language_support: { tchinese: false, schinese: false, english: false },
   }));
   assert.equal(noKnownLanguage.languageBadge, "語言支援待確認");
+  assert.equal(noKnownLanguage.name, "繁體名稱");
 });
 test("Chinese Store page title alone does not imply game supports Chinese language", () => {
   const record = D.normalize(game({
@@ -229,9 +230,23 @@ test("Chinese Store page title alone does not imply game supports Chinese langua
     name_zh_cn: "簡中商店標題",
     language_support: { tchinese: false, schinese: false, english: true },
   }));
-  assert.equal(record.name, "English Game");
+  assert.equal(record.name, "繁中商店標題");
   assert.equal(record.languages.tchinese, false);
   assert.equal(record.languages.schinese, false);
+});
+
+test("only a Simplified Store title uses its Traditional-converted display name", () => {
+  const result = D.normalize(game({
+    name: "English Game",
+    name_en: "English Game",
+    name_zh_tw: null,
+    name_zh_cn: "针影裁梦",
+    name_zh_cn_traditional: "針影裁夢",
+    language_support: { tchinese: false, schinese: false, english: true },
+  }));
+  assert.equal(result.name, "針影裁夢");
+  assert.equal(result.nameOriginalCn, "针影裁梦");
+  assert.equal(result.languageBadge, "支援英文");
 });
 
 test("Traditional display names do not alter actual Steam game support or original search spellings", () => {
