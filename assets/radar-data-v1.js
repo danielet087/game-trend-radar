@@ -173,15 +173,13 @@
     ]
       .map((value) => imageURL(value, appid))
       .filter(Boolean);
-    // Try high-resolution versions first, but preserve each verified source
-    // right next to its 2x candidate for an automatic browser error fallback.
-    const prefer2x = (sources) => sources.flatMap((source) => {
-      const highRes = highResolutionURL(source);
-      return highRes && highRes !== source ? [highRes, source] : [source];
-    });
+    // Never delay the first painted image with a speculative _2x URL:
+    // some modern hashed Steam artwork has no corresponding _2x asset.
+    // Load the source-provided full-size image first; upgrade visible hero
+    // cards in the background only if the optional _2x file really exists.
     const images = Array.from(new Set([
-      ...prefer2x(suppliedHeader),
-      ...prefer2x(fallbackHeaders),
+      ...suppliedHeader,
+      ...fallbackHeaders,
       ...smallCapsules,
     ]));
     return {
@@ -201,6 +199,7 @@
       followers,
       art: images[0] || "",
       artSources: images,
+      art2x: highResolutionURL(images[0] || ""),
       hasVerifiedHeader: suppliedHeader.length > 0,
       recent,
       darkHorse:
