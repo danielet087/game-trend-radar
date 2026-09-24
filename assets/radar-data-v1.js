@@ -44,9 +44,9 @@
     if (!value || typeof value !== "string") return "";
     try {
       const url = new URL(value);
-      if (!/(^|\\.)(steamstatic\\.com|steamcdn-a\\.akamaihd\\.net)$/.test(url.hostname)) return "";
-      if (!/\\/(?:header(?:_tchinese)?|capsule_616x353)\\.jpe?g$/i.test(url.pathname)) return "";
-      url.pathname = url.pathname.replace(/\\.(jpe?g)$/i, "_2x.$1");
+      if (!/(^|\.)(steamstatic\.com|steamcdn-a\.akamaihd\.net)$/.test(url.hostname)) return "";
+      if (!/\/(?:header(?:_tchinese)?|capsule_616x353)\.jpe?g$/i.test(url.pathname)) return "";
+      url.pathname = url.pathname.replace(/\.(jpe?g)$/i, "_2x.$1");
       return url.href;
     } catch {
       return "";
