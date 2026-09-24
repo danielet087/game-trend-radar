@@ -841,10 +841,12 @@ h1 {
   color: white;
 }
 .day-game {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
   margin-top: 5px;
   padding: 7px 8px;
   border-radius: 7px;
@@ -853,7 +855,7 @@ h1 {
   font-size: 11px;
   font-weight: 650;
   line-height: 1.65;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
   transition:
     background 0.18s,
     transform 0.18s;
