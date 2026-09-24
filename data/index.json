@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "generated_at": "2026-09-24T14:03:39.269Z",
+  "source": "Steam sharded public catalog",
+  "game_count": 241,
+  "months": [
+    "2026-09",
+    "2026-10",
+    "2026-11",
+    "2026-12",
+    "2027-01",
+    "2027-02",
+    "2027-03",
+    "2027-04",
+    "2027-06",
+    "2027-08"
+  ],
+  "calendar_path": "calendar/{YYYY-MM}.json",
+  "game_path": "games/{appid}.json",
+  "lists": {
+    "upcoming": "lists/upcoming.json",
+    "released": "lists/released.json"
+  },
+  "legacy_fallback": "steam_upcoming.json"
+}
