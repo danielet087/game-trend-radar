@@ -168,7 +168,7 @@
       img.alt = "";
       img.loading = options.eager ? "eager" : "lazy";
       img.decoding = "async";
-      img.fetchPriority = options.priority ? "high" : "low";
+      img.fetchPriority = options.priority ? "high" : "auto";
       img.width = 616;
       img.height = 288;
       let upgradeStarted = false;
