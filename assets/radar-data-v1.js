@@ -104,11 +104,12 @@
         translated?.name_en_traditional ||
         nameEn,
     ).trim();
-    const useTw = !!nameTw && (languages ? languages.tchinese === true : true);
-    const useCn = !!nameCn && (languages ? languages.schinese === true : true);
+    // Storefront title localization and the game's supported languages are
+    // independent. Prefer an available official Traditional Chinese title,
+    // then a Simplified title converted into Traditional, then English.
     const name = String(
-      (useTw && nameTw) ||
-      (useCn && nameCn) ||
+      nameTw ||
+      nameCn ||
       nameEnDisplay ||
       `Steam App ${appid}`,
     ).trim();
