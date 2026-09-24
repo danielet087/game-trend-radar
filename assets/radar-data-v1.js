@@ -68,8 +68,11 @@
     if (
       recent
         ? !(
-            followers > 3000 &&
-            ["tracked_release", "direct_release"].includes(raw.recent_source)
+            followers >= 5000 ||
+            (
+              followers > 3000 &&
+              ["tracked_release", "direct_release"].includes(raw.recent_source)
+            )
           )
         : followers < 5000
     )
@@ -225,9 +228,12 @@
           .filter(Boolean),
       ),
       recent: unique(
-        (preview?.recent_games || [])
-          .map((game) => normalize(game, true))
-          .filter(Boolean),
+        [
+          ...(chosen.games || []).map((game) =>
+            normalize(game, true, translations.get(Number(game?.appid))),
+          ),
+          ...(preview?.recent_games || []).map((game) => normalize(game, true)),
+        ].filter(Boolean),
       ),
       updated: chosen.generated_at || chosen.updated_at || null,
       recentUpdated: preview?.generated_at || null,
