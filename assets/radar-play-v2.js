@@ -652,9 +652,10 @@
     $("updateText").textContent = "正在讀取遊戲資料…";
     $("resultCount").textContent = "正在讀取遊戲資料…";
     $("gamesGrid").setAttribute("aria-busy", "true");
-    const [official, preview] = await Promise.all(
-      ["./data/steam_upcoming.json", "./data/steam_preview.json"].map(readJSON),
-    );
+    const [official, preview] = await Promise.all([
+      window.RadarStorage?.loadCatalog?.() || readJSON("./data/steam_upcoming.json"),
+      readJSON("./data/steam_preview.json"),
+    ]);
     try {
       model.data = D.datasets(official, preview);
       if (!model.data) {
