@@ -37,6 +37,21 @@
       return "";
     }
   }
+  // Prefer Valve's 2x version of an actual Steam asset when available. Keep
+  // the unmodified source URL immediately after it: not every game has 2x art.
+  // Never mix the hash of one asset type with a different filename.
+  function highResolutionURL(value) {
+    if (!value || typeof value !== "string") return "";
+    try {
+      const url = new URL(value);
+      if (!/(^|\\.)(steamstatic\\.com|steamcdn-a\\.akamaihd\\.net)$/.test(url.hostname)) return "";
+      if (!/\\/(?:header(?:_tchinese)?|capsule_616x353)\\.jpe?g$/i.test(url.pathname)) return "";
+      url.pathname = url.pathname.replace(/\\.(jpe?g)$/i, "_2x.$1");
+      return url.href;
+    } catch {
+      return "";
+    }
+  }
   function normalize(raw, recent = false, translated = null) {
     if (!raw || typeof raw !== "object") return null;
     const date = raw.release_start || raw.release_date;
@@ -146,11 +161,24 @@
       `https://cdn.akamai.steamstatic.com/steam/apps/${appid}/header.jpg`,
       `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/capsule_616x353.jpg`,
     ];
-    const smallCapsules = [raw.capsule_image, translated?.capsule_image]
+    const smallCapsules = [
+      raw.small_capsule_image,
+      raw.capsule_image,
+      translated?.small_capsule_image,
+      translated?.capsule_image,
+    ]
       .map((value) => imageURL(value, appid))
       .filter(Boolean);
+    // Try high-resolution versions first, but preserve each verified source
+    // right next to its 2x candidate for an automatic browser error fallback.
+    const prefer2x = (sources) => sources.flatMap((source) => {
+      const highRes = highResolutionURL(source);
+      return highRes && highRes !== source ? [highRes, source] : [source];
+    });
     const images = Array.from(new Set([
-      ...suppliedHeader, ...fallbackHeaders, ...smallCapsules,
+      ...prefer2x(suppliedHeader),
+      ...prefer2x(fallbackHeaders),
+      ...smallCapsules,
     ]));
     return {
       appid,
