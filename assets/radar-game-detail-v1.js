@@ -98,7 +98,11 @@
     const sources = game.artSources || (game.art ? [game.art] : []);
     const img = document.createElement("img");
     img.alt = `${game.name} 的 Steam 遊戲封面`;
+    img.loading = "eager";
+    img.fetchPriority = "high";
     img.decoding = "async";
+    img.width = 616;
+    img.height = 353;
     const fallback = document.createElement("span");
     fallback.className = "cover-placeholder";
     fallback.setAttribute("aria-label", "暫無遊戲封面");
