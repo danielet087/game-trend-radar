@@ -334,19 +334,24 @@
       );
       return;
     }
-    const [official, preview] = await Promise.all([
-      readJSON("./data/steam_upcoming.json"),
+    const [rawGame, official, preview] = await Promise.all([
+      window.RadarStorage?.loadGame?.(appid) || Promise.resolve(null),
+      window.RadarStorage?.loadCatalog?.() || readJSON("./data/steam_upcoming.json"),
       readJSON("./data/steam_preview.json"),
     ]);
-    if (!official && !preview) {
+    if (!rawGame && !official && !preview) {
       setStatus("遊戲資料暫時無法讀取", "請稍後再試，或返回遊戲清單。", true);
       return;
     }
     try {
-      const data = D.datasets(official, preview);
-      const game = [...data.games, ...data.recent].find(
-        (entry) => entry.appid === appid,
-      );
+      const data = D.datasets(official || { games: rawGame ? [rawGame] : [] }, preview);
+      const translated = [
+        ...(preview?.games || []),
+        ...(preview?.recent_games || []),
+      ].find((row) => Number(row?.appid) === appid);
+      const game =
+        (rawGame && D.normalize(rawGame, false, translated)) ||
+        [...data.games, ...data.recent].find((entry) => entry.appid === appid);
       if (!game) {
         setStatus(
           "這款遊戲目前不在公開清單中",
@@ -354,11 +359,13 @@
         );
         return;
       }
-      const published = official || preview;
-      const metadata = [
-        ...(published.games || []),
-        ...(preview?.recent_games || []),
-      ].find((row) => Number(row?.appid) === game.appid);
+      const metadata =
+        rawGame ||
+        [
+          ...(official?.games || []),
+          ...(preview?.games || []),
+          ...(preview?.recent_games || []),
+        ].find((row) => Number(row?.appid) === game.appid);
       renderAbout(metadata);
       render(game, data);
     } catch (error) {
