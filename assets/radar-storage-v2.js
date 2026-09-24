@@ -11,9 +11,13 @@
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 15000);
       try {
+        // Keep URLs stable so the browser can reuse cached month/AppID
+        // responses between pages. Revalidate the tiny index for freshness.
+        const freshIndex = filename === "index.json";
         const separator = source.includes("?") ? "&" : "?";
-        const response = await fetch(`${source}${separator}t=${Date.now()}`, {
-          cache: "no-store",
+        const url = freshIndex ? `${source}${separator}t=${Date.now()}` : source;
+        const response = await fetch(url, {
+          cache: freshIndex ? "no-store" : "no-cache",
           signal: controller.signal,
         });
         if (!response.ok) continue;
