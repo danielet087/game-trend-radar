@@ -167,7 +167,7 @@ test("malformed rows do not erase the valid published dataset", () => {
   assert.equal(data.games.length, 1);
 });
 
-test("Steam published game-language support controls Traditional > Simplified > English title", () => {
+test("Store title priority is Traditional > converted Simplified > English, independently of supported languages", () => {
   const base = {
     name: "Fable",
     name_en: "Fable",
@@ -188,6 +188,7 @@ test("Steam published game-language support controls Traditional > Simplified > 
   assert.equal(both.nameEn, "Fable");
   const onlySimplified = D.normalize(game({
     ...base,
+    name_zh_tw: null,
     language_support: { tchinese: false, schinese: true, english: true },
   }));
   assert.equal(onlySimplified.name, "神鬼寓言");
