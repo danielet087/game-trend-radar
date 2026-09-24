@@ -40,7 +40,7 @@
           ),
         ),
       );
-      if (shards.some(Boolean)) {
+      if (shards.length && shards.every(Boolean)) {
         const byId = new Map();
         for (const shard of shards.filter(Boolean)) {
           for (const game of shard.games) {
