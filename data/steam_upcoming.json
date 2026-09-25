@@ -1,52 +1,7 @@
 {
-  "generated_at": "2026-09-24T16:56:30.488975+00:00",
-  "source": {
-    "catalog": "Steam IStoreQueryService/Query day-filter, TW",
-    "followers": "Steam Community game-group memberCount"
-  },
-  "filter": {
-    "country": "TW",
-    "min_followers": 5000,
-    "release_horizon_days": 365,
-    "release_date_timezone": "Asia/Taipei"
-  },
-  "initialization": {
-    "mode": "two_phase_steam_year",
-    "complete": false,
-    "phase": "followers",
-    "days_scanned": 365,
-    "candidate_count": 11393,
-    "date_precision_eligible_count": 3261,
-    "date_precision_excluded_count": 8132,
-    "date_precision_complete": true,
-    "next_follower_index": 0,
-    "coverage_exhaustive": false,
-    "prefilter_threshold": 4000,
-    "prefilter_next_index": 3261,
-    "prefilter_head_next_index": 0,
-    "prefilter_complete": true,
-    "priority_total": null,
-    "verified_priority_count": null,
-    "prefilter_screened_count": 3261,
-    "prefilter_missing_count": 1419,
-    "prefilter_matched_count": 88,
-    "official_verified_count": 0,
-    "last_attempt": {
-      "phase": "prefilter",
-      "candidate_count": 3261,
-      "prefilter_start_index": 3200,
-      "prefilter_next_index": 3261,
-      "prefilter_screened": 61,
-      "prefilter_priority": 2,
-      "prefilter_missing": 16,
-      "prefilter_head_next_index": 0,
-      "prefilter_complete": true,
-      "priority_total": 88,
-      "missing_total": 1419,
-      "fresh_follower_requests": 0
-    }
-  },
-  "count": 104,
+  "version": 2,
+  "generated_at": "2026-09-25T14:03:25.077216+00:00",
+  "count": 100,
   "games": [
     {
       "appid": 4739040,
@@ -596,7 +551,7 @@
       "community_url": "https://steamcommunity.com/app/4080220/",
       "name_en": "EA SPORTS FC™ 27",
       "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_browse_verified_full_date",
+      "release_date_basis": "steam_store_query_release_time",
       "release_time_utc": "2026-09-24T23:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
@@ -628,7 +583,7 @@
       "community_url": "https://steamcommunity.com/app/3222640/",
       "name_en": "Wild West Pioneers",
       "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_browse_verified_full_date",
+      "release_date_basis": "steam_store_query_release_time",
       "release_time_utc": "2026-09-25T12:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
@@ -662,7 +617,7 @@
       "community_url": "https://steamcommunity.com/app/2712590/",
       "name_en": "Dragon Shelter",
       "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_browse_verified_full_date",
+      "release_date_basis": "steam_store_query_release_time",
       "release_time_utc": "2026-09-24T17:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
@@ -716,7 +671,10 @@
       "display_name": "《夜城狂想》Nivalis NIghts",
       "display_name_source": "tchinese",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-09-29",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869233+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3493540,
@@ -748,7 +706,10 @@
       "display_name": "Transport Fever 3",
       "display_name_source": "english",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-09-30",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869258+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 1912410,
@@ -780,7 +741,10 @@
       "display_name": "Minecraft Dungeons II",
       "display_name_source": "english",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-09-30",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869339+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 1706510,
@@ -812,7 +776,10 @@
       "display_name": "Songs of Glimmerwick",
       "display_name_source": "english",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-09-30",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869456+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2067820,
@@ -845,7 +812,10 @@
       "display_name": "復古時空",
       "display_name_source": "schinese_converted",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-01",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869512+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3841510,
@@ -880,7 +850,10 @@
       "display_name": "真・三國無雙２ with 猛將傳 Remastered",
       "display_name_source": "tchinese",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-01",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869523+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2288340,
@@ -915,7 +888,10 @@
       "display_name": "空戰奇兵8 希孚之翼 (ACE COMBAT 8: WINGS OF THEVE)",
       "display_name_source": "tchinese",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-02",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869253+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 4078430,
@@ -950,7 +926,10 @@
       "display_name": "星際大戰：銀河賽車手™",
       "display_name_source": "tchinese",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-06",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869293+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3010850,
@@ -981,7 +960,10 @@
       "display_name": "Gears of War: E-Day",
       "display_name_source": "english",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-07",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869262+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3883570,
@@ -1008,7 +990,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-08",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869572+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 1215940,
@@ -1031,7 +1016,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-08",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869612+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2254990,
@@ -1056,7 +1044,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-09",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869287+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 1551980,
@@ -1079,7 +1070,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-09",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869348+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2333000,
@@ -1102,7 +1096,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-09",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869426+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 499170,
@@ -1129,7 +1126,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-09",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869460+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3031880,
@@ -1152,7 +1152,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-09",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869620+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3090810,
@@ -1179,7 +1182,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-10",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869569+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2680280,
@@ -1202,7 +1208,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-10",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869577+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3743140,
@@ -1227,7 +1236,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-12",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869643+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3219030,
@@ -1256,7 +1268,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-13",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869304+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2871520,
@@ -1283,7 +1298,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-13",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869355+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2929250,
@@ -1310,7 +1328,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-14",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869239+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2828710,
@@ -1337,7 +1358,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-14",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869266+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 1675260,
@@ -1366,7 +1390,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-14",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869401+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2967950,
@@ -1383,7 +1410,7 @@
       "name_en": "The Witch's Bakery",
       "release_date_timezone": "Asia/Taipei",
       "release_date_basis": "steam_store_browse_verified_full_date",
-      "release_time_utc": "2026-10-14T17:00:00Z",
+      "release_time_utc": "2026-10-14T14:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
       "storage_version": 2,
@@ -1391,7 +1418,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-14",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869497+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3299050,
@@ -1408,7 +1438,7 @@
       "name_en": "No Such Place",
       "release_date_timezone": "Asia/Taipei",
       "release_date_basis": "steam_store_browse_verified_full_date",
-      "release_time_utc": "2026-12-31T08:00:00Z",
+      "release_time_utc": "2026-10-14T03:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
       "storage_version": 2,
@@ -1420,7 +1450,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-14",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869519+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3314580,
@@ -1445,65 +1478,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
-    },
-    {
-      "appid": 3846830,
-      "name": "Total War: SHOGUN 2 - Complete Edition",
-      "name_en": "Total War: SHOGUN 2 - Complete Edition",
-      "name_zh_tw": "全軍破敵：幕府將軍2 完整版",
-      "name_zh_cn": "《全面战争：幕府将军2》完全版",
-      "name_zh_tw_traditional": "全軍破敵：幕府將軍2 完整版",
-      "name_zh_cn_traditional": "《全面戰爭：幕府將軍2》完全版",
-      "name_en_traditional": "Total War: SHOGUN 2 - Complete Edition",
-      "language_support": {
-        "tchinese": true,
-        "schinese": true,
-        "english": true
-      },
-      "release_raw": "2026-10-14",
-      "release_start": "2026-10-14",
-      "release_end": "2026-10-14",
-      "release_precision": "day",
-      "release_display_precision": "date_full",
-      "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_browse_verified_full_date",
-      "release_time_utc": "2026-10-13T16:00:00Z",
-      "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
-      "followers": 6859,
-      "follower_checked_at": "2026-09-23T14:32:48.225605+08:00",
-      "follower_source": "Steam Community XML memberCount",
-      "official_ge5000": true,
-      "sexual_content_screened": true,
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3846830/9b5a02f97947c4fc7d8b0d5f8f1a28d32bb34d2d/capsule_616x353.jpg?t=1789489801",
-      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3846830/d0ee9f67d5afcf19e5e8d7955fc831d5d197bdb0/header.jpg?t=1789489801",
-      "main_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3846830/9b5a02f97947c4fc7d8b0d5f8f1a28d32bb34d2d/capsule_616x353.jpg?t=1789489801",
-      "store_url": "https://store.steampowered.com/app/3846830/",
-      "short_description": "Unite Japan and become Shogun in the updated, enhanced and complete edition of Total War: SHOGUN 2. Build alliances, sabotage your enemies and outsmart your rival clans in a seamless blend of turn-based empire building and real-time battles.",
-      "genres": [
-        "Strategy"
-      ],
-      "tags": [
-        "Strategy",
-        "Grand Strategy",
-        "RTS",
-        "Turn-Based Strategy",
-        "Historical",
-        "Multiplayer",
-        "Violent",
-        "Singleplayer",
-        "Gore"
-      ],
-      "content_enriched_at": "2026-09-23T21:56:55Z",
-      "content_enrichment_source": "Steam Store Browse + appdetails + public Store tags",
-      "content_enrichment_version": 1,
-      "content_enrichment_signature": "3846830:6859:2026-10-13",
-      "small_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3846830/3aac12897252e0b0726d8a882a90ed3c83a0ccfa/capsule_231x87.jpg?t=1789489801",
-      "storage_version": 2,
-      "display_name": "全軍破敵：幕府將軍2 完整版",
-      "display_name_source": "tchinese",
-      "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-14",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869598+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 4231820,
@@ -1528,7 +1506,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-15",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869299+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3115160,
@@ -1553,7 +1534,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-15",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869443+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3569420,
@@ -1580,7 +1564,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-16",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869581+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2295060,
@@ -1609,7 +1596,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-17",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869376+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2121510,
@@ -1634,7 +1624,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-17",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869422+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 4094350,
@@ -1659,7 +1652,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-17",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869475+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2223980,
@@ -1676,7 +1672,7 @@
       "name_en": "Nomad Drive",
       "release_date_timezone": "Asia/Taipei",
       "release_date_basis": "steam_store_browse_verified_full_date",
-      "release_time_utc": "2026-10-31T07:00:00Z",
+      "release_time_utc": "2026-10-20T15:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
       "storage_version": 2,
@@ -1684,7 +1680,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-20",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869396+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2315050,
@@ -1701,7 +1700,7 @@
       "name_en": "We Were Here Tomorrow",
       "release_date_timezone": "Asia/Taipei",
       "release_date_basis": "steam_store_browse_verified_full_date",
-      "release_time_utc": "2026-10-31T07:00:00Z",
+      "release_time_utc": "2026-10-20T13:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
       "storage_version": 2,
@@ -1713,7 +1712,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-20",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869450+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3469910,
@@ -1742,7 +1744,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-21",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869602+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3486530,
@@ -1771,75 +1776,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
-    },
-    {
-      "appid": 2087540,
-      "name": "Escape from Playtime",
-      "name_en": "Escape from Playtime",
-      "name_en_traditional": "Escape from Playtime",
-      "language_support": {
-        "tchinese": false,
-        "schinese": true,
-        "english": true
-      },
-      "release_raw": "2026-10-22",
-      "release_start": "2026-10-22",
-      "release_end": "2026-10-22",
-      "release_precision": "day",
-      "release_display_precision": "date_full",
-      "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_browse_verified_full_date",
-      "release_time_utc": "2026-10-21T16:00:00Z",
-      "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
-      "followers": 6613,
-      "follower_checked_at": "2026-09-23T14:43:20.202290+08:00",
-      "follower_source": "Steam Community XML memberCount",
-      "official_ge5000": true,
-      "sexual_content_screened": true,
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2087540/4a3cb866040237f05a4e2fd6604a8574c68092d2/capsule_616x353.jpg?t=1790202067",
-      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2087540/ae8bd1812254242c63c873d45f134d4056535439/header.jpg?t=1790202067",
-      "main_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2087540/4a3cb866040237f05a4e2fd6604a8574c68092d2/capsule_616x353.jpg?t=1790202067",
-      "store_url": "https://store.steampowered.com/app/2087540/",
-      "short_description": "An online 1-4 player co-op horror experience where you and your friends are trapped in an abandoned toy factory. A mysterious voice commands you for an unknown purpose as you explore shifting halls, scavenge for tools, and fight for survival against creatures that lurk in the dark.",
-      "genres": [
-        "Action",
-        "Adventure",
-        "Indie",
-        "Early Access"
-      ],
-      "tags": [
-        "Early Access",
-        "Online Co-Op",
-        "Survival Horror",
-        "Multiplayer",
-        "Horror",
-        "Co-op",
-        "First-Person",
-        "Action",
-        "Adventure",
-        "Exploration",
-        "Dark",
-        "Puzzle",
-        "Cartoony",
-        "Comedy",
-        "Stealth",
-        "Singleplayer",
-        "Realistic",
-        "Action-Adventure",
-        "Lore-Rich",
-        "1980s"
-      ],
-      "content_enriched_at": "2026-09-23T23:51:01Z",
-      "content_enrichment_source": "Steam Store Browse + appdetails + public Store tags",
-      "content_enrichment_version": 1,
-      "content_enrichment_signature": "2087540:6613:2026-10-21",
-      "small_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2087540/630614ed67f5181a54b86515c300b8f872fe02a8/capsule_231x87.jpg?t=1790202067",
-      "storage_version": 2,
-      "display_name": "Escape from Playtime",
-      "display_name_source": "english",
-      "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-22",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869493+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3259780,
@@ -1864,73 +1804,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
-    },
-    {
-      "appid": 3960600,
-      "name": "Warrior Cats: Clans of the Forest",
-      "name_en": "Warrior Cats: Clans of the Forest",
-      "name_en_traditional": "Warrior Cats: Clans of the Forest",
-      "language_support": {
-        "tchinese": false,
-        "schinese": false,
-        "english": true
-      },
-      "release_raw": "2026-10-24",
-      "release_start": "2026-10-24",
-      "release_end": "2026-10-24",
-      "release_precision": "day",
-      "release_display_precision": "date_full",
-      "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_browse_verified_full_date",
-      "release_time_utc": "2026-10-23T16:00:00Z",
-      "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
-      "followers": 8664,
-      "follower_checked_at": "2026-09-23T16:29:09.126346+08:00",
-      "follower_source": "Steam Community XML memberCount",
-      "official_ge5000": true,
-      "sexual_content_screened": true,
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3960600/911ad319c5e4d0d1999fb974ce7666e7676541e6/capsule_616x353.jpg?t=1790179026",
-      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3960600/9f44f5e72861ea37f25bb51d4c69fa03b880961b/header.jpg?t=1790179026",
-      "main_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3960600/911ad319c5e4d0d1999fb974ce7666e7676541e6/capsule_616x353.jpg?t=1790179026",
-      "store_url": "https://store.steampowered.com/app/3960600/",
-      "short_description": "Create your own Warrior Cat and journey through the Lake Territories in an immersive action-adventure inspired by the beloved Warrior Cats book series. Hunt, explore, battle rival Clans, uncover prophecies, and shape your legacy with every choice you make.",
-      "genres": [
-        "Adventure",
-        "RPG"
-      ],
-      "tags": [
-        "Adventure",
-        "RPG",
-        "Cats",
-        "Action",
-        "Action-Adventure",
-        "Action RPG",
-        "Exploration",
-        "Turn-Based Tactics",
-        "3D",
-        "Animals",
-        "Cartoon",
-        "Character Customization",
-        "Cartoony",
-        "Comic Book",
-        "Fantasy",
-        "Singleplayer",
-        "Story Rich",
-        "Combat",
-        "Multiplayer",
-        "Turn-Based Combat"
-      ],
-      "content_enriched_at": "2026-09-23T23:50:33Z",
-      "content_enrichment_source": "Steam Store Browse + appdetails + public Store tags",
-      "content_enrichment_version": 1,
-      "content_enrichment_signature": "3960600:8664:2026-10-23",
-      "small_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3960600/76454c2e2f59de9d7bc2073510b4cf8037de1969/capsule_231x87.jpg?t=1790179026",
-      "storage_version": 2,
-      "display_name": "Warrior Cats: Clans of the Forest",
-      "display_name_source": "english",
-      "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-23",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869319+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3024130,
@@ -1947,7 +1824,7 @@
       "name_en": "PAO PAO",
       "release_date_timezone": "Asia/Taipei",
       "release_date_basis": "steam_store_browse_verified_full_date",
-      "release_time_utc": "2026-12-31T08:00:00Z",
+      "release_time_utc": "2026-10-26T07:10:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
       "storage_version": 2,
@@ -1959,7 +1836,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-26",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869464+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2295170,
@@ -1988,7 +1868,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-27",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869276+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 4115450,
@@ -2017,7 +1900,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-29",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869210+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 1167820,
@@ -2033,14 +1919,17 @@
       "community_url": "https://steamcommunity.com/app/1167820/",
       "release_date_timezone": "Asia/Taipei",
       "release_date_basis": "steam_store_browse_verified_full_date",
-      "release_time_utc": "2026-10-09T15:00:00Z",
+      "release_time_utc": "2026-10-28T16:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
       "storage_version": 2,
       "display_name": "Airport Contraband",
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-10-29",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869679+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 1892100,
@@ -2069,7 +1958,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-03",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869627+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 4251460,
@@ -2094,7 +1986,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-03",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869635+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2320980,
@@ -2111,7 +2006,7 @@
       "name_en": "Loftia",
       "release_date_timezone": "Asia/Taipei",
       "release_date_basis": "steam_store_browse_verified_full_date",
-      "release_time_utc": "2026-12-31T08:00:00Z",
+      "release_time_utc": "2026-11-03T18:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
       "storage_version": 2,
@@ -2121,7 +2016,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-04",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869343+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 4358660,
@@ -2148,7 +2046,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-04",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869654+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3727090,
@@ -2173,7 +2074,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-04",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869664+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3204330,
@@ -2202,7 +2106,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-05",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869411+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3581230,
@@ -2227,7 +2134,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-05",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869503+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2738170,
@@ -2252,7 +2162,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-06",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869534+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2522120,
@@ -2277,7 +2190,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-06",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869588+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2411200,
@@ -2302,7 +2218,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-06",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869631+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2826790,
@@ -2329,7 +2248,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-11",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869594+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 1173980,
@@ -2356,7 +2278,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-12",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869329+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 4171850,
@@ -2381,7 +2306,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-17",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869470+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3224600,
@@ -2406,7 +2334,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-11-28",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869555+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3161310,
@@ -2435,7 +2366,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-12-01",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869281+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 4084710,
@@ -2460,7 +2394,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-12-03",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869507+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2272360,
@@ -2483,7 +2420,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-12-04",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869219+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2988120,
@@ -2508,7 +2448,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-12-08",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869479+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2916700,
@@ -2535,7 +2478,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2026-12-10",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869538+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3660710,
@@ -2560,7 +2506,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-01-08",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869407+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 4260840,
@@ -2583,79 +2532,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
-    },
-    {
-      "appid": 4814120,
-      "name": "ANANTA",
-      "name_en": "ANANTA",
-      "name_zh_tw": "無限大",
-      "name_zh_cn": "无限大",
-      "name_zh_tw_traditional": "無限大",
-      "name_zh_cn_traditional": "無限大",
-      "name_en_traditional": "ANANTA",
-      "language_support": {
-        "tchinese": true,
-        "schinese": true,
-        "english": true
-      },
-      "release_raw": "2027-01-15",
-      "release_start": "2027-01-15",
-      "release_end": "2027-01-15",
-      "release_precision": "day",
-      "release_display_precision": "date_full",
-      "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_store_browse_verified_full_date",
-      "release_time_utc": "2027-01-15T15:00:00Z",
-      "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
-      "followers": 24775,
-      "follower_checked_at": "2026-09-23T18:01:45.685765+08:00",
-      "follower_source": "Steam Community XML memberCount",
-      "official_ge5000": true,
-      "sexual_content_screened": true,
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4814120/f794174f36d0eacd07cd99061f22c909fb71c2c9/capsule_616x353.jpg?t=1787884647",
-      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4814120/3bd40cfd93dfe6e7a21d9f825fa3b82ee1c57105/header.jpg?t=1787884647",
-      "main_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4814120/f794174f36d0eacd07cd99061f22c909fb71c2c9/capsule_616x353.jpg?t=1787884647",
-      "store_url": "https://store.steampowered.com/app/4814120/",
-      "short_description": "Welcome to ANANTA, an Urban Open World RPG. Play as a variety of characters and explore everything from bustling business districts and hidden alleyways, to quiet tea towns and buzzing old streets. Rub shoulders with a wide-ranging cast of intriguing characters as you assemble a team all your own.",
-      "genres": [
-        "Action",
-        "Adventure",
-        "RPG",
-        "Free To Play"
-      ],
-      "tags": [
-        "Adventure",
-        "Action",
-        "RPG",
-        "Anime",
-        "Action-Adventure",
-        "Free to Play",
-        "Action RPG",
-        "Comedy",
-        "Exploration",
-        "Open World",
-        "JRPG",
-        "3D",
-        "Funny",
-        "Cinematic",
-        "Modern",
-        "Lore-Rich",
-        "Story Rich",
-        "Superhero",
-        "Investigation",
-        "Dynamic Narration"
-      ],
-      "content_enriched_at": "2026-09-23T21:56:43Z",
-      "content_enrichment_source": "Steam Store Browse + appdetails + public Store tags",
-      "content_enrichment_version": 1,
-      "content_enrichment_signature": "4814120:24775:2027-01-15",
-      "small_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4814120/700d5ea448d403ac2b7aa8fc330433bf0623b002/capsule_231x87.jpg?t=1787884647",
-      "storage_version": 2,
-      "display_name": "無限大",
-      "display_name_source": "tchinese",
-      "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-01-15",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869325+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 1637460,
@@ -2682,7 +2562,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-01-15",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869383+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 1853440,
@@ -2707,7 +2590,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-01-29",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869387+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 4253770,
@@ -2736,7 +2622,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-02-04",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869548+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2590240,
@@ -2765,7 +2654,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-02-05",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869226+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2365790,
@@ -2782,7 +2674,7 @@
       "name_en": "Let's Build a Dungeon",
       "release_date_timezone": "Asia/Taipei",
       "release_date_basis": "steam_store_browse_verified_full_date",
-      "release_time_utc": "2026-12-31T08:00:00Z",
+      "release_time_utc": "2027-02-11T14:00:00Z",
       "release_time_source": "https://api.steampowered.com/IStoreQueryService/Query/v1/",
       "discovered_by": "IStoreQueryService/Query",
       "storage_version": 2,
@@ -2790,7 +2682,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-02-11",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869431+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3558670,
@@ -2819,7 +2714,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-02-13",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869248+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2963950,
@@ -2848,7 +2746,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-02-18",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869243+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2769570,
@@ -2875,7 +2776,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-02-24",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869195+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 1963680,
@@ -2904,7 +2808,10 @@
       "display_name_source": "tchinese",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-03-05",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869392+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2141130,
@@ -2929,7 +2836,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-03-12",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869314+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3462190,
@@ -2954,7 +2864,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-03-12",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869560+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 744200,
@@ -2979,7 +2892,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-03-16",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869688+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3509420,
@@ -3004,7 +2920,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-03-19",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869416+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 3230960,
@@ -3029,7 +2948,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-04-08",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869271+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 4354570,
@@ -3054,7 +2976,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-04-08",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869333+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2376260,
@@ -3079,7 +3004,10 @@
       "display_name_source": "english",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-04-27",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869364+00:00",
+      "post_followers_store_verified": true
     },
     {
       "appid": 2017940,
@@ -3106,15 +3034,10 @@
       "display_name_source": "schinese_converted",
       "release_display_precision": "date_full",
       "release_display_provider": "Steam IStoreBrowseService/GetItems",
-      "release_date_verified_at": "2026-09-24T16:56:30Z"
+      "release_date_verified_at": "2026-09-24T16:56:30Z",
+      "release_timestamp_taipei_date": "2027-04-28",
+      "post_followers_store_verified_at": "2026-09-25T14:03:21.869439+00:00",
+      "post_followers_store_verified": true
     }
-  ],
-  "history_retention": {
-    "enabled": true,
-    "policy": "Qualified released games remain in the release calendar after their release date.",
-    "restored_at": "2026-09-24T13:51:00Z",
-    "restored_games": 10
-  },
-  "release_date_audited": true,
-  "release_date_policy": "future_requires_store_date_full"
+  ]
 }
