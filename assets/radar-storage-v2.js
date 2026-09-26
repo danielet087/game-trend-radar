@@ -52,14 +52,23 @@
             if (Number.isInteger(id) && id > 0) byId.set(id, game);
           }
         }
-        return {
+        // A stale month response must not silently make the UI appear
+        // complete while the published index advertises more AppIDs.
+        if (Number(index.game_count) !== byId.size) {
+          console.warn("Steam catalog shard count mismatch", {
+            indexed: index.game_count,
+            loaded: byId.size,
+          });
+        } else {
+          return {
           generated_at: index.generated_at,
           storage_version: 2,
           source: { catalog: "Steam AppID/month shards" },
           initialization: { complete: true, mode: "sharded_public_catalog" },
           count: byId.size,
           games: [...byId.values()],
-        };
+          };
+        }
       }
     }
     return readJSON("./data/steam_upcoming.json", (x) =>
