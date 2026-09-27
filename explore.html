@@ -7,12 +7,20 @@
     <meta name="theme-color" content="#3652ed" />
     <meta
       name="description"
-      content="把下一款期待，放進你的遊戲日曆。 Steam 新作關注度、發售月曆與收藏清單，日期以台灣時間為準。"
+      content="開放世界、合作冒險，或是療癒的小日子。從一個 TAG 開始探索。 Steam 新作關注度、發售月曆與收藏清單，日期以台灣時間為準。"
     />
-    <title>新作發售雷達｜Game Trend Radar</title>
+    <title>TAG 探索｜Game Trend Radar</title>
     <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://shared.akamai.steamstatic.com" crossorigin />
-    <link rel="preconnect" href="https://shared.fastly.steamstatic.com" crossorigin />
+    <link
+      rel="preconnect"
+      href="https://shared.akamai.steamstatic.com"
+      crossorigin
+    />
+    <link
+      rel="preconnect"
+      href="https://shared.fastly.steamstatic.com"
+      crossorigin
+    />
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,10 +31,11 @@
     <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.2.0" />
     <script src="./assets/radar-data-v1.js?v=2.9.0" defer></script>
     <script src="./assets/radar-storage-v2.js?v=2.1.0" defer></script>
+    <script src="./assets/radar-discovery-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-play-v2.js?v=3.3.0" defer></script>
   </head>
-  <body data-page="home">
+  <body data-page="explore">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
     <header class="site-header">
       <div class="header-inner">
@@ -41,7 +50,7 @@
           ></a
         >
         <nav class="main-nav" aria-label="主要導覽">
-          <a href="./index.html" aria-current="page">發售月曆</a
+          <a href="./index.html">發售月曆</a
           ><a href="./upcoming.html">即將上市</a
           ><a href="./released.html">近期上市</a
           ><a href="./saved.html"
@@ -65,16 +74,58 @@
       </div>
     </header>
     <main class="page-shell" id="mainContent">
-      <header class="workspace-heading">
-        <div>
-          <p class="eyebrow">RELEASE CALENDAR</p>
-          <h1 id="pageTitle">發售月曆</h1>
-          <p>追蹤遊戲熱度，收藏發售日。你的下一場冒險，從這裡開始。</p>
-        </div>
-        <a class="workspace-shortcut" href="./saved.html"
-          >打開我的收藏 <span aria-hidden="true">↗</span></a
+      <section class="page-heading">
+        <a class="back-link" id="backCalendar" href="./index.html"
+          >← 返回發售月曆</a
         >
-      </header>
+        <p class="eyebrow">PICK YOUR NEXT ADVENTURE</p>
+        <h1 id="pageTitle">下一款，照你的喜好找。</h1>
+        <p>開放世界、合作冒險，或是療癒的小日子。從一個 TAG 開始探索。</p>
+        <p class="scope-note" id="scopeNote"></p>
+      </section>
+      <section class="tag-browser" aria-labelledby="tagBrowserTitle">
+        <div class="tag-browser-head">
+          <div>
+            <p class="eyebrow">FIND YOUR FLAVOR</p>
+            <h2 id="tagBrowserTitle">今天，想玩什麼？</h2>
+          </div>
+          <label class="tag-search"
+            ><span class="sr-only">搜尋 TAG</span
+            ><input
+              id="tagSearch"
+              type="search"
+              placeholder="搜尋 TAG，中文或英文…"
+              autocomplete="off"
+          /></label>
+        </div>
+        <div class="tag-browser-meta">
+          <button
+            class="explore-tag"
+            id="allTags"
+            type="button"
+            aria-pressed="true"
+          >
+            所有 TAG</button
+          ><span id="tagCatalogCount"></span>
+        </div>
+        <div
+          class="tag-catalog"
+          id="tagCatalog"
+          role="group"
+          aria-label="遊戲 TAG 篩選"
+        ></div>
+        <p class="tag-catalog-empty" id="tagCatalogEmpty" hidden></p>
+        <button
+          class="more-tags"
+          id="moreTags"
+          type="button"
+          aria-expanded="false"
+          aria-controls="tagCatalog"
+          hidden
+        >
+          查看更多 TAG ＋
+        </button>
+      </section>
       <div class="data-status" id="dataStatus" role="status">
         <span class="signal-dot"></span
         ><span id="updateText">正在與新作相遇…</span>
@@ -95,33 +146,22 @@
       <section
         class="explorer"
         id="releaseCalendar"
-        aria-labelledby="pageTitle"
+        aria-labelledby="explorerTitle"
       >
-        <div class="explorer-panel">
-          <div class="calendar-toolbar">
-            <div class="month-controls">
-              <button class="icon-button" id="prevMonth" aria-label="上個月">
-                ←
-              </button>
-              <h3 id="monthLabel"></h3>
-              <button class="icon-button" id="nextMonth" aria-label="下個月">
-                →</button
-              ><button class="quiet-button" id="todayButton">本月</button>
-            </div>
-            <label class="month-jump"
-              ><span>跳至</span
-              ><input
-                type="month"
-                id="monthPicker"
-                aria-label="選擇發售月份"
-                min="1900-01"
-                max="2199-12"
-            /></label>
-            <div class="view-switch" role="group" aria-label="顯示方式">
-              <button id="calendarView" aria-pressed="true">▦ 月曆</button
-              ><button id="listView" aria-pressed="false">☷ 清單</button>
-            </div>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">FIND YOUR NEXT FAVORITE</p>
+            <h2 id="explorerTitle">找到你的下一款</h2>
           </div>
+          <span class="timezone">台灣時間 UTC+8</span>
+        </div>
+        <div class="tag-active" id="tagActive" hidden>
+          <span>目前探索</span><strong id="selectedTagLabel"></strong
+          ><button id="removeTag" type="button" aria-label="移除標籤篩選">
+            ✕
+          </button>
+        </div>
+        <div class="explorer-panel">
           <div class="filter-bar">
             <label class="search-box"
               ><svg aria-hidden="true" viewBox="0 0 24 24">
@@ -158,7 +198,7 @@
               </select></label
             >
           </div>
-          <div id="calendarArea">
+          <div id="calendarArea" hidden>
             <div class="weekdays" aria-hidden="true">
               <span>日</span><span>一</span><span>二</span><span>三</span
               ><span>四</span><span>五</span><span>六</span>
@@ -166,10 +206,10 @@
             <div class="calendar-grid" id="calendarGrid"></div>
             <div class="calendar-help">
               <span><i></i> 當日關注度最高</span
-              ><span>點日期看完整清單・點遊戲看詳細資訊 ↗</span>
+              ><span>點日期看完整清單・點遊戲前往 Steam ↗</span>
             </div>
           </div>
-          <div class="games-grid" id="gamesGrid" hidden aria-busy="true"></div>
+          <div class="games-grid" id="gamesGrid" aria-busy="true"></div>
           <div class="load-more-wrap" id="loadMoreWrap" hidden>
             <button id="loadMore" class="button secondary">
               載入更多遊戲 ↓
@@ -177,35 +217,7 @@
           </div>
         </div>
       </section>
-      <section class="spotlight-section" aria-labelledby="spotlightTitle">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">COMING SOON</p>
-            <h2 id="spotlightTitle">即將登場，先放進雷達</h2>
-          </div>
-          <a class="text-link" href="./upcoming.html"
-            >查看全部 <span aria-hidden="true">↗</span></a
-          >
-        </div>
-        <div class="spotlight-grid" id="spotlightGames" aria-busy="true">
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
-        </div>
-      </section>
-      <section class="recent-section" aria-labelledby="recentTitle">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">JUST RELEASED</p>
-            <h2 id="recentTitle">新鮮上架，現在就出發</h2>
-          </div>
-          <a class="text-link" href="./released.html"
-            >查看全部 <span aria-hidden="true">↗</span></a
-          >
-        </div>
-        <div id="recentGames" class="recent-grid"></div>
-      </section>
+
       <section class="bottom-note">
         <span class="mini-radar" aria-hidden="true">◎</span>
         <div>

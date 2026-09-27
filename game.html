@@ -11,8 +11,16 @@
     />
     <title>遊戲資訊｜Game Trend Radar</title>
     <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://shared.akamai.steamstatic.com" crossorigin />
-    <link rel="preconnect" href="https://shared.fastly.steamstatic.com" crossorigin />
+    <link
+      rel="preconnect"
+      href="https://shared.akamai.steamstatic.com"
+      crossorigin
+    />
+    <link
+      rel="preconnect"
+      href="https://shared.fastly.steamstatic.com"
+      crossorigin
+    />
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,12 +28,13 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.1.1" />
-    <link rel="stylesheet" href="./assets/radar-game-detail-v1.css?v=2.1.0" />
+    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.2.0" />
+    <link rel="stylesheet" href="./assets/radar-game-detail-v1.css?v=3.0.0" />
     <script src="./assets/radar-data-v1.js?v=2.9.0" defer></script>
     <script src="./assets/radar-storage-v2.js?v=2.1.0" defer></script>
+    <script src="./assets/radar-discovery-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
-    <script src="./assets/radar-game-detail-v1.js?v=2.2.0" defer></script>
+    <script src="./assets/radar-game-detail-v1.js?v=3.0.0" defer></script>
   </head>
   <body data-page="game">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -80,132 +89,207 @@
         <a id="detailStatusBack" href="./index.html" hidden>返回發售月曆 ↗</a>
       </div>
       <div id="detailPage" hidden>
-        <div class="game-page-kicker">
-          <span class="game-small-pill">GAME PROFILE</span>
-          <span class="game-small-pill" id="gameState">新作觀測中</span>
-          <span
-            class="game-language-pills"
-            id="gameLanguagePill"
-            aria-label="Steam 遊戲支援語言"
-            ><span class="game-small-pill game-language-kicker"
-              >語言資訊待確認</span
-            ></span
-          >
-        </div>
-        <h1 class="game-page-title" id="gameTitle"></h1>
-        <p class="game-page-en" id="gameEnglish" hidden></p>
-
-        <div class="game-detail-layout">
-          <div class="game-overview">
-            <div class="game-detail-art" id="gameArt">
-              <span class="game-cover-corner">STEAM 新作觀測站 ◎</span>
+        <section class="game-hero" aria-labelledby="gameTitle">
+          <div class="game-headline">
+            <div class="game-page-kicker">
+              <span class="eyebrow">A NEW WORLD AWAITS</span
+              ><span class="game-state" id="gameState">新作觀測中</span>
             </div>
-            <section
-              class="game-about"
-              id="gameAbout"
-              aria-labelledby="gameAboutTitle"
-              hidden
-            >
-              <p class="eyebrow">ABOUT THE GAME</p>
-              <h2 id="gameAboutTitle">關於這款遊戲</h2>
-              <div
-                class="game-genres"
-                id="gameGenres"
-                aria-label="遊戲類型"
-              ></div>
-              <p class="game-description" id="gameDescription"></p>
-              <div class="game-tags" id="gameTags" aria-label="遊戲標籤"></div>
-            </section>
-            <div class="game-context-note">
-              <span class="context-icon" aria-hidden="true">◎</span>
-              <div>
-                <h2>發售資訊</h2>
-                <p>
-                  本站僅收錄 Steam
-                  商店對外公布明確年月日的遊戲。發售日期可能調整，仍以 Steam
-                  官方公告為準。
-                </p>
-              </div>
-            </div>
-            <p class="game-data-updated" id="gameUpdated"></p>
+            <h1 class="game-page-title" id="gameTitle"></h1>
+            <p class="game-page-en" id="gameEnglish" hidden></p>
+            <div
+              class="game-genres"
+              id="gameGenres"
+              aria-label="遊戲類型"
+            ></div>
           </div>
-          <section
-            class="game-profile-panel"
-            aria-labelledby="gameProfileHeading"
-          >
-            <p class="eyebrow">ON YOUR RADAR</p>
-            <h2 id="gameProfileHeading">先認識這款遊戲</h2>
-            <div class="game-profile-metrics">
-              <div class="game-profile-metric">
-                <span>上市日期・台灣</span>
-                <strong id="gameDate"></strong>
-                <small id="gameCountdown"></small>
-              </div>
-              <div class="game-profile-metric">
-                <span>Steam 關注人數</span>
-                <strong id="gameFollowers"></strong>
-                <small>Followers · 非願望清單數</small>
-              </div>
-            </div>
-            <div class="game-language-line" id="gameLanguageLine">
-              <p class="game-language-label">遊戲支援語言</p>
-              <div
-                class="game-language-badges"
-                id="gameLanguageBadge"
-                aria-label="遊戲支援語言"
-              >
-                <span class="game-language-chip">語言資訊待確認</span>
-              </div>
-              <p id="gameLanguageDescription">
-                資料以 Steam 商店公布的語言支援為準。
-              </p>
-            </div>
-            <p class="game-profile-id" id="gameAppId"></p>
-            <div class="game-profile-actions">
-              <a
-                class="button primary"
-                id="gameSteam"
-                target="_blank"
-                rel="noopener noreferrer"
-                >前往 Steam 商店 ↗</a
-              >
-              <button
-                class="game-profile-save"
-                type="button"
-                id="gameSave"
-                aria-pressed="false"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M20.8 4.8a5.6 5.6 0 0 0-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"
-                  />
-                </svg>
-                <span id="gameSaveLabel">加入收藏</span>
-              </button>
-            </div>
-            <p
-              class="game-profile-note"
-              id="gameSaveHint"
-              role="status"
-              aria-live="polite"
+          <div class="game-art-stage">
+            <span class="art-orbit" aria-hidden="true"></span>
+            <button
+              class="game-detail-art"
+              id="gameArt"
+              type="button"
+              aria-haspopup="dialog"
+              aria-label="放大遊戲封面"
+              disabled
             >
-              關注人數不等於願望清單數；實際發售時間請以 Steam 商店為準。
-            </p>
-          </section>
-        </div>
-        <section
-          class="game-related"
-          id="gameRelated"
-          aria-labelledby="gameRelatedTitle"
-          hidden
-        >
-          <div class="game-related-head">
-            <h2 id="gameRelatedTitle">同一段時間，也可以看看</h2>
-            <p>再認識幾款發售日相近的新作 ↗</p>
+              <span class="game-cover-corner" id="artHint">正在載入封面</span>
+            </button>
+            <span class="art-caption" aria-hidden="true"
+              >NEXT ON YOUR RADAR <span>↗</span></span
+            >
           </div>
-          <div class="game-related-grid" id="gameRelatedGrid"></div>
+          <p class="game-description" id="gameDescription" hidden></p>
+          <div class="game-profile-actions">
+            <a
+              class="button primary"
+              id="gameSteam"
+              data-game-steam
+              target="_blank"
+              rel="noopener noreferrer"
+              >前往 Steam 商店 <span aria-hidden="true">↗</span></a
+            >
+            <button
+              class="game-profile-save"
+              id="gameSave"
+              data-game-save
+              type="button"
+              aria-pressed="false"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M20.8 4.8a5.6 5.6 0 0 0-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"
+                /></svg
+              ><span id="gameSaveLabel" data-save-label>加入收藏</span>
+            </button>
+            <a class="game-jump" id="gameJump" href="#gameDiscovery"
+              >用 TAG 找下一款 <span aria-hidden="true">↓</span></a
+            >
+          </div>
         </section>
+
+        <section class="game-intel" aria-label="遊戲發售與支援資訊">
+          <div class="release-intel">
+            <div class="release-stamp" aria-hidden="true">
+              <span id="releaseMonth"></span><strong id="releaseDay"></strong
+              ><small id="releaseYear"></small>
+            </div>
+            <div>
+              <p class="intel-label">預定發售・台灣</p>
+              <time id="gameDate"></time>
+              <p class="game-countdown" id="gameCountdown"></p>
+            </div>
+          </div>
+          <div class="followers-intel">
+            <p class="intel-label">已經有這麼多人關注</p>
+            <p class="follower-number">
+              <strong id="gameFollowers"></strong><span>人</span>
+            </p>
+            <p class="intel-caption">Steam Followers · 非願望清單數</p>
+          </div>
+          <div class="game-language-line" id="gameLanguageLine">
+            <p class="intel-label">用熟悉的語言，進入新世界</p>
+            <div
+              class="game-language-badges"
+              id="gameLanguageBadge"
+              aria-label="遊戲支援語言"
+            ></div>
+            <details class="language-details">
+              <summary>語言支援說明</summary>
+              <p id="gameLanguageDescription"></p>
+            </details>
+          </div>
+        </section>
+
+        <section
+          class="game-discovery"
+          id="gameDiscovery"
+          aria-labelledby="gameRelatedTitle"
+        >
+          <div class="game-discovery-heading">
+            <div>
+              <p class="eyebrow">FOLLOW YOUR CURIOSITY</p>
+              <h2 id="gameRelatedTitle">喜歡這種感覺？再找一款。</h2>
+              <p>從這款遊戲的 TAG，找到相同元素的新作。</p>
+            </div>
+            <a class="discovery-all" href="./explore.html"
+              >探索所有 TAG <span aria-hidden="true">↗</span></a
+            >
+          </div>
+          <div class="discovery-layout">
+            <aside class="game-tag-panel" aria-label="選擇推薦標籤">
+              <p class="tag-panel-label">這款遊戲的關鍵字</p>
+              <button
+                class="tag-option tag-all"
+                id="allSimilar"
+                type="button"
+                aria-pressed="true"
+              >
+                ◎ 全部相近
+              </button>
+              <div
+                class="game-tags"
+                id="gameTags"
+                role="group"
+                aria-label="依 TAG 篩選推薦遊戲"
+              ></div>
+              <button
+                class="tags-expand"
+                id="showTags"
+                type="button"
+                aria-expanded="false"
+                aria-controls="gameTags"
+                hidden
+              >
+                展開所有 TAG ＋
+              </button>
+              <p class="tags-empty" id="tagsEmpty" hidden>
+                這款遊戲尚未提供 TAG，先看看發售時間相近的新作。
+              </p>
+            </aside>
+            <div class="discovery-results">
+              <div class="recommendation-heading">
+                <p
+                  id="recommendationSummary"
+                  role="status"
+                  aria-live="polite"
+                ></p>
+                <a class="text-link" id="tagExplore" href="./explore.html"
+                  >看更多新作 ↗</a
+                >
+              </div>
+              <div class="game-related-grid" id="gameRelatedGrid"></div>
+              <p class="recommendation-basis" id="recommendationBasis"></p>
+            </div>
+          </div>
+        </section>
+        <div class="game-footnotes">
+          <p id="gameUpdated"></p>
+          <p id="gameAppId"></p>
+          <p>
+            發售日期可能調整，實際上市時間與語言支援請以 Steam 商店公告為準。
+          </p>
+        </div>
+        <div class="game-mobile-actions" aria-label="遊戲操作">
+          <a
+            class="button primary"
+            id="gameSteamMobile"
+            data-game-steam
+            target="_blank"
+            rel="noopener noreferrer"
+            >Steam 商店 ↗</a
+          ><button
+            class="game-profile-save"
+            id="gameSaveMobile"
+            data-game-save
+            type="button"
+            aria-pressed="false"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M20.8 4.8a5.6 5.6 0 0 0-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"
+              /></svg
+            ><span data-save-label>加入收藏</span>
+          </button>
+        </div>
       </div>
+      <p
+        class="game-save-feedback"
+        id="gameSaveHint"
+        role="status"
+        aria-live="polite"
+      ></p>
+      <dialog class="art-dialog" id="artDialog" aria-label="遊戲封面大圖">
+        <button
+          class="art-dialog-close"
+          id="closeArtwork"
+          type="button"
+          aria-label="關閉封面大圖"
+        >
+          ✕</button
+        ><img id="artDialogImage" alt="" />
+        <p id="artDialogCaption"></p>
+      </dialog>
       <noscript
         ><p class="notice">請啟用 JavaScript 以查看遊戲資訊。</p></noscript
       >

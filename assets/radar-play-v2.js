@@ -1,6 +1,7 @@
 (() => {
   "use strict";
   const D = window.RadarData;
+  const R = window.RadarDiscovery;
   const $ = (id) => document.getElementById(id);
   const mode = document.body.dataset.page;
   const today = D.todayInTaipei();
@@ -30,6 +31,8 @@
         ? "list"
         : "calendar",
     savedOnly: query.get("saved") === "1",
+    tag:
+      mode === "explore" ? (query.get("tag") || "").trim().slice(0, 120) : "",
     limit: PAGE_SIZE,
     loading: true,
   };
@@ -178,9 +181,15 @@
         // Render a dependable sharp header/capsule immediately. Only the
         // first visible hero cards may then try a 2x file on idle; never
         // block the initial paint waiting for a guessed Steam asset.
-        if (!options.upgrade || upgradeStarted || !game.art2x ||
-            game.art2x === img.currentSrc || failedArtwork.has(game.art2x) ||
-            window.devicePixelRatio < 1.5) return;
+        if (
+          !options.upgrade ||
+          upgradeStarted ||
+          !game.art2x ||
+          game.art2x === img.currentSrc ||
+          failedArtwork.has(game.art2x) ||
+          window.devicePixelRatio < 1.5
+        )
+          return;
         upgradeStarted = true;
         const upgrade = () => {
           if (!img.isConnected) return;
@@ -194,8 +203,7 @@
         };
         if ("requestIdleCallback" in window)
           window.requestIdleCallback(upgrade, { timeout: 2500 });
-        else
-          setTimeout(upgrade, 1000);
+        else setTimeout(upgrade, 1000);
       });
       loadGameArtwork(img, game, () => {
         img.remove();
@@ -243,6 +251,20 @@
       languages.append(language);
     }
     body.append(languages);
+    if (mode === "explore" && game.tags?.length) {
+      const tags = node("div", "explorer-card-tags");
+      const ordered = [...game.tags].sort(
+        (a, b) =>
+          Number(R.key(b) === R.key(model.tag)) -
+          Number(R.key(a) === R.key(model.tag)),
+      );
+      ordered.slice(0, 2).forEach((tag) => {
+        const badge = node("span", "", R.label(tag));
+        badge.title = tag;
+        tags.append(badge);
+      });
+      body.append(tags);
+    }
     if (game.darkHorse) {
       const badge = node("span", "dark-horse", "近期黑馬");
       badge.title = "直接上市，並於發售首週內確認超過 3,000 人關注";
@@ -324,9 +346,15 @@
       (a, b) => b.followers - a.followers || b.date.localeCompare(a.date),
     );
     $("spotlightGames").replaceChildren(
-      ...upcoming.slice(0, 4).map((game, index) =>
-        makeCard(game, { eager: true, priority: index < 2, upgrade: index < 2 }),
-      ),
+      ...upcoming
+        .slice(0, 4)
+        .map((game, index) =>
+          makeCard(game, {
+            eager: true,
+            priority: index < 2,
+            upgrade: index < 2,
+          }),
+        ),
     );
     $("spotlightGames").setAttribute("aria-busy", "false");
     revealCards($("spotlightGames"));
@@ -338,9 +366,15 @@
         ),
       );
     $("recentGames").replaceChildren(
-      ...recent.slice(0, 3).map((game, index) =>
-        makeCard(game, { eager: index === 0, priority: false, upgrade: false }),
-      ),
+      ...recent
+        .slice(0, 3)
+        .map((game, index) =>
+          makeCard(game, {
+            eager: index === 0,
+            priority: false,
+            upgrade: false,
+          }),
+        ),
     );
     revealCards($("recentGames"));
     if (!recent.length)
@@ -364,6 +398,7 @@
       set("view", model.view);
     }
     set("q", $("searchInput").value.trim());
+    if (mode === "explore") set("tag", model.tag);
     set(
       "min",
       $("followersFilter").selectedIndex ? $("followersFilter").value : "",
@@ -376,12 +411,15 @@
     return !!(
       $("searchInput").value.trim() ||
       $("followersFilter").selectedIndex ||
+      model.tag ||
       model.savedOnly
     );
   }
   function filteredGames() {
     if (!model.data) return { source: [], items: [] };
     let source = D.selectGames(model.data, mode, today, date);
+    if (mode === "explore")
+      source = source.filter((game) => game.date >= today);
     if (mode === "home")
       source = source.filter((game) => game.date.startsWith(model.month));
     if (mode === "saved")
@@ -395,6 +433,7 @@
             .toLocaleLowerCase()
             .includes(term)) &&
         game.followers >= min &&
+        (!model.tag || R.hasTag(game, model.tag)) &&
         (!model.savedOnly || saved.has(game.appid)),
     );
     const order = $("sortSelect").value;
@@ -475,6 +514,7 @@
       );
   }
   function renderExplorer() {
+    if (mode === "explore") renderTagSelection();
     if (mode === "home") {
       $("calendarArea").hidden = model.view !== "calendar";
       $("gamesGrid").hidden = model.view === "calendar";
@@ -546,6 +586,11 @@
     $("searchInput").value = "";
     $("followersFilter").selectedIndex = 0;
     model.savedOnly = false;
+    model.tag = "";
+    if (mode === "explore") {
+      $("tagSearch").value = "";
+      renderTagCatalog();
+    }
     model.limit = PAGE_SIZE;
     writeURL();
     renderExplorer();
@@ -555,6 +600,78 @@
     model.limit = PAGE_SIZE;
     writeURL();
     renderExplorer();
+  }
+  let allTagChoices = [];
+  let showAllTags = false;
+  function renderTagSelection() {
+    $("tagActive").hidden = !model.tag;
+    $("selectedTagLabel").textContent = model.tag ? R.label(model.tag) : "";
+    $("removeTag").setAttribute(
+      "aria-label",
+      `移除 ${R.label(model.tag)} 標籤篩選`,
+    );
+    $("allTags").setAttribute("aria-pressed", String(!model.tag));
+    document.querySelectorAll("#tagCatalog button").forEach((button) => {
+      button.setAttribute(
+        "aria-pressed",
+        String(R.key(button.dataset.tag) === R.key(model.tag)),
+      );
+    });
+  }
+  function renderTagCatalog() {
+    if (mode !== "explore") return;
+    const term = R.key($("tagSearch").value);
+    const matches = allTagChoices.filter((entry) =>
+      R.key(entry.tag + " " + entry.label).includes(term),
+    );
+    const visible = term || showAllTags ? matches : matches.slice(0, 14);
+    $("tagCatalog").replaceChildren(
+      ...visible.map((entry) => {
+        const button = node("button", "explore-tag");
+        button.type = "button";
+        button.dataset.tag = entry.tag;
+        button.title = entry.tag;
+        button.setAttribute(
+          "aria-label",
+          `${entry.label}，${entry.count} 款遊戲`,
+        );
+        const count = node("small", "", String(entry.count));
+        count.setAttribute("aria-hidden", "true");
+        button.append(node("span", "", entry.label), count);
+        button.addEventListener("click", () => {
+          model.tag = R.key(model.tag) === R.key(entry.tag) ? "" : entry.tag;
+          changeFilters();
+        });
+        return button;
+      }),
+    );
+    $("tagCatalogEmpty").hidden = visible.length > 0;
+    $("tagCatalogEmpty").textContent = term
+      ? "找不到這個 TAG，試試中文或英文名稱。"
+      : "目前的遊戲尚未提供 TAG，仍可瀏覽下方清單。";
+    $("moreTags").hidden = !!term || allTagChoices.length <= 14;
+    $("moreTags").textContent = showAllTags
+      ? "收合 TAG −"
+      : `查看全部 ${allTagChoices.length} 個 TAG ＋`;
+    $("moreTags").setAttribute("aria-expanded", String(showAllTags));
+    $("tagCatalogCount").textContent = `${allTagChoices.length} 個已收錄 TAG`;
+    renderTagSelection();
+  }
+  if (mode === "explore") {
+    $("tagSearch").addEventListener("input", renderTagCatalog);
+    $("moreTags").addEventListener("click", () => {
+      showAllTags = !showAllTags;
+      renderTagCatalog();
+    });
+    $("allTags").addEventListener("click", () => {
+      model.tag = "";
+      changeFilters();
+    });
+    $("removeTag").addEventListener("click", () => {
+      model.tag = "";
+      changeFilters();
+      $("allTags").focus();
+    });
   }
   $("searchInput").value = query.get("q") || "";
   for (const [id, param] of [
@@ -631,6 +748,7 @@
       released: "近 30 天 · 關注人數超過 3,000 · 已確認發售",
       saved: "收藏儲存在此瀏覽器；此處顯示仍在目前公開資料內的遊戲。",
       date: "至少 5,000 人關注 · 依關注度排序",
+      explore: "目前已收錄的待上市遊戲 · 至少 5,000 人關注 · TAG 依 Steam 資料",
     };
     $("scopeNote").textContent = notes[mode] || "";
     if (mode === "saved") {
@@ -662,10 +780,10 @@
       const timer = setTimeout(() => controller.abort(), 15000);
       try {
         const separator = source.includes("?") ? "&" : "?";
-        const response = await fetch(
-          `${source}${separator}t=${Date.now()}`,
-          { cache: "no-store", signal: controller.signal },
-        );
+        const response = await fetch(`${source}${separator}t=${Date.now()}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
         if (!response.ok) continue;
         const data = await response.json();
         if (data && Array.isArray(data.games)) return data;
@@ -686,11 +804,22 @@
     $("resultCount").textContent = "正在讀取遊戲資料…";
     $("gamesGrid").setAttribute("aria-busy", "true");
     const [official, preview] = await Promise.all([
-      window.RadarStorage?.loadCatalog?.() || readJSON("./data/steam_upcoming.json"),
+      window.RadarStorage?.loadCatalog?.() ||
+        readJSON("./data/steam_upcoming.json"),
       readJSON("./data/steam_preview.json"),
     ]);
     try {
       model.data = D.datasets(official, preview);
+      if (mode === "explore" && model.data) {
+        model.data = R.enrich(model.data, official, preview);
+        allTagChoices = R.catalog(
+          model.data.games.filter((game) => game.date >= today),
+        );
+        model.tag =
+          allTagChoices.find((entry) => R.key(entry.tag) === R.key(model.tag))
+            ?.tag || model.tag;
+        renderTagCatalog();
+      }
       if (!model.data) {
         $("updateText").textContent = "資料暫時無法讀取";
         $("notice").replaceChildren(

@@ -173,6 +173,7 @@ test("Store title priority is Traditional > converted Simplified > English, inde
     name_en: "Fable",
     name_zh_tw: "繁體名稱",
     name_zh_cn: "神鬼寓言",
+    name_zh_cn_traditional: "神鬼寓言",
   };
   const both = D.normalize(game({
     ...base,

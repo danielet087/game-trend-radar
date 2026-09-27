@@ -77,7 +77,11 @@ body::before {
   height: 490px;
   background:
     url("./radar-pattern.svg") 12px 14px / 480px 360px repeat,
-    radial-gradient(circle at 94% 4%, var(--page-orbit) 0 180px, transparent 181px),
+    radial-gradient(
+      circle at 94% 4%,
+      var(--page-orbit) 0 180px,
+      transparent 181px
+    ),
     linear-gradient(125deg, var(--page-wash) 0 64%, var(--page-wash-soft) 64%);
   clip-path: ellipse(100% 100% at 50% 0%);
 }
@@ -88,7 +92,16 @@ body::after {
   height: 330px;
   opacity: 0.65;
   background:
-    radial-gradient(circle at 100% 12%, transparent 0 94px, var(--page-orbit-line) 95px 96px, transparent 97px 129px, var(--page-orbit-line) 130px 131px, transparent 132px 166px, var(--page-orbit-line) 167px 168px, transparent 169px),
+    radial-gradient(
+      circle at 100% 12%,
+      transparent 0 94px,
+      var(--page-orbit-line) 95px 96px,
+      transparent 97px 129px,
+      var(--page-orbit-line) 130px 131px,
+      transparent 132px 166px,
+      var(--page-orbit-line) 167px 168px,
+      transparent 169px
+    ),
     radial-gradient(circle at 44% 46%, #fffaf0 0 6px, transparent 7px);
 }
 button,
@@ -189,7 +202,13 @@ summary {
   position: absolute;
   inset: auto 0 -3px;
   height: 3px;
-  background: linear-gradient(90deg, #f2bc84 0 25%, #a9cbb4 25% 50%, #c4b9e7 50% 75%, #a4c8e6 75%);
+  background: linear-gradient(
+    90deg,
+    #f2bc84 0 25%,
+    #a9cbb4 25% 50%,
+    #c4b9e7 50% 75%,
+    #a4c8e6 75%
+  );
   pointer-events: none;
 }
 .header-inner {
@@ -527,7 +546,9 @@ h1 {
   border: 1px solid #d8d4c9;
   border-radius: 22px;
   background: white;
-  box-shadow: 0 6px 0 #e8e0cb, 0 15px 36px #84765b0a;
+  box-shadow:
+    0 6px 0 #e8e0cb,
+    0 15px 36px #84765b0a;
 }
 .calendar-toolbar {
   display: flex;
@@ -1330,7 +1351,14 @@ body.motion-on .skeleton {
   border: 1px solid #e4c899;
   border-radius: 18px;
   background:
-    radial-gradient(circle at 97% 120%, transparent 0 48px, #e8c39480 49px 50px, transparent 51px 65px, #e8c39480 66px 67px, transparent 68px),
+    radial-gradient(
+      circle at 97% 120%,
+      transparent 0 48px,
+      #e8c39480 49px 50px,
+      transparent 51px 65px,
+      #e8c39480 66px 67px,
+      transparent 68px
+    ),
     #fff0d5;
 }
 .mini-radar {
@@ -1574,12 +1602,18 @@ body.motion-on::after {
 }
 @media (max-width: 620px) {
   body {
-    background-size: 360px 270px, 16px 16px, auto;
+    background-size:
+      360px 270px,
+      16px 16px,
+      auto;
   }
   body::before {
     top: 111px;
     height: 440px;
-    background-size: 360px 270px, auto, auto;
+    background-size:
+      360px 270px,
+      auto,
+      auto;
     clip-path: ellipse(150% 100% at 50% 0%);
   }
   body::after {
@@ -1994,4 +2028,208 @@ body.motion-off .reveal-pending {
 }
 .cover-link img.art-loaded {
   opacity: 1;
+}
+
+/* Tag discovery shares the list controls and remains entirely static. */
+body[data-page="explore"] {
+  --page-wash: #d5e8de;
+  --page-wash-soft: #eff1d8;
+  --page-orbit: #b5d2c2;
+  --page-orbit-line: #86b29b;
+}
+.tag-browser {
+  padding: 28px;
+  margin: 0 0 29px;
+  border: 1px solid #b9cfbf;
+  border-radius: 23px;
+  background: #f5f9ed;
+  box-shadow: 0 5px 0 #cddcca;
+}
+.tag-browser-head {
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.tag-browser .eyebrow {
+  color: #39705a;
+}
+.tag-browser h2 {
+  font-size: 25px;
+  letter-spacing: -0.04em;
+}
+.tag-search {
+  width: min(280px, 45%);
+  flex-shrink: 0;
+}
+.tag-search input {
+  width: 100%;
+  border: 1px solid #c5d5c8;
+  border-radius: 11px;
+  background: #fffefa;
+  min-height: 43px;
+  padding: 11px 14px;
+  font-size: 12px;
+}
+.tag-search input:focus {
+  border-color: #54866a;
+}
+.tag-browser-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 13px;
+}
+.tag-browser-meta > span {
+  font-size: 10px;
+  color: #657769;
+}
+.tag-catalog {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.explore-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 37px;
+  padding: 8px 12px;
+  border: 1px solid #c6d6c7;
+  border-radius: 9px;
+  background: #fffefa;
+  color: #345b48;
+  font-size: 12px;
+  line-height: 1.5;
+  transition:
+    transform 0.2s,
+    background 0.2s,
+    border-color 0.2s;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.explore-tag small {
+  padding: 1px 5px;
+  min-width: 21px;
+  text-align: center;
+  background: #e6eee2;
+  border-radius: 4px;
+  font:
+    700 10px/1.6 Arial,
+    sans-serif;
+  flex-shrink: 0;
+}
+.explore-tag:hover {
+  transform: translateY(-2px);
+  border-color: #609375;
+}
+.explore-tag[aria-pressed="true"] {
+  color: white;
+  border-color: #34735d;
+  background: #34735d;
+  box-shadow: 0 3px 0 #214b3b;
+}
+.explore-tag[aria-pressed="true"] small {
+  color: white;
+  background: #ffffff25;
+}
+.more-tags {
+  color: #39705a;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 15px 0 0;
+  text-underline-offset: 4px;
+}
+.more-tags:hover {
+  text-decoration: underline;
+}
+.tag-catalog-empty {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 10px 0;
+  line-height: 1.8;
+}
+.tag-active {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  gap: 11px;
+  margin: 0 0 17px;
+  border: 1px solid #bed0c0;
+  border-radius: 10px;
+  padding: 7px 8px 7px 13px;
+  background: #edf5e9;
+  font-size: 12px;
+  color: #345b48;
+}
+.tag-active > span {
+  font-size: 10px;
+  color: #637968;
+  flex-shrink: 0;
+}
+.tag-active strong {
+  overflow-wrap: anywhere;
+}
+.tag-active button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: #d8e8d6;
+}
+.tag-active button:hover {
+  background: #c5debf;
+}
+.explorer-card-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin: 0 0 15px;
+}
+.explorer-card-tags span {
+  max-width: 100%;
+  border-radius: 5px;
+  background: #f4f0fa;
+  padding: 4px 6px;
+  color: #706087;
+  font-size: 9px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 640px) {
+  .tag-browser {
+    padding: 21px 17px;
+    border-radius: 18px;
+    margin-bottom: 24px;
+  }
+  .tag-browser-head {
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .tag-browser h2 {
+    font-size: 23px;
+  }
+  .tag-search {
+    width: 100%;
+  }
+  .tag-catalog {
+    gap: 7px;
+  }
+  .explore-tag {
+    padding: 9px 10px;
+    font-size: 11px;
+    min-height: 39px;
+  }
+  .tag-browser-meta {
+    gap: 10px;
+  }
+  .tag-active {
+    font-size: 11px;
+  }
 }
