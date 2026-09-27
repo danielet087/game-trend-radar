@@ -142,15 +142,60 @@ body[data-game-theme="twilight"] {
   font-weight: 650;
   color: var(--game-accent);
 }
-.game-description {
+.game-intro {
   grid-area: copy;
+  align-self: center;
   min-width: 0;
+}
+.game-description {
   max-width: 590px;
   color: var(--game-ink);
   font-size: 13px;
   line-height: 2;
   white-space: pre-line;
   overflow-wrap: anywhere;
+}
+.hero-tag-preview {
+  margin-top: 18px;
+}
+.game-description[hidden] + .hero-tag-preview {
+  margin-top: 0;
+}
+.hero-tag-preview > p {
+  margin-bottom: 10px;
+  font-size: 11px;
+  color: var(--game-accent);
+  font-weight: 600;
+}
+#heroTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  padding: 8px 13px;
+  border: 1px solid var(--game-edge);
+  border-radius: 11px;
+  color: var(--game-accent);
+  background: #fffdf3e8;
+  font-size: 12px;
+  font-weight: 650;
+  box-shadow: 0 2px 0 var(--game-edge);
+  transition:
+    transform 0.2s,
+    background 0.2s,
+    color 0.2s;
+}
+.hero-tag:hover {
+  transform: translateY(-3px) rotate(-2deg);
+}
+.hero-tag[aria-pressed="true"] {
+  background: var(--game-accent);
+  color: white;
 }
 .game-art-stage {
   grid-area: art;
@@ -867,7 +912,7 @@ body[data-page="game"] .button.primary:hover {
   background: var(--game-light);
 }
 body.motion-on .game-headline,
-body.motion-on .game-description,
+body.motion-on .game-intro,
 body.motion-on .game-profile-actions,
 body.motion-on .game-art-stage {
   animation: spotlight-enter 0.5s var(--ease) both;
@@ -875,7 +920,7 @@ body.motion-on .game-art-stage {
 body.motion-on .game-art-stage {
   animation-delay: 0.09s;
 }
-body.motion-on .game-description {
+body.motion-on .game-intro {
   animation-delay: 0.06s;
 }
 body.motion-on .game-profile-actions {

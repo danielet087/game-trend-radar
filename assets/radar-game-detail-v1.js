@@ -230,7 +230,7 @@
     const result = R.recommendations(currentGame, candidates, selectedTag);
     $("allSimilar").setAttribute("aria-pressed", String(!selectedTag));
     document
-      .querySelectorAll("#gameTags button")
+      .querySelectorAll("#gameTags button, #heroTags button")
       .forEach((button) =>
         button.setAttribute(
           "aria-pressed",
@@ -321,6 +321,33 @@
     selectedTag =
       game.tags.find((tag) => R.key(tag) === R.key(query.get("tag"))) || "";
     tagsExpanded = game.tags.findIndex((tag) => tag === selectedTag) >= 8;
+    $("gameTagPreview").hidden = !game.tags.length;
+    $("gameIntro").hidden = !game.tags.length && !game.description;
+    $("heroTags").replaceChildren(
+      ...game.tags.slice(0, 4).map((tag) => {
+        const button = node("button", "hero-tag");
+        button.type = "button";
+        button.dataset.tag = tag;
+        button.setAttribute("aria-label", `用 ${R.label(tag)} 找相似遊戲`);
+        button.setAttribute("aria-controls", "gameRelatedGrid");
+        button.title = tag;
+        const arrow = node("span", "", "↘");
+        arrow.setAttribute("aria-hidden", "true");
+        button.append(node("span", "", R.label(tag)), arrow);
+        button.addEventListener("click", () => {
+          selectTag(tag);
+          const target = [...$("gameTags").querySelectorAll("button")].find(
+            (entry) => entry.dataset.tag === tag,
+          );
+          target?.focus({ preventScroll: true });
+          $("gameDiscovery").scrollIntoView({
+            behavior: window.RadarMotion?.enabled ? "smooth" : "auto",
+            block: "start",
+          });
+        });
+        return button;
+      }),
+    );
     const counts = new Map(
       R.catalog(candidates.filter((row) => row.appid !== game.appid)).map(
         (entry) => [R.key(entry.tag), entry.count],

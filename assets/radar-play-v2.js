@@ -346,15 +346,13 @@
       (a, b) => b.followers - a.followers || b.date.localeCompare(a.date),
     );
     $("spotlightGames").replaceChildren(
-      ...upcoming
-        .slice(0, 4)
-        .map((game, index) =>
-          makeCard(game, {
-            eager: true,
-            priority: index < 2,
-            upgrade: index < 2,
-          }),
-        ),
+      ...upcoming.slice(0, 4).map((game, index) =>
+        makeCard(game, {
+          eager: true,
+          priority: index < 2,
+          upgrade: index < 2,
+        }),
+      ),
     );
     $("spotlightGames").setAttribute("aria-busy", "false");
     revealCards($("spotlightGames"));
@@ -366,15 +364,13 @@
         ),
       );
     $("recentGames").replaceChildren(
-      ...recent
-        .slice(0, 3)
-        .map((game, index) =>
-          makeCard(game, {
-            eager: index === 0,
-            priority: false,
-            upgrade: false,
-          }),
-        ),
+      ...recent.slice(0, 3).map((game, index) =>
+        makeCard(game, {
+          eager: index === 0,
+          priority: false,
+          upgrade: false,
+        }),
+      ),
     );
     revealCards($("recentGames"));
     if (!recent.length)
@@ -625,6 +621,11 @@
       R.key(entry.tag + " " + entry.label).includes(term),
     );
     const visible = term || showAllTags ? matches : matches.slice(0, 14);
+    const selected = allTagChoices.find(
+      (entry) => R.key(entry.tag) === R.key(model.tag),
+    );
+    if (!term && !showAllTags && selected && !visible.includes(selected))
+      visible.push(selected);
     $("tagCatalog").replaceChildren(
       ...visible.map((entry) => {
         const button = node("button", "explore-tag");
