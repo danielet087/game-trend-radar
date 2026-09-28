@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://shared.akamai.steamstatic.com" crossorigin />
     <link rel="preconnect" href="https://shared.fastly.steamstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
-    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.4.0" />
+    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.4.1" />
     <script src="./assets/radar-data-v1.js?v=3.0.0" defer></script>
     <script src="./assets/radar-storage-v2.js?v=3.0.0" defer></script>
     <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
@@ -60,27 +60,35 @@
       </div>
     </header>
     <main class="page-shell" id="mainContent">
-      <section class="page-heading">
-        <a class="back-link" id="backCalendar" href="./index.html"
-          >← 返回發售月曆</a
-        >
-        <p class="eyebrow">YOUR GAME DISCOVERY</p>
-        <nav class="date-switcher" aria-label="逐日瀏覽發售遊戲">
-          <a class="date-step" id="prevDate" aria-disabled="true">
-            <span class="date-step-arrow" aria-hidden="true">←</span>
-            <span class="date-step-copy">前一天<small id="prevDateLabel"></small></span>
-          </a>
-          <div class="date-current" id="dateCurrent" role="status" aria-live="polite" aria-atomic="true">
-            <h1 id="pageTitle">當日發售遊戲</h1>
-            <p id="dateWeekday"></p>
+      <section class="page-heading date-heading" aria-labelledby="pageTitle">
+        <div class="date-heading-top">
+          <a class="back-link" id="backCalendar" href="./index.html">← 返回發售月曆</a>
+          <p class="eyebrow">YOUR GAME DISCOVERY</p>
+        </div>
+        <div class="date-heading-main">
+          <nav class="date-switcher" aria-label="逐日瀏覽發售遊戲">
+            <a class="date-step" id="prevDate" aria-disabled="true">
+              <span class="date-step-arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m13 6-6 6 6 6M7 12h11" /></svg>
+              </span>
+              <span class="date-step-copy">前一天<small class="sr-only" id="prevDateLabel"></small></span>
+            </a>
+            <div class="date-current" id="dateCurrent" role="status" aria-live="polite" aria-atomic="true">
+              <p id="dateWeekday"></p>
+              <h1 id="pageTitle">當日發售遊戲</h1>
+            </div>
+            <a class="date-step date-step-next" id="nextDate" aria-disabled="true">
+              <span class="date-step-arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m11 6 6 6-6 6M6 12h11" /></svg>
+              </span>
+              <span class="date-step-copy">後一天<small class="sr-only" id="nextDateLabel"></small></span>
+            </a>
+          </nav>
+          <div class="date-heading-copy">
+            <p>這一天，有哪些值得期待的新作？</p>
+            <p class="scope-note" id="scopeNote"></p>
           </div>
-          <a class="date-step date-step-next" id="nextDate" aria-disabled="true">
-            <span class="date-step-copy">後一天<small id="nextDateLabel"></small></span>
-            <span class="date-step-arrow" aria-hidden="true">→</span>
-          </a>
-        </nav>
-        <p>這一天，有哪些值得期待的新作？</p>
-        <p class="scope-note" id="scopeNote"></p>
+        </div>
       </section>
       <div class="data-status" id="dataStatus" role="status">
         <span class="signal-dot"></span
@@ -106,7 +114,6 @@
       >
         <div class="section-heading">
           <div>
-            <p class="eyebrow">FIND YOUR NEXT FAVORITE</p>
             <h2 id="explorerTitle">探索遊戲</h2>
           </div>
           <span class="timezone">台灣時間 UTC+8</span>

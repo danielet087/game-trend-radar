@@ -11,6 +11,8 @@ An original, content-first game discovery interface. The calendar opens immediat
 
 ## Interaction
 
+- The single-day page uses an unframed date headline with compact circular previous/next controls. The year and weekday sit above the date, with supporting copy alongside on wide screens and below on phones. Adjacent-day navigation reuses the loaded catalog and retains filters and browser history.
+
 - The home calendar opens first. Previous/next buttons, the current-month button and a native month picker keep the calendar and URL synchronized. Phones default to a card list with an explicit calendar/list switch.
 - The entire card opens the site's `game.html?appid=...` profile. Favorite and visible Steam-store links remain separate controls above the card link; Steam opens in a new tab.
 - The profile presents a framed, expandable game cover beside its title and published description. A release ticket groups the date, follower count and language support. Five warm palettes respond to published tags/genres; decorative shapes and textures remain original. A mobile action dock keeps the Steam link and local favorite available while reading. The native image dialog supports keyboard closing and restores scroll state.

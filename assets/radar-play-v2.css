@@ -435,107 +435,205 @@ h1 {
   padding-left: 10px;
   font-size: 11px !important;
 }
+/* A compact date headline with lightweight, thumb-friendly day controls. */
+.date-heading {
+  padding-bottom: 23px;
+  border-bottom: 1px solid #9ab2ce52;
+  margin-bottom: 17px;
+}
+.date-heading-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+.date-heading-top .back-link,
+.date-heading-top .eyebrow {
+  margin: 0;
+}
+.date-heading-top .eyebrow {
+  color: #617692;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+}
+.date-heading-top .eyebrow::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #eaa17e;
+}
+.date-heading-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 36px;
+}
 .date-switcher {
   display: grid;
-  grid-template-columns: 120px minmax(0, 1fr) 120px;
+  grid-template-columns: 56px minmax(0, auto) 56px;
   align-items: center;
-  gap: 20px;
-  width: min(100%, 780px);
-  margin: 16px 0 19px;
-  padding: 18px;
-  border: 1px solid #b3c5e8;
-  border-radius: 23px;
-  background: linear-gradient(115deg, #fffdf5f2, #f4f8ffed 65%, #e5edffe6);
-  box-shadow: 0 5px 0 #becbe34d;
+  gap: 28px;
+  width: fit-content;
+  flex: 0 0 auto;
 }
 .date-current {
-  min-width: 0;
+  min-width: 240px;
   text-align: center;
 }
 .date-current.date-invalid {
   grid-column: 1 / -1;
 }
+.date-current h1 {
+  font-size: clamp(36px, 4vw, 52px);
+  line-height: 1.2;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
 .date-current h1::after {
   content: none;
 }
 .date-current p {
-  margin-top: 7px;
-  color: #52658a;
+  margin: 0 0 8px;
+  color: #496887;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 650;
+  letter-spacing: 0.06em;
 }
 .date-step {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  min-height: 66px;
-  padding: 10px;
-  border: 1px solid #c7d2ed;
-  border-radius: 15px;
-  color: #314da8;
-  background: #ffffffd9;
-  box-shadow: 0 3px 0 #cbd6eb;
+  justify-content: center;
+  gap: 8px;
+  min-height: 76px;
+  border-radius: 28px;
+  color: #294b76;
   text-decoration: none;
-  transition: transform 0.18s, background 0.18s, box-shadow 0.18s;
+  -webkit-tap-highlight-color: transparent;
 }
-.date-step:hover,
-.date-step:focus-visible {
+.date-step-arrow {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1.5px solid #94adc9;
+  border-radius: 50%;
+  background: #fffdf3;
+  box-shadow: 0 2px 0 #a9bbcf;
+  transition: transform 0.18s, background 0.18s, color 0.18s, border-color 0.18s;
+}
+.date-step-arrow svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.18s;
+}
+.date-step:hover .date-step-arrow,
+.date-step:focus-visible .date-step-arrow {
+  color: #fffdf3;
+  background: #3959b9;
+  border-color: #3959b9;
   transform: translateY(-2px);
-  background: #eef2ff;
-  box-shadow: 0 5px 0 #cbd6eb;
 }
-.date-step:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 #cbd6eb;
+.date-step:hover svg {
+  transform: translateX(-2px);
+}
+.date-step-next:hover svg {
+  transform: translateX(2px);
+}
+.date-step:active .date-step-arrow {
+  transform: translateY(1px);
 }
 .date-step[aria-disabled="true"] {
   opacity: 0.4;
   pointer-events: none;
 }
-.date-step-arrow {
-  font: 24px/1 Arial, sans-serif;
-}
 .date-step-copy {
-  font-size: 12px;
-  font-weight: 750;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
   white-space: nowrap;
 }
-.date-step-copy small {
-  display: block;
-  margin-top: 3px;
-  font: 11px/1.5 Arial, sans-serif;
-  color: #647699;
+.date-heading-copy {
+  text-align: right;
+}
+.date-heading-copy > p:first-child {
+  color: #3e5673;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.date-heading-copy .scope-note {
+  padding: 0;
+  border: 0;
+  margin-top: 7px;
+  color: #687b94;
+  font-size: 11px;
+  line-height: 1.7;
+}
+body[data-page="date"] .section-heading {
+  margin-bottom: 14px;
+}
+body[data-page="date"] .section-heading h2 {
+  font-size: 23px;
+}
+@media (max-width: 860px) {
+  .date-heading-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 17px;
+  }
+  .date-heading-copy {
+    text-align: left;
+  }
 }
 @media (max-width: 600px) {
+  .date-heading {
+    padding-bottom: 19px;
+    margin-bottom: 14px;
+  }
+  .date-heading-top {
+    margin-bottom: 21px;
+  }
+  .date-heading-top .eyebrow {
+    display: none;
+  }
   .date-switcher {
-    grid-template-columns: 52px minmax(0, 1fr) 52px;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
     gap: 8px;
-    padding: 14px 9px;
-    border-radius: 18px;
+    width: 100%;
+  }
+  .date-current {
+    min-width: 0;
   }
   .date-current h1 {
-    font-size: clamp(20px, 6vw, 30px);
+    font-size: clamp(28px, 8vw, 40px);
   }
   .date-current p {
+    margin-bottom: 7px;
     font-size: 10px;
-    line-height: 1.6;
   }
   .date-step {
-    flex-direction: column;
-    gap: 5px;
-    min-height: 66px;
-    padding: 8px 4px;
-    border-radius: 12px;
+    min-height: 70px;
+    gap: 7px;
   }
-  .date-step-copy {
-    font-size: 10px;
+  .date-step-arrow {
+    width: 42px;
+    height: 42px;
   }
-  .date-step-next .date-step-arrow {
-    order: -1;
+  .date-heading-copy > p:first-child {
+    font-size: 12px;
   }
-  .date-step-copy small {
-    display: none;
+  .date-heading-copy .scope-note {
+    font-size: 10px !important;
+    margin-top: 4px;
+  }
+  body[data-page="date"] .section-heading h2 {
+    font-size: 21px;
   }
 }
 .data-status {
