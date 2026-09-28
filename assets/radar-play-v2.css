@@ -195,7 +195,7 @@ summary {
   position: sticky;
   top: 0;
   z-index: 20;
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(6px);
 }
 .site-header::after {
   content: "";
@@ -2232,4 +2232,10 @@ body[data-page="explore"] {
   .tag-active {
     font-size: 11px;
   }
+}
+
+/* Opaque compact controls avoid repainting filtered layers during scrolling. */
+.countdown { backdrop-filter: none; background: #fffdf5; }
+@media (max-width: 640px) {
+  .site-header { backdrop-filter: none; background: #fffdf8; }
 }

@@ -116,18 +116,9 @@
     }
   }
   function loadArtwork(img, game, onLoad, onExhausted) {
-    const sources = game.artSources || (game.art ? [game.art] : []);
-    let index = 0;
-    const next = () => {
-      if (index >= sources.length) {
-        onExhausted();
-        return;
-      }
-      img.src = sources[index++];
-    };
-    img.addEventListener("error", next);
-    img.addEventListener("load", onLoad, { once: true });
-    next();
+    window.RadarArtwork.load(img, game, {
+      large: img.fetchPriority === "high", onLoad, onExhausted,
+    });
   }
   function showArtwork(game) {
     const art = $("gameArt");
@@ -163,7 +154,7 @@
   $("gameArt").addEventListener("click", () => {
     const img = $("gameArt").querySelector("img");
     if (!img || !currentGame) return;
-    $("artDialogImage").src = img.currentSrc || img.src;
+    window.RadarArtwork.load($("artDialogImage"), currentGame, { large: true });
     $("artDialogImage").alt = `${currentGame.name} 的 Steam 遊戲封面大圖`;
     $("artDialogCaption").textContent = currentGame.name;
     previousOverflow = document.documentElement.style.overflow;
@@ -319,7 +310,7 @@
   });
   function setupTags(game) {
     selectedTag =
-      game.tags.find((tag) => R.key(tag) === R.key(query.get("tag"))) || "";
+      game.tags.find((tag) => R.key(tag) === R.key(new URLSearchParams(location.search).get("tag"))) || "";
     tagsExpanded = game.tags.findIndex((tag) => tag === selectedTag) >= 8;
     $("gameTagPreview").hidden = !game.tags.length;
     $("gameIntro").hidden = !game.tags.length && !game.description;
@@ -379,7 +370,8 @@
     if (!game.tags.length) $("gameJump").textContent = "看看其他新作 ↓";
     renderRelated();
   }
-  function render(game, data) {
+  function render(game, data, pending = false) {
+    const unchangedArt = currentGame?.art === game.art && currentGame?.art2x === game.art2x;
     currentGame = game;
     candidates = D.unique([
       ...data.games.filter((row) => row.date >= today),
@@ -467,95 +459,71 @@
       );
     });
     document.title = `${game.name}｜遊戲資訊・Game Trend Radar`;
-    showArtwork(game);
+    if (!unchangedArt) showArtwork(game);
     updateSaveControls();
     setupTags(game);
+    $("gameRelatedGrid").setAttribute("aria-busy", String(pending));
+    if (pending) {
+      $("recommendationSummary").textContent = "正在尋找相似遊戲…";
+      $("gameRelatedGrid").replaceChildren(node("p", "related-loading", "相似遊戲載入中，已可查看封面與發售資訊。"));
+      $("recommendationBasis").textContent = "";
+    }
     $("detailStatus").hidden = true;
     $("detailPage").hidden = false;
   }
-  const LIVE_DATA_ROOT =
-    "https://raw.githubusercontent.com/danielet087/game-trend-radar/main/data/";
-  async function readJSON(path) {
-    const filename = path.startsWith("./data/") ? path.slice(7) : "";
-    const sources = filename ? [LIVE_DATA_ROOT + filename, path] : [path];
-    for (const source of sources) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 15000);
-      try {
-        const separator = source.includes("?") ? "&" : "?";
-        const response = await fetch(`${source}${separator}t=${Date.now()}`, {
-          cache: "no-store",
-          signal: controller.signal,
-        });
-        if (!response.ok) continue;
-        const data = await response.json();
-        if (data && Array.isArray(data.games)) return data;
-      } catch {
-        /* Try the next source. The Pages copy is the offline fallback. */
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-    return null;
-  }
-  async function main() {
+  async function main(force = false) {
     updateSaveControls();
     setBackLink();
     if (!appid) {
-      setStatus(
-        "找不到這款遊戲",
-        "連結沒有有效的 Steam AppID，請返回遊戲清單重新選擇。",
-      );
+      setStatus("找不到這款遊戲", "連結沒有有效的 Steam AppID，請返回遊戲清單重新選擇。");
       return;
     }
-    const [rawGame, catalog, preview] = await Promise.all([
-      window.RadarStorage?.loadGame?.(appid) || Promise.resolve(null),
-      window.RadarStorage?.loadCatalog?.() ||
-        readJSON("./data/steam_upcoming.json"),
-      readJSON("./data/steam_preview.json"),
-    ]);
-    if (!rawGame && !catalog && !preview) {
-      setStatus("遊戲資料暫時無法讀取", "請稍後再試，或返回遊戲清單。", true);
-      return;
+    let rawGame = null, catalog = null, preview = null;
+    let catalogDone = false, shown = false;
+    function present() {
+      if (!rawGame && !catalog && !preview) return;
+      const rows = catalog?.games || [];
+      const official = rawGame ? {
+        ...(catalog || {}),
+        generated_at: catalog?.generated_at || rawGame.content_enriched_at || rawGame.follower_checked_at,
+        games: [{ ...rows.find(row => Number(row.appid) === appid), ...rawGame },
+          ...rows.filter(row => Number(row.appid) !== appid)]
+      } : catalog;
+      const data = R.enrich(D.datasets(official, preview), official, preview);
+      const game = [...data.games, ...data.recent].find(entry => entry.appid === appid);
+      if (!game) return;
+      render(game, data, !catalogDone);
+      shown = true;
+      if (catalogDone && !catalog && !preview) {
+        $("recommendationSummary").textContent = "相似遊戲暫時無法讀取";
+        $("gameRelatedGrid").replaceChildren(node("p", "related-loading", "這款遊戲仍可正常查看，稍後重新整理再試。"));
+        $("recommendationBasis").textContent = "";
+      }
     }
     try {
-      // Preserve the current AppID/month storage flow, with the detailed
-      // record taking precedence and missing metadata inherited from its shard.
-      const catalogRows = catalog?.games || [];
-      const official = rawGame
-        ? {
-            ...(catalog || {}),
-            games: [
-              {
-                ...catalogRows.find((row) => Number(row.appid) === appid),
-                ...rawGame,
-              },
-              ...catalogRows.filter((row) => Number(row.appid) !== appid),
-            ],
-          }
-        : catalog;
-      const data = R.enrich(D.datasets(official, preview), official, preview);
-      const game = [...data.games, ...data.recent].find(
-        (entry) => entry.appid === appid,
-      );
-      if (!game) {
-        setStatus(
-          "這款遊戲目前不在公開清單中",
-          "可能已調整發售日期或未達收錄條件；你仍可返回月曆看看其他遊戲。",
-        );
-        return;
+      // Independent requests: the hero does not wait for the whole catalog.
+      await Promise.all([
+        window.RadarStorage.loadGame(appid, { force }).then(record => { rawGame = record; present(); }),
+        window.RadarStorage.loadSources({ force }).then(result => {
+          catalog = result.catalog; preview = result.preview; catalogDone = true; present();
+        }),
+      ]);
+      if (!shown) {
+        if (!rawGame && !catalog && !preview)
+          setStatus("遊戲資料暫時無法讀取", "請稍後再試，或返回遊戲清單。", true);
+        else
+          setStatus("這款遊戲目前不在公開清單中", "可能已調整發售日期或未達收錄條件；你仍可返回月曆看看其他遊戲。");
       }
-      render(game, data);
     } catch (error) {
       console.error("Unable to display game profile", error);
-      setStatus("遊戲資訊暫時無法呈現", "請稍後再試，或返回遊戲清單。", true);
+      if (!shown) setStatus("遊戲資訊暫時無法呈現", "請稍後再試，或返回遊戲清單。", true);
     }
   }
   $("detailRetry").addEventListener("click", async () => {
     $("detailRetry").disabled = true;
     $("detailStatusTitle").textContent = "正在重新讀取…";
     try {
-      await main();
+      await main(true);
     } finally {
       $("detailRetry").disabled = false;
     }

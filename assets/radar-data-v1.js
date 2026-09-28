@@ -37,21 +37,6 @@
       return "";
     }
   }
-  // Prefer Valve's 2x version of an actual Steam asset when available. Keep
-  // the unmodified source URL immediately after it: not every game has 2x art.
-  // Never mix the hash of one asset type with a different filename.
-  function highResolutionURL(value) {
-    if (!value || typeof value !== "string") return "";
-    try {
-      const url = new URL(value);
-      if (!/(^|\.)(steamstatic\.com|steamcdn-a\.akamaihd\.net)$/.test(url.hostname)) return "";
-      if (!/\/(?:header(?:_tchinese)?|capsule_616x353)\.jpe?g$/i.test(url.pathname)) return "";
-      url.pathname = url.pathname.replace(/\.(jpe?g)$/i, "_2x.$1");
-      return url.href;
-    } catch {
-      return "";
-    }
-  }
   function normalize(raw, recent = false, translated = null) {
     if (!raw || typeof raw !== "object") return null;
     const date = raw.release_start || raw.release_date;
@@ -182,6 +167,15 @@
       ...fallbackHeaders,
       ...smallCapsules,
     ]));
+    const artVariants = {};
+    for (const record of [translated, raw]) {
+      if (!record) continue;
+      for (const field of ["header_image", "main_capsule_image"]) {
+        const base = imageURL(record[field], appid);
+        const high = imageURL(record[field + "_2x"], appid);
+        if (base && high) artVariants[base] = high;
+      }
+    }
     return {
       appid,
       name,
@@ -199,7 +193,8 @@
       followers,
       art: images[0] || "",
       artSources: images,
-      art2x: highResolutionURL(images[0] || ""),
+      art2x: artVariants[images[0]] || "",
+      artVariants,
       hasVerifiedHeader: suppliedHeader.length > 0,
       recent,
       darkHorse:
@@ -236,12 +231,12 @@
         ].filter(Boolean),
       ),
       updated: chosen.generated_at || chosen.updated_at || null,
-      recentUpdated: preview?.generated_at || null,
+      recentUpdated: chosen.generated_at || preview?.generated_at || null,
       partial:
         !!chosen.is_partial_preview ||
         chosen.initialization?.complete === false,
       initialization: chosen.initialization || null,
-      recentAvailable: !!preview && Array.isArray(preview.recent_games),
+      recentAvailable: chosen.version >= 2 || (!!preview && Array.isArray(preview.recent_games)),
       source: official ? "official" : "preview",
     };
   }

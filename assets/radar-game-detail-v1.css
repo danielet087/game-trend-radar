@@ -1301,7 +1301,7 @@ body.motion-on .art-dialog[open] {
     z-index: 25;
     border-top: 1px solid var(--game-edge);
     background: #fffdf7f5;
-    backdrop-filter: blur(12px);
+    backdrop-filter: none;
     box-shadow: 0 -5px 30px #202c4612;
   }
   .game-mobile-actions .button.primary,
@@ -1323,3 +1323,5 @@ body.motion-on .art-dialog[open] {
     border-radius: 16px;
   }
 }
+
+.related-loading { grid-column: 1 / -1; min-height: 180px; padding: 28px; border: 1px dashed var(--game-edge); border-radius: 18px; color: var(--muted); line-height: 1.8; font-size: 13px; }

@@ -8,6 +8,8 @@
   const number = new Intl.NumberFormat("zh-TW");
   const storageKey = "game-trend-radar:saved:v1";
   const PAGE_SIZE = 36;
+  const cardGames = new WeakMap();
+  let searchTimer;
   const query = new URLSearchParams(location.search);
   const monthPattern = /^(19|20|21)\d{2}-(0[1-9]|1[0-2])$/;
   const requestedDate = query.get("date");
@@ -136,32 +138,10 @@
     link.setAttribute("aria-label", `查看 ${game.name} 的遊戲資訊`);
     return link;
   }
-  // Remember unavailable Steam CDN URLs across cards.
-  // A modern hashed capsule does not imply the same hash for header.jpg.
-  const failedArtwork = new Set();
-  function loadGameArtwork(image, game, onExhausted) {
-    const sources = game.artSources?.length
-      ? game.artSources
-      : game.art
-        ? [game.art]
-        : [];
-    let next = 0;
-    function advance() {
-      while (next < sources.length && failedArtwork.has(sources[next])) next++;
-      if (next === sources.length) {
-        onExhausted();
-        return;
-      }
-      image.src = sources[next++];
-    }
-    image.addEventListener("error", () => {
-      failedArtwork.add(image.src);
-      advance();
-    });
-    advance();
-  }
   function makeCard(game, options = {}) {
     const card = node("article", "game-card");
+    card.dataset.appid = game.appid;
+    cardGames.set(card, game);
     const cover = node("div", "cover-link");
     const fallback = node("span", "cover-placeholder");
     fallback.setAttribute("aria-hidden", "true");
@@ -174,40 +154,9 @@
       img.fetchPriority = options.priority ? "high" : "auto";
       img.width = 616;
       img.height = 288;
-      let upgradeStarted = false;
-      img.addEventListener("load", () => {
-        fallback.hidden = true;
-        img.classList.add("art-loaded");
-        // Render a dependable sharp header/capsule immediately. Only the
-        // first visible hero cards may then try a 2x file on idle; never
-        // block the initial paint waiting for a guessed Steam asset.
-        if (
-          !options.upgrade ||
-          upgradeStarted ||
-          !game.art2x ||
-          game.art2x === img.currentSrc ||
-          failedArtwork.has(game.art2x) ||
-          window.devicePixelRatio < 1.5
-        )
-          return;
-        upgradeStarted = true;
-        const upgrade = () => {
-          if (!img.isConnected) return;
-          const candidate = new Image();
-          candidate.decoding = "async";
-          candidate.onload = () => {
-            if (img.isConnected) img.src = game.art2x;
-          };
-          candidate.onerror = () => failedArtwork.add(game.art2x);
-          candidate.src = game.art2x;
-        };
-        if ("requestIdleCallback" in window)
-          window.requestIdleCallback(upgrade, { timeout: 2500 });
-        else setTimeout(upgrade, 1000);
-      });
-      loadGameArtwork(img, game, () => {
-        img.remove();
-        fallback.hidden = false;
+      window.RadarArtwork.load(img, game, {
+        onLoad: () => { fallback.hidden = true; img.classList.add("art-loaded"); },
+        onExhausted: () => { img.remove(); fallback.hidden = false; },
       });
       cover.append(img);
     }
@@ -348,9 +297,8 @@
     $("spotlightGames").replaceChildren(
       ...upcoming.slice(0, 4).map((game, index) =>
         makeCard(game, {
-          eager: true,
-          priority: index < 2,
-          upgrade: index < 2,
+          eager: false,
+          priority: false,
         }),
       ),
     );
@@ -366,7 +314,7 @@
     $("recentGames").replaceChildren(
       ...recent.slice(0, 3).map((game, index) =>
         makeCard(game, {
-          eager: index === 0,
+          eager: false,
           priority: false,
           upgrade: false,
         }),
@@ -540,9 +488,16 @@
     $("gamesGrid")
       .querySelectorAll(".reveal-pending")
       .forEach((card) => revealObserver?.unobserve(card));
-    $("gamesGrid").replaceChildren(
-      ...items.slice(0, model.limit).map(makeCard),
-    );
+    // Calendar mode does not create an invisible duplicate grid of image cards.
+    if (mode === "home" && model.view === "calendar") {
+      $("gamesGrid").replaceChildren();
+      $("loadMoreWrap").hidden = true;
+      return;
+    }
+    const grid = $("gamesGrid");
+    const retained = new Map([...grid.querySelectorAll(".game-card[data-appid]")]
+      .map(card => [Number(card.dataset.appid), card]));
+    grid.replaceChildren(...items.slice(0, model.limit).map(game => cardGames.get(retained.get(game.appid)) === game ? retained.get(game.appid) : makeCard(game)));
     $("loadMoreWrap").hidden =
       items.length <= model.limit ||
       (mode === "home" && model.view === "calendar");
@@ -593,6 +548,7 @@
     $("searchInput").focus();
   }
   function changeFilters() {
+    clearTimeout(searchTimer);
     model.limit = PAGE_SIZE;
     writeURL();
     renderExplorer();
@@ -682,7 +638,14 @@
     if ([...$(id).options].some((option) => option.value === query.get(param)))
       $(id).value = query.get(param);
   }
-  $("searchInput").addEventListener("input", changeFilters);
+  $("searchInput").addEventListener("input", (event) => {
+    clearTimeout(searchTimer);
+    if (!event.isComposing) searchTimer = setTimeout(changeFilters, 120);
+  });
+  $("searchInput").addEventListener("compositionend", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(changeFilters, 120);
+  });
   $("followersFilter").addEventListener("change", changeFilters);
   $("sortSelect").addEventListener("change", changeFilters);
   $("savedFilter").addEventListener("click", () => {
@@ -771,31 +734,6 @@
       } else $("pageTitle").textContent = "找不到指定日期";
     }
   }
-  const LIVE_DATA_ROOT =
-    "https://raw.githubusercontent.com/danielet087/game-trend-radar/main/data/";
-  async function readJSON(path) {
-    const filename = path.startsWith("./data/") ? path.slice(7) : "";
-    const sources = filename ? [LIVE_DATA_ROOT + filename, path] : [path];
-    for (const source of sources) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 15000);
-      try {
-        const separator = source.includes("?") ? "&" : "?";
-        const response = await fetch(`${source}${separator}t=${Date.now()}`, {
-          cache: "no-store",
-          signal: controller.signal,
-        });
-        if (!response.ok) continue;
-        const data = await response.json();
-        if (data && Array.isArray(data.games)) return data;
-      } catch {
-        /* Try the next source. The Pages copy is the offline fallback. */
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-    return null;
-  }
   async function load() {
     if (load.running) return;
     load.running = true;
@@ -804,11 +742,7 @@
     $("updateText").textContent = "正在讀取遊戲資料…";
     $("resultCount").textContent = "正在讀取遊戲資料…";
     $("gamesGrid").setAttribute("aria-busy", "true");
-    const [official, preview] = await Promise.all([
-      window.RadarStorage?.loadCatalog?.() ||
-        readJSON("./data/steam_upcoming.json"),
-      readJSON("./data/steam_preview.json"),
-    ]);
+    const { catalog: official, preview } = await window.RadarStorage.loadSources();
     try {
       model.data = D.datasets(official, preview);
       if (mode === "explore" && model.data) {
@@ -871,6 +805,7 @@
         (entries) => {
           for (const entry of entries) {
             if (!entry.isIntersecting) continue;
+            entry.target.dataset.revealed = "true";
             entry.target.classList.add("is-visible");
             revealObserver.unobserve(entry.target);
             setTimeout(() => {
@@ -886,6 +821,7 @@
   function revealCards(area) {
     if (!revealObserver || !motionOn) return;
     area.querySelectorAll(".game-card").forEach((card, index) => {
+      if (card.dataset.revealed) return;
       card.style.transitionDelay = Math.min(index % 4, 3) * 45 + "ms";
       card.classList.add("reveal-pending");
       revealObserver.observe(card);

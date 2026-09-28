@@ -27,8 +27,8 @@ test("quick view dialog and its triggers are removed on all old pages", () => {
   for (const name of ["index", "upcoming", "released", "saved", "date"]) {
     const page = from(name + ".html");
     assert.doesNotMatch(page, /gameDialog|closeDialog|dialogContent/);
-    assert.match(page, /radar-play-v2\.js\?v=3\.3\.1/);
-    assert.match(page, /radar-play-v2\.css\?v=3\.2\.0/);
+    assert.match(page, /radar-play-v2\.js\?v=3\.4\.0/);
+    assert.match(page, /radar-play-v2\.css\?v=3\.3\.0/);
   }
 });
 
@@ -39,11 +39,10 @@ test("detail reads published game metadata; no invented genres or separate Follo
     assert.match(html, new RegExp('id="' + id + '"'));
   }
   assert.match(profile, /D\.datasets\(official, preview\)/);
-  assert.match(browse, /raw\.githubusercontent\.com\/danielet087\/game-trend-radar\/main\/data\//);
-  assert.match(profile, /raw\.githubusercontent\.com\/danielet087\/game-trend-radar\/main\/data\//);
+  assert.match(from("assets/radar-storage-v2.js"), /raw\.githubusercontent\.com\/danielet087\/game-trend-radar\/main\/data\//);
   assert.match(profile, /data\.games, \.\.\.data\.recent/);
   assert.match(profile, /\$\("gameSteam"\)\.href = game\.link/);
-  assert.match(profile, /game\.artSources/);
+  assert.match(from("assets/radar-artwork-v1.js"), /game\.artSources/);
   assert.match(profile, /localStorage\.setItem\(storageKey/);
   assert.match(profileStyles, /@media \(max-width: 640px\)/);
   assert.doesNotMatch(profile, /group\/|members\?|followers\.xml|api\/appdetails/);

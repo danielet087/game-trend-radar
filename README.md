@@ -25,25 +25,31 @@ Steam 新作關注度、發售月曆與個人收藏。純 HTML / CSS / JavaScrip
 
 ## 資料介面
 
-- `data/index.json` 與 `data/calendar/YYYY-MM.json`：既有分片正式清單；詳細頁同時讀取 `data/games/APPID.json`。
-- `data/steam_upcoming.json`：分片資料無法完整讀取時的既有備援。
-- `data/steam_preview.json`：正式清單無法讀取時的備援；提供中文名稱、封面補充與 `recent_games`。
+- `data/catalog.json`：一般瀏覽只讀這份精簡清單，保留篩選、TAG、語言與圖片欄位。
+- `data/games/APPID.json`：完整單款內容；詳細頁可先顯示這份資料，推薦清單另外載入。
+- `data/steam_upcoming.json`：精簡清單無法讀取時的完整備援；再失敗才讀 `data/index.json` 與月份分片。
+- `data/steam_preview.json`：僅在正式清單不可用或舊版格式時使用，避免舊快照覆蓋正式資料。
+- `data/content_refresh_status.json`：內容對帳的待補欄位、失敗與重試時間；不代表所有 Steam 候選都已查完。
 - `data/twitch_live.json`、`data/youtube_live.json`：既有直播資料，本次 UI 不新增直播頁。
 
 前端只讀取公開靜態 JSON。排程、抓取、API 串接與所有資料檔案仍由後端專案負責。收錄尚未完成時，網站會顯示「新作持續收錄中」與更新時間，詳細說明收在「關於資料」。
+
+跨頁共用 60 秒的 session 快取，使用固定網址搭配 HTTP 重新驗證。封面依 Steam 回傳的實際 1x／2x 資產載入，失敗時依序降級；清單圖片延遲載入。搜尋等待 120ms 並支援中文輸入法，排序與篩選重用卡片，避免反覆解碼圖片、重播進場動畫。使用裝置字體，手機減少大面積背景模糊。
 
 TAG 僅使用已公開的欄位，不從類型推測。詳細頁推薦依共同 TAG 數量排序，再比較發售日距離及關注人數；沒有共同 TAG 才改依日期推薦並標明依據。指定 TAG 沒有其他遊戲時顯示空狀態。探索頁只列今日起的合格新作，標籤數量代表公開清單的涵蓋範圍。
 
 ## 維護
 
-共用程式位於 `assets/radar-data-v1.js`、`assets/radar-storage-v2.js`、`assets/radar-motion-v1.js`、`assets/radar-play-v2.js`、`assets/radar-play-v2.css`；詳細頁使用 `assets/radar-game-detail-v1.js` 與對應 CSS。`assets/radar-discovery-v1.js` 共用標籤翻譯、資料補充與推薦排序。原有舊版 UI/list/date 程式保留，但目前 HTML 已不載入。
+共用程式位於 `assets/radar-data-v1.js`、`assets/radar-storage-v2.js`、`assets/radar-artwork-v1.js`、`assets/radar-motion-v1.js`、`assets/radar-play-v2.js`、`assets/radar-play-v2.css`；詳細頁使用 `assets/radar-game-detail-v1.js` 與對應 CSS。`assets/radar-discovery-v1.js` 共用標籤翻譯、資料補充與推薦排序。原有舊版 UI/list/date 程式保留，但目前 HTML 已不載入。
 
 ```sh
 python -m http.server 8000
-node --test tests/data.test.cjs tests/game-detail.test.cjs tests/discovery.test.cjs
+node --test tests/*.test.cjs
 ```
 
 `tests/responsive.html` 提供 320 / 390 / 768 / 1280px 版面檢視。設計與素材來源記錄在 [DESIGN.md](./DESIGN.md)。
+
+資料流、修正結果與仍待改善的覆蓋問題記錄在 [2026-09-28 流程整理](docs/pipeline-optimization-20260928.md)。
 
 ## GitHub Pages
 

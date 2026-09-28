@@ -1,88 +1,74 @@
-/* Sharded Steam data loader: month shards for lists, AppID files for details. */
+/* One small, complete catalog for browsing; one AppID record for first paint. */
 (function (root) {
   "use strict";
-  const LIVE_DATA_ROOT =
-    "https://raw.githubusercontent.com/danielet087/game-trend-radar/main/data/";
-
-  async function readJSON(path, validate = null) {
-    const filename = path.startsWith("./data/") ? path.slice(7) : path.replace(/^data\//, "");
-    const sources = filename ? [LIVE_DATA_ROOT + filename, "./data/" + filename] : [path];
-    for (const source of sources) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 15000);
-      try {
-        // Keep URLs stable so the browser can reuse cached month/AppID
-        // responses between pages. Revalidate the tiny index for freshness.
-        const freshIndex = filename === "index.json";
-        const separator = source.includes("?") ? "&" : "?";
-        const url = freshIndex ? `${source}${separator}t=${Date.now()}` : source;
-        const response = await fetch(url, {
-          cache: freshIndex ? "no-store" : "no-cache",
-          signal: controller.signal,
-        });
-        if (!response.ok) continue;
-        const data = await response.json();
-        if (!validate || validate(data)) return data;
-      } catch {
-        /* Try raw GitHub first, then the Pages copy. */
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-    return null;
+  const LIVE = "https://raw.githubusercontent.com/danielet087/game-trend-radar/main/data/";
+  const inflight = new Map();
+  const TTL = 60000;
+  const CACHE = "game-trend-radar:data:v3:";
+  function cached(filename) {
+    try { return JSON.parse(sessionStorage.getItem(CACHE + filename) || "null"); }
+    catch { return null; }
   }
-
-  async function loadCatalog() {
-    const index = await readJSON("./data/index.json", (x) =>
-      x && x.version >= 2 && Array.isArray(x.months),
-    );
-    if (index) {
-      const shards = await Promise.all(
-        index.months.map((month) =>
-          readJSON(`./data/calendar/${month}.json`, (x) =>
-            x && Array.isArray(x.games),
-          ),
-        ),
-      );
-      if (shards.length && shards.every(Boolean)) {
-        const byId = new Map();
-        for (const shard of shards.filter(Boolean)) {
-          for (const game of shard.games) {
-            const id = Number(game?.appid);
-            if (Number.isInteger(id) && id > 0) byId.set(id, game);
-          }
-        }
-        // A stale month response must not silently make the UI appear
-        // complete while the published index advertises more AppIDs.
-        if (Number(index.game_count) !== byId.size) {
-          console.warn("Steam catalog shard count mismatch", {
-            indexed: index.game_count,
-            loaded: byId.size,
-          });
-        } else {
-          return {
-          generated_at: index.generated_at,
-          storage_version: 2,
-          source: { catalog: "Steam AppID/month shards" },
-          initialization: { complete: true, mode: "sharded_public_catalog" },
-          count: byId.size,
-          games: [...byId.values()],
-          };
-        }
+  async function readJSON(path, validate = null, { force = false } = {}) {
+    const filename = path.replace(/^\.\/data\//, "").replace(/^data\//, "");
+    if (!/^[a-zA-Z0-9_/-]+\.json$/.test(filename) || filename.includes("..")) return null;
+    const old = cached(filename);
+    if (!force && old && Date.now() - old.at < TTL && (!validate || validate(old.data))) return old.data;
+    if (inflight.has(filename)) return inflight.get(filename);
+    const promise = (async () => {
+      // Same-origin Pages has a warm connection. Keep stable URLs for HTTP
+      // revalidation; raw GitHub is a fallback, not another mandatory request.
+      for (const source of ["./data/" + filename, LIVE + filename]) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 6000);
+        try {
+          const response = await fetch(source, { cache: "no-cache", signal: controller.signal });
+          if (!response.ok) continue;
+          const data = await response.json();
+          if (validate && !validate(data)) continue;
+          try { sessionStorage.setItem(CACHE + filename, JSON.stringify({ at: Date.now(), data })); } catch {}
+          return data;
+        } catch { /* Try the second published copy. */ }
+        finally { clearTimeout(timer); }
       }
-    }
-    return readJSON("./data/steam_upcoming.json", (x) =>
-      x && Array.isArray(x.games),
-    );
+      return null;
+    })();
+    inflight.set(filename, promise);
+    try { return await promise; } finally { inflight.delete(filename); }
   }
-
-  async function loadGame(appid) {
+  function validCatalog(data) {
+    if (!data || !Array.isArray(data.games)) return false;
+    const ids = data.games.map(row => Number(row?.appid));
+    return ids.every(id => Number.isSafeInteger(id) && id > 0) &&
+      new Set(ids).size === ids.length &&
+      (data.count == null || Number(data.count) === ids.length);
+  }
+  async function loadCatalog(options = {}) {
+    const projection = await readJSON("./data/catalog.json", x => x?.version >= 3 && validCatalog(x), options);
+    if (projection) return projection;
+    const legacy = await readJSON("./data/steam_upcoming.json", validCatalog, options);
+    if (legacy) return legacy;
+    const index = await readJSON("./data/index.json", x => x?.version >= 2 && Array.isArray(x.months), options);
+    if (!index) return null;
+    const shards = await Promise.all(index.months.map(month =>
+      /^\d{4}-\d{2}$/.test(month) ? readJSON(`./data/calendar/${month}.json`, validCatalog, options) : null));
+    if (!shards.length || !shards.every(Boolean)) return null;
+    const rows = shards.flatMap(shard => shard.games);
+    const catalog = { version: 2, generated_at: index.generated_at, count: index.game_count, games: rows };
+    return validCatalog(catalog) ? catalog : null;
+  }
+  async function loadSources(options = {}) {
+    const catalog = await loadCatalog(options);
+    // Version 2+ already includes retained released games and localized fields.
+    // A legacy preview must not overwrite the accepted catalog's metadata.
+    const preview = !catalog || !(catalog.version >= 2)
+      ? await readJSON("./data/steam_preview.json", validCatalog, options) : null;
+    return { catalog, preview };
+  }
+  async function loadGame(appid, options = {}) {
     const id = Number(appid);
-    if (!Number.isInteger(id) || id <= 0) return null;
-    return readJSON(`./data/games/${id}.json`, (x) =>
-      x && Number(x.appid) === id,
-    );
+    if (!Number.isSafeInteger(id) || id <= 0) return null;
+    return readJSON(`./data/games/${id}.json`, x => x && Number(x.appid) === id, options);
   }
-
-  root.RadarStorage = { readJSON, loadCatalog, loadGame };
+  root.RadarStorage = { readJSON, loadCatalog, loadSources, loadGame };
 })(typeof window !== "undefined" ? window : globalThis);
