@@ -9,11 +9,11 @@
   const storageKey = "game-trend-radar:saved:v1";
   const PAGE_SIZE = 36;
   const cardGames = new WeakMap();
-  let searchTimer;
+  let searchTimer, dateAnimation;
   const query = new URLSearchParams(location.search);
   const monthPattern = /^(19|20|21)\d{2}-(0[1-9]|1[0-2])$/;
   const requestedDate = query.get("date");
-  const date = D.validDate(requestedDate) ? requestedDate : null;
+  let date = D.validDate(requestedDate) ? requestedDate : null;
   let saved = new Set();
   try {
     const value = JSON.parse(localStorage.getItem(storageKey) || "[]");
@@ -350,6 +350,55 @@
     set("saved", model.savedOnly ? "1" : "");
     set("sort", $("sortSelect").selectedIndex ? $("sortSelect").value : "");
     history.replaceState(null, "", url);
+    if (mode === "date") refreshDateLinks();
+  }
+  function refreshDateLinks() {
+    for (const [id, direction] of [["prevDate", -1], ["nextDate", 1]]) {
+      const link = $(id);
+      const adjacent = date ? D.offsetDate(date, direction) : null;
+      const valid = D.validDate(adjacent);
+      link.hidden = !date;
+      link.setAttribute("aria-disabled", String(!valid));
+      if (!valid) {
+        link.removeAttribute("href");
+        link.tabIndex = -1;
+        continue;
+      }
+      const url = new URL(location.href);
+      url.searchParams.set("date", adjacent);
+      url.hash = "";
+      link.href = url.pathname + url.search;
+      link.removeAttribute("tabindex");
+      $(id + "Label").textContent = `${Number(adjacent.slice(5, 7))} / ${Number(adjacent.slice(8))}`;
+      link.setAttribute("aria-label", `${direction < 0 ? "前一天" : "後一天"}：${adjacent.replaceAll("-", "/")}`);
+    }
+  }
+  function renderDateHeading() {
+    if (date) {
+      const weekday = new Intl.DateTimeFormat("zh-TW", {
+        weekday: "long", timeZone: "Asia/Taipei",
+      }).format(new Date(date + "T12:00:00Z"));
+      $("pageTitle").textContent = `${Number(date.slice(5, 7))} 月 ${Number(date.slice(8))} 日`;
+      $("dateWeekday").textContent = `${date.slice(0, 4)} 年・${weekday}`;
+      $("backCalendar").href = `./index.html?month=${date.slice(0, 7)}`;
+      document.title = `${date} 發售遊戲｜Game Trend Radar`;
+    } else {
+      $("pageTitle").textContent = "找不到指定日期";
+      $("dateWeekday").textContent = "請返回月曆選擇日期";
+      $("backCalendar").href = "./index.html";
+      document.title = "找不到指定日期｜Game Trend Radar";
+    }
+    $("dateCurrent").classList.toggle("date-invalid", !date);
+    refreshDateLinks();
+  }
+  function restoreQueryFilters(params) {
+    $("searchInput").value = params.get("q") || "";
+    model.savedOnly = params.get("saved") === "1";
+    for (const [id, param] of [["followersFilter", "min"], ["sortSelect", "sort"]]) {
+      $(id).selectedIndex = 0;
+      if ([...$(id).options].some((option) => option.value === params.get(param)))
+        $(id).value = params.get(param);
+    }
   }
   function activeFilters() {
     return !!(
@@ -528,6 +577,10 @@
         text = "請稍後再試。";
         action = { label: "重新讀取", run: load };
       }
+      if (mode === "date" && date && model.data && !filtered) {
+        title = "這一天，還沒有收錄的新作";
+        text = "使用上方的前一天／後一天，繼續看看其他日期。";
+      }
       $("gamesGrid").append(empty(title, text, action));
     }
     if (mode !== "home" || model.view === "list") revealCards($("gamesGrid"));
@@ -630,14 +683,7 @@
       $("allTags").focus();
     });
   }
-  $("searchInput").value = query.get("q") || "";
-  for (const [id, param] of [
-    ["followersFilter", "min"],
-    ["sortSelect", "sort"],
-  ]) {
-    if ([...$(id).options].some((option) => option.value === query.get(param)))
-      $(id).value = query.get(param);
-  }
+  restoreQueryFilters(query);
   $("searchInput").addEventListener("input", (event) => {
     clearTimeout(searchTimer);
     if (!event.isComposing) searchTimer = setTimeout(changeFilters, 120);
@@ -711,7 +757,7 @@
       upcoming: "未來 45 天 · 至少 5,000 人關注 · 僅列出明確發售日期",
       released: "近 30 天 · 關注人數超過 3,000 · 已確認發售",
       saved: "收藏儲存在此瀏覽器；此處顯示仍在目前公開資料內的遊戲。",
-      date: "至少 5,000 人關注 · 依關注度排序",
+      date: "至少 5,000 人關注 · 僅列出明確發售日期",
       explore: "目前已收錄的待上市遊戲 · 至少 5,000 人關注 · TAG 依 Steam 資料",
     };
     $("scopeNote").textContent = notes[mode] || "";
@@ -720,20 +766,45 @@
       model.savedOnly = false;
     }
     if (mode === "date") {
-      if (date) {
-        const weekday = new Intl.DateTimeFormat("zh-TW", {
-          weekday: "long",
-          timeZone: "Asia/Taipei",
-        }).format(new Date(date + "T12:00:00Z"));
-        $("pageTitle").textContent =
-          `${Number(date.slice(5, 7))} 月 ${Number(date.slice(8))} 日・${weekday}`;
-        $("scopeNote").textContent =
-          `${date.slice(0, 4)} 年 · 至少 5,000 人關注 · 依關注度排序`;
-        $("backCalendar").href = `./index.html?month=${date.slice(0, 7)}`;
-        document.title = `${date} 發售遊戲｜Game Trend Radar`;
-      } else $("pageTitle").textContent = "找不到指定日期";
+      renderDateHeading();
+      for (const [id, direction] of [["prevDate", -1], ["nextDate", 1]]) {
+        $(id).addEventListener("click", (event) => {
+          if (!date || $(id).getAttribute("aria-disabled") === "true") {
+            event.preventDefault();
+            return;
+          }
+          // Preserve native open-in-new-tab behavior and the latest filters.
+          clearTimeout(searchTimer);
+          writeURL();
+          if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+          event.preventDefault();
+          const url = new URL($(id).href);
+          date = url.searchParams.get("date");
+          model.limit = PAGE_SIZE;
+          history.pushState(null, "", url);
+          renderDateHeading();
+          renderExplorer();
+          dateAnimation?.cancel();
+          if (window.RadarMotion?.enabled && $("dateCurrent").animate)
+            dateAnimation = $("dateCurrent").animate(
+              [{ opacity: 0.5, transform: `translateX(${direction * 6}px)` },
+               { opacity: 1, transform: "translateX(0)" }],
+              { duration: 170, easing: "ease-out" },
+            );
+        });
+      }
+      window.addEventListener("popstate", () => {
+        clearTimeout(searchTimer);
+        const params = new URLSearchParams(location.search);
+        date = D.validDate(params.get("date")) ? params.get("date") : null;
+        restoreQueryFilters(params);
+        model.limit = PAGE_SIZE;
+        renderDateHeading();
+        renderExplorer();
+      });
     }
   }
+
   async function load() {
     if (load.running) return;
     load.running = true;
