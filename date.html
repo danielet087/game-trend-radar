@@ -7,19 +7,19 @@
     <meta name="theme-color" content="#3652ed" />
     <meta
       name="description"
-      content="這一天，有哪些值得期待的新作？ Steam 新作關注度、發售月曆與收藏清單，日期以台灣時間為準。"
+      content="逐日查看 Steam 新作發售清單與關注度，切換前後一天或跳轉指定日期。日期以台灣時間為準。"
     />
-    <title>當日發售遊戲｜Game Trend Radar</title>
+    <title>每日發售遊戲｜Game Trend Radar</title>
     <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://shared.akamai.steamstatic.com" crossorigin />
     <link rel="preconnect" href="https://shared.fastly.steamstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
-    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.4.1" />
+    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.4.2" />
     <script src="./assets/radar-data-v1.js?v=3.0.0" defer></script>
     <script src="./assets/radar-storage-v2.js?v=3.0.0" defer></script>
     <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-artwork-v1.js?v=1.0.0" defer></script>
-    <script src="./assets/radar-play-v2.js?v=3.5.0" defer></script>
+    <script src="./assets/radar-play-v2.js?v=3.6.0" defer></script>
   </head>
   <body data-page="date">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -61,33 +61,10 @@
     </header>
     <main class="page-shell" id="mainContent">
       <section class="page-heading date-heading" aria-labelledby="pageTitle">
-        <div class="date-heading-top">
-          <a class="back-link" id="backCalendar" href="./index.html">← 返回發售月曆</a>
-          <p class="eyebrow">YOUR GAME DISCOVERY</p>
-        </div>
+        <a class="back-link" id="backCalendar" href="./index.html">← 返回發售月曆</a>
         <div class="date-heading-main">
-          <nav class="date-switcher" aria-label="逐日瀏覽發售遊戲">
-            <a class="date-step" id="prevDate" aria-disabled="true">
-              <span class="date-step-arrow" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="m13 6-6 6 6 6M7 12h11" /></svg>
-              </span>
-              <span class="date-step-copy">前一天<small class="sr-only" id="prevDateLabel"></small></span>
-            </a>
-            <div class="date-current" id="dateCurrent" role="status" aria-live="polite" aria-atomic="true">
-              <p id="dateWeekday"></p>
-              <h1 id="pageTitle">當日發售遊戲</h1>
-            </div>
-            <a class="date-step date-step-next" id="nextDate" aria-disabled="true">
-              <span class="date-step-arrow" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="m11 6 6 6-6 6M6 12h11" /></svg>
-              </span>
-              <span class="date-step-copy">後一天<small class="sr-only" id="nextDateLabel"></small></span>
-            </a>
-          </nav>
-          <div class="date-heading-copy">
-            <p>這一天，有哪些值得期待的新作？</p>
-            <p class="scope-note" id="scopeNote"></p>
-          </div>
+          <h1 id="pageTitle">每日發售遊戲</h1>
+          <p class="scope-note" id="scopeNote"></p>
         </div>
       </section>
       <div class="data-status" id="dataStatus" role="status">
@@ -110,15 +87,29 @@
       <section
         class="explorer"
         id="releaseCalendar"
-        aria-labelledby="explorerTitle"
+        aria-labelledby="dateTitle"
       >
-        <div class="section-heading">
-          <div>
-            <h2 id="explorerTitle">探索遊戲</h2>
-          </div>
-          <span class="timezone">台灣時間 UTC+8</span>
-        </div>
         <div class="explorer-panel">
+          <div class="date-toolbar">
+            <nav class="date-switcher" aria-label="逐日瀏覽發售遊戲">
+              <a class="date-step" id="prevDate" aria-disabled="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13 6-6 6 6 6M7 12h11" /></svg>
+                <span class="sr-only">前一天 <span id="prevDateLabel"></span></span>
+              </a>
+              <div class="date-current" id="dateCurrent" role="status" aria-live="polite" aria-atomic="true">
+                <h2 id="dateTitle">選擇發售日期</h2>
+                <span class="date-weekday" id="dateWeekday" hidden></span>
+              </div>
+              <a class="date-step date-step-next" id="nextDate" aria-disabled="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 6 6 6-6 6M6 12h11" /></svg>
+                <span class="sr-only">後一天 <span id="nextDateLabel"></span></span>
+              </a>
+            </nav>
+            <label class="date-jump" for="datePicker">
+              <span>跳轉日期</span>
+              <input type="date" id="datePicker" aria-label="跳轉至指定發售日期" min="1900-01-01" max="2199-12-31" />
+            </label>
+          </div>
           <div class="filter-bar">
             <label class="search-box"
               ><svg aria-hidden="true" viewBox="0 0 24 24">

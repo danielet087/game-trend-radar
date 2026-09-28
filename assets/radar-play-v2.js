@@ -356,7 +356,7 @@
     for (const [id, direction] of [["prevDate", -1], ["nextDate", 1]]) {
       const link = $(id);
       const adjacent = date ? D.offsetDate(date, direction) : null;
-      const valid = D.validDate(adjacent);
+      const valid = D.validDate(adjacent) && adjacent >= $("datePicker").min && adjacent <= $("datePicker").max;
       link.hidden = !date;
       link.setAttribute("aria-disabled", String(!valid));
       if (!valid) {
@@ -370,7 +370,9 @@
       link.href = url.pathname + url.search;
       link.removeAttribute("tabindex");
       $(id + "Label").textContent = `${Number(adjacent.slice(5, 7))} / ${Number(adjacent.slice(8))}`;
-      link.setAttribute("aria-label", `${direction < 0 ? "前一天" : "後一天"}：${adjacent.replaceAll("-", "/")}`);
+      const label = `${direction < 0 ? "前一天" : "後一天"}：${adjacent.replaceAll("-", "/")}`;
+      link.setAttribute("aria-label", label);
+      link.title = label;
     }
   }
   function renderDateHeading() {
@@ -378,18 +380,42 @@
       const weekday = new Intl.DateTimeFormat("zh-TW", {
         weekday: "long", timeZone: "Asia/Taipei",
       }).format(new Date(date + "T12:00:00Z"));
-      $("pageTitle").textContent = `${Number(date.slice(5, 7))} 月 ${Number(date.slice(8))} 日`;
-      $("dateWeekday").textContent = `${date.slice(0, 4)} 年・${weekday}`;
+      $("dateTitle").textContent = `${date.slice(0, 4)} 年 ${Number(date.slice(5, 7))} 月 ${Number(date.slice(8))} 日`;
+      $("dateWeekday").textContent = weekday;
       $("backCalendar").href = `./index.html?month=${date.slice(0, 7)}`;
       document.title = `${date} 發售遊戲｜Game Trend Radar`;
     } else {
-      $("pageTitle").textContent = "找不到指定日期";
-      $("dateWeekday").textContent = "請返回月曆選擇日期";
+      $("dateTitle").textContent = "選擇發售日期";
+      $("dateWeekday").textContent = "";
       $("backCalendar").href = "./index.html";
       document.title = "找不到指定日期｜Game Trend Radar";
     }
+    $("dateWeekday").hidden = !date;
+    $("datePicker").value = date || "";
     $("dateCurrent").classList.toggle("date-invalid", !date);
     refreshDateLinks();
+  }
+  function changeDate(nextDate) {
+    if (!D.validDate(nextDate)) return;
+    clearTimeout(searchTimer);
+    writeURL();
+    if (nextDate === date) return;
+    const direction = date && nextDate < date ? -1 : 1;
+    const url = new URL(location.href);
+    date = nextDate;
+    url.searchParams.set("date", date);
+    url.hash = "";
+    history.pushState(null, "", url);
+    model.limit = PAGE_SIZE;
+    renderDateHeading();
+    renderExplorer();
+    dateAnimation?.cancel();
+    if (window.RadarMotion?.enabled && $("dateCurrent").animate)
+      dateAnimation = $("dateCurrent").animate(
+        [{ opacity: 0.5, transform: `translateX(${direction * 6}px)` },
+         { opacity: 1, transform: "translateX(0)" }],
+        { duration: 170, easing: "ease-out" },
+      );
   }
   function restoreQueryFilters(params) {
     $("searchInput").value = params.get("q") || "";
@@ -560,7 +586,7 @@
         action = { label: "重新讀取", run: load };
       } else if (mode === "date" && !date) {
         title = "找不到指定日期";
-        text = "日期格式有誤，請回到月曆選擇日期。";
+        text = "請使用上方「跳轉日期」選擇有效日期，或返回發售月曆。";
       } else if (filtered) {
         title = "雷達暫時沒有收到訊號";
         text = "試試其他關鍵字，或清除篩選看看所有遊戲。";
@@ -579,7 +605,7 @@
       }
       if (mode === "date" && date && model.data && !filtered) {
         title = "這一天，還沒有收錄的新作";
-        text = "使用上方的前一天／後一天，繼續看看其他日期。";
+        text = "使用上方的前一天／後一天，或跳轉日期，繼續看看其他新作。";
       }
       $("gamesGrid").append(empty(title, text, action));
     }
@@ -774,25 +800,22 @@
             return;
           }
           // Preserve native open-in-new-tab behavior and the latest filters.
-          clearTimeout(searchTimer);
-          writeURL();
-          if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+          if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+            clearTimeout(searchTimer);
+            writeURL();
+            return;
+          }
           event.preventDefault();
-          const url = new URL($(id).href);
-          date = url.searchParams.get("date");
-          model.limit = PAGE_SIZE;
-          history.pushState(null, "", url);
-          renderDateHeading();
-          renderExplorer();
-          dateAnimation?.cancel();
-          if (window.RadarMotion?.enabled && $("dateCurrent").animate)
-            dateAnimation = $("dateCurrent").animate(
-              [{ opacity: 0.5, transform: `translateX(${direction * 6}px)` },
-               { opacity: 1, transform: "translateX(0)" }],
-              { duration: 170, easing: "ease-out" },
-            );
+          changeDate(D.offsetDate(date, direction));
         });
       }
+      $("datePicker").addEventListener("change", (event) => {
+        if (!event.target.validity.valid || !D.validDate(event.target.value)) {
+          event.target.value = date || "";
+          return;
+        }
+        changeDate(event.target.value);
+      });
       window.addEventListener("popstate", () => {
         clearTimeout(searchTimer);
         const params = new URLSearchParams(location.search);

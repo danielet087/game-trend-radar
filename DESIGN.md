@@ -11,7 +11,7 @@ An original, content-first game discovery interface. The calendar opens immediat
 
 ## Interaction
 
-- The single-day page uses an unframed date headline with compact circular previous/next controls. The year and weekday sit above the date, with supporting copy alongside on wide screens and below on phones. Adjacent-day navigation reuses the loaded catalog and retains filters and browser history.
+- The single-day page is titled 每日發售遊戲. A lavender toolbar groups the complete year/month/day between circular previous/next controls, with a weekday badge alongside (below on phones) and a native date picker for direct jumps. It has no current-month button or calendar/list switch. Both stepping and jumping reuse the loaded catalog, preserve filters and browser history, and keep the date picker and return-to-calendar month synchronized.
 
 - The home calendar opens first. Previous/next buttons, the current-month button and a native month picker keep the calendar and URL synchronized. Phones default to a card list with an explicit calendar/list switch.
 - The entire card opens the site's `game.html?appid=...` profile. Favorite and visible Steam-store links remain separate controls above the card link; Steam opens in a new tab.
