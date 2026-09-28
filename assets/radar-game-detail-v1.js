@@ -12,7 +12,6 @@
   const today = D.todayInTaipei();
   let currentGame = null,
     candidates = [],
-    selectedTag = "",
     tagsExpanded = false;
   let feedbackTimer;
   const node = (tag, className = "", text = null) => {
@@ -193,11 +192,7 @@
     const title = node("strong", "", game.name);
     title.title = game.name;
     const tags = node("div", "match-tags");
-    const shared = [...game.sharedTags].sort(
-      (a, b) =>
-        Number(R.key(b) === R.key(selectedTag)) -
-        Number(R.key(a) === R.key(selectedTag)),
-    );
+    const shared = game.sharedTags;
     if (basis === "date") tags.append(node("span", "", "發售時間相近"));
     else
       for (const tag of shared.slice(0, 2)) {
@@ -217,26 +212,11 @@
     a.append(cover, copy);
     return a;
   }
-  function renderRelated(animate = false) {
-    const result = R.recommendations(currentGame, candidates, selectedTag);
-    $("allSimilar").setAttribute("aria-pressed", String(!selectedTag));
-    document
-      .querySelectorAll("#gameTags button, #heroTags button")
-      .forEach((button) =>
-        button.setAttribute(
-          "aria-pressed",
-          String(R.key(button.dataset.tag) === R.key(selectedTag)),
-        ),
-      );
-    $("recommendationSummary").textContent = selectedTag
-      ? `${R.label(selectedTag)} · 找到 ${result.count} 款其他遊戲`
-      : result.basis === "shared"
-        ? `共同喜好，串起 ${result.count} 款新發現`
-        : "發售日相近，也可以看看";
-    $("tagExplore").href = R.url(selectedTag);
-    $("tagExplore").textContent = selectedTag
-      ? `探索「${R.label(selectedTag)}」↗`
-      : "看更多新作 ↗";
+  function renderRelated() {
+    const result = R.recommendations(currentGame, candidates);
+    $("recommendationSummary").textContent = result.basis === "shared"
+      ? `共同喜好，串起 ${result.count} 款新發現`
+      : "發售日相近，也可以看看";
     const grid = $("gameRelatedGrid");
     grid.replaceChildren(
       ...result.games.map((game) => relatedCard(game, result.basis)),
@@ -245,124 +225,63 @@
       const empty = node("div", "empty-state");
       empty.append(
         node("span", "empty-symbol", "◎"),
-        node(
-          "h3",
-          "",
-          selectedTag ? "這個喜好，還在等待下一款" : "下一款新發現，正在路上",
-        ),
-        node(
-          "p",
-          "",
-          selectedTag
-            ? `目前沒有其他已收錄的「${R.label(selectedTag)}」遊戲，試試另一個 TAG。`
-            : "目前沒有其他符合條件的遊戲，之後有新作就會出現在這裡。",
-        ),
+        node("h3", "", "下一款新發現，正在路上"),
+        node("p", "", "目前沒有其他符合條件的遊戲，之後有新作就會出現在這裡。"),
       );
-      if (selectedTag) {
-        const reset = node("button", "button secondary", "看看其他相近遊戲");
-        reset.type = "button";
-        reset.addEventListener("click", () => {
-          selectTag("");
-          $("allSimilar").focus();
-        });
-        empty.append(reset);
-      }
       grid.append(empty);
     }
-    $("recommendationBasis").textContent =
-      result.basis === "date"
-        ? "尚無共同 TAG 可供比對，改依發售日接近程度推薦。"
-        : `依共同 TAG 數量排序，同分時優先發售日接近的遊戲。${result.count > result.games.length ? `先呈現 ${result.games.length} 款。` : ""}`;
+    $("recommendationBasis").textContent = result.basis === "date"
+      ? "尚無共同 TAG 可供比對，改依發售日接近程度推薦。"
+      : `依共同 TAG 數量排序，同分時優先發售日接近的遊戲。${result.count > result.games.length ? `先呈現 ${result.games.length} 款。` : ""}`;
     updateTagVisibility();
-    if (animate && window.RadarMotion?.enabled && grid.animate)
-      grid.animate(
-        [
-          { opacity: 0.3, transform: "translateY(8px)" },
-          { opacity: 1, transform: "translateY(0)" },
-        ],
-        { duration: 240, easing: "ease-out" },
-      );
   }
   function updateTagVisibility() {
-    document.querySelectorAll("#gameTags button").forEach((button, index) => {
-      button.hidden =
-        !tagsExpanded &&
-        index >= 8 &&
-        R.key(button.dataset.tag) !== R.key(selectedTag);
+    document.querySelectorAll("#gameTags a").forEach((link, index) => {
+      link.hidden = !tagsExpanded && index >= 8;
     });
     $("showTags").setAttribute("aria-expanded", String(tagsExpanded));
     $("showTags").textContent = tagsExpanded
       ? "收合 TAG −"
       : `展開全部 ${currentGame.tags.length} 個 TAG ＋`;
   }
-  function selectTag(tag) {
-    selectedTag = tag;
-    const url = new URL(location.href);
-    if (tag) url.searchParams.set("tag", tag);
-    else url.searchParams.delete("tag");
-    history.replaceState(null, "", url);
-    renderRelated(true);
-  }
-  $("allSimilar").addEventListener("click", () => selectTag(""));
   $("showTags").addEventListener("click", () => {
     tagsExpanded = !tagsExpanded;
     updateTagVisibility();
   });
+  function tagLink(tag, className) {
+    const link = node("a", className);
+    link.href = R.url(tag);
+    link.dataset.tag = tag;
+    link.setAttribute("aria-label", `探索「${R.label(tag)}」遊戲`);
+    link.title = tag;
+    return link;
+  }
   function setupTags(game) {
-    selectedTag =
-      game.tags.find((tag) => R.key(tag) === R.key(new URLSearchParams(location.search).get("tag"))) || "";
-    tagsExpanded = game.tags.findIndex((tag) => tag === selectedTag) >= 8;
     $("gameTagPreview").hidden = !game.tags.length;
-    $("gameIntro").hidden = !game.tags.length && !game.description;
+    $("gameIntro").hidden = false;
     $("heroTags").replaceChildren(
       ...game.tags.slice(0, 4).map((tag) => {
-        const button = node("button", "hero-tag");
-        button.type = "button";
-        button.dataset.tag = tag;
-        button.setAttribute("aria-label", `用 ${R.label(tag)} 找相似遊戲`);
-        button.setAttribute("aria-controls", "gameRelatedGrid");
-        button.title = tag;
-        const arrow = node("span", "", "↘");
+        const link = tagLink(tag, "hero-tag");
+        const arrow = node("span", "", "↗");
         arrow.setAttribute("aria-hidden", "true");
-        button.append(node("span", "", R.label(tag)), arrow);
-        button.addEventListener("click", () => {
-          selectTag(tag);
-          const target = [...$("gameTags").querySelectorAll("button")].find(
-            (entry) => entry.dataset.tag === tag,
-          );
-          target?.focus({ preventScroll: true });
-          $("gameDiscovery").scrollIntoView({
-            behavior: window.RadarMotion?.enabled ? "smooth" : "auto",
-            block: "start",
-          });
-        });
-        return button;
+        link.append(node("span", "", R.label(tag)), arrow);
+        return link;
       }),
     );
     const counts = new Map(
-      R.catalog(candidates.filter((row) => row.appid !== game.appid)).map(
-        (entry) => [R.key(entry.tag), entry.count],
-      ),
+      R.catalog(candidates.filter((row) => row.date >= today)).map((entry) => [R.key(entry.tag), entry.count]),
     );
     $("gameTags").replaceChildren(
       ...game.tags.map((tag) => {
-        const count = counts.get(R.key(tag)) || 0;
-        const button = node("button", "tag-option");
-        button.type = "button";
-        button.dataset.tag = tag;
-        button.setAttribute("aria-pressed", "false");
-        button.setAttribute(
-          "aria-label",
-          `${R.label(tag)}，${count} 款其他遊戲`,
-        );
-        button.title = tag;
-        const total = node("small", "", String(count));
-        total.setAttribute("aria-hidden", "true");
-        button.append(node("span", "", R.label(tag)), total);
-        button.addEventListener("click", () =>
-          selectTag(R.key(selectedTag) === R.key(tag) ? "" : tag),
-        );
-        return button;
+        const count = counts.get(R.key(tag));
+        const link = tagLink(tag, "tag-option");
+        link.append(node("span", "", R.label(tag)));
+        if (count !== undefined) {
+          const total = node("small", "", `${count} 款 ↗`);
+          total.setAttribute("aria-hidden", "true");
+          link.append(total);
+        }
+        return link;
       }),
     );
     $("showTags").hidden = game.tags.length <= 8;
@@ -386,8 +305,10 @@
     $("gameTitle").textContent = game.name;
     $("gameEnglish").hidden = !game.nameEn || game.nameEn === game.name;
     $("gameEnglish").textContent = game.nameEn === game.name ? "" : game.nameEn;
-    $("gameDescription").textContent = game.description;
-    $("gameDescription").hidden = !game.description;
+    $("gameDescription").textContent = game.description || "繁體中文遊戲介紹整理中。";
+    $("gameDescription").hidden = false;
+    $("gameDescription").lang = "zh-Hant";
+    $("descriptionSource").hidden = !game.description || game.descriptionSource !== "editorial_zh_tw";
     $("gameGenres").replaceChildren(
       ...game.genres
         .slice(0, 4)

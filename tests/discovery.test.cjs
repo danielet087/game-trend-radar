@@ -3,6 +3,18 @@ const assert = require("node:assert/strict");
 const R = require("../assets/radar-discovery-v1.js");
 const D = require("../assets/radar-data-v1.js");
 
+test("descriptions require their own Traditional Chinese locale and cannot borrow stale locale markers", () => {
+  const data = { games: [{ appid: 1 }], recent: [] };
+  const preview = { games: [{ appid: 1, short_description: "舊的繁中介紹", short_description_language: "zh-TW" }] };
+  const english = { games: [{ appid: 1, short_description: "New English source" }] };
+  assert.equal(R.enrich(data, english, preview).games[0].description, "");
+  const translated = { games: [{ appid: 1, short_description: "本站繁中翻譯", short_description_language: "zh-TW", short_description_source: "editorial_zh_tw" }] };
+  const game = R.enrich(data, translated, preview).games[0];
+  assert.equal(game.description, "本站繁中翻譯");
+  assert.equal(game.descriptionSource, "editorial_zh_tw");
+  assert.equal(R.enrich(data, { games: [{ appid: 1, short_description: "", short_description_language: "" }] }, preview).games[0].description, "");
+});
+
 test("metadata enrichment keeps verified records and respects official empty values", () => {
   const official = {
     games: [
@@ -13,7 +25,8 @@ test("metadata enrichment keeps verified records and respects official empty val
         followers: 6000,
         tags: [],
         genres: ["RPG"],
-        short_description: "Official",
+        short_description: "官方繁體中文介紹",
+        short_description_language: "zh-TW",
       },
       {
         appid: 2,
@@ -33,7 +46,7 @@ test("metadata enrichment keeps verified records and respects official empty val
   const preview = {
     games: [
       { appid: 1, tags: ["Stale Tag"], short_description: "Old" },
-      { appid: 2, tags: ["Co-op"], short_description: "Published fallback" },
+      { appid: 2, tags: ["Co-op"], short_description: "已發布繁中備援介紹", short_description_language: "zh-TW" },
       {
         appid: 4,
         tags: ["Adventure"],
@@ -49,9 +62,9 @@ test("metadata enrichment keeps verified records and respects official empty val
     [1, 2],
   );
   assert.deepEqual(result.games[0].tags, []);
-  assert.equal(result.games[0].description, "Official");
+  assert.equal(result.games[0].description, "官方繁體中文介紹");
   assert.deepEqual(result.games[1].tags, ["Co-op"]);
-  assert.equal(result.games[1].description, "Published fallback");
+  assert.equal(result.games[1].description, "已發布繁中備援介紹");
   assert.equal(normalized.games[0].tags, undefined);
   assert.equal(result.games[0].followers, normalized.games[0].followers);
   assert.equal(result.games[0].date, normalized.games[0].date);
@@ -92,7 +105,8 @@ test("recent releases retain metadata from the published month catalog", () => {
         release_start: "2026-09-20",
         tags: ["Building"],
         genres: [],
-        short_description: "Current",
+        short_description: "目前的繁中介紹",
+        short_description_language: "zh-TW",
       },
     ],
   };
@@ -102,7 +116,7 @@ test("recent releases retain metadata from the published month catalog", () => {
   };
   const data = R.enrich(D.datasets(official, preview), official, preview);
   assert.deepEqual(data.recent[0].tags, ["Building"]);
-  assert.equal(data.recent[0].description, "Current");
+  assert.equal(data.recent[0].description, "目前的繁中介紹");
 });
 
 test("catalog counts each game once per exact tag and supports original plus translated search labels", () => {

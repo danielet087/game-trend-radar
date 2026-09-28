@@ -59,6 +59,7 @@
     Cute: "可愛",
     Survival: "生存",
     Funny: "幽默",
+    "Dark Humor": "黑色幽默",
     "Hand-drawn": "手繪",
     Anime: "動畫風格",
     "Turn-Based Combat": "回合制戰鬥",
@@ -252,15 +253,18 @@
       // Explicit empty metadata in the official record must not resurrect stale preview values.
       const field = (name) =>
         source && Object.hasOwn(source, name) ? source[name] : backup?.[name];
-      const description = field("short_description");
+      const descriptionRecord = source && Object.hasOwn(source, "short_description") ? source : backup;
+      const description = descriptionRecord?.short_description;
+      const isTraditional = descriptionRecord?.short_description_language === "zh-TW";
       return {
         ...game,
         tags: labels(field("tags")),
         genres: labels(field("genres")),
         description:
-          typeof description === "string"
+          isTraditional && typeof description === "string"
             ? description.trim().slice(0, 4000)
             : "",
+        descriptionSource: isTraditional ? descriptionRecord.short_description_source || "" : "",
       };
     };
     return {

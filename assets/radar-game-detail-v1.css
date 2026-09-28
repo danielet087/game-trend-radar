@@ -190,10 +190,12 @@ body[data-game-theme="twilight"] {
     background 0.2s,
     color 0.2s;
 }
-.hero-tag:hover {
+.hero-tag:hover,
+.hero-tag:focus-visible {
   transform: translateY(-3px) rotate(-2deg);
 }
-.hero-tag[aria-pressed="true"] {
+.hero-tag:hover,
+.hero-tag:focus-visible {
   background: var(--game-accent);
   color: white;
 }
@@ -617,16 +619,11 @@ body[data-page="game"] .button.primary:hover {
     border-color 0.2s;
   overflow-wrap: anywhere;
 }
-.tag-option:hover {
+.tag-option:hover,
+.tag-option:focus-visible {
   border-color: var(--game-accent);
   transform: translateX(2px);
   background: white;
-}
-.tag-option[aria-pressed="true"] {
-  background: var(--game-accent);
-  color: white;
-  border-color: var(--game-accent);
-  box-shadow: 0 3px 0 var(--game-ink);
 }
 .tag-option small {
   flex-shrink: 0;
@@ -636,9 +633,6 @@ body[data-page="game"] .button.primary:hover {
   font:
     700 10px/1.6 Arial,
     sans-serif;
-}
-.tag-option[aria-pressed="true"] small {
-  background: #ffffff25;
 }
 .tag-all {
   font-weight: 750;
@@ -1325,3 +1319,14 @@ body.motion-on .art-dialog[open] {
 }
 
 .related-loading { grid-column: 1 / -1; min-height: 180px; padding: 28px; border: 1px dashed var(--game-edge); border-radius: 18px; color: var(--muted); line-height: 1.8; font-size: 13px; }
+
+.hero-tag,
+.tag-option {
+  text-decoration: none;
+}
+.description-source {
+  margin: 8px 0 0;
+  color: var(--game-accent);
+  font-size: 11px;
+  line-height: 1.6;
+}
