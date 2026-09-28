@@ -23,13 +23,13 @@
     />
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
     <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.4.2" />
-    <link rel="stylesheet" href="./assets/radar-game-detail-v1.css?v=3.3.0" />
+    <link rel="stylesheet" href="./assets/radar-game-detail-v1.css?v=3.4.0" />
     <script src="./assets/radar-data-v1.js?v=3.0.0" defer></script>
     <script src="./assets/radar-storage-v2.js?v=3.0.0" defer></script>
     <script src="./assets/radar-discovery-v1.js?v=1.2.0" defer></script>
     <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-artwork-v1.js?v=1.0.0" defer></script>
-    <script src="./assets/radar-game-detail-v1.js?v=3.3.0" defer></script>
+    <script src="./assets/radar-game-detail-v1.js?v=3.4.0" defer></script>
   </head>
   <body data-page="game">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -196,21 +196,18 @@
             <div>
               <p class="eyebrow">FOLLOW YOUR CURIOSITY</p>
               <h2 id="gameRelatedTitle">喜歡這種感覺？再找一款。</h2>
-              <p>從這款遊戲的 TAG，找到相同元素的新作。</p>
+              <p>選一個 TAG，先看看 3 款相近遊戲；想找更多，再到 TAG 頁探索。</p>
             </div>
-            <a class="discovery-all" href="./explore.html"
-              >探索所有 TAG <span aria-hidden="true">↗</span></a
-            >
           </div>
           <div class="discovery-layout">
-            <aside class="game-tag-panel" aria-label="探索遊戲標籤">
-              <p class="tag-panel-label">這款遊戲的關鍵字</p>
-              <a class="tag-option tag-all" href="./explore.html">探索所有 TAG <span aria-hidden="true">↗</span></a>
+            <aside class="game-tag-panel" aria-label="依 TAG 預覽相近遊戲">
+              <p class="tag-panel-label">挑個 TAG，預覽相近遊戲</p>
+              <button class="tag-option tag-all" id="allRelatedTags" type="button" data-tag="" aria-pressed="true" aria-controls="gameRelatedGrid"><span>綜合推薦</span></button>
               <div
                 class="game-tags"
                 id="gameTags"
                 role="group"
-                aria-label="前往對應 TAG 探索頁"
+                aria-label="選擇 TAG 預覽相近遊戲"
               ></div>
               <button
                 class="tags-expand"
@@ -233,9 +230,10 @@
                   role="status"
                   aria-live="polite"
                 ></p>
-                <a class="text-link" id="tagExplore" href="./explore.html"
-                  >看更多新作 ↗</a
-                >
+                <a class="discovery-all" id="tagExplore" href="./explore.html">
+                  <span id="tagExploreLabel">探索所有 TAG</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
               </div>
               <div class="game-related-grid" id="gameRelatedGrid"></div>
               <p class="recommendation-basis" id="recommendationBasis"></p>

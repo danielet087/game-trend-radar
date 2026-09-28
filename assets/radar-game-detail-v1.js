@@ -12,7 +12,9 @@
   const today = D.todayInTaipei();
   let currentGame = null,
     candidates = [],
-    tagsExpanded = false;
+    tagsExpanded = false,
+    selectedTag = "",
+    recommendationsReady = false;
   let feedbackTimer;
   const node = (tag, className = "", text = null) => {
     const element = document.createElement(tag);
@@ -192,7 +194,9 @@
     const title = node("strong", "", game.name);
     title.title = game.name;
     const tags = node("div", "match-tags");
-    const shared = game.sharedTags;
+    const shared = selectedTag
+      ? [selectedTag, ...game.sharedTags.filter((tag) => R.key(tag) !== R.key(selectedTag))]
+      : game.sharedTags;
     if (basis === "date") tags.append(node("span", "", "發售時間相近"));
     else
       for (const tag of shared.slice(0, 2)) {
@@ -212,11 +216,17 @@
     a.append(cover, copy);
     return a;
   }
-  function renderRelated() {
-    const result = R.recommendations(currentGame, candidates);
-    $("recommendationSummary").textContent = result.basis === "shared"
-      ? `共同喜好，串起 ${result.count} 款新發現`
-      : "發售日相近，也可以看看";
+  function renderRelated(animate = false) {
+    const result = R.recommendations(currentGame, candidates, selectedTag, 3);
+    $("recommendationSummary").textContent = selectedTag
+      ? `「${R.label(selectedTag)}」・${result.count} 款相近遊戲`
+      : result.basis === "shared"
+        ? `共同喜好，串起 ${result.count} 款新發現`
+        : "發售日相近，也可以看看";
+    $("tagExplore").href = R.url(selectedTag);
+    $("tagExploreLabel").textContent = selectedTag
+      ? `探索「${R.label(selectedTag)}」TAG`
+      : "探索所有 TAG";
     const grid = $("gameRelatedGrid");
     grid.replaceChildren(
       ...result.games.map((game) => relatedCard(game, result.basis)),
@@ -225,19 +235,38 @@
       const empty = node("div", "empty-state");
       empty.append(
         node("span", "empty-symbol", "◎"),
-        node("h3", "", "下一款新發現，正在路上"),
-        node("p", "", "目前沒有其他符合條件的遊戲，之後有新作就會出現在這裡。"),
+        node("h3", "", selectedTag ? "這個 TAG 還沒有其他相近遊戲" : "下一款新發現，正在路上"),
+        node("p", "", selectedTag
+          ? "換個 TAG 試試，或選「綜合推薦」看看其他新作。"
+          : "目前沒有其他符合條件的遊戲，之後有新作就會出現在這裡。"),
       );
       grid.append(empty);
     }
-    $("recommendationBasis").textContent = result.basis === "date"
+    $("recommendationBasis").textContent = !result.games.length ? "" : result.basis === "date"
       ? "尚無共同 TAG 可供比對，改依發售日接近程度推薦。"
-      : `依共同 TAG 數量排序，同分時優先發售日接近的遊戲。${result.count > result.games.length ? `先呈現 ${result.games.length} 款。` : ""}`;
+      : `${selectedTag ? `符合「${R.label(selectedTag)}」的遊戲，` : ""}依共同 TAG 數量排序，同分時優先發售日接近的遊戲。${result.count > result.games.length ? `先呈現 ${result.games.length} 款。` : ""}`;
+    document.querySelectorAll(".game-tag-panel .tag-option").forEach((button) => {
+      button.setAttribute("aria-pressed", String(R.key(button.dataset.tag) === R.key(selectedTag)));
+      button.disabled = !recommendationsReady;
+    });
     updateTagVisibility();
+    if (animate && window.RadarMotion?.enabled && grid.animate) {
+      grid.getAnimations?.().forEach((animation) => animation.cancel());
+      grid.animate(
+        [{ opacity: 0.55, transform: "translateY(7px)" }, { opacity: 1, transform: "translateY(0)" }],
+        { duration: 220, easing: "ease-out" },
+      );
+    }
   }
+  function selectTag(tag) {
+    if (!recommendationsReady || selectedTag === tag) return;
+    selectedTag = tag;
+    renderRelated(true);
+  }
+  $("allRelatedTags").addEventListener("click", () => selectTag(""));
   function updateTagVisibility() {
-    document.querySelectorAll("#gameTags a").forEach((link, index) => {
-      link.hidden = !tagsExpanded && index >= 8;
+    document.querySelectorAll("#gameTags button").forEach((button, index) => {
+      button.hidden = !tagsExpanded && index >= 8 && button.dataset.tag !== selectedTag;
     });
     $("showTags").setAttribute("aria-expanded", String(tagsExpanded));
     $("showTags").textContent = tagsExpanded
@@ -269,19 +298,24 @@
       }),
     );
     const counts = new Map(
-      R.catalog(candidates.filter((row) => row.date >= today)).map((entry) => [R.key(entry.tag), entry.count]),
+      R.catalog(candidates.filter((row) => row.appid !== game.appid)).map((entry) => [R.key(entry.tag), entry.count]),
     );
     $("gameTags").replaceChildren(
       ...game.tags.map((tag) => {
-        const count = counts.get(R.key(tag));
-        const link = tagLink(tag, "tag-option");
-        link.append(node("span", "", R.label(tag)));
-        if (count !== undefined) {
-          const total = node("small", "", `${count} 款 ↗`);
+        const count = counts.get(R.key(tag)) || 0;
+        const button = node("button", "tag-option");
+        button.type = "button";
+        button.dataset.tag = tag;
+        button.setAttribute("aria-controls", "gameRelatedGrid");
+        button.setAttribute("aria-label", `預覽「${R.label(tag)}」的相近遊戲${recommendationsReady ? `，共 ${count} 款` : ""}`);
+        button.append(node("span", "", R.label(tag)));
+        if (recommendationsReady) {
+          const total = node("small", "", `${count} 款`);
           total.setAttribute("aria-hidden", "true");
-          link.append(total);
+          button.append(total);
         }
-        return link;
+        button.addEventListener("click", () => selectTag(tag));
+        return button;
       }),
     );
     $("showTags").hidden = game.tags.length <= 8;
@@ -292,6 +326,8 @@
   function render(game, data, pending = false) {
     const unchangedArt = currentGame?.art === game.art && currentGame?.art2x === game.art2x;
     currentGame = game;
+    recommendationsReady = !pending;
+    if (selectedTag && !R.hasTag(game, selectedTag)) selectedTag = "";
     candidates = D.unique([
       ...data.games.filter((row) => row.date >= today),
       ...D.selectGames(data, "released", today),

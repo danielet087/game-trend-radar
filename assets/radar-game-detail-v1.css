@@ -563,13 +563,14 @@ body[data-page="game"] .button.primary:hover {
 }
 .discovery-all {
   display: inline-flex;
-  flex-shrink: 0;
+  max-width: 100%;
+  min-height: 44px;
   align-items: center;
   gap: 12px;
   padding: 12px 15px;
   border: 1px solid var(--game-edge);
-  background: var(--game-light);
-  color: var(--game-accent);
+  background: var(--game-accent);
+  color: white;
   border-radius: 11px;
   font-size: 11px;
   font-weight: 750;
@@ -577,7 +578,14 @@ body[data-page="game"] .button.primary:hover {
     transform 0.2s,
     box-shadow 0.2s;
 }
-.discovery-all:hover {
+.discovery-all > span:first-child {
+  overflow-wrap: anywhere;
+}
+.discovery-all > span:last-child {
+  flex-shrink: 0;
+}
+.discovery-all:hover,
+.discovery-all:focus-visible {
   transform: translateY(-2px);
   box-shadow: 0 4px 0 var(--game-edge);
 }
@@ -632,6 +640,23 @@ body[data-page="game"] .button.primary:hover {
   transform: translateX(2px);
   background: white;
 }
+.tag-option[aria-pressed="true"] {
+  border-color: var(--game-accent);
+  background: var(--game-accent);
+  color: white;
+  box-shadow: 0 3px 0 var(--game-edge);
+}
+.tag-option[aria-pressed="true"] small {
+  background: #ffffff26;
+}
+.tag-option[aria-pressed="true"] > span:first-child::before {
+  content: "✓";
+  margin-right: 6px;
+}
+.tag-option:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
 .tag-option small {
   flex-shrink: 0;
   padding: 1px 5px;
@@ -675,13 +700,6 @@ body[data-page="game"] .button.primary:hover {
   font-weight: 700;
   color: var(--game-ink);
   line-height: 1.6;
-}
-.recommendation-heading .text-link {
-  color: var(--game-accent);
-  font-size: 11px;
-  padding: 5px 0;
-  white-space: normal;
-  overflow-wrap: anywhere;
 }
 .game-related-grid {
   display: grid;
@@ -794,6 +812,7 @@ body[data-page="game"] .button.primary:hover {
   line-height: 1.9;
 }
 .game-related-grid .empty-state {
+  grid-column: 1 / -1;
   background: #fffaf4;
   min-height: 290px;
 }
