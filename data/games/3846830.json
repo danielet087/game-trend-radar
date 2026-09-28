@@ -44,9 +44,9 @@
     "Singleplayer",
     "Gore"
   ],
-  "content_enriched_at": "2026-09-28T01:59:42Z",
+  "content_enriched_at": "2026-09-28T04:26:45Z",
   "content_enrichment_source": "Steam Store Browse + appdetails + public Store tags",
-  "content_enrichment_version": 2,
+  "content_enrichment_version": 4,
   "small_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3846830/3aac12897252e0b0726d8a882a90ed3c83a0ccfa/capsule_231x87.jpg?t=1789489801",
   "storage_version": 2,
   "display_name": "全軍破敵：幕府將軍2 完整版",
@@ -63,10 +63,42 @@
   "main_capsule_image_2x": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3846830/9b5a02f97947c4fc7d8b0d5f8f1a28d32bb34d2d/capsule_616x353_2x.jpg?t=1789489801",
   "artwork_checked_at": "2026-09-28T01:59:42Z",
   "tags_fetch_status": "ok",
-  "tags_checked_at": "2026-09-28T01:59:42Z",
+  "tags_checked_at": "2026-09-28T04:26:45Z",
   "content_enrichment_signature": "3846830:6859:2026-10-14",
   "short_description_en": "Unite Japan and become Shogun in the updated, enhanced and complete edition of Total War: SHOGUN 2. Build alliances, sabotage your enemies and outsmart your rival clans in a seamless blend of turn-based empire building and real-time battles.",
   "short_description_language": "zh-TW",
   "short_description_source": "steam_tchinese",
-  "description_checked_at": "2026-09-28T03:07:17Z"
+  "description_checked_at": "2026-09-28T03:07:17Z",
+  "genres_fetch_status": "ok",
+  "tag_ids": {
+    "Strategy": 9,
+    "Grand Strategy": 4364,
+    "RTS": 1676,
+    "Turn-Based Strategy": 1741,
+    "Historical": 3987,
+    "Multiplayer": 3859,
+    "Violent": 4667,
+    "Singleplayer": 4182,
+    "Gore": 4345
+  },
+  "tag_labels_zh_tw": {
+    "Strategy": "策略",
+    "Grand Strategy": "大戰略",
+    "RTS": "即時策略",
+    "Turn-Based Strategy": "回合制策略",
+    "Historical": "歷史",
+    "Multiplayer": "多人",
+    "Violent": "暴力",
+    "Singleplayer": "單人",
+    "Gore": "鮮血"
+  },
+  "tag_labels_language": "zh-TW",
+  "tags_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
+  "tag_labels_source": "https://api.steampowered.com/IStoreService/GetTagList/v1/?language=tchinese",
+  "genre_labels_zh_tw": {
+    "Strategy": "策略"
+  },
+  "genre_labels_language": "zh-TW",
+  "genres_source": "https://store.steampowered.com/api/appdetails?appids=3846830&cc=TW&l=tchinese",
+  "genres_checked_at": "2026-09-28T04:26:45Z"
 }

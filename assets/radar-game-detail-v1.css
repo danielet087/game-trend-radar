@@ -130,9 +130,16 @@ body[data-game-theme="twilight"] {
 }
 .game-genres {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 7px;
   margin-top: 17px;
+}
+.game-genres-label {
+  margin-right: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--game-accent);
 }
 .game-genres span {
   padding: 5px 10px;

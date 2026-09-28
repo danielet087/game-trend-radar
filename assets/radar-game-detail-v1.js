@@ -310,9 +310,10 @@
     $("gameDescription").lang = "zh-Hant";
     $("descriptionSource").hidden = !game.description || game.descriptionSource !== "editorial_zh_tw";
     $("gameGenres").replaceChildren(
+      node("small", "game-genres-label", "遊戲類型"),
       ...game.genres
         .slice(0, 4)
-        .map((genre) => node("span", "", R.label(genre))),
+        .map((genre) => node("span", "", R.genreLabel(genre))),
     );
     $("gameGenres").hidden = !game.genres.length;
     $("gameLanguageBadge").replaceChildren(

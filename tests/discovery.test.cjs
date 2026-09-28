@@ -3,6 +3,22 @@ const assert = require("node:assert/strict");
 const R = require("../assets/radar-discovery-v1.js");
 const D = require("../assets/radar-data-v1.js");
 
+test("official Taiwan labels override fallback translations without changing tag identity or genre labels", () => {
+  const data = { games: [{ appid: 1 }], recent: [] };
+  const source = { games: [{ appid: 1, tags: ["Artificial Intelligence", "Capitalism", "Indie"], genres: ["Indie"],
+    tag_labels_zh_tw: { "Artificial Intelligence": "人工智慧", Capitalism: "資本主義", Indie: "獨立" },
+    genre_labels_zh_tw: { Indie: "獨立製作" } }] };
+  const game = R.enrich(data, source, null).games[0];
+  assert.deepEqual(game.tags, source.games[0].tags);
+  assert.equal(R.label("Artificial Intelligence"), "人工智慧");
+  assert.equal(R.label("Capitalism"), "資本主義");
+  assert.equal(R.label("Indie"), "獨立");
+  assert.equal(R.genreLabel("Indie"), "獨立製作");
+  assert.equal(R.hasTag(game, "artificial intelligence"), true);
+  assert.equal(R.catalog([game])[0].tag, "Artificial Intelligence");
+  assert.equal(R.url("Artificial Intelligence"), "./explore.html?tag=Artificial+Intelligence");
+});
+
 test("descriptions require their own Traditional Chinese locale and cannot borrow stale locale markers", () => {
   const data = { games: [{ appid: 1 }], recent: [] };
   const preview = { games: [{ appid: 1, short_description: "舊的繁中介紹", short_description_language: "zh-TW" }] };

@@ -216,7 +216,17 @@
   const translated = new Map(
     Object.entries(names).map(([name, label]) => [key(name), label]),
   );
-  const label = (value) => translated.get(key(value)) || value;
+  const storeLabels = new Map();
+  const storeGenreLabels = new Map();
+  const label = (value) => storeLabels.get(key(value)) || translated.get(key(value)) || value;
+  const genreLabel = (value) => storeGenreLabels.get(key(value)) || translated.get(key(value)) || value;
+  function registerStoreLabels(values, target) {
+    if (!values || typeof values !== "object" || Array.isArray(values)) return;
+    for (const [name, label] of Object.entries(values)) {
+      if (key(name) && typeof label === "string" && label.trim() && label.length <= 120)
+        target.set(key(name), label.trim());
+    }
+  }
   function labels(values) {
     if (!Array.isArray(values)) return [];
     const unique = new Map();
@@ -253,6 +263,8 @@
       // Explicit empty metadata in the official record must not resurrect stale preview values.
       const field = (name) =>
         source && Object.hasOwn(source, name) ? source[name] : backup?.[name];
+      registerStoreLabels(field("tag_labels_zh_tw"), storeLabels);
+      registerStoreLabels(field("genre_labels_zh_tw"), storeGenreLabels);
       const descriptionRecord = source && Object.hasOwn(source, "short_description") ? source : backup;
       const description = descriptionRecord?.short_description;
       const isTraditional = descriptionRecord?.short_description_language === "zh-TW";
@@ -348,6 +360,7 @@
   const api = {
     key,
     label,
+    genreLabel,
     labels,
     enrich,
     hasTag,

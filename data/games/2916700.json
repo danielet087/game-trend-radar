@@ -45,7 +45,9 @@
   "artwork_checked_at": "2026-09-27T14:16:25Z",
   "small_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2916700/b54319595447ecdf726ab86d88c24acab9c5790e/capsule_231x87.jpg?t=1790224387",
   "short_description": "本作是能從頭到尾完整體驗劇情的《進擊的巨人》遊戲系列集大成之作。立體機動動作再度進化，敬請享受系列中最頂尖、最暢快且華麗的動作表現。",
-  "genres": [],
+  "genres": [
+    "Action"
+  ],
   "tags": [
     "Action",
     "Anime",
@@ -61,13 +63,51 @@
     "Story Rich"
   ],
   "tags_fetch_status": "ok",
-  "tags_checked_at": "2026-09-27T14:16:25Z",
-  "content_enriched_at": "2026-09-27T14:16:25Z",
+  "tags_checked_at": "2026-09-28T04:26:34Z",
+  "content_enriched_at": "2026-09-28T04:26:34Z",
   "content_enrichment_source": "Steam Store Browse + appdetails fallback + public Store tags",
-  "content_enrichment_version": 2,
+  "content_enrichment_version": 4,
   "content_enrichment_signature": "2916700:8604:2026-12-10",
   "short_description_en": "Experience the story from beginning to end in the ultimate culmination of the Attack on Titan game series. The ODM action has been further refined, delivering the most exhilarating and stylish combat the series has ever seen.",
   "short_description_language": "zh-TW",
   "short_description_source": "steam_tchinese",
-  "description_checked_at": "2026-09-28T03:07:15Z"
+  "description_checked_at": "2026-09-28T03:07:15Z",
+  "genres_fetch_status": "ok",
+  "tag_ids": {
+    "Action": 19,
+    "Anime": 4085,
+    "3D": 4191,
+    "Character Customization": 4747,
+    "Dark Fantasy": 4604,
+    "War": 1678,
+    "Gore": 4345,
+    "Violent": 4667,
+    "Singleplayer": 4182,
+    "Co-op": 1685,
+    "Open World": 1695,
+    "Story Rich": 1742
+  },
+  "tag_labels_zh_tw": {
+    "Action": "動作",
+    "Anime": "日本動畫",
+    "3D": "3D",
+    "Character Customization": "自訂角色",
+    "Dark Fantasy": "黑暗奇幻",
+    "War": "戰爭",
+    "Gore": "鮮血",
+    "Violent": "暴力",
+    "Singleplayer": "單人",
+    "Co-op": "合作",
+    "Open World": "開放世界",
+    "Story Rich": "劇情豐富"
+  },
+  "tag_labels_language": "zh-TW",
+  "tags_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
+  "tag_labels_source": "https://api.steampowered.com/IStoreService/GetTagList/v1/?language=tchinese",
+  "genre_labels_zh_tw": {
+    "Action": "動作"
+  },
+  "genre_labels_language": "zh-TW",
+  "genres_source": "https://store.steampowered.com/api/appdetails?appids=2916700&cc=TW&l=tchinese",
+  "genres_checked_at": "2026-09-28T04:26:34Z"
 }
