@@ -256,7 +256,8 @@ summary {
   margin: auto;
   align-items: center;
 }
-.main-nav a {
+.main-nav > a,
+.explore-toggle {
   position: relative;
   font-size: 13px;
   font-weight: 700;
@@ -268,15 +269,132 @@ summary {
     color 0.2s,
     transform 0.2s;
 }
-.main-nav a:hover {
+.main-nav > a:hover,
+.explore-toggle:hover {
   background: var(--blue-light);
   color: var(--blue);
   transform: translateY(-1px);
 }
-.main-nav a[aria-current] {
+.main-nav > a[aria-current],
+.explore-nav[data-active] > .explore-toggle {
   background: var(--blue);
   color: white;
   box-shadow: 0 3px 0 #25388e;
+}
+.explore-nav {
+  position: relative;
+}
+.explore-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.explore-toggle::-webkit-details-marker { display: none; }
+.explore-chevron {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform .2s var(--ease);
+}
+.explore-nav[open] > .explore-toggle {
+  background: var(--blue);
+  color: white;
+  box-shadow: 0 3px 0 #25388e;
+  transform: none;
+}
+.explore-nav[open] .explore-chevron { transform: rotate(180deg); }
+.explore-menu {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  z-index: 5;
+  width: 326px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 150px);
+  max-height: calc(100dvh - 150px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid #c9c4d7;
+  border-radius: 21px;
+  background: #fffdf8;
+  box-shadow: 0 5px 0 #d4ccdf, 0 16px 35px #242a4421;
+  transform-origin: top center;
+}
+.explore-route {
+  --route-tone: #405a9a;
+  --route-fill: #e4edfc;
+  --route-edge: #c1d1ed;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 70px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  color: var(--ink);
+  transition: background .18s, border-color .18s;
+}
+.explore-route-upcoming { --route-tone: #30684f; --route-fill: #e4f0dd; --route-edge: #acc9b2; }
+.explore-route-released { --route-tone: #95512f; --route-fill: #ffe4d2; --route-edge: #dab49a; }
+.explore-route-tags { --route-tone: #625096; --route-fill: #e9e3f8; --route-edge: #c2b4de; }
+.explore-route:hover,
+.explore-route:focus-visible,
+.explore-route[aria-current] {
+  border-color: var(--route-edge);
+  background: var(--route-fill);
+}
+.explore-route-art {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: var(--route-fill);
+}
+.explore-route-art svg {
+  width: 43px;
+  height: 43px;
+  fill: var(--route-fill);
+  stroke: var(--route-tone);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform .22s var(--ease);
+}
+.explore-route:hover .explore-route-art svg { transform: rotate(-7deg); }
+.explore-route-copy { display: grid; gap: 5px; min-width: 0; }
+.explore-route-title { font-size: 14px; font-weight: 800; line-height: 1.4; }
+.explore-route-note { color: var(--muted); font-size: 11px; line-height: 1.5; }
+.explore-route-arrow {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--route-tone);
+  font: 500 18px/1 Arial, sans-serif;
+}
+.explore-route[aria-current] .explore-route-arrow { font-size: 15px; font-weight: 700; }
+@keyframes explore-menu-enter {
+  from { opacity: 0; transform: translate(-50%, -5px) scale(.98); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  body:not(.motion-off) .explore-nav[open] .explore-menu {
+    animation: explore-menu-enter .18s var(--ease) both;
+  }
 }
 .saved-count {
   display: inline-grid;
@@ -291,7 +409,7 @@ summary {
   font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
-.main-nav a[aria-current] .saved-count {
+.main-nav > a[aria-current] .saved-count {
   background: #ffffff30;
   color: white;
 }
@@ -1674,7 +1792,8 @@ body.motion-on::after {
     padding-left: 28px;
     padding-right: 28px;
   }
-  .main-nav a {
+  .main-nav > a,
+  .explore-toggle {
     padding: 10px 13px;
   }
   .games-grid,
@@ -1717,7 +1836,10 @@ body.motion-on::after {
     gap: 6px;
     padding-bottom: 14px;
   }
-  .main-nav a {
+  .explore-nav { flex: 1; min-width: 0; }
+  .explore-toggle { width: 100%; justify-content: center; }
+  .main-nav > a,
+  .explore-toggle {
     flex: 1;
     text-align: center;
     padding: 10px 8px;
@@ -1817,7 +1939,8 @@ body.motion-on::after {
     gap: 3px;
     padding-bottom: 12px;
   }
-  .main-nav a {
+  .main-nav > a,
+  .explore-toggle {
     font-size: 11px;
     padding: 10px 5px;
     border-radius: 10px;
