@@ -39,7 +39,50 @@
     return [...new Set((Array.isArray(value) ? value : String(value || "").split(","))
       .map(String).filter(id => /^[1-9]\d{0,9}$/.test(id)).map(Number))].slice(0, 3);
   }
-  const api = { day, offset, taipeiDay, points, metric, tracking, comparisonIds };
+  /* Comparison uses one shared calendar window, including archived observations.
+     Neither an absent daily sample nor an absent endpoint is estimated. */
+  function comparisonWindow(games, span = 30, end, today) {
+    if (!day(today)) throw new TypeError("A valid Taipei calendar date is required");
+    span = [7, 30, 90].includes(Number(span)) ? Number(span) : 30;
+    const selected = [];
+    const seen = new Set();
+    for (const game of Array.isArray(games) ? games : []) {
+      const appid = comparisonIds([game?.appid])[0];
+      if (!appid || seen.has(appid)) continue;
+      seen.add(appid);
+      const release = day(game.date);
+      const trackUntil = release ? offset(release, 30) : null;
+      const history = release ? points((Array.isArray(game.history) ? game.history : [])
+        .filter(point => day(typeof point?.at === "string" ? point.at.slice(0, 10) : null)), today)
+        .filter(point => point.day <= trackUntil) : [];
+      selected.push({ appid, trackUntil, history });
+      if (selected.length === 3) break;
+    }
+    const lastObserved = selected.map(game => game.history.at(-1)?.day)
+      .filter(Boolean).sort().at(-1);
+    end = day(end) && end <= today ? end : lastObserved || today;
+    const start = offset(end, -span);
+    const days = Array.from({ length: span + 1 }, (_, index) => offset(start, index));
+    const series = selected.map(game => {
+      const visible = game.history.filter(point => point.day >= start && point.day <= end);
+      const byDay = new Map(visible.map(point => [point.day, point]));
+      const values = days.map(date => byDay.get(date)?.followers ?? null);
+      const daily = values.map((value, index) => index > 0 && value !== null && values[index - 1] !== null
+        ? value - values[index - 1] : null);
+      const baseline = byDay.get(start) || null;
+      const endPoint = byDay.get(end) || null;
+      const delta = baseline && endPoint ? endPoint.followers - baseline.followers : null;
+      const percent = delta !== null && baseline.followers > 0 ? delta / baseline.followers * 100 : null;
+      return {
+        appid: game.appid, points: visible, values, daily, baseline, endPoint, delta, percent,
+        status: !game.trackUntil ? "invalid" : baseline && endPoint ? "ready" : visible.length ? "partial" : "missing",
+        trackUntil: game.trackUntil, tracking: !!game.trackUntil && today <= game.trackUntil,
+        observedDays: visible.length,
+      };
+    });
+    return { start, end, days, span, series };
+  }
+  const api = { day, offset, taipeiDay, points, metric, tracking, comparisonIds, comparisonWindow };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.RadarInsights = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -133,7 +133,7 @@
     document.querySelectorAll("[data-growth-days]").forEach(button => button.setAttribute("aria-pressed", String(Number(button.dataset.growthDays) === span)));
     $("growthScope").value = scope; $("growthSort").value = sort;
   }
-  let analysisGeneration = 0;
+  let analysisGeneration = 0, loadComparisonDescriptions = null;
   function searchChoices() {
     const term = $("compareSearch").value.trim().toLocaleLowerCase();
     const selected = window.RadarCompare.ids();
@@ -153,11 +153,6 @@
     }));
     $("compareSearchHint").textContent = selected.length >= 3 ? "已選滿 3 款，可先移除其中一款再替換。" : !matches.length ? "找不到符合的遊戲，試試名稱、AppID 或 TAG。" : term ? `找到 ${matches.length} 款，顯示前 ${Math.min(matches.length, 6)} 款。` : "先從關注度較高的作品選起，或輸入名稱搜尋。";
   }
-  const metricText = (game, period) => {
-    if (!I.tracking(game.date, today)) return "追蹤已結束，保留歷史紀錄";
-    const m = I.metric(history(game), period, today);
-    return m.status === "ready" ? `${signed(m.delta)} 人（${percent(m.percent)}）` : statusText(m.status);
-  };
   function renderComparison() {
     const selected = window.RadarCompare.ids().map(id => games.find(game => game.appid === id)).filter(Boolean);
     const generation = ++analysisGeneration;
@@ -182,9 +177,10 @@
     $("comparisonResults").hidden = selected.length < 2;
     $("compareJump").hidden = selected.length < 2;
     $("comparisonPrompt").hidden = selected.length >= 2;
-    $("comparisonPrompt").textContent = selected.length ? "再選 1 款，就能開始並排分析。" : "選擇 2～3 款遊戲，找出它們相同與不同的地方。";
+    $("comparisonPrompt").textContent = selected.length ? "再選 1 款，就能比較每日歷史。" : "選擇 2～3 款遊戲，比較同一期間的每日關注變化。";
     searchChoices();
     if (selected.length < 2) return;
+    window.RadarComparisonHistory.render(selected.map(game => ({ ...game, history: observations.get(game.appid)?.history || [] })), growthData);
     const common = selected[0].tags.filter(tag => selected.every(game => R.hasTag(game, tag)));
     const head = node("tr");
     const corner = node("th", "", "比較項目"); corner.scope = "col"; head.append(corner);
@@ -198,13 +194,6 @@
     };
     addRow("發售日期", game => dateText(game.date));
     addRow("發售狀態", game => game.date > today ? "尚未上市" : game.date === today ? "今日上市" : "已上市");
-    addRow("官方關注數", game => {
-      const latest = I.points(history(game), today).at(-1);
-      const box = node("div");
-      box.append(node("strong", "comparison-number", number.format(latest?.followers ?? game.followers)), node("small", "comparison-note", latest ? `${dateText(latest.day)} 量測` : "採目前公開收錄值")); return box;
-    });
-    addRow("近 7 日新增", game => metricText(game, 7));
-    addRow("近 30 日新增", game => metricText(game, 30));
     addRow("追蹤期限", game => `${dateText(I.offset(game.date, 30))}${I.tracking(game.date, today) ? "（追蹤中）" : "（已結束）"}`);
     addRow("語言支援", badges);
     addRow("遊戲類型", game => game.genres.length ? game.genres.map(R.genreLabel).join("、") : "尚無資料");
@@ -217,20 +206,19 @@
     addRow("共同 TAG", () => common.length ? tagLinks(common.slice(0, 8)) : "目前沒有共同 TAG");
     addRow("其他 TAG", game => tagLinks(game.tags.filter(tag => !common.some(value => R.key(value) === R.key(tag))).slice(0, 8)));
     addRow("繁中簡介", game => { const p = node("p", "comparison-description", "正在讀取繁體中文介紹…"); p.dataset.descriptionFor = game.appid; return p; });
-    const totals = selected.map(game => I.points(history(game), today).at(-1)?.followers ?? game.followers);
-    const maximum = Math.max(...totals, 1);
-    $("comparisonBars").replaceChildren(...selected.map((game, index) => {
-      const row = node("div", "comparison-bar-row tone-" + index);
-      const track = node("div", "comparison-bar-track"), fill = node("span"); fill.style.width = `${totals[index] / maximum * 100}%`; track.append(fill);
-      row.append(node("span", "", game.name), track, node("strong", "", number.format(totals[index]))); return row;
-    }));
-    Promise.allSettled(selected.map(async game => {
-      const raw = await window.RadarStorage.loadGame(game.appid);
-      if (generation !== analysisGeneration) return;
-      const cell = body.querySelector(`[data-description-for="${game.appid}"]`);
-      if (!cell) return;
-      cell.textContent = raw?.short_description_language === "zh-TW" && typeof raw.short_description === "string" ? raw.short_description : "繁體中文遊戲介紹整理中。";
-    }));
+    let descriptionsStarted = false;
+    loadComparisonDescriptions = () => {
+      if (descriptionsStarted) return;
+      descriptionsStarted = true;
+      Promise.allSettled(selected.map(async game => {
+        const raw = await window.RadarStorage.loadGame(game.appid);
+        if (generation !== analysisGeneration) return;
+        const cell = body.querySelector(`[data-description-for="${game.appid}"]`);
+        if (!cell) return;
+        cell.textContent = raw?.short_description_language === "zh-TW" && typeof raw.short_description === "string" ? raw.short_description : "繁體中文遊戲介紹整理中。";
+      }));
+    };
+    if (document.querySelector('.comparison-reference').open) loadComparisonDescriptions();
   }
   async function load(force = false) {
     $("labRetry").hidden = true;
@@ -250,6 +238,7 @@
     }
     games = D.selectGames(data, "all", today);
     observations = new Map((growthData?.games || []).map(row => [Number(row.appid), row]));
+    $("labRetry").hidden = !!growthData;
     $("labStatus").textContent = `共 ${games.length} 款公開收錄 · 日期以台灣時間為準`;
     let saved = [];
     try { saved = JSON.parse(localStorage.getItem("game-trend-radar:saved:v1") || "[]"); } catch {}
@@ -286,6 +275,9 @@
       limit = 25; renderGrowth();
     });
   } else {
+    document.querySelector('.comparison-reference').addEventListener('toggle', event => {
+      if (event.currentTarget.open) loadComparisonDescriptions?.();
+    });
     $("compareSearch").addEventListener("input", event => { clearTimeout(searchTimer); if (!event.isComposing) searchTimer = setTimeout(searchChoices, 100); });
     $("compareSearch").addEventListener("compositionend", searchChoices);
     $("compareClear").addEventListener("click", () => { window.RadarCompare.set([]); $("compareSearch").focus(); });
