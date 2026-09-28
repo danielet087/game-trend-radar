@@ -21,7 +21,7 @@
     <script src="./assets/radar-discovery-v1.js?v=1.2.0" defer></script>
     <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-artwork-v1.js?v=1.0.0" defer></script>
-    <script src="./assets/radar-play-v2.js?v=3.7.0" defer></script>
+    <script src="./assets/radar-play-v2.js?v=3.7.1" defer></script>
   </head>
   <body data-page="all">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -68,9 +68,7 @@
         <a href="./explore.html">TAG 探索</a>
       </nav>
       <section class="page-heading">
-<p class="eyebrow">THE COMPLETE COLLECTION</p>
         <h1 id="pageTitle">全部遊戲</h1>
-        <p>想找哪款遊戲？從全部收錄中，一次查清楚。</p>
         <p class="scope-note" id="scopeNote"></p>
       </section>
       <div class="data-status" id="dataStatus" role="status">
@@ -95,13 +93,7 @@
         id="releaseCalendar"
         aria-labelledby="explorerTitle"
       >
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">FIND YOUR NEXT FAVORITE</p>
-            <h2 id="explorerTitle">查詢全部遊戲</h2>
-          </div>
-          <a class="text-link" href="./explore.html">用 TAG 找遊戲 <span aria-hidden="true">↗</span></a>
-        </div>
+        <h2 class="sr-only" id="explorerTitle">查詢全部遊戲</h2>
         <div class="explorer-panel">
           <div class="filter-bar">
             <label class="search-box"
@@ -112,7 +104,7 @@
               ><input
                 id="searchInput"
                 type="search"
-                placeholder="搜尋遊戲名稱、AppID 或 TAG…"
+                placeholder="名稱、AppID 或 TAG…"
                 autocomplete="off"
               /><kbd aria-hidden="true">/</kbd></label
             ><label class="select-wrap"
