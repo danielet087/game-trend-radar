@@ -287,6 +287,17 @@
   }
   const hasTag = (game, tag) =>
     (game.tags || []).some((value) => key(value) === key(tag));
+  function tagFilters(params) {
+    const exclude = labels(params.getAll("exclude")).slice(0, 12);
+    const include = labels(params.getAll("tag")).filter(tag => !exclude.some(value => key(value) === key(tag))).slice(0, 12);
+    return { include, exclude, match: params.get("match") === "any" ? "any" : "all" };
+  }
+  function matchesTags(game, filters) {
+    if (filters.exclude.some(tag => hasTag(game, tag))) return false;
+    return !filters.include.length || (filters.match === "any"
+      ? filters.include.some(tag => hasTag(game, tag))
+      : filters.include.every(tag => hasTag(game, tag)));
+  }
   function catalog(games) {
     const counts = new Map();
     for (const game of games)
@@ -364,6 +375,8 @@
     labels,
     enrich,
     hasTag,
+    tagFilters,
+    matchesTags,
     catalog,
     recommendations,
     theme,

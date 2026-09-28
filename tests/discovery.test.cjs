@@ -3,6 +3,18 @@ const assert = require("node:assert/strict");
 const R = require("../assets/radar-discovery-v1.js");
 const D = require("../assets/radar-data-v1.js");
 
+test("multi-tag URLs preserve legacy links and combine exact ALL/ANY matching with exclusions", () => {
+  const game = { tags: ['Action', 'Co-op', 'Indie'] };
+  assert.equal(R.matchesTags(game, R.tagFilters(new URLSearchParams('tag=Action'))), true);
+  const both = R.tagFilters(new URLSearchParams('tag=Action&tag=Open+World'));
+  assert.equal(R.matchesTags(game, both), false);
+  assert.equal(R.matchesTags(game, { ...both, match: 'any' }), true);
+  assert.equal(R.matchesTags(game, R.tagFilters(new URLSearchParams('tag=Action&match=any&exclude=Co-op'))), false);
+  assert.equal(R.matchesTags(game, R.tagFilters(new URLSearchParams('exclude=Horror'))), true);
+  assert.deepEqual(R.tagFilters(new URLSearchParams('tag=Action&tag=ACTION&exclude=action&tag=Co-op')), { include:['Co-op'], exclude:['action'], match:'all' });
+  assert.equal(R.matchesTags({tags:['Action RPG']}, R.tagFilters(new URLSearchParams('tag=Action'))), false);
+});
+
 test("official Taiwan labels override fallback translations without changing tag identity or genre labels", () => {
   const data = { games: [{ appid: 1 }], recent: [] };
   const source = { games: [{ appid: 1, tags: ["Artificial Intelligence", "Capitalism", "Indie"], genres: ["Indie"],

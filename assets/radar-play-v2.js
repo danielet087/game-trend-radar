@@ -33,9 +33,8 @@
         ? "list"
         : "calendar",
     savedOnly: query.get("saved") === "1",
-    tag:
-      mode === "explore" ? (query.get("tag") || "").trim().slice(0, 120) : "",
-    limit: PAGE_SIZE,
+    tagFilters: mode === "explore" ? R.tagFilters(query) : { include: [], exclude: [], match: "all" },
+    limit: Math.max(PAGE_SIZE, window.RadarJourney?.restore?.limit || PAGE_SIZE),
     loading: true,
   };
   function node(tag, className = "", text = null) {
@@ -82,6 +81,7 @@
       durable = false;
     }
     updateSavedControls();
+    window.RadarEnhancements?.pulseSaved();
     if (mode === "saved" || model.savedOnly) {
       renderExplorer();
       if (activeIndex >= 0) {
@@ -204,8 +204,8 @@
       const tags = node("div", "explorer-card-tags");
       const ordered = [...game.tags].sort(
         (a, b) =>
-          Number(R.key(b) === R.key(model.tag)) -
-          Number(R.key(a) === R.key(model.tag)),
+          Number(model.tagFilters.include.some(tag => R.key(tag) === R.key(b))) -
+          Number(model.tagFilters.include.some(tag => R.key(tag) === R.key(a))),
       );
       ordered.slice(0, 2).forEach((tag) => {
         const badge = node("span", "", R.label(tag));
@@ -237,11 +237,12 @@
     arrow.setAttribute("aria-hidden", "true");
     steam.append(arrow);
     card.append(cover, body, detail, save, steam);
+    window.RadarEnhancements?.attachCompare(card, game);
     return card;
   }
   function empty(title, text, action = null) {
     const area = node("div", "empty-state");
-    const symbol = node("span", "empty-symbol", "◎");
+    const symbol = window.RadarEnhancements?.illustration(mode === "explore" ? "tags" : mode === "released" ? "rocket" : "calendar") || node("span", "empty-symbol", "◎");
     symbol.setAttribute("aria-hidden", "true");
     const copy = node("div");
     copy.append(node("h3", "", title), node("p", "", text));
@@ -344,7 +345,14 @@
       set("view", model.view);
     }
     set("q", $("searchInput").value.trim());
-    if (mode === "explore") set("tag", model.tag);
+    if (mode === "explore") {
+      url.searchParams.delete("tag");
+      url.searchParams.delete("exclude");
+      model.tagFilters.include.forEach(tag => url.searchParams.append("tag", tag));
+      model.tagFilters.exclude.forEach(tag => url.searchParams.append("exclude", tag));
+      set("match", model.tagFilters.match === "any" ? "any" : "");
+      set("language", $("languageFilter").value);
+    }
     set(
       "min",
       $("followersFilter").selectedIndex ? $("followersFilter").value : "",
@@ -355,7 +363,7 @@
       set("period", $("releaseFilter").value);
       set("language", $("languageFilter").value);
     }
-    history.replaceState(null, "", url);
+    history.replaceState(history.state, "", url);
     if (mode === "date") refreshDateLinks();
   }
   function refreshDateLinks() {
@@ -427,7 +435,12 @@
     $("searchInput").value = params.get("q") || "";
     model.savedOnly = params.get("saved") === "1";
     const fields = [["followersFilter", "min"], ["sortSelect", "sort"]];
-    if (mode === "all") fields.push(["releaseFilter", "period"], ["languageFilter", "language"]);
+    if (mode === "all") fields.push(["releaseFilter", "period"]);
+    if (["all", "explore"].includes(mode)) fields.push(["languageFilter", "language"]);
+    if (mode === "explore") {
+      model.tagFilters = R.tagFilters(params);
+      $("tagMatch").value = model.tagFilters.match;
+    }
     for (const [id, param] of fields) {
       $(id).selectedIndex = 0;
       if ([...$(id).options].some((option) => option.value === params.get(param)))
@@ -438,9 +451,10 @@
     return !!(
       $("searchInput").value.trim() ||
       $("followersFilter").selectedIndex ||
-      model.tag ||
+      model.tagFilters.include.length || model.tagFilters.exclude.length ||
       model.savedOnly ||
-      (mode === "all" && ($("releaseFilter").value || $("languageFilter").value))
+      (mode === "all" && $("releaseFilter").value) ||
+      (["all", "explore"].includes(mode) && $("languageFilter").value)
     );
   }
   function filteredGames() {
@@ -455,7 +469,7 @@
     const term = $("searchInput").value.trim().toLocaleLowerCase();
     const min = Number($("followersFilter").value);
     const period = mode === "all" ? $("releaseFilter").value : "";
-    const language = mode === "all" ? $("languageFilter").value : "";
+    const language = ["all", "explore"].includes(mode) ? $("languageFilter").value : "";
     const items = source.filter(
       (game) =>
         (!term ||
@@ -463,7 +477,7 @@
             .toLocaleLowerCase()
             .includes(term)) &&
         game.followers >= min &&
-        (!model.tag || R.hasTag(game, model.tag)) &&
+        (mode !== "explore" || R.matchesTags(game, model.tagFilters)) &&
         (!period || (period === "future" ? game.date >= today : game.date < today)) &&
         (!language || game.languages?.[language] === true) &&
         (!model.savedOnly || saved.has(game.appid)),
@@ -580,12 +594,14 @@
     if (mode === "home" && model.view === "calendar") {
       $("gamesGrid").replaceChildren();
       $("loadMoreWrap").hidden = true;
+      document.dispatchEvent(new CustomEvent("radar:content-ready", { detail: { limit: model.limit } }));
       return;
     }
     const grid = $("gamesGrid");
     const retained = new Map([...grid.querySelectorAll(".game-card[data-appid]")]
       .map(card => [Number(card.dataset.appid), card]));
     grid.replaceChildren(...items.slice(0, model.limit).map(game => cardGames.get(retained.get(game.appid)) === game ? retained.get(game.appid) : makeCard(game)));
+    document.dispatchEvent(new CustomEvent("radar:content-ready", { detail: { limit: model.limit } }));
     $("loadMoreWrap").hidden =
       items.length <= model.limit ||
       (mode === "home" && model.view === "calendar");
@@ -629,13 +645,15 @@
     $("searchInput").value = "";
     $("followersFilter").selectedIndex = 0;
     model.savedOnly = false;
-    model.tag = "";
+    model.tagFilters = { include: [], exclude: [], match: "all" };
     if (mode === "all") {
       $("releaseFilter").selectedIndex = 0;
       $("languageFilter").selectedIndex = 0;
     }
     if (mode === "explore") {
       $("tagSearch").value = "";
+      $("languageFilter").selectedIndex = 0;
+      $("tagMatch").value = "all";
       renderTagCatalog();
     }
     model.limit = PAGE_SIZE;
@@ -651,79 +669,90 @@
   }
   let allTagChoices = [];
   let showAllTags = false;
+  let tagIntent = "include";
   function renderTagSelection() {
-    $("tagActive").hidden = !model.tag;
-    $("selectedTagLabel").textContent = model.tag ? R.label(model.tag) : "";
-    $("removeTag").setAttribute(
-      "aria-label",
-      `移除 ${R.label(model.tag)} 標籤篩選`,
-    );
-    $("allTags").setAttribute("aria-pressed", String(!model.tag));
-    document.querySelectorAll("#tagCatalog button").forEach((button) => {
-      button.setAttribute(
-        "aria-pressed",
-        String(R.key(button.dataset.tag) === R.key(model.tag)),
-      );
+    const f = model.tagFilters;
+    $("tagActive").hidden = !f.include.length && !f.exclude.length;
+    $("allTags").setAttribute("aria-pressed", String(!f.include.length && !f.exclude.length));
+    const chips = [];
+    for (const kind of ["include", "exclude"]) for (const tag of f[kind]) {
+      const button = node("button", "selected-tag" + (kind === "exclude" ? " excluded" : ""));
+      button.type = "button";
+      button.append(node("span", "", (kind === "exclude" ? "排除 · " : "") + R.label(tag)), node("span", "", "×"));
+      button.setAttribute("aria-label", `移除${kind === "exclude" ? "排除" : ""} ${R.label(tag)} 篩選`);
+      button.addEventListener("click", () => {
+        f[kind] = f[kind].filter(value => R.key(value) !== R.key(tag));
+        changeFilters();
+        $("tagSelectionSummary").focus({ preventScroll: true });
+      });
+      chips.push(button);
+    }
+    $("selectedTags").replaceChildren(...chips);
+    $("tagSelectionSummary").textContent = `${f.match === "all" ? "全部符合" : "任一符合"} ${f.include.length} 個 TAG${f.exclude.length ? ` · 排除 ${f.exclude.length} 個` : ""}`;
+    $("tagMatch").value = f.match;
+    $("tagIntentInclude").setAttribute("aria-pressed", String(tagIntent === "include"));
+    $("tagIntentExclude").setAttribute("aria-pressed", String(tagIntent === "exclude"));
+    document.querySelectorAll("#tagCatalog button").forEach(button => {
+      const included = f.include.some(tag => R.key(tag) === R.key(button.dataset.tag));
+      const excluded = f.exclude.some(tag => R.key(tag) === R.key(button.dataset.tag));
+      button.setAttribute("aria-pressed", String(included || excluded));
+      button.classList.toggle("is-excluded", excluded);
+      button.title = `${button.dataset.tag}${excluded ? "（已排除）" : included ? "（已選取）" : ""}`;
     });
   }
   function renderTagCatalog() {
     if (mode !== "explore") return;
     const term = R.key($("tagSearch").value);
-    const matches = allTagChoices.filter((entry) =>
-      R.key(entry.tag + " " + entry.label).includes(term),
-    );
+    const matches = allTagChoices.filter(entry => R.key(entry.tag + " " + entry.label).includes(term));
     const visible = term || showAllTags ? matches : matches.slice(0, 14);
-    const selected = allTagChoices.find(
-      (entry) => R.key(entry.tag) === R.key(model.tag),
-    );
-    if (!term && !showAllTags && selected && !visible.includes(selected))
-      visible.push(selected);
-    $("tagCatalog").replaceChildren(
-      ...visible.map((entry) => {
-        const button = node("button", "explore-tag");
-        button.type = "button";
-        button.dataset.tag = entry.tag;
-        button.title = entry.tag;
-        button.setAttribute(
-          "aria-label",
-          `${entry.label}，${entry.count} 款遊戲`,
-        );
-        const count = node("small", "", String(entry.count));
-        count.setAttribute("aria-hidden", "true");
-        button.append(node("span", "", entry.label), count);
-        button.addEventListener("click", () => {
-          model.tag = R.key(model.tag) === R.key(entry.tag) ? "" : entry.tag;
-          changeFilters();
-        });
-        return button;
-      }),
-    );
+    const selected = [...model.tagFilters.include, ...model.tagFilters.exclude];
+    if (!term && !showAllTags) for (const tag of selected) {
+      const entry = allTagChoices.find(value => R.key(value.tag) === R.key(tag));
+      if (entry && !visible.includes(entry)) visible.push(entry);
+    }
+    $("tagCatalog").replaceChildren(...visible.map(entry => {
+      const button = node("button", "explore-tag");
+      button.type = "button";
+      button.dataset.tag = entry.tag;
+      button.setAttribute("aria-label", `${entry.label}，${entry.count} 款遊戲`);
+      const count = node("small", "", String(entry.count));
+      count.setAttribute("aria-hidden", "true");
+      button.append(node("span", "", entry.label), count);
+      button.addEventListener("click", () => {
+        const f = model.tagFilters;
+        const already = f[tagIntent].some(tag => R.key(tag) === R.key(entry.tag));
+        if (!already && f[tagIntent].length >= 12) { notify("同一組最多選擇 12 個 TAG。"); return; }
+        f[tagIntent] = already ? f[tagIntent].filter(tag => R.key(tag) !== R.key(entry.tag)) : [...f[tagIntent], entry.tag];
+        const other = tagIntent === "include" ? "exclude" : "include";
+        f[other] = f[other].filter(tag => R.key(tag) !== R.key(entry.tag));
+        changeFilters();
+      });
+      return button;
+    }));
     $("tagCatalogEmpty").hidden = visible.length > 0;
-    $("tagCatalogEmpty").textContent = term
-      ? "找不到這個 TAG，試試中文或英文名稱。"
-      : "目前的遊戲尚未提供 TAG，仍可瀏覽下方清單。";
+    $("tagCatalogEmpty").textContent = term ? "找不到這個 TAG，試試中文或英文名稱。" : "目前尚未提供 TAG，仍可瀏覽下方清單。";
     $("moreTags").hidden = !!term || allTagChoices.length <= 14;
-    $("moreTags").textContent = showAllTags
-      ? "收合 TAG −"
-      : `查看全部 ${allTagChoices.length} 個 TAG ＋`;
+    $("moreTags").textContent = showAllTags ? "收合 TAG −" : `查看全部 ${allTagChoices.length} 個 TAG ＋`;
     $("moreTags").setAttribute("aria-expanded", String(showAllTags));
-    $("tagCatalogCount").textContent = `${allTagChoices.length} 個已收錄 TAG`;
+    $("tagCatalogCount").textContent = `${allTagChoices.length} 個 TAG · 數字為各 TAG 的全部收錄數`;
     renderTagSelection();
   }
   if (mode === "explore") {
     $("tagSearch").addEventListener("input", renderTagCatalog);
-    $("moreTags").addEventListener("click", () => {
-      showAllTags = !showAllTags;
-      renderTagCatalog();
-    });
+    $("moreTags").addEventListener("click", () => { showAllTags = !showAllTags; renderTagCatalog(); });
     $("allTags").addEventListener("click", () => {
-      model.tag = "";
-      changeFilters();
+      model.tagFilters.include = []; model.tagFilters.exclude = []; changeFilters();
     });
-    $("removeTag").addEventListener("click", () => {
-      model.tag = "";
-      changeFilters();
-      $("allTags").focus();
+    $("clearTags").addEventListener("click", () => {
+      model.tagFilters.include = []; model.tagFilters.exclude = []; changeFilters(); $("allTags").focus();
+    });
+    $("tagIntentInclude").addEventListener("click", () => { tagIntent = "include"; renderTagSelection(); });
+    $("tagIntentExclude").addEventListener("click", () => { tagIntent = "exclude"; renderTagSelection(); });
+    $("tagMatch").addEventListener("change", () => { model.tagFilters.match = $("tagMatch").value; changeFilters(); });
+    $("languageFilter").addEventListener("change", changeFilters);
+    window.addEventListener("popstate", () => {
+      restoreQueryFilters(new URLSearchParams(location.search));
+      renderTagCatalog(); model.limit = PAGE_SIZE; renderExplorer();
     });
   }
   restoreQueryFilters(query);
@@ -873,9 +902,8 @@
         allTagChoices = R.catalog(
           model.data.games.filter((game) => game.date >= today),
         );
-        model.tag =
-          allTagChoices.find((entry) => R.key(entry.tag) === R.key(model.tag))
-            ?.tag || model.tag;
+        for (const kind of ["include", "exclude"]) model.tagFilters[kind] = model.tagFilters[kind].map(tag =>
+          allTagChoices.find(entry => R.key(entry.tag) === R.key(tag))?.tag || tag);
         renderTagCatalog();
       }
       if (!model.data) {

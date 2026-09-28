@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#3652ed" />
     <meta
       name="description"
-      content="開放世界、合作冒險，或是療癒的小日子。從一個 TAG 開始探索。 Steam 新作關注度、發售月曆與收藏清單，日期以台灣時間為準。"
+      content="開放世界、合作冒險，或是療癒的小日子。組合喜歡的 TAG，找出更合拍的新作。 Steam 新作關注度、發售月曆與收藏清單，日期以台灣時間為準。"
     />
     <title>TAG 探索｜Game Trend Radar</title>
     <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml" />
@@ -22,14 +22,17 @@
       crossorigin
     />
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
-    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.5.0" />
+    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.6.0" />
+    <link rel="stylesheet" href="./assets/radar-insights-v1.css?v=1.0.0" />
     <script src="./assets/radar-data-v1.js?v=3.1.0" defer></script>
     <script src="./assets/radar-storage-v2.js?v=3.0.0" defer></script>
-    <script src="./assets/radar-discovery-v1.js?v=1.2.0" defer></script>
+    <script src="./assets/radar-discovery-v1.js?v=1.3.0" defer></script>
     <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-navigation-v1.js?v=1.0.1" defer></script>
     <script src="./assets/radar-artwork-v1.js?v=1.0.0" defer></script>
-    <script src="./assets/radar-play-v2.js?v=3.7.1" defer></script>
+    <script src="./assets/radar-insights-v1.js?v=1.0.0" defer></script>
+    <script src="./assets/radar-enhancements-v1.js?v=1.0.0" defer></script>
+    <script src="./assets/radar-play-v2.js?v=3.8.0" defer></script>
   </head>
   <body data-page="explore">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -70,6 +73,9 @@
                 <span class="explore-route-copy"><span class="explore-route-title">TAG 探索</span><span class="explore-route-note">依照喜好找新作</span></span>
                 <span class="explore-route-arrow" aria-hidden="true">✓</span>
               </a>
+              <p class="explore-menu-label">觀察與分析</p>
+              <a class="explore-route explore-route-growth" href="./growth.html"><span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M15 16v48h52M22 50l15-16 12 7 16-22M53 19h12v13"/><circle cx="37" cy="34" r="4"/></svg></span><span class="explore-route-copy"><span class="explore-route-title">關注成長榜</span><span class="explore-route-note">找出正在上升的新作</span></span><span class="explore-route-arrow" aria-hidden="true">↗</span></a>
+              <a class="explore-route explore-route-analysis" href="./analysis.html"><span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><rect x="12" y="20" width="23" height="42" rx="6"/><rect x="45" y="13" width="23" height="49" rx="6"/><path d="M20 33h7m-7 9h7m26-14h7m-7 9h7m-7 9h7M25 71h30"/></svg></span><span class="explore-route-copy"><span class="explore-route-title">遊戲比較 <small>實驗</small></span><span class="explore-route-note">一次並排 2～3 款</span></span><span class="explore-route-arrow" aria-hidden="true">↗</span></a>
             </div>
           </details>
           <a href="./saved.html">我的收藏 <span class="saved-count" data-saved-count>0</span></a>
@@ -91,10 +97,18 @@
       </div>
     </header>
     <main class="page-shell" id="mainContent">
+      <section class="activity-ticker" id="activityTicker" aria-label="新收錄與發售日期更新">
+        <span class="activity-label"><span aria-hidden="true">✳</span> 雷達動態</span>
+        <div class="activity-viewport" id="activityViewport"><div class="activity-track" id="activityTrack"><span class="activity-empty">正在整理最新動態…</span></div></div>
+        <button class="activity-pause" id="activityPause" type="button" aria-label="暫停更新跑馬燈" aria-pressed="false">Ⅱ</button>
+        <button class="activity-more" id="activityMore" type="button" aria-haspopup="dialog">全部動態 ↗</button>
+      </section>
+      <dialog class="activity-dialog" id="activityDialog" aria-labelledby="activityDialogTitle"><div class="activity-dialog-head"><div><p class="eyebrow">RADAR UPDATES</p><h2 id="activityDialogTitle">最近的雷達動態</h2></div><button id="activityClose" type="button" aria-label="關閉更新動態">×</button></div><p class="activity-dialog-note">近 14 天的新收錄與公開發售日期更新；日期修正不一定代表遊戲延期。</p><ol id="activityList" class="activity-list"></ol></dialog>
+
       <section class="page-heading">
 <p class="eyebrow">PICK YOUR NEXT ADVENTURE</p>
         <h1 id="pageTitle">下一款，照你的喜好找。</h1>
-        <p>開放世界、合作冒險，或是療癒的小日子。從一個 TAG 開始探索。</p>
+        <p>開放世界、合作冒險，或是療癒的小日子。組合喜歡的 TAG，找出更合拍的新作。</p>
         <p class="scope-note" id="scopeNote"></p>
       </section>
       <section class="tag-browser" aria-labelledby="tagBrowserTitle">
@@ -111,6 +125,14 @@
               placeholder="搜尋 TAG，中文或英文…"
               autocomplete="off"
           /></label>
+        </div>
+        <div class="tag-combination-controls">
+          <div class="tag-intent" role="group" aria-label="TAG 選取方式">
+            <button id="tagIntentInclude" type="button" aria-pressed="true">＋ 想要的 TAG</button>
+            <button id="tagIntentExclude" type="button" aria-pressed="false">− 排除的 TAG</button>
+          </div>
+          <label>符合方式 <select id="tagMatch"><option value="all">全部符合</option><option value="any">任一符合</option></select></label>
+          <label>遊戲語言 <select id="languageFilter"><option value="">不限語言</option><option value="tchinese">支援繁體中文</option><option value="schinese">支援簡體中文</option><option value="english">支援英文</option></select></label>
         </div>
         <div class="tag-browser-meta">
           <button
@@ -169,11 +191,9 @@
           </div>
           <span class="timezone">台灣時間 UTC+8</span>
         </div>
-        <div class="tag-active" id="tagActive" hidden>
-          <span>目前探索</span><strong id="selectedTagLabel"></strong
-          ><button id="removeTag" type="button" aria-label="移除標籤篩選">
-            ✕
-          </button>
+        <div class="tag-active tag-active-multiple" id="tagActive" hidden>
+          <div class="tag-active-heading"><span id="tagSelectionSummary" tabindex="-1"></span><button id="clearTags" type="button">清除 TAG</button></div>
+          <div id="selectedTags" class="selected-tags"></div>
         </div>
         <div class="explorer-panel">
           <div class="filter-bar">

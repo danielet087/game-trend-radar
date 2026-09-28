@@ -74,6 +74,7 @@
       3500,
     );
     updateSaveControls();
+    window.RadarEnhancements?.pulseSaved();
     if (window.RadarMotion?.enabled && event.currentTarget.animate)
       event.currentTarget.animate(
         [
@@ -103,9 +104,17 @@
   function setBackLink() {
     try {
       const previous = new URL(document.referrer);
+      if (previous.origin === location.origin && previous.pathname.endsWith("/game.html")) {
+        const stored = JSON.parse(sessionStorage.getItem("game-trend-radar:return:v1") || "null");
+        if (stored && Date.now() - stored.at < 3600000) {
+          const destination = new URL(stored.path, location.href);
+          if (destination.origin === location.origin && /\/(?:index|games|upcoming|released|saved|date|explore|growth|analysis)\.html$/.test(destination.pathname))
+            $("gameBack").href = destination.pathname + destination.search;
+        }
+      }
       if (
         previous.origin === location.origin &&
-        /\/(?:index|discover|games|upcoming|released|saved|date|explore)\.html$/.test(
+        /\/(?:index|games|upcoming|released|saved|date|explore|growth|analysis)\.html$/.test(
           previous.pathname,
         )
       ) {
@@ -326,6 +335,12 @@
   function render(game, data, pending = false) {
     const unchangedArt = currentGame?.art === game.art && currentGame?.art2x === game.art2x;
     currentGame = game;
+    const comparison = $("gameCompare");
+    comparison.hidden = false;
+    comparison.dataset.compare = game.appid;
+    comparison.dataset.gameName = game.name;
+    comparison.setAttribute("aria-pressed", String(window.RadarCompare.ids().includes(game.appid)));
+    comparison.textContent = window.RadarCompare.ids().includes(game.appid) ? "✓ 已加入比較" : "＋ 加入比較";
     recommendationsReady = !pending;
     if (selectedTag && !R.hasTag(game, selectedTag)) selectedTag = "";
     candidates = D.unique([

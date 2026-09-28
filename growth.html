@@ -7,9 +7,9 @@
     <meta name="theme-color" content="#3652ed" />
     <meta
       name="description"
-      content="把心動的新作收在一起，期待的日子一目了然。 Steam 新作關注度、發售月曆與收藏清單，日期以台灣時間為準。"
+      content="關注成長榜，整理已公開收錄的 Steam 遊戲資訊。 Steam 新作關注度、發售月曆與收藏清單，日期以台灣時間為準。"
     />
-    <title>我的收藏｜Game Trend Radar</title>
+    <title>關注成長榜｜Game Trend Radar</title>
     <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://shared.akamai.steamstatic.com" crossorigin />
     <link rel="preconnect" href="https://shared.fastly.steamstatic.com" crossorigin />
@@ -18,14 +18,15 @@
     <link rel="stylesheet" href="./assets/radar-insights-v1.css?v=1.0.0" />
     <script src="./assets/radar-data-v1.js?v=3.1.0" defer></script>
     <script src="./assets/radar-storage-v2.js?v=3.0.0" defer></script>
+    <script src="./assets/radar-discovery-v1.js?v=1.3.0" defer></script>
     <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-navigation-v1.js?v=1.0.1" defer></script>
     <script src="./assets/radar-artwork-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-insights-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-enhancements-v1.js?v=1.0.0" defer></script>
-    <script src="./assets/radar-play-v2.js?v=3.8.0" defer></script>
+    <script src="./assets/radar-lab-v1.js?v=1.0.0" defer></script>
   </head>
-  <body data-page="saved">
+  <body data-page="growth">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
     <header class="site-header">
       <div class="header-inner">
@@ -41,7 +42,7 @@
         >
         <nav class="main-nav" aria-label="主要導覽">
           <a href="./index.html">發售月曆</a>
-          <details class="explore-nav">
+          <details class="explore-nav" data-active>
             <summary class="explore-toggle" aria-controls="exploreMenu">遊戲探索<svg class="explore-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary>
             <div class="explore-menu" id="exploreMenu">
               <a class="explore-route explore-route-all" href="./games.html">
@@ -65,11 +66,11 @@
                 <span class="explore-route-arrow" aria-hidden="true">↗</span>
               </a>
               <p class="explore-menu-label">觀察與分析</p>
-              <a class="explore-route explore-route-growth" href="./growth.html"><span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M15 16v48h52M22 50l15-16 12 7 16-22M53 19h12v13"/><circle cx="37" cy="34" r="4"/></svg></span><span class="explore-route-copy"><span class="explore-route-title">關注成長榜</span><span class="explore-route-note">找出正在上升的新作</span></span><span class="explore-route-arrow" aria-hidden="true">↗</span></a>
+              <a class="explore-route explore-route-growth" href="./growth.html" aria-current="page"><span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M15 16v48h52M22 50l15-16 12 7 16-22M53 19h12v13"/><circle cx="37" cy="34" r="4"/></svg></span><span class="explore-route-copy"><span class="explore-route-title">關注成長榜</span><span class="explore-route-note">找出正在上升的新作</span></span><span class="explore-route-arrow" aria-hidden="true">✓</span></a>
               <a class="explore-route explore-route-analysis" href="./analysis.html"><span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><rect x="12" y="20" width="23" height="42" rx="6"/><rect x="45" y="13" width="23" height="49" rx="6"/><path d="M20 33h7m-7 9h7m26-14h7m-7 9h7m-7 9h7M25 71h30"/></svg></span><span class="explore-route-copy"><span class="explore-route-title">遊戲比較 <small>實驗</small></span><span class="explore-route-note">一次並排 2～3 款</span></span><span class="explore-route-arrow" aria-hidden="true">↗</span></a>
             </div>
           </details>
-          <a href="./saved.html" aria-current="page">我的收藏 <span class="saved-count" data-saved-count>0</span></a>
+          <a href="./saved.html">我的收藏 <span class="saved-count" data-saved-count>0</span></a>
         </nav>
         <button
           class="motion-toggle"
@@ -87,115 +88,27 @@
         >
       </div>
     </header>
-    <main class="page-shell" id="mainContent">
-      <section class="page-heading">
-        <a class="back-link" id="backCalendar" href="./index.html"
-          >← 返回發售月曆</a
-        >
-        <p class="eyebrow">YOUR GAME DISCOVERY</p>
-        <h1 id="pageTitle">我的收藏</h1>
-        <p>把心動的新作收在一起，期待的日子一目了然。</p>
-        <p class="scope-note" id="scopeNote"></p>
+    <main class="page-shell lab-shell" id="mainContent">
+      <section class="page-heading lab-heading">
+        <div><p class="eyebrow">ON THE RISE</p><h1 id="pageTitle">關注成長榜</h1><p>關注正在增加，下一款值得等待的遊戲會是誰？</p></div>
+        <span class="lab-scope-pill">上市後 30 天，完成追蹤</span>
       </section>
-      <div class="data-status" id="dataStatus" role="status">
-        <span class="signal-dot"></span
-        ><span id="updateText">正在與新作相遇…</span>
-        <details id="dataDetails">
-          <summary>關於資料</summary>
-          <div class="data-detail-content">
-            <p id="coverageText">
-              清單以已驗證的 Steam Followers 與明確上市日期為準。
-            </p>
-            <p>
-              關注人數不等同願望清單數。日期依 Steam
-              台灣區公告與台灣時間（UTC+8）呈現；實際上市時間請以商店為準。
-            </p>
-          </div>
-        </details>
-      </div>
-      <div class="notice" id="notice" hidden role="alert"></div>
-      <section
-        class="explorer"
-        id="releaseCalendar"
-        aria-labelledby="explorerTitle"
-      >
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">FIND YOUR NEXT FAVORITE</p>
-            <h2 id="explorerTitle">探索遊戲</h2>
-          </div>
-          <span class="timezone">台灣時間 UTC+8</span>
+      <div class="lab-status-line"><p id="labStatus" role="status">正在整理遊戲與量測紀錄…</p><button id="labRetry" type="button" class="text-link" hidden>重新讀取</button></div>
+      <div id="growthNotice" class="notice" role="status" hidden></div>
+      <section class="growth-workspace" aria-labelledby="growthResultCount">
+        <div class="growth-toolbar">
+          <div class="lab-segmented" role="group" aria-label="成長比較期間"><button type="button" data-growth-days="1" aria-pressed="false">1 日</button><button type="button" data-growth-days="7" aria-pressed="true">7 日</button><button type="button" data-growth-days="30" aria-pressed="false">30 日</button></div>
+          <label class="lab-search"><span class="sr-only">搜尋成長榜遊戲</span><input id="growthSearch" type="search" placeholder="搜尋名稱或 AppID…" autocomplete="off"></label>
+          <label class="lab-select"><span class="sr-only">發售範圍</span><select id="growthScope"><option value="all">全部追蹤中</option><option value="future">尚未上市</option><option value="released">上市 30 天內</option></select></label>
+          <label class="lab-select"><span class="sr-only">成長排序</span><select id="growthSort"><option value="delta">新增人數最多</option><option value="percent">成長比例最高</option></select></label>
         </div>
-        <div class="explorer-panel">
-          <div class="filter-bar">
-            <label class="search-box"
-              ><svg aria-hidden="true" viewBox="0 0 24 24">
-                <circle cx="10.5" cy="10.5" r="6.5" />
-                <path d="m16 16 5 5" /></svg
-              ><span class="sr-only">搜尋遊戲名稱或 AppID</span
-              ><input
-                id="searchInput"
-                type="search"
-                placeholder="搜尋遊戲名稱或 AppID…"
-                autocomplete="off"
-              /><kbd aria-hidden="true">/</kbd></label
-            ><label class="select-wrap"
-              ><span class="sr-only">最低關注人數</span
-              ><select id="followersFilter">
-                <option value="0">全部關注度</option>
-                <option value="10000">1 萬人以上</option>
-                <option value="50000">5 萬人以上</option>
-              </select></label
-            ><button class="filter-chip" id="savedFilter" aria-pressed="false">
-              ♡ 只看收藏
-            </button>
-          </div>
-          <div class="results-bar">
-            <p id="resultCount" role="status">正在讀取遊戲資料…</p>
-            <button class="reset-button" id="resetFilters" hidden>
-              清除篩選</button
-            ><label class="sort-wrap" id="sortWrap"
-              ><span>排序</span
-              ><select id="sortSelect" aria-label="排序方式">
-                <option value="date">上市日期最近</option>
-                <option value="followers">關注人數最多</option>
-                <option value="name">遊戲名稱 A–Z</option>
-              </select></label
-            >
-          </div>
-          <div id="calendarArea" hidden>
-            <div class="weekdays" aria-hidden="true">
-              <span>日</span><span>一</span><span>二</span><span>三</span
-              ><span>四</span><span>五</span><span>六</span>
-            </div>
-            <div class="calendar-grid" id="calendarGrid"></div>
-            <div class="calendar-help">
-              <span><i></i> 當日關注度最高</span
-              ><span>點日期看完整清單・點遊戲前往 Steam ↗</span>
-            </div>
-          </div>
-          <div class="games-grid" id="gamesGrid" aria-busy="true"></div>
-          <div class="load-more-wrap" id="loadMoreWrap" hidden>
-            <button id="loadMore" class="button secondary">
-              載入更多遊戲 ↓
-            </button>
-          </div>
-        </div>
+        <div class="growth-summary" aria-label="目前量測狀況"><span><b id="growthRanked">—</b> 款可比較</span><span><b id="growthPending">—</b> 款累積中</span><span>追蹤範圍 <b id="growthTracked">—</b> 款</span></div>
+        <div class="lab-section-heading"><h2 id="growthResultCount" aria-live="polite">7 日成長榜</h2><span id="growthUpdated"></span></div>
+        <div id="growthRows" class="growth-rows"></div>
+        <button id="growthMore" type="button" class="button secondary" hidden>載入更多 ↓</button>
       </section>
-
-      <section class="bottom-note">
-        <span class="mini-radar" aria-hidden="true">◎</span>
-        <div>
-          <strong>讓每一份期待，都有個位置。</strong>
-          <p>點擊遊戲旁的愛心，即可收藏在這個瀏覽器。無須登入。</p>
-        </div>
-        <a href="./saved.html" class="text-link">我的收藏 ↗</a>
-      </section>
-      <noscript
-        ><p class="notice">
-          請啟用 JavaScript 以查看遊戲資料、使用搜尋與收藏功能。
-        </p></noscript
-      >
+      <section id="pendingSection" class="pending-section" hidden aria-labelledby="pendingTitle"><div class="lab-section-heading"><h2 id="pendingTitle">資料累積中</h2><span>有足夠實測紀錄後，自動加入排名</span></div><div id="pendingList" class="pending-list"></div><p id="pendingOverflow" class="lab-fine-print"></p></section>
+      <details class="lab-method"><summary>成長數字怎麼計算？</summary><div><p>新增關注＝最新官方量測 − 該量測日往前 1／7／30 天的日紀錄；成長比例＝新增關注 ÷ 基準日關注數。時間皆以台灣日期對齊。</p><p>只追蹤本站公開收錄、未來一年內上市或上市後 30 天內的遊戲。超過期限保留既有紀錄，停止新增量測；缺少基準日或超過 2 天未更新時，暫不排名。</p><p>小曲線使用各遊戲自己的刻度，呈現實際量測的變化，不代表遊戲間的關注規模。Steam Followers 與願望清單數不同。</p></div></details>
     </main>
     <footer class="site-footer">
       <div>

@@ -120,7 +120,9 @@ def projections(state, today):
               if records.get(str(event["appid"]), {}).get("active")
               and (today - stamp(event["at"]).astimezone(TAIPEI).date()).days <= 14]
     activity = {"version": 1, "generated_at": state.get("updated_at"),
-                "started_at": state["started_at"], "events": list(reversed(events))[:40]}
+                "started_at": state["started_at"], "events": [
+                    {**event, "name": records[str(event["appid"])]["name"]}
+                    for event in list(reversed(events))[:40]]}
     games = []
     for aid, row in records.items():
         if not row.get("active"):
@@ -131,6 +133,7 @@ def projections(state, today):
                       "history": row.get("history", [])[-100:]})
     growth = {"version": 1, "generated_at": state.get("updated_at"), "as_of": today.isoformat(),
               "started_at": state["started_at"], "post_release_days": POST_RELEASE_DAYS,
+              "collection": state.get("collection"),
               "games": sorted(games, key=lambda row: row["appid"])}
     return activity, growth
 
@@ -154,9 +157,14 @@ def main():
     now = datetime.now(timezone.utc)
     observed = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
     path = args.data_dir / "insights-state.json"
-    measurements = load(args.measurements, {}).get("measurements", []) if args.measurements else []
+    run = load(args.measurements, {}) if args.measurements else {}
+    measurements = run.get("measurements", [])
     state = update(load(path), load(args.data_dir / "catalog.json"),
                    observed_at=observed, measurements=measurements)
+    if args.measurements:
+        state["collection"] = {"at": run.get("generated_at", observed),
+                               "status": run.get("reason", "interrupted"),
+                               "measurements": len(measurements)}
     activity, growth = projections(state, now.astimezone(TAIPEI).date())
     write(path, state)
     write(args.data_dir / "activity.json", activity)
