@@ -9,8 +9,14 @@
   document.addEventListener("pointerdown", event => {
     if (!disclosure.contains(event.target)) disclosure.open = false;
   });
-  disclosure.addEventListener("focusout", () => {
-    queueMicrotask(() => {
+  disclosure.addEventListener("focusout", event => {
+    if (event.relatedTarget) {
+      if (!disclosure.contains(event.relatedTarget)) disclosure.open = false;
+      return;
+    }
+    // Let the browser finish moving focus before checking a null destination.
+    // Closing between blur and focus would swallow a pointer click on a link.
+    requestAnimationFrame(() => {
       if (!disclosure.contains(document.activeElement)) disclosure.open = false;
     });
   });
