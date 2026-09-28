@@ -180,6 +180,7 @@
     $("compareClear").disabled = !selected.length;
     $("compareShare").disabled = !selected.length;
     $("comparisonResults").hidden = selected.length < 2;
+    $("compareJump").hidden = selected.length < 2;
     $("comparisonPrompt").hidden = selected.length >= 2;
     $("comparisonPrompt").textContent = selected.length ? "再選 1 款，就能開始並排分析。" : "選擇 2～3 款遊戲，找出它們相同與不同的地方。";
     searchChoices();
