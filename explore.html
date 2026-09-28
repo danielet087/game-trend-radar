@@ -23,12 +23,13 @@
     />
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
     <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.4.2" />
-    <script src="./assets/radar-data-v1.js?v=3.0.0" defer></script>
+    <link rel="stylesheet" href="./assets/radar-explore-hub-v1.css?v=1.0.0" />
+    <script src="./assets/radar-data-v1.js?v=3.1.0" defer></script>
     <script src="./assets/radar-storage-v2.js?v=3.0.0" defer></script>
     <script src="./assets/radar-discovery-v1.js?v=1.2.0" defer></script>
     <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-artwork-v1.js?v=1.0.0" defer></script>
-    <script src="./assets/radar-play-v2.js?v=3.6.0" defer></script>
+    <script src="./assets/radar-play-v2.js?v=3.7.0" defer></script>
   </head>
   <body data-page="explore">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -45,12 +46,10 @@
           ></a
         >
         <nav class="main-nav" aria-label="主要導覽">
-          <a href="./index.html">發售月曆</a
-          ><a href="./upcoming.html">即將上市</a
-          ><a href="./released.html">近期上市</a
-          ><a href="./saved.html"
-            >我的收藏 <span class="saved-count" data-saved-count>0</span></a
-          >
+          <a href="./index.html">發售月曆</a>
+          <a href="./discover.html" aria-current="true">遊戲探索</a>
+          <a href="./games.html">全部遊戲</a>
+          <a href="./saved.html">我的收藏 <span class="saved-count" data-saved-count>0</span></a>
         </nav>
         <button
           class="motion-toggle"
@@ -69,11 +68,15 @@
       </div>
     </header>
     <main class="page-shell" id="mainContent">
+      <nav class="explore-breadcrumb" aria-label="所在位置"><a href="./discover.html">遊戲探索</a><span aria-hidden="true">/</span><span aria-current="page">TAG 探索</span></nav>
+      <nav class="explore-subnav" aria-label="遊戲探索功能">
+        <a href="./games.html">全部遊戲</a>
+        <a href="./upcoming.html">即將上市</a>
+        <a href="./released.html">近期上市</a>
+        <a href="./explore.html" aria-current="page">TAG 探索</a>
+      </nav>
       <section class="page-heading">
-        <a class="back-link" id="backCalendar" href="./index.html"
-          >← 返回發售月曆</a
-        >
-        <p class="eyebrow">PICK YOUR NEXT ADVENTURE</p>
+<p class="eyebrow">PICK YOUR NEXT ADVENTURE</p>
         <h1 id="pageTitle">下一款，照你的喜好找。</h1>
         <p>開放世界、合作冒險，或是療癒的小日子。從一個 TAG 開始探索。</p>
         <p class="scope-note" id="scopeNote"></p>

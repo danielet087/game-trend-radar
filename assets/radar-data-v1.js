@@ -250,7 +250,8 @@
         (game) => game.date >= today && game.date <= offsetDate(today, 45),
       );
     if (mode === "date") return data.games.filter((game) => game.date === date);
-    if (mode === "saved") return unique([...data.games, ...data.recent]);
+    if (mode === "saved" || mode === "all")
+      return unique([...data.games, ...data.recent]);
     return data.games;
   }
   const api = {

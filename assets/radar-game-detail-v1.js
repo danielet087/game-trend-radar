@@ -105,7 +105,7 @@
       const previous = new URL(document.referrer);
       if (
         previous.origin === location.origin &&
-        /\/(?:index|upcoming|released|saved|date|explore)\.html$/.test(
+        /\/(?:index|discover|games|upcoming|released|saved|date|explore)\.html$/.test(
           previous.pathname,
         )
       ) {

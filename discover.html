@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#3652ed" />
+    <meta
+      name="description"
+      content="從即將上市、近期上市與 TAG 探索，找到下一款想玩的遊戲。 Steam 新作關注度、發售月曆與收藏清單，日期以台灣時間為準。"
+    />
+    <title>遊戲探索｜Game Trend Radar</title>
+    <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://shared.akamai.steamstatic.com" crossorigin />
+    <link rel="preconnect" href="https://shared.fastly.steamstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
+    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.4.2" />
+    <link rel="stylesheet" href="./assets/radar-explore-hub-v1.css?v=1.0.0" />
+    <script src="./assets/radar-data-v1.js?v=3.1.0" defer></script>
+    <script src="./assets/radar-storage-v2.js?v=3.0.0" defer></script>
+    <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
+    <script src="./assets/radar-discovery-v1.js?v=1.2.0" defer></script>
+    <script src="./assets/radar-explore-hub-v1.js?v=1.0.0" defer></script>
+  </head>
+  <body data-page="discover">
+    <a class="skip-link" href="#mainContent">跳到主要內容</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="./index.html" aria-label="Game Trend Radar 首頁"
+          ><img
+            src="./assets/radar-mark.svg"
+            width="40"
+            height="40"
+            alt=""
+          /><span
+            >GAME TREND <b>RADAR<span class="brand-dot">.</span></b></span
+          ></a
+        >
+        <nav class="main-nav" aria-label="主要導覽">
+          <a href="./index.html">發售月曆</a>
+          <a href="./discover.html" aria-current="page">遊戲探索</a>
+          <a href="./games.html">全部遊戲</a>
+          <a href="./saved.html">我的收藏 <span class="saved-count" data-saved-count>0</span></a>
+        </nav>
+        <button
+          class="motion-toggle"
+          id="motionToggle"
+          type="button"
+          aria-pressed="true"
+          aria-label="關閉動態效果"
+          title="關閉動態效果"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 5v14M15 5v14" /></svg
+          ><span>動態 ON</span></button
+        ><span class="header-tag"
+          >發現遊戲的下一站 <span aria-hidden="true">↗</span></span
+        >
+      </div>
+    </header>
+    <main class="page-shell hub-shell" id="mainContent">
+      <section class="hub-intro" aria-labelledby="pageTitle">
+        <div class="hub-intro-copy">
+          <p class="eyebrow">FIND YOUR NEXT FAVORITE</p>
+          <h1 id="pageTitle">遊戲探索<span aria-hidden="true">✳</span></h1>
+          <p>依發售時間或遊戲特色，<br>找到下一款想玩的作品。</p>
+        </div>
+        <div class="hub-search-panel">
+          <h2>已經有想找的遊戲？</h2>
+          <form class="hub-search" action="./games.html" method="get" role="search">
+            <label for="hubSearch" class="sr-only">搜尋全部遊戲</label>
+            <input id="hubSearch" name="q" type="search" placeholder="遊戲名稱、AppID 或 TAG…" autocomplete="off">
+            <button type="submit">搜尋 <span aria-hidden="true">→</span></button>
+          </form>
+          <a class="hub-all-link" href="./games.html"><span>瀏覽全部遊戲 <small id="hubTotal"></small></span><span aria-hidden="true">↗</span></a>
+          <p class="hub-search-note">涵蓋本站所有收錄，包含待上市與既有上市紀錄。</p>
+        </div>
+      </section>
+      <section class="hub-routes" aria-labelledby="hubRoutesTitle">
+        <div class="hub-section-heading"><h2 id="hubRoutesTitle">從這三個方向開始</h2><span>跟著日期走，或照自己的喜好找。</span></div>
+        <div class="hub-route-grid">
+          <a class="hub-route hub-route-upcoming" href="./upcoming.html">
+            <div class="hub-route-top"><span class="hub-route-index">01</span><span class="hub-route-scope">未來 45 天</span></div>
+            <svg class="hub-route-icon" viewBox="0 0 80 80" aria-hidden="true"><rect x="13" y="18" width="49" height="47" rx="10"/><path d="M13 33h49M26 12v13m22-13v13M27 47h8m-8 10h8"/><circle cx="59" cy="58" r="15"/><path d="m53 58 5 5 8-10"/></svg>
+            <h3>即將上市</h3><p>下一波新作快到了。<br>把值得等待的遊戲先記下來。</p>
+            <span class="hub-route-action"><span data-hub-count="upcoming">看看即將上市的新作</span><span class="hub-route-arrow" aria-hidden="true">↗</span></span>
+          </a>
+          <a class="hub-route hub-route-released" href="./released.html">
+            <div class="hub-route-top"><span class="hub-route-index">02</span><span class="hub-route-scope">近 30 天</span></div>
+            <svg class="hub-route-icon" viewBox="0 0 80 80" aria-hidden="true"><path d="m24 49 3-15 26-20 13 13-20 26-15 3-7-7Z"/><circle cx="50" cy="30" r="6"/><path d="m29 56-5 13-2-11-11-2 13-6M43 20l-17-1-9 16 12-1m31 12 1 17-16 9 1-19"/></svg>
+            <h3>近期上市</h3><p>新鮮登場，不想錯過。<br>回顧最近上市的遊戲與黑馬。</p>
+            <span class="hub-route-action"><span data-hub-count="released">看看近期上市的遊戲</span><span class="hub-route-arrow" aria-hidden="true">↗</span></span>
+          </a>
+          <a class="hub-route hub-route-tags" href="./explore.html">
+            <div class="hub-route-top"><span class="hub-route-index">03</span><span class="hub-route-scope">跟著喜好</span></div>
+            <svg class="hub-route-icon" viewBox="0 0 80 80" aria-hidden="true"><path d="m13 37 27-24 24 4 4 24-27 27-28-31Z"/><circle cx="52" cy="28" r="5"/><path d="m25 40 12 13m-5-20 13 13M13 17l-4-6m55 48 7 2M49 72l1 5"/></svg>
+            <h3>TAG 探索</h3><p>想合作冒險，還是輕鬆療癒？<br>用 Steam 標籤找到合拍的新作。</p>
+            <span class="hub-route-action"><span data-hub-count="tags">挑選喜歡的 TAG</span><span class="hub-route-arrow" aria-hidden="true">↗</span></span>
+          </a>
+        </div>
+      </section>
+      <div class="hub-bottom"><p id="hubStatus" role="status">正在整理已收錄的遊戲…</p><button id="hubRetry" class="text-link" type="button" hidden>重新讀取</button><a href="./index.html">想按日期找？打開發售月曆 <span aria-hidden="true">↗</span></a></div>
+      <noscript><p class="notice">可以直接前往各功能頁；啟用 JavaScript 後即可查詢遊戲資料。</p></noscript>
+    </main>
+    <footer class="site-footer">
+      <div>
+        <a class="footer-brand" href="./index.html"
+          >GAME TREND RADAR<span>◎</span></a
+        >
+        <p>
+          資料來源：Steam 商店與 Steam Community。<br />遊戲名稱與封面屬各自權利人所有；本站與
+          Valve / Steam 無官方隸屬關係。
+        </p>
+      </div>
+      <a href="#mainContent" class="back-top">回到頂端 ↑</a>
+    </footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

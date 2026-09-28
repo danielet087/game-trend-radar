@@ -200,7 +200,7 @@
       languages.append(language);
     }
     body.append(languages);
-    if (mode === "explore" && game.tags?.length) {
+    if (["explore", "all"].includes(mode) && game.tags?.length) {
       const tags = node("div", "explorer-card-tags");
       const ordered = [...game.tags].sort(
         (a, b) =>
@@ -281,6 +281,8 @@
     if (mode === "released")
       coverage =
         "近期上市僅列出近 30 天內、已確認發售且關注人數嚴格超過 3,000 的遊戲。近期黑馬另須於上市首週達標。";
+    if (mode === "all")
+      coverage = `目前可查詢 ${number.format(D.selectGames(data, "all", today).length)} 款已公開收錄的遊戲，包含待上市與既有上市紀錄，不限近期日期範圍。這是本站收錄清單，並非 Steam 全站遊戲。`;
     if (data.source === "preview")
       coverage += " 正式清單暫時無法讀取，目前使用已公開的預覽資料。";
     $("coverageText").textContent = coverage;
@@ -349,6 +351,10 @@
     );
     set("saved", model.savedOnly ? "1" : "");
     set("sort", $("sortSelect").selectedIndex ? $("sortSelect").value : "");
+    if (mode === "all") {
+      set("period", $("releaseFilter").value);
+      set("language", $("languageFilter").value);
+    }
     history.replaceState(null, "", url);
     if (mode === "date") refreshDateLinks();
   }
@@ -420,7 +426,9 @@
   function restoreQueryFilters(params) {
     $("searchInput").value = params.get("q") || "";
     model.savedOnly = params.get("saved") === "1";
-    for (const [id, param] of [["followersFilter", "min"], ["sortSelect", "sort"]]) {
+    const fields = [["followersFilter", "min"], ["sortSelect", "sort"]];
+    if (mode === "all") fields.push(["releaseFilter", "period"], ["languageFilter", "language"]);
+    for (const [id, param] of fields) {
       $(id).selectedIndex = 0;
       if ([...$(id).options].some((option) => option.value === params.get(param)))
         $(id).value = params.get(param);
@@ -431,7 +439,8 @@
       $("searchInput").value.trim() ||
       $("followersFilter").selectedIndex ||
       model.tag ||
-      model.savedOnly
+      model.savedOnly ||
+      (mode === "all" && ($("releaseFilter").value || $("languageFilter").value))
     );
   }
   function filteredGames() {
@@ -445,14 +454,18 @@
       source = source.filter((game) => saved.has(game.appid));
     const term = $("searchInput").value.trim().toLocaleLowerCase();
     const min = Number($("followersFilter").value);
+    const period = mode === "all" ? $("releaseFilter").value : "";
+    const language = mode === "all" ? $("languageFilter").value : "";
     const items = source.filter(
       (game) =>
         (!term ||
-          `${game.name} ${game.nameEn} ${game.nameOriginalTw || ""} ${game.nameOriginalCn || ""} ${game.appid}`
+          `${game.name} ${game.nameEn} ${game.nameOriginalTw || ""} ${game.nameOriginalCn || ""} ${game.appid} ${mode === "all" ? (game.tags || []).map(tag => tag + " " + R.label(tag)).join(" ") : ""}`
             .toLocaleLowerCase()
             .includes(term)) &&
         game.followers >= min &&
         (!model.tag || R.hasTag(game, model.tag)) &&
+        (!period || (period === "future" ? game.date >= today : game.date < today)) &&
+        (!language || game.languages?.[language] === true) &&
         (!model.savedOnly || saved.has(game.appid)),
     );
     const order = $("sortSelect").value;
@@ -617,6 +630,10 @@
     $("followersFilter").selectedIndex = 0;
     model.savedOnly = false;
     model.tag = "";
+    if (mode === "all") {
+      $("releaseFilter").selectedIndex = 0;
+      $("languageFilter").selectedIndex = 0;
+    }
     if (mode === "explore") {
       $("tagSearch").value = "";
       renderTagCatalog();
@@ -720,6 +737,15 @@
   });
   $("followersFilter").addEventListener("change", changeFilters);
   $("sortSelect").addEventListener("change", changeFilters);
+  if (mode === "all") {
+    $("releaseFilter").addEventListener("change", changeFilters);
+    $("languageFilter").addEventListener("change", changeFilters);
+    window.addEventListener("popstate", () => {
+      restoreQueryFilters(new URLSearchParams(location.search));
+      model.limit = PAGE_SIZE;
+      renderExplorer();
+    });
+  }
   $("savedFilter").addEventListener("click", () => {
     model.savedOnly = !model.savedOnly;
     changeFilters();
@@ -785,6 +811,7 @@
       saved: "收藏儲存在此瀏覽器；此處顯示仍在目前公開資料內的遊戲。",
       date: "至少 5,000 人關注 · 僅列出明確發售日期",
       explore: "目前已收錄的待上市遊戲 · 至少 5,000 人關注 · TAG 依 Steam 資料",
+      all: "包含待上市與既有上市紀錄 · 不限近期日期範圍 · 僅搜尋本站已公開收錄的遊戲",
     };
     $("scopeNote").textContent = notes[mode] || "";
     if (mode === "saved") {
@@ -839,6 +866,8 @@
     const { catalog: official, preview } = await window.RadarStorage.loadSources();
     try {
       model.data = D.datasets(official, preview);
+      if (mode === "all" && model.data)
+        model.data = R.enrich(model.data, official, preview);
       if (mode === "explore" && model.data) {
         model.data = R.enrich(model.data, official, preview);
         allTagChoices = R.catalog(

@@ -167,6 +167,18 @@ test("malformed rows do not erase the valid published dataset", () => {
   assert.equal(data.games.length, 1);
 });
 
+test("the complete catalog retains older releases, distant future games and accepted dark horses without duplicates", () => {
+  const data = D.datasets({ games: [
+    game({ appid: 1, release_start: "2026-01-01" }),
+    game({ appid: 2, release_start: "2027-04-01" }),
+    game({ appid: 3, release_start: "2026-08-01", followers: 3500, recent_source: "direct_release", first_week_qualified_at: "2026-08-03T00:00:00Z" }),
+    game({ appid: 4, followers: 100 }),
+  ] }, null);
+  assert.deepEqual(D.selectGames(data, "all", "2026-09-28").map(row => row.appid), [1, 2, 3]);
+  assert.equal(D.selectGames(data, "upcoming", "2026-09-28").length, 0);
+  assert.equal(D.selectGames(data, "released", "2026-09-28").length, 0);
+});
+
 test("Store title priority is Traditional > converted Simplified > English, independently of supported languages", () => {
   const base = {
     name: "Fable",
