@@ -1,2532 +1,3097 @@
 {
-  "generated_at": "2026-09-28T16:02:42Z",
+  "schema_version": 2,
+  "generated_at": "2026-09-29T14:28:32Z",
+  "collection_started_at": "2026-09-29T14:24:51Z",
   "source": "Twitch Helix API",
+  "min_viewers": 7000,
   "coverage": {
-    "global_stream_sample_size": 1000,
-    "global_stream_pages": 10,
-    "global_metrics_are_sampled": true,
-    "global_game_filter": "Twitch categories with a non-empty IGDB game ID",
-    "tracked_game_stream_pages": 50,
-    "tracked_game_count": 105,
-    "tracked_game_matches": 97,
-    "region_note": "Twitch Helix exposes broadcast language but not broadcaster physical location. No Taiwan/Asia location inference is applied in this dataset."
+    "collection_complete": true,
+    "stop_reason": "whole_page_below_threshold",
+    "category_pages": 2,
+    "categories_seen": 200,
+    "categories_measured": 177,
+    "category_measurements": 177,
+    "duplicate_category_remeasurements": 0,
+    "below_threshold_measurements": 152,
+    "below_threshold_count": 152,
+    "excluded_before_metrics_count": 23,
+    "helix_calls_excluding_retries": 568,
+    "global_metrics_are_sampled": false,
+    "is_simultaneous_global_snapshot": false,
+    "all_categories_enumerated": false,
+    "discovery_note": "Uses Helix category ranking and stops after a whole measured page below threshold. Live rankings and streams can change during pagination; this is not proof of a simultaneous, exhaustive global census.",
+    "region_note": "Broadcast language is not broadcaster location; no Taiwan/Asia inference is applied.",
+    "igdb_hints_status": "ok"
   },
-  "top_games": [
+  "candidate_games": [
+    {
+      "game_id": "1254042066",
+      "game_name": "The Witcher 3: Wild Hunt Remastered",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1254042066_IGDB-{width}x{height}.jpg",
+      "igdb_id": "415005",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 62473,
+      "streamer_count": 638,
+      "median_viewer_count": 4.0,
+      "language_streamers": {
+        "en": 188,
+        "de": 85,
+        "ru": 82,
+        "pl": 80,
+        "fr": 65,
+        "pt": 37,
+        "uk": 25,
+        "es": 24,
+        "it": 11,
+        "cs": 9,
+        "zh": 6,
+        "hu": 4,
+        "ar": 4,
+        "fi": 4,
+        "other": 2,
+        "ja": 2,
+        "tr": 2,
+        "nl": 2,
+        "zh-hk": 1,
+        "th": 1,
+        "el": 1,
+        "da": 1,
+        "sk": 1,
+        "id": 1
+      },
+      "measurement_started_at": "2026-09-29T14:24:52Z",
+      "measurement_finished_at": "2026-09-29T14:24:55Z",
+      "pagination_complete": true,
+      "stream_pages": 9,
+      "duplicate_broadcasters_removed": 66,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-09-29T00:00:00Z",
+        "release_band": "recent_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": true,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-09-29T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "released_within_14_days",
+          "age_hours": 14.476
+        }
+      }
+    },
     {
       "game_id": "123184772",
       "game_name": "EA Sports FC 27",
-      "streamer_count": 38,
-      "viewer_count": 76770,
-      "language_streamers": {
-        "es": 11,
-        "en": 9,
-        "de": 6,
-        "fr": 5,
-        "it": 2,
-        "pl": 2,
-        "pt": 1,
-        "no": 1,
-        "ru": 1
-      },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/123184772_IGDB-{width}x{height}.jpg",
-      "igdb_id": "408819"
-    },
-    {
-      "game_id": "21779",
-      "game_name": "League of Legends",
-      "streamer_count": 44,
-      "viewer_count": 69070,
-      "language_streamers": {
-        "en": 16,
-        "de": 9,
-        "fr": 4,
-        "pl": 3,
-        "es": 3,
-        "zh": 2,
-        "pt": 2,
-        "it": 1,
-        "el": 1,
-        "hu": 1,
-        "ru": 1,
-        "ja": 1
+      "igdb_id": "408819",
+      "verification": {
+        "name": "EA Sports FC 27",
+        "status": "new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": "全新"
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/21779-{width}x{height}.jpg",
-      "igdb_id": "115"
-    },
-    {
-      "game_id": "18122",
-      "game_name": "World of Warcraft",
-      "streamer_count": 46,
-      "viewer_count": 54755,
+      "viewer_count": 40496,
+      "streamer_count": 1035,
+      "median_viewer_count": 1,
       "language_streamers": {
-        "en": 29,
-        "ru": 5,
-        "fr": 4,
-        "de": 4,
-        "es": 3,
-        "pt": 1
+        "en": 420,
+        "de": 166,
+        "fr": 109,
+        "es": 90,
+        "it": 71,
+        "pt": 55,
+        "ru": 28,
+        "ar": 21,
+        "pl": 18,
+        "nl": 12,
+        "ja": 8,
+        "hu": 5,
+        "sv": 5,
+        "tr": 5,
+        "da": 4,
+        "uk": 4,
+        "fi": 2,
+        "el": 2,
+        "cs": 2,
+        "zh-hk": 2,
+        "other": 2,
+        "no": 2,
+        "bg": 1,
+        "ca": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/18122-{width}x{height}.jpg",
-      "igdb_id": "123"
-    },
-    {
-      "game_id": "263490",
-      "game_name": "Rust",
-      "streamer_count": 20,
-      "viewer_count": 54322,
-      "language_streamers": {
-        "en": 16,
-        "es": 2,
-        "fr": 1,
-        "de": 1
+      "measurement_started_at": "2026-09-29T14:24:55Z",
+      "measurement_finished_at": "2026-09-29T14:25:00Z",
+      "pagination_complete": true,
+      "stream_pages": 13,
+      "duplicate_broadcasters_removed": 63,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-09-25T00:00:00Z",
+        "release_band": "recent_release",
+        "confirms_twitch_new_badge": false
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/263490_IGDB-{width}x{height}.jpg",
-      "igdb_id": "3277"
-    },
-    {
-      "game_id": "516575",
-      "game_name": "VALORANT",
-      "streamer_count": 40,
-      "viewer_count": 50336,
-      "language_streamers": {
-        "zh": 16,
-        "en": 13,
-        "fr": 4,
-        "es": 2,
-        "ru": 2,
-        "de": 1,
-        "pt": 1,
-        "pl": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/516575-{width}x{height}.jpg",
-      "igdb_id": "126459"
-    },
-    {
-      "game_id": "32982",
-      "game_name": "Grand Theft Auto V",
-      "streamer_count": 38,
-      "viewer_count": 49332,
-      "language_streamers": {
-        "en": 19,
-        "de": 7,
-        "ru": 6,
-        "fr": 4,
-        "pl": 1,
-        "sv": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/32982_IGDB-{width}x{height}.jpg",
-      "igdb_id": "1020"
-    },
-    {
-      "game_id": "501028374",
-      "game_name": "Teach My Little Sister How to Drive",
-      "streamer_count": 2,
-      "viewer_count": 41973,
-      "language_streamers": {
-        "ja": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/501028374_IGDB-{width}x{height}.jpg",
-      "igdb_id": "373092"
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": true,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-09-25T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "released_within_14_days",
+          "age_hours": 110.476
+        }
+      }
     },
     {
       "game_id": "743893402",
       "game_name": "WARDOGS",
-      "streamer_count": 22,
-      "viewer_count": 25215,
-      "language_streamers": {
-        "en": 9,
-        "fr": 6,
-        "de": 3,
-        "ru": 3,
-        "pt": 1
-      },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/743893402_IGDB-{width}x{height}.jpg",
-      "igdb_id": "388285"
-    },
-    {
-      "game_id": "511224",
-      "game_name": "Apex Legends",
-      "streamer_count": 14,
-      "viewer_count": 22488,
-      "language_streamers": {
-        "ja": 8,
-        "en": 4,
-        "zh": 2
+      "igdb_id": "388285",
+      "verification": {
+        "name": "WARDOGS",
+        "status": "new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": "全新"
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/511224-{width}x{height}.jpg",
-      "igdb_id": "114795"
-    },
-    {
-      "game_id": "676802825",
-      "game_name": "Big Walk",
-      "streamer_count": 1,
-      "viewer_count": 21976,
+      "viewer_count": 35755,
+      "streamer_count": 908,
+      "median_viewer_count": 3.0,
       "language_streamers": {
-        "ja": 1
+        "en": 330,
+        "ru": 136,
+        "ja": 99,
+        "de": 95,
+        "fr": 65,
+        "zh": 28,
+        "es": 25,
+        "pt": 25,
+        "uk": 22,
+        "th": 12,
+        "cs": 12,
+        "pl": 11,
+        "it": 8,
+        "fi": 6,
+        "ar": 6,
+        "nl": 5,
+        "zh-hk": 5,
+        "other": 3,
+        "sv": 3,
+        "da": 3,
+        "hu": 2,
+        "id": 2,
+        "tl": 1,
+        "tr": 1,
+        "no": 1,
+        "ko": 1,
+        "sk": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/676802825_IGDB-{width}x{height}.jpg",
-      "igdb_id": "279624"
-    },
-    {
-      "game_id": "1282866981",
-      "game_name": "Delta Force",
-      "streamer_count": 5,
-      "viewer_count": 19666,
-      "language_streamers": {
-        "ru": 3,
-        "en": 2
+      "measurement_started_at": "2026-09-29T14:25:00Z",
+      "measurement_finished_at": "2026-09-29T14:25:05Z",
+      "pagination_complete": true,
+      "stream_pages": 12,
+      "duplicate_broadcasters_removed": 93,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-09-10T00:00:00Z",
+        "release_band": "recent_release",
+        "confirms_twitch_new_badge": false
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1282866981_IGDB-{width}x{height}.jpg",
-      "igdb_id": "262186"
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-09-10T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 470.476
+        }
+      }
     },
     {
-      "game_id": "515025",
-      "game_name": "Overwatch",
-      "streamer_count": 11,
-      "viewer_count": 17713,
+      "game_id": "2042681592",
+      "game_name": "Minecraft Dungeons II",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2042681592_IGDB-{width}x{height}.jpg",
+      "igdb_id": "395525",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 25153,
+      "streamer_count": 856,
+      "median_viewer_count": 2.0,
       "language_streamers": {
-        "en": 5,
-        "es": 2,
-        "ja": 2,
+        "en": 437,
+        "de": 98,
+        "ja": 70,
+        "ru": 58,
+        "fr": 57,
+        "pt": 36,
+        "es": 34,
+        "zh": 22,
+        "it": 15,
+        "pl": 9,
+        "nl": 4,
+        "hu": 3,
+        "zh-hk": 2,
+        "sv": 2,
+        "no": 2,
+        "tr": 1,
         "ar": 1,
-        "fr": 1
+        "fi": 1,
+        "th": 1,
+        "uk": 1,
+        "bg": 1,
+        "other": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/515025-{width}x{height}.jpg",
-      "igdb_id": "125174"
+      "measurement_started_at": "2026-09-29T14:25:05Z",
+      "measurement_finished_at": "2026-09-29T14:25:09Z",
+      "pagination_complete": true,
+      "stream_pages": 11,
+      "duplicate_broadcasters_removed": 71,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-09-29T00:00:00Z",
+        "release_band": "recent_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": true,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-09-29T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "released_within_14_days",
+          "age_hours": 14.476
+        }
+      }
     },
     {
-      "game_id": "27471",
-      "game_name": "Minecraft",
-      "streamer_count": 21,
-      "viewer_count": 17223,
-      "language_streamers": {
-        "en": 13,
-        "ru": 3,
-        "nl": 2,
-        "de": 2,
-        "ja": 1
+      "game_id": "115977",
+      "game_name": "The Witcher 3: Wild Hunt",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/115977_IGDB-{width}x{height}.jpg",
+      "igdb_id": "1942",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/27471_IGDB-{width}x{height}.jpg",
-      "igdb_id": "135400"
+      "viewer_count": 20064,
+      "streamer_count": 656,
+      "median_viewer_count": 3.0,
+      "language_streamers": {
+        "en": 174,
+        "ru": 165,
+        "pl": 59,
+        "de": 56,
+        "fr": 54,
+        "pt": 36,
+        "uk": 28,
+        "es": 24,
+        "cs": 12,
+        "zh": 11,
+        "ja": 11,
+        "it": 8,
+        "ar": 7,
+        "hu": 3,
+        "zh-hk": 1,
+        "tr": 1,
+        "vi": 1,
+        "id": 1,
+        "bg": 1,
+        "tl": 1,
+        "nl": 1,
+        "other": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:09Z",
+      "measurement_finished_at": "2026-09-29T14:25:12Z",
+      "pagination_complete": true,
+      "stream_pages": 8,
+      "duplicate_broadcasters_removed": 26,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2015-05-19T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2015-05-19T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 99638.476
+        }
+      }
     },
     {
-      "game_id": "27546",
-      "game_name": "World of Tanks",
-      "streamer_count": 6,
-      "viewer_count": 14804,
-      "language_streamers": {
-        "en": 3,
-        "de": 1,
-        "pl": 1,
-        "hu": 1
+      "game_id": "404069058",
+      "game_name": "ACE COMBAT 8: WINGS OF THEVE",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/404069058_IGDB-{width}x{height}.jpg",
+      "igdb_id": "381247",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/27546_IGDB-{width}x{height}.jpg",
-      "igdb_id": "1184"
+      "viewer_count": 18520,
+      "streamer_count": 297,
+      "median_viewer_count": 2,
+      "language_streamers": {
+        "en": 141,
+        "ja": 102,
+        "zh": 14,
+        "fr": 12,
+        "ru": 9,
+        "es": 6,
+        "pt": 4,
+        "de": 3,
+        "it": 2,
+        "zh-hk": 1,
+        "ko": 1,
+        "th": 1,
+        "nl": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:12Z",
+      "measurement_finished_at": "2026-09-29T14:25:14Z",
+      "pagination_complete": true,
+      "stream_pages": 5,
+      "duplicate_broadcasters_removed": 20,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-10-02T00:00:00Z",
+        "release_band": "upcoming",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": true,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-10-02T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "upcoming",
+          "age_hours": -57.524
+        }
+      }
     },
     {
-      "game_id": "33214",
-      "game_name": "Fortnite",
-      "streamer_count": 12,
-      "viewer_count": 13896,
+      "game_id": "1286077738",
+      "game_name": "Monster Hunter Wilds",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1286077738_IGDB-{width}x{height}.jpg",
+      "igdb_id": "279661",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 16678,
+      "streamer_count": 254,
+      "median_viewer_count": 3.0,
       "language_streamers": {
-        "en": 6,
-        "fr": 3,
+        "ja": 137,
+        "en": 62,
+        "zh": 13,
+        "th": 13,
+        "fr": 9,
+        "de": 5,
+        "it": 3,
+        "pt": 3,
         "es": 2,
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/33214-{width}x{height}.jpg",
-      "igdb_id": "1905"
-    },
-    {
-      "game_id": "513143",
-      "game_name": "Teamfight Tactics",
-      "streamer_count": 15,
-      "viewer_count": 12206,
-      "language_streamers": {
-        "ja": 6,
-        "fr": 3,
-        "en": 2,
-        "de": 1,
-        "zh": 1,
-        "es": 1,
-        "pl": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/513143-{width}x{height}.jpg",
-      "igdb_id": "120176"
-    },
-    {
-      "game_id": "508455",
-      "game_name": "Valheim",
-      "streamer_count": 7,
-      "viewer_count": 11996,
-      "language_streamers": {
-        "en": 5,
-        "zh": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/508455_IGDB-{width}x{height}.jpg",
-      "igdb_id": "104967"
-    },
-    {
-      "game_id": "138585",
-      "game_name": "Hearthstone",
-      "streamer_count": 8,
-      "viewer_count": 10228,
-      "language_streamers": {
-        "en": 4,
         "ru": 2,
-        "fr": 2
+        "zh-hk": 2,
+        "id": 1,
+        "other": 1,
+        "tl": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/138585-{width}x{height}.jpg",
-      "igdb_id": "1279"
+      "measurement_started_at": "2026-09-29T14:25:14Z",
+      "measurement_finished_at": "2026-09-29T14:25:16Z",
+      "pagination_complete": true,
+      "stream_pages": 4,
+      "duplicate_broadcasters_removed": 9,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2025-02-28T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2025-02-28T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 13886.476
+        }
+      }
     },
     {
-      "game_id": "31376",
-      "game_name": "Terraria",
-      "streamer_count": 1,
-      "viewer_count": 10156,
-      "language_streamers": {
-        "en": 1
+      "game_id": "1728683467",
+      "game_name": "Core Keeper",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1728683467_IGDB-{width}x{height}.jpg",
+      "igdb_id": "152127",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/31376_IGDB-{width}x{height}.jpg",
-      "igdb_id": "1879"
-    },
-    {
-      "game_id": "512710",
-      "game_name": "Call of Duty: Warzone",
-      "streamer_count": 8,
-      "viewer_count": 9847,
+      "viewer_count": 16116,
+      "streamer_count": 37,
+      "median_viewer_count": 3,
       "language_streamers": {
-        "en": 6,
-        "fr": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/512710-{width}x{height}.jpg",
-      "igdb_id": "131800"
-    },
-    {
-      "game_id": "460630",
-      "game_name": "Rainbow Six Siege",
-      "streamer_count": 6,
-      "viewer_count": 9565,
-      "language_streamers": {
-        "en": 4,
-        "fr": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/460630-{width}x{height}.jpg",
-      "igdb_id": "7360"
-    },
-    {
-      "game_id": "1254042066",
-      "game_name": "The Witcher 3: Wild Hunt Remastered",
-      "streamer_count": 5,
-      "viewer_count": 9520,
-      "language_streamers": {
-        "es": 2,
-        "de": 2,
-        "it": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1254042066_IGDB-{width}x{height}.jpg",
-      "igdb_id": "415005"
-    },
-    {
-      "game_id": "491487",
-      "game_name": "Dead by Daylight",
-      "streamer_count": 9,
-      "viewer_count": 9328,
-      "language_streamers": {
-        "en": 6,
-        "de": 2,
-        "es": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/491487-{width}x{height}.jpg",
-      "igdb_id": "18866"
-    },
-    {
-      "game_id": "491931",
-      "game_name": "Escape from Tarkov",
-      "streamer_count": 9,
-      "viewer_count": 7813,
-      "language_streamers": {
-        "en": 5,
-        "ja": 1,
-        "es": 1,
-        "de": 1,
-        "zh": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/491931_IGDB-{width}x{height}.jpg",
-      "igdb_id": "15536"
-    },
-    {
-      "game_id": "30921",
-      "game_name": "Rocket League",
-      "streamer_count": 7,
-      "viewer_count": 7418,
-      "language_streamers": {
+        "ja": 21,
+        "en": 11,
         "fr": 2,
-        "en": 2,
-        "ar": 1,
-        "de": 1,
-        "pl": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/30921-{width}x{height}.jpg",
-      "igdb_id": "11198"
-    },
-    {
-      "game_id": "1853781077",
-      "game_name": "The Headliners",
-      "streamer_count": 4,
-      "viewer_count": 7363,
-      "language_streamers": {
-        "ja": 4
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1853781077_IGDB-{width}x{height}.jpg",
-      "igdb_id": "324811"
-    },
-    {
-      "game_id": "1913410799",
-      "game_name": "Total War: WARHAMMER III",
-      "streamer_count": 5,
-      "viewer_count": 7030,
-      "language_streamers": {
-        "en": 2,
-        "ru": 2,
-        "fr": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1913410799_IGDB-{width}x{height}.jpg",
-      "igdb_id": "143114"
-    },
-    {
-      "game_id": "1267582829",
-      "game_name": "Aniimo",
-      "streamer_count": 7,
-      "viewer_count": 6960,
-      "language_streamers": {
-        "fr": 3,
-        "ja": 1,
-        "it": 1,
-        "en": 1,
-        "pt": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1267582829_IGDB-{width}x{height}.jpg",
-      "igdb_id": "348202"
-    },
-    {
-      "game_id": "123710355",
-      "game_name": "DRAGON QUEST VII Reimagined",
-      "streamer_count": 1,
-      "viewer_count": 6941,
-      "language_streamers": {
-        "ja": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/123710355_IGDB-{width}x{height}.jpg",
-      "igdb_id": "366884"
-    },
-    {
-      "game_id": "779192097",
-      "game_name": "Fire Emblem: Fortune's Weave",
-      "streamer_count": 5,
-      "viewer_count": 6550,
-      "language_streamers": {
-        "en": 2,
-        "ja": 2,
-        "zh": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/779192097_IGDB-{width}x{height}.jpg",
-      "igdb_id": "366896"
-    },
-    {
-      "game_id": "2106755390",
-      "game_name": "Graveyard Keeper II",
-      "streamer_count": 5,
-      "viewer_count": 6542,
-      "language_streamers": {
-        "en": 2,
-        "cs": 1,
-        "de": 1,
-        "fr": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2106755390_IGDB-{width}x{height}.jpg",
-      "igdb_id": "397817"
-    },
-    {
-      "game_id": "735904419",
-      "game_name": "ARK: Survival Ascended",
-      "streamer_count": 8,
-      "viewer_count": 6519,
-      "language_streamers": {
-        "ja": 7,
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/735904419_IGDB-{width}x{height}.jpg",
-      "igdb_id": "250509"
-    },
-    {
-      "game_id": "2132205352",
-      "game_name": "Deadlock",
-      "streamer_count": 5,
-      "viewer_count": 6348,
-      "language_streamers": {
-        "en": 4,
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2132205352_IGDB-{width}x{height}.jpg",
-      "igdb_id": "301298"
-    },
-    {
-      "game_id": "1949060636",
-      "game_name": "DinoBones: Tidy Up the Museum",
-      "streamer_count": 1,
-      "viewer_count": 5599,
-      "language_streamers": {
+        "ru": 1,
+        "zh": 1,
         "es": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1949060636_IGDB-{width}x{height}.jpg",
-      "igdb_id": "414637"
-    },
-    {
-      "game_id": "1960720223",
-      "game_name": "SILENT HILL: townfall",
-      "streamer_count": 9,
-      "viewer_count": 5586,
-      "language_streamers": {
-        "en": 6,
-        "pt": 1,
-        "zh": 1,
-        "it": 1
+      "measurement_started_at": "2026-09-29T14:25:16Z",
+      "measurement_finished_at": "2026-09-29T14:25:17Z",
+      "pagination_complete": true,
+      "stream_pages": 2,
+      "duplicate_broadcasters_removed": 0,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2024-08-27T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1960720223_IGDB-{width}x{height}.jpg",
-      "igdb_id": "222342"
-    },
-    {
-      "game_id": "12839",
-      "game_name": "Heroes of Might and Magic III: The Restoration of Erathia",
-      "streamer_count": 4,
-      "viewer_count": 4939,
-      "language_streamers": {
-        "ru": 3,
-        "pl": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/12839_IGDB-{width}x{height}.jpg",
-      "igdb_id": "364"
-    },
-    {
-      "game_id": "490292",
-      "game_name": "DARK SOULS III",
-      "streamer_count": 2,
-      "viewer_count": 4895,
-      "language_streamers": {
-        "ru": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/490292_IGDB-{width}x{height}.jpg",
-      "igdb_id": "11133"
-    },
-    {
-      "game_id": "459931",
-      "game_name": "Old School RuneScape",
-      "streamer_count": 5,
-      "viewer_count": 4817,
-      "language_streamers": {
-        "en": 5
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/459931_IGDB-{width}x{height}.jpg",
-      "igdb_id": "79824"
-    },
-    {
-      "game_id": "1264310518",
-      "game_name": "Marvel Rivals",
-      "streamer_count": 5,
-      "viewer_count": 4797,
-      "language_streamers": {
-        "en": 5
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1264310518_IGDB-{width}x{height}.jpg",
-      "igdb_id": "294041"
-    },
-    {
-      "game_id": "1971149767",
-      "game_name": "I Know a Guy",
-      "streamer_count": 1,
-      "viewer_count": 4539,
-      "language_streamers": {
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1971149767_IGDB-{width}x{height}.jpg",
-      "igdb_id": "389006"
-    },
-    {
-      "game_id": "441530517",
-      "game_name": "Shape of Dreams",
-      "streamer_count": 1,
-      "viewer_count": 4335,
-      "language_streamers": {
-        "zh": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/441530517_IGDB-{width}x{height}.jpg",
-      "igdb_id": "293572"
-    },
-    {
-      "game_id": "29452",
-      "game_name": "Virtual Casino",
-      "streamer_count": 7,
-      "viewer_count": 4257,
-      "language_streamers": {
-        "pt": 5,
-        "ru": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/29452_IGDB-{width}x{height}.jpg",
-      "igdb_id": "45517"
-    },
-    {
-      "game_id": "238913836",
-      "game_name": "Crime Podcast: 1976",
-      "streamer_count": 1,
-      "viewer_count": 4231,
-      "language_streamers": {
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/238913836_IGDB-{width}x{height}.jpg",
-      "igdb_id": "420520"
-    },
-    {
-      "game_id": "602040818",
-      "game_name": "NBA 2K27",
-      "streamer_count": 6,
-      "viewer_count": 4171,
-      "language_streamers": {
-        "en": 6
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/602040818_IGDB-{width}x{height}.jpg",
-      "igdb_id": "408823"
-    },
-    {
-      "game_id": "1338428218",
-      "game_name": "CONTROL Resonant",
-      "streamer_count": 5,
-      "viewer_count": 4097,
-      "language_streamers": {
-        "en": 2,
-        "de": 1,
-        "ru": 1,
-        "fr": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1338428218_IGDB-{width}x{height}.jpg",
-      "igdb_id": "225582"
-    },
-    {
-      "game_id": "1898040946",
-      "game_name": "How to Fish",
-      "streamer_count": 1,
-      "viewer_count": 4039,
-      "language_streamers": {
-        "th": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1898040946_IGDB-{width}x{height}.jpg",
-      "igdb_id": "378170"
-    },
-    {
-      "game_id": "213930085",
-      "game_name": "Honkai: Star Rail",
-      "streamer_count": 3,
-      "viewer_count": 3863,
-      "language_streamers": {
-        "ru": 1,
-        "zh": 1,
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/213930085_IGDB-{width}x{height}.jpg",
-      "igdb_id": "178282"
-    },
-    {
-      "game_id": "494683",
-      "game_name": "theHunter: Call of the Wild",
-      "streamer_count": 1,
-      "viewer_count": 3829,
-      "language_streamers": {
-        "fr": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/494683_IGDB-{width}x{height}.jpg",
-      "igdb_id": "26381"
-    },
-    {
-      "game_id": "2059463486",
-      "game_name": "Waterpark Simulator",
-      "streamer_count": 1,
-      "viewer_count": 3808,
-      "language_streamers": {
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2059463486_IGDB-{width}x{height}.jpg",
-      "igdb_id": "348648"
-    },
-    {
-      "game_id": "499634",
-      "game_name": "Crypto",
-      "streamer_count": 4,
-      "viewer_count": 3787,
-      "language_streamers": {
-        "en": 4
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/499634-{width}x{height}.jpg",
-      "igdb_id": "76760"
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2024-08-27T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 18326.476
+        }
+      }
     },
     {
       "game_id": "498592",
       "game_name": "I'm Only Sleeping",
-      "streamer_count": 5,
-      "viewer_count": 3648,
-      "language_streamers": {
-        "en": 4,
-        "pt": 1
-      },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/498592_IGDB-{width}x{height}.jpg",
-      "igdb_id": "71001"
-    },
-    {
-      "game_id": "513501",
-      "game_name": "Standoff 2",
-      "streamer_count": 3,
-      "viewer_count": 3588,
-      "language_streamers": {
-        "ru": 3
+      "igdb_id": "71001",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/513501_IGDB-{width}x{height}.jpg",
-      "igdb_id": "126055"
-    },
-    {
-      "game_id": "19357",
-      "game_name": "Guild Wars 2",
-      "streamer_count": 2,
-      "viewer_count": 3572,
+      "viewer_count": 14532,
+      "streamer_count": 208,
+      "median_viewer_count": 8.0,
       "language_streamers": {
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/19357_IGDB-{width}x{height}.jpg",
-      "igdb_id": "1183"
-    },
-    {
-      "game_id": "386821",
-      "game_name": "Black Desert",
-      "streamer_count": 3,
-      "viewer_count": 3301,
-      "language_streamers": {
-        "en": 3
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/386821_IGDB-{width}x{height}.jpg",
-      "igdb_id": "6292"
-    },
-    {
-      "game_id": "687129551",
-      "game_name": "Trackmania",
-      "streamer_count": 3,
-      "viewer_count": 3274,
-      "language_streamers": {
-        "en": 3
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/687129551-{width}x{height}.jpg",
-      "igdb_id": "133807"
-    },
-    {
-      "game_id": "1274205901",
-      "game_name": "Wo Long 2: Wings of Ember",
-      "streamer_count": 1,
-      "viewer_count": 3120,
-      "language_streamers": {
-        "zh": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1274205901_IGDB-{width}x{height}.jpg",
-      "igdb_id": "405070"
-    },
-    {
-      "game_id": "2095006742",
-      "game_name": "Way of the Hunter 2",
-      "streamer_count": 1,
-      "viewer_count": 3108,
-      "language_streamers": {
+        "en": 152,
+        "es": 27,
+        "pt": 15,
+        "ru": 6,
+        "de": 4,
+        "zh": 2,
+        "other": 1,
         "fr": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2095006742_IGDB-{width}x{height}.jpg",
-      "igdb_id": "383019"
-    },
-    {
-      "game_id": "417892",
-      "game_name": "Z1: Battle Royale",
-      "streamer_count": 5,
-      "viewer_count": 2843,
-      "language_streamers": {
-        "fr": 3,
-        "en": 1,
-        "de": 1
+      "measurement_started_at": "2026-09-29T14:25:17Z",
+      "measurement_finished_at": "2026-09-29T14:25:18Z",
+      "pagination_complete": true,
+      "stream_pages": 4,
+      "duplicate_broadcasters_removed": 2,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2005-12-19T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/417892_IGDB-{width}x{height}.jpg",
-      "igdb_id": "18094"
-    },
-    {
-      "game_id": "2083",
-      "game_name": "RuneScape",
-      "streamer_count": 2,
-      "viewer_count": 2789,
-      "language_streamers": {
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2083_IGDB-{width}x{height}.jpg",
-      "igdb_id": "5611"
-    },
-    {
-      "game_id": "417528",
-      "game_name": "Albion Online",
-      "streamer_count": 4,
-      "viewer_count": 2765,
-      "language_streamers": {
-        "es": 2,
-        "en": 1,
-        "pt": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/417528_IGDB-{width}x{height}.jpg",
-      "igdb_id": "19698"
-    },
-    {
-      "game_id": "515024",
-      "game_name": "Diablo IV",
-      "streamer_count": 2,
-      "viewer_count": 2745,
-      "language_streamers": {
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/515024-{width}x{height}.jpg",
-      "igdb_id": "125165"
-    },
-    {
-      "game_id": "510389",
-      "game_name": "Shakes and Fidget",
-      "streamer_count": 2,
-      "viewer_count": 2675,
-      "language_streamers": {
-        "en": 1,
-        "pl": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/510389_IGDB-{width}x{height}.jpg",
-      "igdb_id": "18090"
-    },
-    {
-      "game_id": "1277051112",
-      "game_name": "Furyball: Rogue Revenge",
-      "streamer_count": 1,
-      "viewer_count": 2590,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1277051112_IGDB-{width}x{height}.jpg",
-      "igdb_id": "399307"
-    },
-    {
-      "game_id": "512923",
-      "game_name": "Baldur's Gate 3",
-      "streamer_count": 1,
-      "viewer_count": 2483,
-      "language_streamers": {
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/512923_IGDB-{width}x{height}.jpg",
-      "igdb_id": "119171"
-    },
-    {
-      "game_id": "65632",
-      "game_name": "DayZ",
-      "streamer_count": 3,
-      "viewer_count": 2479,
-      "language_streamers": {
-        "en": 3
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/65632_IGDB-{width}x{height}.jpg",
-      "igdb_id": "2117"
-    },
-    {
-      "game_id": "55453844",
-      "game_name": "Street Fighter 6",
-      "streamer_count": 2,
-      "viewer_count": 2302,
-      "language_streamers": {
-        "en": 1,
-        "ja": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/55453844_IGDB-{width}x{height}.jpg",
-      "igdb_id": "191692"
-    },
-    {
-      "game_id": "401587136",
-      "game_name": "Arena Breakout: Infinite",
-      "streamer_count": 3,
-      "viewer_count": 2268,
-      "language_streamers": {
-        "en": 2,
-        "pt": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/401587136_IGDB-{width}x{height}.jpg",
-      "igdb_id": "298915"
-    },
-    {
-      "game_id": "19619",
-      "game_name": "Tibia",
-      "streamer_count": 4,
-      "viewer_count": 2261,
-      "language_streamers": {
-        "pt": 4
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/19619_IGDB-{width}x{height}.jpg",
-      "igdb_id": "9596"
-    },
-    {
-      "game_id": "2124871354",
-      "game_name": "RuneScape: Dragonwilds",
-      "streamer_count": 1,
-      "viewer_count": 2261,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2124871354_IGDB-{width}x{height}.jpg",
-      "igdb_id": "337712"
-    },
-    {
-      "game_id": "1435206302",
-      "game_name": "Slay the Spire II",
-      "streamer_count": 2,
-      "viewer_count": 2160,
-      "language_streamers": {
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1435206302_IGDB-{width}x{height}.jpg",
-      "igdb_id": "296831"
-    },
-    {
-      "game_id": "621254945",
-      "game_name": "Dyson Sphere Program",
-      "streamer_count": 1,
-      "viewer_count": 2146,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/621254945_IGDB-{width}x{height}.jpg",
-      "igdb_id": "139078"
-    },
-    {
-      "game_id": "601612659",
-      "game_name": "Well Dweller",
-      "streamer_count": 1,
-      "viewer_count": 2138,
-      "language_streamers": {
-        "es": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/601612659_IGDB-{width}x{height}.jpg",
-      "igdb_id": "360075"
-    },
-    {
-      "game_id": "499003",
-      "game_name": "VRChat",
-      "streamer_count": 3,
-      "viewer_count": 2080,
-      "language_streamers": {
-        "en": 3
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/499003_IGDB-{width}x{height}.jpg",
-      "igdb_id": "33615"
-    },
-    {
-      "game_id": "516866",
-      "game_name": "STALZONE",
-      "streamer_count": 1,
-      "viewer_count": 2036,
-      "language_streamers": {
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/516866_IGDB-{width}x{height}.jpg",
-      "igdb_id": "133748"
-    },
-    {
-      "game_id": "1517377137",
-      "game_name": "RV There Yet?",
-      "streamer_count": 2,
-      "viewer_count": 1997,
-      "language_streamers": {
-        "ru": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1517377137_IGDB-{width}x{height}.jpg",
-      "igdb_id": "373580"
-    },
-    {
-      "game_id": "504463",
-      "game_name": "Tom Clancy's The Division 2",
-      "streamer_count": 4,
-      "viewer_count": 1942,
-      "language_streamers": {
-        "en": 3,
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/504463_IGDB-{width}x{height}.jpg",
-      "igdb_id": "90099"
-    },
-    {
-      "game_id": "18707",
-      "game_name": "Grand Theft Auto IV",
-      "streamer_count": 1,
-      "viewer_count": 1936,
-      "language_streamers": {
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/18707_IGDB-{width}x{height}.jpg",
-      "igdb_id": "731"
-    },
-    {
-      "game_id": "771448419",
-      "game_name": "AION 2",
-      "streamer_count": 2,
-      "viewer_count": 1871,
-      "language_streamers": {
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/771448419_IGDB-{width}x{height}.jpg",
-      "igdb_id": "117297"
-    },
-    {
-      "game_id": "1131336879",
-      "game_name": "Black Russia",
-      "streamer_count": 3,
-      "viewer_count": 1830,
-      "language_streamers": {
-        "ru": 3
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1131336879_IGDB-{width}x{height}.jpg",
-      "igdb_id": "318679"
-    },
-    {
-      "game_id": "902998079",
-      "game_name": "Halloween: The Game",
-      "streamer_count": 1,
-      "viewer_count": 1803,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/902998079_IGDB-{width}x{height}.jpg",
-      "igdb_id": "362096"
-    },
-    {
-      "game_id": "1979693660",
-      "game_name": "Transport Fever 3",
-      "streamer_count": 3,
-      "viewer_count": 1770,
-      "language_streamers": {
-        "de": 1,
-        "en": 1,
-        "cs": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1979693660_IGDB-{width}x{height}.jpg",
-      "igdb_id": "344466"
-    },
-    {
-      "game_id": "493959",
-      "game_name": "Red Dead Redemption II",
-      "streamer_count": 3,
-      "viewer_count": 1691,
-      "language_streamers": {
-        "da": 1,
-        "pt": 1,
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/493959_IGDB-{width}x{height}.jpg",
-      "igdb_id": "25076"
-    },
-    {
-      "game_id": "75101830",
-      "game_name": "Marvel's Wolverine",
-      "streamer_count": 1,
-      "viewer_count": 1669,
-      "language_streamers": {
-        "zh": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/75101830_IGDB-{width}x{height}.jpg",
-      "igdb_id": "168667"
-    },
-    {
-      "game_id": "1122982998",
-      "game_name": "Dark Souls: Remastered",
-      "streamer_count": 2,
-      "viewer_count": 1587,
-      "language_streamers": {
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1122982998_IGDB-{width}x{height}.jpg",
-      "igdb_id": "81085"
-    },
-    {
-      "game_id": "513181",
-      "game_name": "Genshin Impact",
-      "streamer_count": 3,
-      "viewer_count": 1578,
-      "language_streamers": {
-        "en": 2,
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/513181_IGDB-{width}x{height}.jpg",
-      "igdb_id": "119277"
-    },
-    {
-      "game_id": "512953",
-      "game_name": "ELDEN RING",
-      "streamer_count": 3,
-      "viewer_count": 1573,
-      "language_streamers": {
-        "ru": 1,
-        "de": 1,
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-{width}x{height}.jpg",
-      "igdb_id": "119133"
-    },
-    {
-      "game_id": "515325",
-      "game_name": "Not for Broadcast",
-      "streamer_count": 1,
-      "viewer_count": 1568,
-      "language_streamers": {
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/515325_IGDB-{width}x{height}.jpg",
-      "igdb_id": "122133"
-    },
-    {
-      "game_id": "31339",
-      "game_name": "Project Zomboid",
-      "streamer_count": 3,
-      "viewer_count": 1555,
-      "language_streamers": {
-        "fr": 1,
-        "en": 1,
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/31339_IGDB-{width}x{height}.jpg",
-      "igdb_id": "3189"
-    },
-    {
-      "game_id": "518017",
-      "game_name": "Resident Evil Village",
-      "streamer_count": 1,
-      "viewer_count": 1529,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/518017_IGDB-{width}x{height}.jpg",
-      "igdb_id": "55163"
-    },
-    {
-      "game_id": "1544653089",
-      "game_name": "Mimic Party",
-      "streamer_count": 1,
-      "viewer_count": 1465,
-      "language_streamers": {
-        "de": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1544653089_IGDB-{width}x{height}.jpg",
-      "igdb_id": "413646"
-    },
-    {
-      "game_id": "490948",
-      "game_name": "The Isle",
-      "streamer_count": 1,
-      "viewer_count": 1462,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/490948_IGDB-{width}x{height}.jpg",
-      "igdb_id": "25838"
-    },
-    {
-      "game_id": "36799602",
-      "game_name": "Clair Obscur: Expedition 33",
-      "streamer_count": 1,
-      "viewer_count": 1449,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/36799602_IGDB-{width}x{height}.jpg",
-      "igdb_id": "305152"
-    },
-    {
-      "game_id": "493057",
-      "game_name": "PUBG: BATTLEGROUNDS",
-      "streamer_count": 2,
-      "viewer_count": 1447,
-      "language_streamers": {
-        "en": 1,
-        "ru": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/493057-{width}x{height}.jpg",
-      "igdb_id": "27789"
-    },
-    {
-      "game_id": "1820378900",
-      "game_name": "Resident Evil 4",
-      "streamer_count": 1,
-      "viewer_count": 1428,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1820378900_IGDB-{width}x{height}.jpg",
-      "igdb_id": "132181"
-    },
-    {
-      "game_id": "464339927",
-      "game_name": "ARC Raiders",
-      "streamer_count": 3,
-      "viewer_count": 1396,
-      "language_streamers": {
-        "en": 3
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/464339927-{width}x{height}.jpg",
-      "igdb_id": "185258"
-    },
-    {
-      "game_id": "380978759",
-      "game_name": "Escape from Tarkov: Arena",
-      "streamer_count": 2,
-      "viewer_count": 1388,
-      "language_streamers": {
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/380978759_IGDB-{width}x{height}.jpg",
-      "igdb_id": "203610"
-    },
-    {
-      "game_id": "24241",
-      "game_name": "FINAL FANTASY XIV ONLINE",
-      "streamer_count": 1,
-      "viewer_count": 1340,
-      "language_streamers": {
-        "ja": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/24241_IGDB-{width}x{height}.jpg",
-      "igdb_id": "386"
-    },
-    {
-      "game_id": "65997",
-      "game_name": "PAYDAY 2",
-      "streamer_count": 2,
-      "viewer_count": 1304,
-      "language_streamers": {
-        "zh": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/65997_IGDB-{width}x{height}.jpg",
-      "igdb_id": "2058"
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2005-12-19T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 182150.476
+        }
+      }
     },
     {
       "game_id": "32959",
       "game_name": "Heroes of the Storm",
-      "streamer_count": 2,
-      "viewer_count": 1255,
-      "language_streamers": {
-        "en": 2
-      },
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/32959_IGDB-{width}x{height}.jpg",
-      "igdb_id": "7313"
-    },
-    {
-      "game_id": "626441414",
-      "game_name": "The Incident at Galley House",
-      "streamer_count": 1,
-      "viewer_count": 1252,
-      "language_streamers": {
-        "zh": 1
+      "igdb_id": "7313",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/626441414_IGDB-{width}x{height}.jpg",
-      "igdb_id": "350434"
-    }
-  ],
-  "tracked_games": [
-    {
-      "steam_appid": 1636440,
-      "steam_name": "SILENT HILL: Townfall",
-      "twitch_game_id": "1960720223",
-      "twitch_name": "SILENT HILL: townfall",
-      "matched": true,
-      "streamer_count": 39,
-      "viewer_count": 9658,
+      "viewer_count": 12210,
+      "streamer_count": 85,
+      "median_viewer_count": 9,
       "language_streamers": {
-        "en": 21,
-        "zh": 3,
-        "fr": 3,
-        "ru": 3,
-        "it": 2,
-        "pt": 1,
-        "es": 1,
-        "de": 1,
-        "uk": 1,
-        "pl": 1,
-        "ar": 1,
+        "en": 28,
+        "ru": 24,
+        "de": 10,
+        "fr": 8,
+        "zh": 4,
+        "es": 3,
+        "pl": 3,
+        "pt": 3,
+        "fi": 1,
         "hu": 1
       },
+      "measurement_started_at": "2026-09-29T14:25:22Z",
+      "measurement_finished_at": "2026-09-29T14:25:23Z",
+      "pagination_complete": true,
+      "stream_pages": 2,
+      "duplicate_broadcasters_removed": 0,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2015-06-02T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2015-06-02T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 99302.476
+        }
+      }
+    },
+    {
+      "game_id": "1267582829",
+      "game_name": "Aniimo",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1267582829_IGDB-{width}x{height}.jpg",
+      "igdb_id": "348202",
+      "verification": {
+        "name": "Aniimo",
+        "status": "new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": "全新"
+      },
+      "viewer_count": 11721,
+      "streamer_count": 850,
+      "median_viewer_count": 3.0,
+      "language_streamers": {
+        "en": 321,
+        "fr": 150,
+        "de": 82,
+        "ja": 59,
+        "pt": 55,
+        "zh": 46,
+        "es": 35,
+        "th": 26,
+        "it": 24,
+        "ru": 23,
+        "ar": 9,
+        "tl": 5,
+        "pl": 4,
+        "tr": 3,
+        "hu": 2,
+        "da": 2,
+        "uk": 1,
+        "nl": 1,
+        "bg": 1,
+        "id": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:18Z",
+      "measurement_finished_at": "2026-09-29T14:25:22Z",
+      "pagination_complete": true,
+      "stream_pages": 11,
+      "duplicate_broadcasters_removed": 26,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-09-16T00:00:00Z",
+        "release_band": "recent_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": true,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-09-16T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "released_within_14_days",
+          "age_hours": 326.476
+        }
+      }
+    },
+    {
+      "game_id": "1264310518",
+      "game_name": "Marvel Rivals",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1264310518_IGDB-{width}x{height}.jpg",
+      "igdb_id": "294041",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 10780,
+      "streamer_count": 645,
+      "median_viewer_count": 2,
+      "language_streamers": {
+        "en": 494,
+        "ru": 31,
+        "ja": 29,
+        "fr": 17,
+        "ar": 15,
+        "pt": 15,
+        "es": 13,
+        "de": 13,
+        "zh": 4,
+        "pl": 4,
+        "th": 3,
+        "it": 3,
+        "ro": 1,
+        "fi": 1,
+        "hu": 1,
+        "tr": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:23Z",
+      "measurement_finished_at": "2026-09-29T14:25:27Z",
+      "pagination_complete": true,
+      "stream_pages": 9,
+      "duplicate_broadcasters_removed": 44,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2024-12-06T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2024-12-06T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 15902.476
+        }
+      }
+    },
+    {
+      "game_id": "1514558606",
+      "game_name": "Tempest Rising",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1514558606_IGDB-{width}x{height}.jpg",
+      "igdb_id": "213240",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 10521,
+      "streamer_count": 5,
+      "median_viewer_count": 562,
+      "language_streamers": {
+        "en": 3,
+        "de": 2
+      },
+      "measurement_started_at": "2026-09-29T14:25:30Z",
+      "measurement_finished_at": "2026-09-29T14:25:31Z",
+      "pagination_complete": true,
+      "stream_pages": 2,
+      "duplicate_broadcasters_removed": 0,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2025-04-18T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2025-04-18T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 12710.476
+        }
+      }
+    },
+    {
+      "game_id": "386821",
+      "game_name": "Black Desert",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/386821_IGDB-{width}x{height}.jpg",
+      "igdb_id": "6292",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 10070,
+      "streamer_count": 192,
+      "median_viewer_count": 11.0,
+      "language_streamers": {
+        "en": 49,
+        "ru": 29,
+        "pt": 24,
+        "th": 22,
+        "ja": 18,
+        "zh": 18,
+        "tr": 10,
+        "de": 5,
+        "es": 5,
+        "fr": 4,
+        "pl": 2,
+        "it": 2,
+        "ro": 1,
+        "cs": 1,
+        "uk": 1,
+        "hu": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:31Z",
+      "measurement_finished_at": "2026-09-29T14:25:32Z",
+      "pagination_complete": true,
+      "stream_pages": 3,
+      "duplicate_broadcasters_removed": 0,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2014-12-17T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2014-12-17T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 103310.476
+        }
+      }
+    },
+    {
+      "game_id": "509660",
+      "game_name": "Art",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/509660-{width}x{height}.jpg",
+      "igdb_id": null,
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 9985,
+      "streamer_count": 632,
+      "median_viewer_count": 6.0,
+      "language_streamers": {
+        "en": 321,
+        "ja": 62,
+        "fr": 54,
+        "ru": 53,
+        "zh": 34,
+        "th": 25,
+        "es": 23,
+        "pt": 16,
+        "de": 15,
+        "ko": 8,
+        "it": 7,
+        "uk": 5,
+        "pl": 3,
+        "id": 2,
+        "hu": 1,
+        "ar": 1,
+        "tr": 1,
+        "tl": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:27Z",
+      "measurement_finished_at": "2026-09-29T14:25:30Z",
+      "pagination_complete": true,
+      "stream_pages": 9,
+      "duplicate_broadcasters_removed": 81,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        }
+      }
+    },
+    {
+      "game_id": "508455",
+      "game_name": "Valheim",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/508455_IGDB-{width}x{height}.jpg",
+      "igdb_id": "104967",
+      "verification": {
+        "name": "Valheim",
+        "status": "new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": "全新"
+      },
+      "viewer_count": 9675,
+      "streamer_count": 573,
+      "median_viewer_count": 3,
+      "language_streamers": {
+        "en": 217,
+        "ru": 109,
+        "fr": 57,
+        "ja": 57,
+        "de": 47,
+        "es": 15,
+        "pt": 13,
+        "zh": 12,
+        "uk": 8,
+        "cs": 6,
+        "fi": 6,
+        "tr": 4,
+        "sv": 3,
+        "it": 3,
+        "th": 3,
+        "tl": 3,
+        "pl": 2,
+        "other": 2,
+        "zh-hk": 1,
+        "el": 1,
+        "da": 1,
+        "hu": 1,
+        "asl": 1,
+        "ar": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:32Z",
+      "measurement_finished_at": "2026-09-29T14:25:35Z",
+      "pagination_complete": true,
+      "stream_pages": 7,
+      "duplicate_broadcasters_removed": 10,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-09-09T00:00:00Z",
+        "release_band": "recent_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-09-09T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 494.476
+        }
+      }
+    },
+    {
+      "game_id": "1960720223",
+      "game_name": "SILENT HILL: townfall",
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1960720223_IGDB-{width}x{height}.jpg",
-      "igdb_id": "222342"
+      "igdb_id": "222342",
+      "verification": {
+        "name": "SILENT HILL: townfall",
+        "status": "new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": "全新"
+      },
+      "viewer_count": 9290,
+      "streamer_count": 362,
+      "median_viewer_count": 4.0,
+      "language_streamers": {
+        "en": 123,
+        "ru": 67,
+        "ja": 43,
+        "de": 27,
+        "ar": 22,
+        "fr": 21,
+        "es": 18,
+        "it": 10,
+        "pt": 8,
+        "zh": 5,
+        "zh-hk": 4,
+        "uk": 3,
+        "pl": 3,
+        "th": 3,
+        "hu": 2,
+        "fi": 1,
+        "cs": 1,
+        "tr": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:35Z",
+      "measurement_finished_at": "2026-09-29T14:25:37Z",
+      "pagination_complete": true,
+      "stream_pages": 5,
+      "duplicate_broadcasters_removed": 14,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-09-24T00:00:00Z",
+        "release_band": "recent_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": true,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-09-24T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "released_within_14_days",
+          "age_hours": 134.476
+        }
+      }
     },
     {
-      "steam_appid": 3669870,
-      "steam_name": "CONTROL Resonant",
-      "twitch_game_id": "1338428218",
-      "twitch_name": "CONTROL Resonant",
-      "matched": true,
-      "streamer_count": 24,
-      "viewer_count": 7084,
+      "game_id": "493057",
+      "game_name": "PUBG: BATTLEGROUNDS",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/493057-{width}x{height}.jpg",
+      "igdb_id": "27789",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 9157,
+      "streamer_count": 461,
+      "median_viewer_count": 1,
       "language_streamers": {
-        "en": 9,
-        "ru": 3,
-        "de": 2,
-        "fr": 2,
-        "pt": 2,
-        "cs": 1,
-        "es": 1,
-        "ja": 1,
-        "it": 1,
+        "ru": 163,
+        "en": 112,
+        "pt": 32,
+        "ja": 23,
+        "zh": 22,
+        "es": 21,
+        "th": 18,
+        "de": 16,
+        "fr": 14,
+        "el": 8,
+        "tr": 5,
+        "hu": 4,
+        "da": 3,
+        "cs": 3,
+        "ko": 3,
+        "uk": 3,
+        "ar": 2,
+        "fi": 2,
+        "ro": 2,
+        "other": 2,
         "pl": 1,
-        "fi": 1
+        "tl": 1,
+        "hi": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1338428218_IGDB-{width}x{height}.jpg",
-      "igdb_id": "225582"
+      "measurement_started_at": "2026-09-29T14:25:37Z",
+      "measurement_finished_at": "2026-09-29T14:25:39Z",
+      "pagination_complete": true,
+      "stream_pages": 6,
+      "duplicate_broadcasters_removed": 27,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2017-12-20T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2017-12-20T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 76934.476
+        }
+      }
     },
     {
-      "steam_appid": 3493540,
-      "steam_name": "Transport Fever 3",
-      "twitch_game_id": "1979693660",
-      "twitch_name": "Transport Fever 3",
-      "matched": true,
-      "streamer_count": 9,
-      "viewer_count": 3154,
+      "game_id": "19619",
+      "game_name": "Tibia",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/19619_IGDB-{width}x{height}.jpg",
+      "igdb_id": "9596",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 8826,
+      "streamer_count": 425,
+      "median_viewer_count": 3,
       "language_streamers": {
-        "en": 4,
+        "pt": 329,
+        "es": 42,
+        "en": 37,
+        "pl": 16,
+        "nl": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:39Z",
+      "measurement_finished_at": "2026-09-29T14:25:41Z",
+      "pagination_complete": true,
+      "stream_pages": 6,
+      "duplicate_broadcasters_removed": 26,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "1997-01-09T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "1997-01-09T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 260534.476
+        }
+      }
+    },
+    {
+      "game_id": "464339927",
+      "game_name": "ARC Raiders",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/464339927-{width}x{height}.jpg",
+      "igdb_id": "185258",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 8476,
+      "streamer_count": 635,
+      "median_viewer_count": 2,
+      "language_streamers": {
+        "en": 330,
+        "ru": 65,
+        "de": 57,
+        "fr": 39,
+        "es": 31,
+        "it": 24,
+        "ja": 24,
+        "pt": 21,
+        "pl": 11,
+        "ar": 9,
+        "uk": 9,
+        "tr": 4,
+        "hu": 4,
+        "other": 2,
+        "zh": 2,
+        "bg": 1,
+        "da": 1,
+        "cs": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:41Z",
+      "measurement_finished_at": "2026-09-29T14:25:44Z",
+      "pagination_complete": true,
+      "stream_pages": 8,
+      "duplicate_broadcasters_removed": 34,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2025-10-30T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2025-10-30T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 8030.476
+        }
+      }
+    },
+    {
+      "game_id": "518203",
+      "game_name": "Sports",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/518203-{width}x{height}.jpg",
+      "igdb_id": null,
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 8068,
+      "streamer_count": 83,
+      "median_viewer_count": 4,
+      "language_streamers": {
+        "en": 43,
+        "it": 11,
+        "es": 11,
+        "fr": 6,
         "de": 3,
-        "cs": 1,
+        "pt": 3,
+        "ro": 1,
+        "el": 1,
+        "ru": 1,
+        "zh": 1,
+        "nl": 1,
+        "tr": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:44Z",
+      "measurement_finished_at": "2026-09-29T14:25:45Z",
+      "pagination_complete": true,
+      "stream_pages": 2,
+      "duplicate_broadcasters_removed": 0,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        }
+      }
+    },
+    {
+      "game_id": "509659",
+      "game_name": "ASMR",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/509659-{width}x{height}.jpg",
+      "igdb_id": null,
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 8005,
+      "streamer_count": 130,
+      "median_viewer_count": 3.0,
+      "language_streamers": {
+        "en": 104,
+        "ja": 19,
+        "de": 4,
+        "ru": 2,
         "es": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1979693660_IGDB-{width}x{height}.jpg",
-      "igdb_id": "344466"
+      "measurement_started_at": "2026-09-29T14:25:45Z",
+      "measurement_finished_at": "2026-09-29T14:25:46Z",
+      "pagination_complete": true,
+      "stream_pages": 3,
+      "duplicate_broadcasters_removed": 0,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        }
+      }
     },
     {
-      "steam_appid": 3699590,
-      "steam_name": "Well Dweller",
-      "twitch_game_id": "601612659",
-      "twitch_name": "Well Dweller",
-      "matched": true,
-      "streamer_count": 1,
-      "viewer_count": 2138,
-      "language_streamers": {
-        "es": 1
+      "game_id": "771448419",
+      "game_name": "AION 2",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/771448419_IGDB-{width}x{height}.jpg",
+      "igdb_id": "117297",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/601612659_IGDB-{width}x{height}.jpg",
-      "igdb_id": "360075"
-    },
-    {
-      "steam_appid": 1551980,
-      "steam_name": "Clive Barker's Hellraiser: Revival",
-      "twitch_game_id": "23311496",
-      "twitch_name": "Clive Barker's Hellraiser: Revival",
-      "matched": true,
-      "streamer_count": 1,
-      "viewer_count": 481,
+      "viewer_count": 7459,
+      "streamer_count": 50,
+      "median_viewer_count": 26.0,
       "language_streamers": {
-        "en": 1
+        "en": 11,
+        "ru": 10,
+        "pt": 6,
+        "fr": 6,
+        "ja": 4,
+        "de": 3,
+        "zh": 3,
+        "es": 2,
+        "ko": 2,
+        "it": 1,
+        "bg": 1,
+        "pl": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/23311496_IGDB-{width}x{height}.jpg",
-      "igdb_id": "356552"
+      "measurement_started_at": "2026-09-29T14:25:46Z",
+      "measurement_finished_at": "2026-09-29T14:25:47Z",
+      "pagination_complete": true,
+      "stream_pages": 2,
+      "duplicate_broadcasters_removed": 0,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2025-11-18T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2025-11-18T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 7574.476
+        }
+      }
     },
     {
-      "steam_appid": 3314580,
-      "steam_name": "Trash Day",
-      "twitch_game_id": "499919202",
-      "twitch_name": "Trash Day",
-      "matched": true,
-      "streamer_count": 1,
-      "viewer_count": 397,
+      "game_id": "417752",
+      "game_name": "Talk Shows & Podcasts",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/417752-{width}x{height}.jpg",
+      "igdb_id": null,
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 7256,
+      "streamer_count": 293,
+      "median_viewer_count": 1,
       "language_streamers": {
-        "ru": 1
+        "en": 156,
+        "es": 89,
+        "pt": 14,
+        "fr": 9,
+        "it": 8,
+        "ja": 4,
+        "ru": 3,
+        "bg": 2,
+        "de": 2,
+        "zh-hk": 1,
+        "zh": 1,
+        "ar": 1,
+        "th": 1,
+        "el": 1,
+        "tr": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/499919202_IGDB-{width}x{height}.jpg",
-      "igdb_id": "406477"
+      "measurement_started_at": "2026-09-29T14:25:47Z",
+      "measurement_finished_at": "2026-09-29T14:25:49Z",
+      "pagination_complete": true,
+      "stream_pages": 4,
+      "duplicate_broadcasters_removed": 0,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        }
+      }
     },
     {
-      "steam_appid": 4094660,
-      "steam_name": "Rivage",
-      "twitch_game_id": "325262960",
-      "twitch_name": "Rivage",
-      "matched": true,
-      "streamer_count": 1,
-      "viewer_count": 306,
+      "game_id": "417528",
+      "game_name": "Albion Online",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/417528_IGDB-{width}x{height}.jpg",
+      "igdb_id": "19698",
+      "verification": {
+        "status": "pending",
+        "reason": "no_observation"
+      },
+      "viewer_count": 7073,
+      "streamer_count": 116,
+      "median_viewer_count": 6.0,
       "language_streamers": {
-        "fr": 1
+        "pt": 28,
+        "es": 26,
+        "en": 22,
+        "ru": 16,
+        "fr": 9,
+        "de": 4,
+        "ja": 3,
+        "zh": 2,
+        "pl": 2,
+        "th": 2,
+        "other": 1,
+        "tr": 1
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/325262960_IGDB-{width}x{height}.jpg",
-      "igdb_id": "380416"
-    },
-    {
-      "steam_appid": 4019220,
-      "steam_name": "Dressmaker",
-      "twitch_game_id": "353006782",
-      "twitch_name": "DressMaker",
-      "matched": true,
-      "streamer_count": 2,
-      "viewer_count": 278,
-      "language_streamers": {
-        "es": 1,
-        "fr": 1
+      "measurement_started_at": "2026-09-29T14:25:49Z",
+      "measurement_finished_at": "2026-09-29T14:25:50Z",
+      "pagination_complete": true,
+      "stream_pages": 3,
+      "duplicate_broadcasters_removed": 4,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2017-07-17T00:00:00Z",
+        "release_band": "older_release",
+        "confirms_twitch_new_badge": false
       },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/353006782_IGDB-{width}x{height}.jpg",
-      "igdb_id": "168654"
-    },
-    {
-      "steam_appid": 4705510,
-      "steam_name": "Happy Wheels",
-      "twitch_game_id": "309493",
-      "twitch_name": "Happy Wheels",
-      "matched": true,
-      "streamer_count": 2,
-      "viewer_count": 184,
-      "language_streamers": {
-        "en": 2
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/309493_IGDB-{width}x{height}.jpg",
-      "igdb_id": "28227"
-    },
-    {
-      "steam_appid": 3841510,
-      "steam_name": "DYNASTY WARRIORS 3: Complete Edition Remastered",
-      "twitch_game_id": "1196484333",
-      "twitch_name": "Dynasty Warriors 3: Complete Edition Remastered",
-      "matched": true,
-      "streamer_count": 1,
-      "viewer_count": 109,
-      "language_streamers": {
-        "en": 1
-      },
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1196484333_IGDB-{width}x{height}.jpg",
-      "igdb_id": "369991"
-    },
-    {
-      "steam_appid": 2288340,
-      "steam_name": "ACE COMBAT 8: WINGS OF THEVE",
-      "twitch_game_id": "404069058",
-      "twitch_name": "ACE COMBAT 8: WINGS OF THEVE",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/404069058_IGDB-{width}x{height}.jpg",
-      "igdb_id": "381247"
-    },
-    {
-      "steam_appid": 2522120,
-      "steam_name": "Airframe Ultra",
-      "twitch_game_id": "52876876",
-      "twitch_name": "Airframe Ultra",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/52876876_IGDB-{width}x{height}.jpg",
-      "igdb_id": "257450"
-    },
-    {
-      "steam_appid": 1167820,
-      "steam_name": "Airport Contraband",
-      "twitch_game_id": "1245428743",
-      "twitch_name": "Airport Contraband",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1245428743_IGDB-{width}x{height}.jpg",
-      "igdb_id": "123765"
-    },
-    {
-      "steam_appid": 3328490,
-      "steam_name": "Airport Control 27",
-      "twitch_game_id": "1413958870",
-      "twitch_name": "Airport Control 27",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1413958870_IGDB-{width}x{height}.jpg",
-      "igdb_id": "398961"
-    },
-    {
-      "steam_appid": 744200,
-      "steam_name": "Altiros",
-      "twitch_game_id": "508737",
-      "twitch_name": "Altiros",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/508737_IGDB-{width}x{height}.jpg",
-      "igdb_id": "105490"
-    },
-    {
-      "steam_appid": 3224600,
-      "steam_name": "Am I Nima",
-      "twitch_game_id": "1892320206",
-      "twitch_name": "Am I Nima",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1892320206_IGDB-{width}x{height}.jpg",
-      "igdb_id": "329692"
-    },
-    {
-      "steam_appid": 1675260,
-      "steam_name": "Among the Trolls",
-      "twitch_game_id": "1223527977",
-      "twitch_name": "Among the Trolls",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1223527977_IGDB-{width}x{height}.jpg",
-      "igdb_id": "201754"
-    },
-    {
-      "steam_appid": 4814120,
-      "steam_name": "ANANTA",
-      "twitch_game_id": "1696894982",
-      "twitch_name": "ANANTA",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1696894982_IGDB-{width}x{height}.jpg",
-      "igdb_id": "262712"
-    },
-    {
-      "steam_appid": 3660710,
-      "steam_name": "Armatus",
-      "twitch_game_id": "1316449160",
-      "twitch_name": "Armatus",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1316449160_IGDB-{width}x{height}.jpg",
-      "igdb_id": "378225"
-    },
-    {
-      "steam_appid": 2916700,
-      "steam_name": "Attack on Titan 3 / A.O.T. 3",
-      "twitch_game_id": null,
-      "twitch_name": null,
-      "matched": false,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {}
-    },
-    {
-      "steam_appid": 3743140,
-      "steam_name": "Battleplan",
-      "twitch_game_id": "1705095488",
-      "twitch_name": "Battleplan",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1705095488_IGDB-{width}x{height}.jpg",
-      "igdb_id": "375578"
-    },
-    {
-      "steam_appid": 2295060,
-      "steam_name": "Beyond These Stars",
-      "twitch_game_id": "1930335036",
-      "twitch_name": "Beyond These Stars",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1930335036_IGDB-{width}x{height}.jpg",
-      "igdb_id": "239002"
-    },
-    {
-      "steam_appid": 3031880,
-      "steam_name": "Car Park Capital",
-      "twitch_game_id": "2100615846",
-      "twitch_name": "Car Park Capital",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2100615846_IGDB-{width}x{height}.jpg",
-      "igdb_id": "344093"
-    },
-    {
-      "steam_appid": 4231820,
-      "steam_name": "Castlevania: Belmont's Curse",
-      "twitch_game_id": "1736572793",
-      "twitch_name": "Castlevania: Belmont's Curse",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1736572793_IGDB-{width}x{height}.jpg",
-      "igdb_id": "389434"
-    },
-    {
-      "steam_appid": 3569420,
-      "steam_name": "Chained Beasts",
-      "twitch_game_id": "1318239577",
-      "twitch_name": "Chained Beasts",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1318239577_IGDB-{width}x{height}.jpg",
-      "igdb_id": "344588"
-    },
-    {
-      "steam_appid": 3204330,
-      "steam_name": "County of Fortune",
-      "twitch_game_id": "1099625029",
-      "twitch_name": "County of Fortune",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1099625029_IGDB-{width}x{height}.jpg",
-      "igdb_id": "327218"
-    },
-    {
-      "steam_appid": 3581230,
-      "steam_name": "Cozy Game Restoration",
-      "twitch_game_id": "1299143577",
-      "twitch_name": "Cozy Game Restoration",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1299143577_IGDB-{width}x{height}.jpg",
-      "igdb_id": "394023"
-    },
-    {
-      "steam_appid": 2871520,
-      "steam_name": "Deep Dish Dungeon",
-      "twitch_game_id": "857210695",
-      "twitch_name": "Deep Dish Dungeon",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/857210695_IGDB-{width}x{height}.jpg",
-      "igdb_id": "298680"
-    },
-    {
-      "steam_appid": 2710040,
-      "steam_name": "Delverium",
-      "twitch_game_id": "304877876",
-      "twitch_name": "Delverium",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/304877876_IGDB-{width}x{height}.jpg",
-      "igdb_id": "291342"
-    },
-    {
-      "steam_appid": 4739040,
-      "steam_name": "DISCIPLINE SIMULATOR",
-      "twitch_game_id": null,
-      "twitch_name": null,
-      "matched": false,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {}
-    },
-    {
-      "steam_appid": 2548880,
-      "steam_name": "Divine Frequency",
-      "twitch_game_id": "520120107",
-      "twitch_name": "Divine Frequency",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/520120107_IGDB-{width}x{height}.jpg",
-      "igdb_id": "269263"
-    },
-    {
-      "steam_appid": 2712590,
-      "steam_name": "Dragon Shelter",
-      "twitch_game_id": "238162535",
-      "twitch_name": "Dragon Shelter",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/238162535_IGDB-{width}x{height}.jpg",
-      "igdb_id": "279963"
-    },
-    {
-      "steam_appid": 4080220,
-      "steam_name": "EA SPORTS FC™ 27",
-      "twitch_game_id": null,
-      "twitch_name": null,
-      "matched": false,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {}
-    },
-    {
-      "steam_appid": 2738170,
-      "steam_name": "Edge of Memories",
-      "twitch_game_id": "1845002061",
-      "twitch_name": "Edge of Memories",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1845002061_IGDB-{width}x{height}.jpg",
-      "igdb_id": "333201"
-    },
-    {
-      "steam_appid": 2295170,
-      "steam_name": "Emberville",
-      "twitch_game_id": "1692723000",
-      "twitch_name": "Emberville",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1692723000_IGDB-{width}x{height}.jpg",
-      "igdb_id": "272981"
-    },
-    {
-      "steam_appid": 2087540,
-      "steam_name": "Escape from Playtime",
-      "twitch_game_id": "764710809",
-      "twitch_name": "Escape from Playtime",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/764710809_IGDB-{width}x{height}.jpg",
-      "igdb_id": "415180"
-    },
-    {
-      "steam_appid": 3230960,
-      "steam_name": "EXODUS",
-      "twitch_game_id": "461060",
-      "twitch_name": "Exodus",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/461060-{width}x{height}.jpg",
-      "igdb_id": "17643"
-    },
-    {
-      "steam_appid": 2769570,
-      "steam_name": "Fable",
-      "twitch_game_id": "3007",
-      "twitch_name": "Fable",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/3007_IGDB-{width}x{height}.jpg",
-      "igdb_id": "521"
-    },
-    {
-      "steam_appid": 3259780,
-      "steam_name": "FINAL FANTASY RESONANCE",
-      "twitch_game_id": "1954784138",
-      "twitch_name": "Final Fantasy Resonance",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1954784138_IGDB-{width}x{height}.jpg",
-      "igdb_id": "405454"
-    },
-    {
-      "steam_appid": 4354570,
-      "steam_name": "FINAL FANTASY VII REVELATION",
-      "twitch_game_id": "338584105",
-      "twitch_name": "FINAL FANTASY VII REVELATION",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/338584105_IGDB-{width}x{height}.jpg",
-      "igdb_id": "404721"
-    },
-    {
-      "steam_appid": 1215940,
-      "steam_name": "Forever Ago",
-      "twitch_game_id": "1861940133",
-      "twitch_name": "Forever Ago",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1861940133_IGDB-{width}x{height}.jpg",
-      "igdb_id": "136299"
-    },
-    {
-      "steam_appid": 3010850,
-      "steam_name": "Gears of War: E-Day",
-      "twitch_game_id": "1663723394",
-      "twitch_name": "Gears of War: E-Day",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1663723394_IGDB-{width}x{height}.jpg",
-      "igdb_id": "305160"
-    },
-    {
-      "steam_appid": 4251460,
-      "steam_name": "Godzilla: Destroy All Monsters Melee Remastered",
-      "twitch_game_id": "1205758390",
-      "twitch_name": "Godzilla: Destroy All Monsters Melee Remastered",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1205758390_IGDB-{width}x{height}.jpg",
-      "igdb_id": "404939"
-    },
-    {
-      "steam_appid": 4358690,
-      "steam_name": "Graveyard Keeper 2",
-      "twitch_game_id": null,
-      "twitch_name": null,
-      "matched": false,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {}
-    },
-    {
-      "steam_appid": 1963680,
-      "steam_name": "GUNDAM ROGUE ORBIT",
-      "twitch_game_id": "389656988",
-      "twitch_name": "GUNDAM ROGUE ORBIT",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/389656988_IGDB-{width}x{height}.jpg",
-      "igdb_id": "404690"
-    },
-    {
-      "steam_appid": 1892100,
-      "steam_name": "HEART ABYSS",
-      "twitch_game_id": "331528806",
-      "twitch_name": "HEART ABYSS",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/331528806_IGDB-{width}x{height}.jpg",
-      "igdb_id": "197240"
-    },
-    {
-      "steam_appid": 3161310,
-      "steam_name": "Hela: of Mice & Magic",
-      "twitch_game_id": "9774905",
-      "twitch_name": "Hela: Of Mice & Magic",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/9774905_IGDB-{width}x{height}.jpg",
-      "igdb_id": "314449"
-    },
-    {
-      "steam_appid": 3727090,
-      "steam_name": "Horses of Hoofprint Bay",
-      "twitch_game_id": "910348674",
-      "twitch_name": "Horses of Hoofprint Bay",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/910348674_IGDB-{width}x{height}.jpg",
-      "igdb_id": "376483"
-    },
-    {
-      "steam_appid": 4358660,
-      "steam_name": "Hull Rupture",
-      "twitch_game_id": "171019267",
-      "twitch_name": "Hull Rupture",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/171019267_IGDB-{width}x{height}.jpg",
-      "igdb_id": "399255"
-    },
-    {
-      "steam_appid": 3883570,
-      "steam_name": "Invokyr",
-      "twitch_game_id": "1987792797",
-      "twitch_name": "Invokyr",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1987792797_IGDB-{width}x{height}.jpg",
-      "igdb_id": "359277"
-    },
-    {
-      "steam_appid": 4259190,
-      "steam_name": "Kingdom Rush 6: Genesis TD",
-      "twitch_game_id": "1190590442",
-      "twitch_name": "Kingdom Rush 6: Genesis TD",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1190590442_IGDB-{width}x{height}.jpg",
-      "igdb_id": "394375"
-    },
-    {
-      "steam_appid": 2365790,
-      "steam_name": "Let's Build a Dungeon",
-      "twitch_game_id": "1857071940",
-      "twitch_name": "Let's Build a Dungeon",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1857071940_IGDB-{width}x{height}.jpg",
-      "igdb_id": "314389"
-    },
-    {
-      "steam_appid": 2320980,
-      "steam_name": "Loftia",
-      "twitch_game_id": "1939255262",
-      "twitch_name": "Loftia",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1939255262_IGDB-{width}x{height}.jpg",
-      "igdb_id": "252774"
-    },
-    {
-      "steam_appid": 2376260,
-      "steam_name": "Mariachi Legends",
-      "twitch_game_id": "1679714515",
-      "twitch_name": "Mariachi Legends",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1679714515_IGDB-{width}x{height}.jpg",
-      "igdb_id": "252852"
-    },
-    {
-      "steam_appid": 2590240,
-      "steam_name": "METRO 2039",
-      "twitch_game_id": "288834598",
-      "twitch_name": "METRO 2039",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/288834598_IGDB-{width}x{height}.jpg",
-      "igdb_id": "398225"
-    },
-    {
-      "steam_appid": 1912410,
-      "steam_name": "Minecraft Dungeons II",
-      "twitch_game_id": "2042681592",
-      "twitch_name": "Minecraft Dungeons II",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2042681592_IGDB-{width}x{height}.jpg",
-      "igdb_id": "395525"
-    },
-    {
-      "steam_appid": 4253770,
-      "steam_name": "Muramasa: Revenant Blades",
-      "twitch_game_id": "1486566266",
-      "twitch_name": "Muramasa: Revenant Blades",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1486566266_IGDB-{width}x{height}.jpg",
-      "igdb_id": "405445"
-    },
-    {
-      "steam_appid": 2988120,
-      "steam_name": "Never Be Alone",
-      "twitch_game_id": "1683035940",
-      "twitch_name": "Never Be Alone",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1683035940-{width}x{height}.jpg",
-      "igdb_id": "310840"
-    },
-    {
-      "steam_appid": 1488490,
-      "steam_name": "Nivalis Nights",
-      "twitch_game_id": "897166081",
-      "twitch_name": "Nivalis Nights",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/897166081_IGDB-{width}x{height}.jpg",
-      "igdb_id": "203301"
-    },
-    {
-      "steam_appid": 3299050,
-      "steam_name": "No Such Place",
-      "twitch_game_id": "1355469002",
-      "twitch_name": "No Such Place",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1355469002_IGDB-{width}x{height}.jpg",
-      "igdb_id": "345447"
-    },
-    {
-      "steam_appid": 1374860,
-      "steam_name": "Nocturne",
-      "twitch_game_id": "16059",
-      "twitch_name": "Nocturne",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/16059_IGDB-{width}x{height}.jpg",
-      "igdb_id": "80411"
-    },
-    {
-      "steam_appid": 2223980,
-      "steam_name": "Nomad Drive",
-      "twitch_game_id": "151959766",
-      "twitch_name": "Nomad Drive",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/151959766_IGDB-{width}x{height}.jpg",
-      "igdb_id": "340570"
-    },
-    {
-      "steam_appid": 4094350,
-      "steam_name": "Online: 404",
-      "twitch_game_id": "1146818652",
-      "twitch_name": "Online: 404",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1146818652_IGDB-{width}x{height}.jpg",
-      "igdb_id": "403155"
-    },
-    {
-      "steam_appid": 499170,
-      "steam_name": "Order of the Sinking Star",
-      "twitch_game_id": "718286993",
-      "twitch_name": "Order of the Sinking Star",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/718286993_IGDB-{width}x{height}.jpg",
-      "igdb_id": "381222"
-    },
-    {
-      "steam_appid": 2929250,
-      "steam_name": "over the hill",
-      "twitch_game_id": "2088318578",
-      "twitch_name": "over the hill",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2088318578_IGDB-{width}x{height}.jpg",
-      "igdb_id": "329124"
-    },
-    {
-      "steam_appid": 3024130,
-      "steam_name": "PAO PAO",
-      "twitch_game_id": "578078875",
-      "twitch_name": "Pao Pao",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/578078875_IGDB-{width}x{height}.jpg",
-      "igdb_id": "318956"
-    },
-    {
-      "steam_appid": 2680280,
-      "steam_name": "PAPERHEAD",
-      "twitch_game_id": "992438331",
-      "twitch_name": "PAPERHEAD",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/992438331_IGDB-{width}x{height}.jpg",
-      "igdb_id": "276028"
-    },
-    {
-      "steam_appid": 2254990,
-      "steam_name": "Permafrost",
-      "twitch_game_id": "1943685030",
-      "twitch_name": "Permafrost",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1943685030_IGDB-{width}x{height}.jpg",
-      "igdb_id": "302147"
-    },
-    {
-      "steam_appid": 2963950,
-      "steam_name": "Persona 4 Revival",
-      "twitch_game_id": "184157538",
-      "twitch_name": "Persona 4 Revival",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/184157538_IGDB-{width}x{height}.jpg",
-      "igdb_id": "348210"
-    },
-    {
-      "steam_appid": 4115450,
-      "steam_name": "Phantom Blade Zero",
-      "twitch_game_id": null,
-      "twitch_name": null,
-      "matched": false,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {}
-    },
-    {
-      "steam_appid": 3462190,
-      "steam_name": "PHASE ZERO",
-      "twitch_game_id": "612747721",
-      "twitch_name": "Phase Zero",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/612747721_IGDB-{width}x{height}.jpg",
-      "igdb_id": "270275"
-    },
-    {
-      "steam_appid": 3219030,
-      "steam_name": "Planet Zoo 2",
-      "twitch_game_id": "1510789205",
-      "twitch_name": "Planet Zoo 2",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1510789205_IGDB-{width}x{height}.jpg",
-      "igdb_id": "402959"
-    },
-    {
-      "steam_appid": 3509420,
-      "steam_name": "Planetbase 2",
-      "twitch_game_id": "1006238458",
-      "twitch_name": "PlanetBase 2",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1006238458_IGDB-{width}x{height}.jpg",
-      "igdb_id": "387787"
-    },
-    {
-      "steam_appid": 2017940,
-      "steam_name": "Pony Island 2: Panda Circus",
-      "twitch_game_id": "129893631",
-      "twitch_name": "Pony Island 2: Panda Circus",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/129893631_IGDB-{width}x{height}.jpg",
-      "igdb_id": "279613"
-    },
-    {
-      "steam_appid": 4084710,
-      "steam_name": "Rayman Legends Retold",
-      "twitch_game_id": "436018782",
-      "twitch_name": "Rayman Legends Retold",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/436018782_IGDB-{width}x{height}.jpg",
-      "igdb_id": "404044"
-    },
-    {
-      "steam_appid": 2067820,
-      "steam_name": "RetroSpace",
-      "twitch_game_id": "807305473",
-      "twitch_name": "RetroSpace",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/807305473_IGDB-{width}x{height}.jpg",
-      "igdb_id": "231488"
-    },
-    {
-      "steam_appid": 2141130,
-      "steam_name": "Road Kings",
-      "twitch_game_id": "417023218",
-      "twitch_name": "Road Kings",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/417023218_IGDB-{width}x{height}.jpg",
-      "igdb_id": "361840"
-    },
-    {
-      "steam_appid": 1173980,
-      "steam_name": "Shadow of the Road",
-      "twitch_game_id": "1514501794",
-      "twitch_name": "Shadow of the Road",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1514501794_IGDB-{width}x{height}.jpg",
-      "igdb_id": "124209"
-    },
-    {
-      "steam_appid": 2333000,
-      "steam_name": "Silver Pines",
-      "twitch_game_id": "2142646770",
-      "twitch_name": "Silver Pines",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2142646770_IGDB-{width}x{height}.jpg",
-      "igdb_id": "313597"
-    },
-    {
-      "steam_appid": 632950,
-      "steam_name": "SiN Reloaded",
-      "twitch_game_id": null,
-      "twitch_name": null,
-      "matched": false,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {}
-    },
-    {
-      "steam_appid": 3431300,
-      "steam_name": "Slow Roads",
-      "twitch_game_id": "1756506412",
-      "twitch_name": "Slow Roads",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1756506412_IGDB-{width}x{height}.jpg",
-      "igdb_id": "222796"
-    },
-    {
-      "steam_appid": 1706510,
-      "steam_name": "Songs of Glimmerwick",
-      "twitch_game_id": "1965962033",
-      "twitch_name": "Songs of Glimmerwick",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1965962033_IGDB-{width}x{height}.jpg",
-      "igdb_id": "189014"
-    },
-    {
-      "steam_appid": 3469910,
-      "steam_name": "Star Trek: Outposts Unknown",
-      "twitch_game_id": "1019366883",
-      "twitch_name": "Star Trek: Outposts Unknown",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1019366883_IGDB-{width}x{height}.jpg",
-      "igdb_id": "405102"
-    },
-    {
-      "steam_appid": 4078430,
-      "steam_name": "STAR WARS: Galactic Racer™",
-      "twitch_game_id": null,
-      "twitch_name": null,
-      "matched": false,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {}
-    },
-    {
-      "steam_appid": 2826790,
-      "steam_name": "Stormforge",
-      "twitch_game_id": "166041966",
-      "twitch_name": "Stormforge",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/166041966_IGDB-{width}x{height}.jpg",
-      "igdb_id": "305188"
-    },
-    {
-      "steam_appid": 4260840,
-      "steam_name": "STRANGER THAN HEAVEN",
-      "twitch_game_id": "1948605171",
-      "twitch_name": "Stranger Than Heaven",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1948605171_IGDB-{width}x{height}.jpg",
-      "igdb_id": "325599"
-    },
-    {
-      "steam_appid": 3486530,
-      "steam_name": "Stupid Never Dies",
-      "twitch_game_id": "723030544",
-      "twitch_name": "Stupid Never Dies",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/723030544_IGDB-{width}x{height}.jpg",
-      "igdb_id": "381212"
-    },
-    {
-      "steam_appid": 1637460,
-      "steam_name": "TankRat",
-      "twitch_game_id": "1154532423",
-      "twitch_name": "TankRat",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1154532423_IGDB-{width}x{height}.jpg",
-      "igdb_id": "381208"
-    },
-    {
-      "steam_appid": 2121510,
-      "steam_name": "Tenebris Somnia",
-      "twitch_game_id": "31355766",
-      "twitch_name": "Tenebris Somnia",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/31355766_IGDB-{width}x{height}.jpg",
-      "igdb_id": "216692"
-    },
-    {
-      "steam_appid": 2796640,
-      "steam_name": "The Magus Circle",
-      "twitch_game_id": "663649923",
-      "twitch_name": "The Magus Circle",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/663649923-{width}x{height}.jpg",
-      "igdb_id": "295074"
-    },
-    {
-      "steam_appid": 2967950,
-      "steam_name": "The Witch's Bakery",
-      "twitch_game_id": "1535357725",
-      "twitch_name": "The Witch's Bakery",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1535357725_IGDB-{width}x{height}.jpg",
-      "igdb_id": "278824"
-    },
-    {
-      "steam_appid": 3558670,
-      "steam_name": "Tomb Raider: Legacy of Atlantis",
-      "twitch_game_id": "876228714",
-      "twitch_name": "Tomb Raider: Legacy of Atlantis",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/876228714_IGDB-{width}x{height}.jpg",
-      "igdb_id": "381235"
-    },
-    {
-      "steam_appid": 3846830,
-      "steam_name": "Total War: SHOGUN 2 - Complete Edition",
-      "twitch_game_id": null,
-      "twitch_name": null,
-      "matched": false,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {}
-    },
-    {
-      "steam_appid": 4171850,
-      "steam_name": "Trees Hate You",
-      "twitch_game_id": "795788384",
-      "twitch_name": "Trees Hate You",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/795788384_IGDB-{width}x{height}.jpg",
-      "igdb_id": "382400"
-    },
-    {
-      "steam_appid": 1853440,
-      "steam_name": "Tropico 7",
-      "twitch_game_id": "92098527",
-      "twitch_name": "Tropico 7",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/92098527_IGDB-{width}x{height}.jpg",
-      "igdb_id": "362040"
-    },
-    {
-      "steam_appid": 3090810,
-      "steam_name": "Truckful",
-      "twitch_game_id": "2078481600",
-      "twitch_name": "Truckful",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2078481600_IGDB-{width}x{height}.jpg",
-      "igdb_id": "309799"
-    },
-    {
-      "steam_appid": 2411200,
-      "steam_name": "Underkeep",
-      "twitch_game_id": "215102198",
-      "twitch_name": "Underkeep",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/215102198_IGDB-{width}x{height}.jpg",
-      "igdb_id": "389458"
-    },
-    {
-      "steam_appid": 2828710,
-      "steam_name": "Valor Mortis",
-      "twitch_game_id": "847310440",
-      "twitch_name": "Valor Mortis",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/847310440_IGDB-{width}x{height}.jpg",
-      "igdb_id": "361833"
-    },
-    {
-      "steam_appid": 3255500,
-      "steam_name": "Ved: Recure",
-      "twitch_game_id": "1672475789",
-      "twitch_name": "Ved: Recure",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1672475789_IGDB-{width}x{height}.jpg",
-      "igdb_id": "321207"
-    },
-    {
-      "steam_appid": 3115160,
-      "steam_name": "Warhammer 40,000: Boltgun 2",
-      "twitch_game_id": "546222566",
-      "twitch_name": "Warhammer 40,000: Boltgun 2",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/546222566_IGDB-{width}x{height}.jpg",
-      "igdb_id": "344669"
-    },
-    {
-      "steam_appid": 2272360,
-      "steam_name": "Warhammer 40,000: Dawn of War IV",
-      "twitch_game_id": "367978322",
-      "twitch_name": "Warhammer 40,000: Dawn of War IV",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/367978322_IGDB-{width}x{height}.jpg",
-      "igdb_id": "361859"
-    },
-    {
-      "steam_appid": 3960600,
-      "steam_name": "Warrior Cats: Clans of the Forest",
-      "twitch_game_id": "1179007228",
-      "twitch_name": "Warrior Cats: Clans of the Forest",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1179007228_IGDB-{width}x{height}.jpg",
-      "igdb_id": "412520"
-    },
-    {
-      "steam_appid": 2315050,
-      "steam_name": "We Were Here Tomorrow",
-      "twitch_game_id": "803237359",
-      "twitch_name": "We Were Here Tomorrow",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/803237359_IGDB-{width}x{height}.jpg",
-      "igdb_id": "393015"
-    },
-    {
-      "steam_appid": 3222640,
-      "steam_name": "Wild West Pioneers",
-      "twitch_game_id": "822804625",
-      "twitch_name": "Wild West Pioneers",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/822804625_IGDB-{width}x{height}.jpg",
-      "igdb_id": "341034"
-    },
-    {
-      "steam_appid": 4072240,
-      "steam_name": "Woman Simulator",
-      "twitch_game_id": "610706148",
-      "twitch_name": "Woman Simulator",
-      "matched": true,
-      "streamer_count": 0,
-      "viewer_count": 0,
-      "language_streamers": {},
-      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/610706148_IGDB-{width}x{height}.jpg",
-      "igdb_id": "378548"
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2017-07-17T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 80678.476
+        }
+      }
     }
-  ]
+  ],
+  "top_games": [
+    {
+      "game_id": "123184772",
+      "game_name": "EA Sports FC 27",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/123184772_IGDB-{width}x{height}.jpg",
+      "igdb_id": "408819",
+      "verification": {
+        "name": "EA Sports FC 27",
+        "status": "new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": "全新"
+      },
+      "viewer_count": 40496,
+      "streamer_count": 1035,
+      "median_viewer_count": 1,
+      "language_streamers": {
+        "en": 420,
+        "de": 166,
+        "fr": 109,
+        "es": 90,
+        "it": 71,
+        "pt": 55,
+        "ru": 28,
+        "ar": 21,
+        "pl": 18,
+        "nl": 12,
+        "ja": 8,
+        "hu": 5,
+        "sv": 5,
+        "tr": 5,
+        "da": 4,
+        "uk": 4,
+        "fi": 2,
+        "el": 2,
+        "cs": 2,
+        "zh-hk": 2,
+        "other": 2,
+        "no": 2,
+        "bg": 1,
+        "ca": 1
+      },
+      "measurement_started_at": "2026-09-29T14:24:55Z",
+      "measurement_finished_at": "2026-09-29T14:25:00Z",
+      "pagination_complete": true,
+      "stream_pages": 13,
+      "duplicate_broadcasters_removed": 63,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-09-25T00:00:00Z",
+        "release_band": "recent_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": true,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-09-25T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "released_within_14_days",
+          "age_hours": 110.476
+        }
+      }
+    },
+    {
+      "game_id": "743893402",
+      "game_name": "WARDOGS",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/743893402_IGDB-{width}x{height}.jpg",
+      "igdb_id": "388285",
+      "verification": {
+        "name": "WARDOGS",
+        "status": "new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": "全新"
+      },
+      "viewer_count": 35755,
+      "streamer_count": 908,
+      "median_viewer_count": 3.0,
+      "language_streamers": {
+        "en": 330,
+        "ru": 136,
+        "ja": 99,
+        "de": 95,
+        "fr": 65,
+        "zh": 28,
+        "es": 25,
+        "pt": 25,
+        "uk": 22,
+        "th": 12,
+        "cs": 12,
+        "pl": 11,
+        "it": 8,
+        "fi": 6,
+        "ar": 6,
+        "nl": 5,
+        "zh-hk": 5,
+        "other": 3,
+        "sv": 3,
+        "da": 3,
+        "hu": 2,
+        "id": 2,
+        "tl": 1,
+        "tr": 1,
+        "no": 1,
+        "ko": 1,
+        "sk": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:00Z",
+      "measurement_finished_at": "2026-09-29T14:25:05Z",
+      "pagination_complete": true,
+      "stream_pages": 12,
+      "duplicate_broadcasters_removed": 93,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-09-10T00:00:00Z",
+        "release_band": "recent_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-09-10T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 470.476
+        }
+      }
+    },
+    {
+      "game_id": "1267582829",
+      "game_name": "Aniimo",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1267582829_IGDB-{width}x{height}.jpg",
+      "igdb_id": "348202",
+      "verification": {
+        "name": "Aniimo",
+        "status": "new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": "全新"
+      },
+      "viewer_count": 11721,
+      "streamer_count": 850,
+      "median_viewer_count": 3.0,
+      "language_streamers": {
+        "en": 321,
+        "fr": 150,
+        "de": 82,
+        "ja": 59,
+        "pt": 55,
+        "zh": 46,
+        "es": 35,
+        "th": 26,
+        "it": 24,
+        "ru": 23,
+        "ar": 9,
+        "tl": 5,
+        "pl": 4,
+        "tr": 3,
+        "hu": 2,
+        "da": 2,
+        "uk": 1,
+        "nl": 1,
+        "bg": 1,
+        "id": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:18Z",
+      "measurement_finished_at": "2026-09-29T14:25:22Z",
+      "pagination_complete": true,
+      "stream_pages": 11,
+      "duplicate_broadcasters_removed": 26,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-09-16T00:00:00Z",
+        "release_band": "recent_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": true,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-09-16T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "released_within_14_days",
+          "age_hours": 326.476
+        }
+      }
+    },
+    {
+      "game_id": "508455",
+      "game_name": "Valheim",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/508455_IGDB-{width}x{height}.jpg",
+      "igdb_id": "104967",
+      "verification": {
+        "name": "Valheim",
+        "status": "new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": "全新"
+      },
+      "viewer_count": 9675,
+      "streamer_count": 573,
+      "median_viewer_count": 3,
+      "language_streamers": {
+        "en": 217,
+        "ru": 109,
+        "fr": 57,
+        "ja": 57,
+        "de": 47,
+        "es": 15,
+        "pt": 13,
+        "zh": 12,
+        "uk": 8,
+        "cs": 6,
+        "fi": 6,
+        "tr": 4,
+        "sv": 3,
+        "it": 3,
+        "th": 3,
+        "tl": 3,
+        "pl": 2,
+        "other": 2,
+        "zh-hk": 1,
+        "el": 1,
+        "da": 1,
+        "hu": 1,
+        "asl": 1,
+        "ar": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:32Z",
+      "measurement_finished_at": "2026-09-29T14:25:35Z",
+      "pagination_complete": true,
+      "stream_pages": 7,
+      "duplicate_broadcasters_removed": 10,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-09-09T00:00:00Z",
+        "release_band": "recent_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-09-09T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 494.476
+        }
+      }
+    },
+    {
+      "game_id": "1960720223",
+      "game_name": "SILENT HILL: townfall",
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/1960720223_IGDB-{width}x{height}.jpg",
+      "igdb_id": "222342",
+      "verification": {
+        "name": "SILENT HILL: townfall",
+        "status": "new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": "全新"
+      },
+      "viewer_count": 9290,
+      "streamer_count": 362,
+      "median_viewer_count": 4.0,
+      "language_streamers": {
+        "en": 123,
+        "ru": 67,
+        "ja": 43,
+        "de": 27,
+        "ar": 22,
+        "fr": 21,
+        "es": 18,
+        "it": 10,
+        "pt": 8,
+        "zh": 5,
+        "zh-hk": 4,
+        "uk": 3,
+        "pl": 3,
+        "th": 3,
+        "hu": 2,
+        "fi": 1,
+        "cs": 1,
+        "tr": 1
+      },
+      "measurement_started_at": "2026-09-29T14:25:35Z",
+      "measurement_finished_at": "2026-09-29T14:25:37Z",
+      "pagination_complete": true,
+      "stream_pages": 5,
+      "duplicate_broadcasters_removed": 14,
+      "release_evidence": {
+        "source": "IGDB",
+        "checked_at": "2026-09-29T14:28:31Z",
+        "first_release_date": "2026-09-24T00:00:00Z",
+        "release_band": "recent_release",
+        "confirms_twitch_new_badge": false
+      },
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": true,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2026-09-24T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "released_within_14_days",
+          "age_hours": 134.476
+        }
+      }
+    }
+  ],
+  "pending_verification": [
+    "1254042066",
+    "2042681592",
+    "404069058",
+    "509660",
+    "518203",
+    "509659",
+    "417752",
+    "115977",
+    "1286077738",
+    "1728683467",
+    "498592",
+    "32959",
+    "1264310518",
+    "1514558606",
+    "386821",
+    "493057",
+    "19619",
+    "464339927",
+    "771448419",
+    "417528"
+  ],
+  "excluded_games": [
+    {
+      "game_id": "516575",
+      "game_name": "VALORANT",
+      "igdb_id": "126459",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "VALORANT",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2020-06-02T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 55454.476
+        }
+      }
+    },
+    {
+      "game_id": "509658",
+      "game_name": "Just Chatting",
+      "igdb_id": null,
+      "reason": "non_game_category",
+      "verification": {
+        "name": "Just Chatting",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        }
+      }
+    },
+    {
+      "game_id": "29595",
+      "game_name": "Dota 2",
+      "igdb_id": null,
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Dota 2",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        }
+      }
+    },
+    {
+      "game_id": "511224",
+      "game_name": "Apex Legends",
+      "igdb_id": "114795",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Apex Legends",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2019-02-04T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 67070.476
+        }
+      }
+    },
+    {
+      "game_id": "21779",
+      "game_name": "League of Legends",
+      "igdb_id": "115",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "League of Legends",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2009-10-27T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 148358.476
+        }
+      }
+    },
+    {
+      "game_id": "18122",
+      "game_name": "World of Warcraft",
+      "igdb_id": "123",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "World of Warcraft",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2004-11-23T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 191534.476
+        }
+      }
+    },
+    {
+      "game_id": "509672",
+      "game_name": "IRL",
+      "igdb_id": null,
+      "reason": "non_game_category",
+      "verification": {
+        "name": "IRL",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        }
+      }
+    },
+    {
+      "game_id": "32982",
+      "game_name": "Grand Theft Auto V",
+      "igdb_id": "1020",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Grand Theft Auto V",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2013-09-17T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 114254.476
+        }
+      }
+    },
+    {
+      "game_id": "32399",
+      "game_name": "Counter-Strike",
+      "igdb_id": null,
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Counter-Strike",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        }
+      }
+    },
+    {
+      "game_id": "27471",
+      "game_name": "Minecraft",
+      "igdb_id": "135400",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Minecraft",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2016-12-19T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 85718.476
+        }
+      }
+    },
+    {
+      "game_id": "263490",
+      "game_name": "Rust",
+      "igdb_id": "3277",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Rust",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2018-02-08T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 75734.476
+        }
+      }
+    },
+    {
+      "game_id": "498566",
+      "game_name": "Slots",
+      "igdb_id": null,
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Slots",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        }
+      }
+    },
+    {
+      "game_id": "515025",
+      "game_name": "Overwatch",
+      "igdb_id": "125174",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Overwatch",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2023-08-10T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 27518.476
+        }
+      }
+    },
+    {
+      "game_id": "33214",
+      "game_name": "Fortnite",
+      "igdb_id": "1905",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Fortnite",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2020-06-29T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 54806.476
+        }
+      }
+    },
+    {
+      "game_id": "513143",
+      "game_name": "Teamfight Tactics",
+      "igdb_id": "120176",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Teamfight Tactics",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2019-06-26T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 63662.476
+        }
+      }
+    },
+    {
+      "game_id": "491487",
+      "game_name": "Dead by Daylight",
+      "igdb_id": "18866",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Dead by Daylight",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2016-06-14T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 90230.476
+        }
+      }
+    },
+    {
+      "game_id": "491931",
+      "game_name": "Escape from Tarkov",
+      "igdb_id": "15536",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Escape from Tarkov",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2025-11-15T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 7646.476
+        }
+      }
+    },
+    {
+      "game_id": "509663",
+      "game_name": "Special Events",
+      "igdb_id": null,
+      "reason": "non_game_category",
+      "verification": {
+        "name": "Special Events",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        }
+      }
+    },
+    {
+      "game_id": "512710",
+      "game_name": "Call of Duty: Warzone",
+      "igdb_id": "131800",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Call of Duty: Warzone",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2020-03-10T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 57470.476
+        }
+      }
+    },
+    {
+      "game_id": "499973",
+      "game_name": "Always On",
+      "igdb_id": null,
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Always On",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        }
+      }
+    },
+    {
+      "game_id": "27546",
+      "game_name": "World of Tanks",
+      "igdb_id": "1184",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "World of Tanks",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2011-04-12T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 135590.476
+        }
+      }
+    },
+    {
+      "game_id": "1282866981",
+      "game_name": "Delta Force",
+      "igdb_id": "262186",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Delta Force",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2024-12-05T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 15926.476
+        }
+      }
+    },
+    {
+      "game_id": "460630",
+      "game_name": "Rainbow Six Siege",
+      "igdb_id": "7360",
+      "reason": "observed_not_new",
+      "verification": {
+        "name": "Rainbow Six Siege",
+        "status": "not_new",
+        "source": "twitch_directory_dom",
+        "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT",
+        "observed_at": "2026-09-28T16:11:31Z",
+        "expires_at": "2026-09-29T16:11:31Z",
+        "badge_text": null
+      },
+      "metrics_collected": false,
+      "release_experiment": {
+        "twitch_original_release_date": {
+          "source": "twitch_original_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "unknown",
+          "predicted_new": null,
+          "confirms_twitch_new_badge": false,
+          "reason": "missing_release_date"
+        },
+        "igdb_first_release_date": {
+          "source": "igdb_first_release_date",
+          "evaluated_at": "2026-09-29T14:28:32Z",
+          "status": "evaluated",
+          "predicted_new": false,
+          "confirms_twitch_new_badge": false,
+          "release_at": "2015-12-01T00:00:00Z",
+          "metadata_observed_at": "2026-09-29T14:28:31Z",
+          "release_phase": "older_release",
+          "age_hours": 94934.476
+        }
+      }
+    }
+  ],
+  "newness_experiment": {
+    "rule": "glance_release_age_lt_14_days_v1",
+    "window_days": 14,
+    "includes_future_releases": true,
+    "experimental": true,
+    "confirms_twitch_new_badge": false,
+    "twitch_date_records_loaded": 0,
+    "reference_checks": [
+      {
+        "game_id": "123184772",
+        "game_name": "EA Sports FC 27",
+        "source": "igdb_first_release_date",
+        "badge_status": "new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": true,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "743893402",
+        "game_name": "WARDOGS",
+        "source": "igdb_first_release_date",
+        "badge_status": "new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": false,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "1267582829",
+        "game_name": "Aniimo",
+        "source": "igdb_first_release_date",
+        "badge_status": "new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": true,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "508455",
+        "game_name": "Valheim",
+        "source": "igdb_first_release_date",
+        "badge_status": "new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": false,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "1960720223",
+        "game_name": "SILENT HILL: townfall",
+        "source": "igdb_first_release_date",
+        "badge_status": "new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": true,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "516575",
+        "game_name": "VALORANT",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "511224",
+        "game_name": "Apex Legends",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "21779",
+        "game_name": "League of Legends",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "18122",
+        "game_name": "World of Warcraft",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "32982",
+        "game_name": "Grand Theft Auto V",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "27471",
+        "game_name": "Minecraft",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "263490",
+        "game_name": "Rust",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "515025",
+        "game_name": "Overwatch",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "33214",
+        "game_name": "Fortnite",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "513143",
+        "game_name": "Teamfight Tactics",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "491487",
+        "game_name": "Dead by Daylight",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "491931",
+        "game_name": "Escape from Tarkov",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "512710",
+        "game_name": "Call of Duty: Warzone",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "27546",
+        "game_name": "World of Tanks",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "1282866981",
+        "game_name": "Delta Force",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      },
+      {
+        "game_id": "460630",
+        "game_name": "Rainbow Six Siege",
+        "source": "igdb_first_release_date",
+        "badge_status": "not_new",
+        "badge_observed_at": "2026-09-28T16:11:31Z",
+        "metadata_observed_at": "2026-09-29T14:28:31Z",
+        "predicted_new_at_badge_time": false,
+        "agrees_with_reference": true,
+        "comparison_kind": "retrospective"
+      }
+    ],
+    "comparison_note": "Retrospective checks apply later release metadata to an earlier badge observation; agreement does not validate Twitch's official rule.",
+    "twitch_original_release_date": {
+      "evaluated_candidates": 0,
+      "unknown_candidates": 25,
+      "predicted_new_game_ids": [],
+      "upcoming_game_ids": []
+    },
+    "igdb_first_release_date": {
+      "evaluated_candidates": 21,
+      "unknown_candidates": 4,
+      "predicted_new_game_ids": [
+        "1254042066",
+        "123184772",
+        "2042681592",
+        "404069058",
+        "1267582829",
+        "1960720223"
+      ],
+      "upcoming_game_ids": [
+        "404069058"
+      ]
+    }
+  },
+  "tracked_games": []
 }
