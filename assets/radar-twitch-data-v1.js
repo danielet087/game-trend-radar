@@ -8,10 +8,23 @@
   const SOURCES = ["twitch_original_release_date", "igdb_first_release_date"];
   const HOUR = 3600000;
   const DEFAULT_FILTER = "signals";
+  const AUDIENCE_RULE = "followers_gt_1000_viewers_gte_10_v1";
   function timestamp(value) {
     return typeof value === "string" && /T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value)) ? value : null;
   }
   function count(value) { return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : null; }
+  function filteredAudience(value) {
+    if (value == null) return { status: "unavailable", median_viewer_count: null };
+    const invalid = { status: "invalid", median_viewer_count: null };
+    if (typeof value !== "object" || value.rule !== AUDIENCE_RULE || value.min_followers_exclusive !== 1000 || value.min_viewers_inclusive !== 10 || value.followers_max_age_hours !== 24 || !["complete", "partial"].includes(value.status)) return invalid;
+    const counters = ["eligible_streamer_count", "eligible_viewer_count", "excluded_low_viewer_count", "excluded_low_follower_count", "unknown_follower_count"];
+    if (!counters.every(key => Number.isSafeInteger(value[key]) && value[key] >= 0)) return invalid;
+    const samples = value.eligible_streamer_count, viewers = value.eligible_viewer_count;
+    if (viewers < samples * 10 || (!samples && viewers !== 0) || (value.status === "complete" && value.unknown_follower_count !== 0) || (value.status === "partial" && value.unknown_follower_count === 0)) return invalid;
+    const median = count(value.median_viewer_count);
+    if (value.status === "complete" && (samples ? median === null || median < 10 || median > viewers : value.median_viewer_count !== null)) return invalid;
+    return { ...value, median_viewer_count: value.status === "complete" && samples > 0 ? median : null };
+  }
   function safeURL(value, host) {
     try {
       const url = new URL(value);
@@ -40,6 +53,7 @@
       ...value, game_id: String(value.game_id), game_name: String(value.game_name || "未命名遊戲"),
       viewer_count: count(value.viewer_count), streamer_count: count(value.streamer_count),
       median_viewer_count: legacy ? null : count(value.median_viewer_count),
+      filtered_audience: filteredAudience(legacy ? null : value.filtered_audience),
       box_art_url: safeURL(cover, "static-cdn.jtvnw.net"),
       verification: verification(legacy ? null : value.verification),
       release_experiment: Object.fromEntries(SOURCES.map(source => [source, prediction(legacy ? null : value.release_experiment?.[source])])),
@@ -76,8 +90,9 @@
   }
   function select(games, { query = "", filter = "all", sort = "viewers" } = {}) {
     const search = query.normalize("NFKC").trim().toLocaleLowerCase();
-    const metric = { viewers: "viewer_count", streamers: "streamer_count", median: "median_viewer_count" }[sort] || "viewer_count";
-    return games.filter(g => matches(g, filter) && `${g.game_name} ${g.game_id}`.normalize("NFKC").toLocaleLowerCase().includes(search)).sort((a, b) => (b[metric] ?? -1) - (a[metric] ?? -1) || (b.viewer_count ?? -1) - (a.viewer_count ?? -1) || a.game_id.localeCompare(b.game_id));
+    const metric = { viewers: "viewer_count", streamers: "streamer_count" }[sort] || "viewer_count";
+    const measure = g => sort === "median" ? g.filtered_audience?.median_viewer_count : g[metric];
+    return games.filter(g => matches(g, filter) && `${g.game_name} ${g.game_id}`.normalize("NFKC").toLocaleLowerCase().includes(search)).sort((a, b) => (measure(b) ?? -1) - (measure(a) ?? -1) || (b.viewer_count ?? -1) - (a.viewer_count ?? -1) || a.game_id.localeCompare(b.game_id));
   }
   function taipeiDay(value) {
     const date = new Date(value);
@@ -107,8 +122,9 @@
       return { hour: new Date(time).toISOString(), generated_at: snapshot?.generated_at || null,
         status: row ? "observed" : snapshot ? "absent" : "missing",
         viewer_count: count(row?.viewer_count), streamer_count: count(row?.streamer_count), median_viewer_count: count(row?.median_viewer_count),
+        filtered_audience: filteredAudience(row?.filtered_audience),
       };
     });
   }
-  return { SOURCES, DEFAULT_FILTER, timestamp, count, safeURL, normalize, matches, select, taipeiDay, historyDays, historyRows };
+  return { SOURCES, DEFAULT_FILTER, AUDIENCE_RULE, timestamp, count, filteredAudience, safeURL, normalize, matches, select, taipeiDay, historyDays, historyRows };
 });

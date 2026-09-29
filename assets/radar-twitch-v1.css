@@ -68,6 +68,7 @@ body[data-page="twitch"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; --page
 .tw-metric[data-kind="viewers"] strong { color:#554278; }
 .tw-metric-label { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
 .tw-metric > small { display:block; color:#84788d; font-size:10px; margin-top:3px; }
+.tw-metric[data-kind="median"] > small { line-height:1.6; overflow-wrap:anywhere; }
 .tw-signals { display:grid; gap:6px; padding-left:20px; border-left:1px dashed #dad1e2; }
 .tw-signal { display:flex; align-items:center; gap:9px; font-size:11px; }
 .tw-signal > span:first-child { width:63px; flex-shrink:0; color:#7a6b87; }
@@ -83,6 +84,14 @@ body[data-page="twitch"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; --page
 .tw-observation-line { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:11px; color:#796b86; margin-bottom:16px; line-height:1.7; }
 .tw-observation-line a,.tw-evidence-card a { color:var(--blue); text-decoration:underline; text-underline-offset:4px; }
 .tw-evidence-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:13px; }
+.tw-audience-details { border:1px solid #d9dfd1; border-radius:11px; padding:15px 17px; margin-bottom:16px; background:#f5f8ee; }
+.tw-audience-details h4 { margin:0 0 8px; color:#4d6345; font-size:12px; }
+.tw-audience-details p { font-size:11px; line-height:1.9; color:#64705d; margin:5px 0 0; }
+.tw-audience-counts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px 16px; margin:13px 0 10px; }
+.tw-audience-counts dt { font-size:10px; line-height:1.8; color:#687960; }
+.tw-audience-counts dd { margin:3px 0 0; color:#405436; font-size:14px; font-weight:650; font-variant-numeric:tabular-nums; }
+.tw-audience-details .tw-unfiltered-reference { border-top:1px dashed #d4dccb; margin-top:11px; padding-top:9px; }
+@media(max-width:600px) { .tw-audience-counts { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 .tw-evidence-card { padding:17px; border:1px solid #ded4e9; border-top:3px solid #b8a2d4; border-radius:11px; background:#fff; min-width:0; }
 .tw-evidence-card:nth-child(2) { border-top-color:#a2c8b4; }
 .tw-evidence-card:nth-child(3) { border-top-color:#e1b495; }

@@ -18,6 +18,28 @@
     return el;
   }
   function fmt(value) { return value === null || value === undefined ? "—" : number.format(value); }
+  function audienceNote(a) {
+    if (a.status === "unavailable") return "待新條件收集";
+    if (a.status === "invalid") return "資料待確認";
+    if (a.status === "partial") return `待查 ${fmt(a.unknown_follower_count)} 台`;
+    return a.eligible_streamer_count ? `${fmt(a.eligible_streamer_count)} 台符合條件` : "無符合條件頻道";
+  }
+  function audienceDetails(g) {
+    const a = g.filtered_audience, section = node("section","tw-audience-details");
+    section.append(node("h4","","中位數納入條件"),node("p","","免費追隨者 > 1,000，且本次觀眾 ≥ 10；追隨數使用 24 小時內取得的紀錄。遊戲總觀眾、開台數與 7,000 人入選門檻仍以全體頻道計算。"));
+    if (["complete","partial"].includes(a.status)) {
+      const list = node("dl","tw-audience-counts");
+      keyValue(list,"符合條件",`${fmt(a.eligible_streamer_count)} 台`);
+      keyValue(list,"觀眾不足 10 人",`${fmt(a.excluded_low_viewer_count)} 台`);
+      keyValue(list,"追隨者未超過 1,000",`${fmt(a.excluded_low_follower_count)} 台`);
+      keyValue(list,"追隨數待查",`${fmt(a.unknown_follower_count)} 台`);
+      section.append(list);
+      if (a.status === "partial") section.append(node("p","","尚有頻道追隨數未確認，本次篩選後中位數暫不顯示，避免只用部分樣本造成誤判。"));
+      else if (!a.eligible_streamer_count) section.append(node("p","","本次沒有符合兩項條件的頻道，因此沒有可計算的中位數；不是 0 人。"));
+    } else section.append(node("p","",a.status === "unavailable" ? "這筆快照尚未收集上述條件，保留遊戲與原始總量，等待新版量測。" : "篩選規則或資料欄位不完整，暫不呈現此中位數。"));
+    if (g.median_viewer_count != null) section.append(node("p","tw-unfiltered-reference",`全體頻道中位數（未篩選，僅供參考）：${fmt(g.median_viewer_count)} 人。`));
+    return section;
+  }
   function time(value) { return D.timestamp(value) ? dateTime.format(new Date(value)) : "尚無紀錄"; }
   function urlState() {
     const p = new URLSearchParams(location.search);
@@ -126,17 +148,20 @@
       if (!rows.some(r => r.status === "observed")) {
         content.append(node("p","","這段期間尚無此遊戲可讀取的逐時紀錄。歷史會在新版排程保存資料後出現；缺測不計為 0。")); return;
       }
-      content.append(node("p","",`以 ${time(anchor)} 這筆快照為截止點。未入列可能是未達門檻或已排除，不代表零觀眾；缺測保留空白。`));
+      content.append(node("p","",`以 ${time(anchor)} 這筆快照為截止點。觀眾與開台為全體總量；中位數只計追隨者 > 1,000 且觀眾 ≥ 10 的頻道。舊紀錄未收集新條件時顯示「—」，不以舊中位數補入。未入列與缺測不代表零觀眾。`));
       const table = node("table","tw-history-table"), caption = node("caption","sr-only",g.game_name + " 最近 24 小時實測紀錄，台灣時間");
       const head = node("thead"), tr = node("tr");
-      ["時間 / 狀態","觀眾","開台","中位數"].forEach(label => { const th = node("th","",label); th.scope = "col"; tr.append(th); }); head.append(tr);
+      ["時間 / 狀態","總觀眾","總開台","篩選後中位數"].forEach(label => { const th = node("th","",label); th.scope = "col"; tr.append(th); }); head.append(tr);
       const body = node("tbody");
       rows.slice().reverse().forEach(row => {
         const line = node("tr"), cell = node("td","",hourTime.format(new Date(row.hour)));
         cell.append(node("small","",row.status === "observed" ? "有紀錄" : row.status === "absent" ? "該次未入列" : "無可用紀錄"));
         if (row.generated_at) cell.title = "實際快照 " + time(row.generated_at);
         line.append(cell);
-        ["viewer_count","streamer_count","median_viewer_count"].forEach(key => line.append(node("td","",fmt(row[key])))); body.append(line);
+        ["viewer_count","streamer_count"].forEach(key => line.append(node("td","",fmt(row[key]))));
+        const median = node("td","",fmt(row.filtered_audience.median_viewer_count));
+        if (row.status === "observed") median.append(node("small","",audienceNote(row.filtered_audience)));
+        line.append(median); body.append(line);
       });
       table.append(caption,head,body);
       const scroll = node("div","tw-history-scroll"); scroll.tabIndex = 0; scroll.setAttribute("role","region"); scroll.setAttribute("aria-label",g.game_name + " 逐時紀錄，可上下捲動");
@@ -154,10 +179,12 @@
       image.addEventListener("error",() => image.remove(),{ once:true }); cover.append(image);
     }
     const title = node("div","tw-game-title"); title.append(node("h3","",g.game_name),node("p","","CATEGORY " + g.game_id)); identity.append(cover,title); summary.append(identity);
-    const metricNames = state.data.legacy ? ["取樣觀眾數","取樣開台數","觀眾中位數"] : ["觀眾人數","開台數","觀眾中位數"];
-    ["viewer_count","streamer_count","median_viewer_count"].forEach((key,i) => {
+    const metricNames = ["總觀眾人數","總開台數","篩選後中位數"];
+    [g.viewer_count,g.streamer_count,g.filtered_audience.median_viewer_count].forEach((value,i) => {
       const metric = node("div","tw-metric"); metric.dataset.kind = ["viewers","streamers","median"][i];
-      metric.append(node("span","tw-metric-label",metricNames[i]),node("strong","",fmt(g[key])),node("small","",g[key] == null ? "尚未收集" : i === 1 ? "個頻道" : "人")); summary.append(metric);
+      metric.append(node("span","tw-metric-label",metricNames[i]),node("strong","",fmt(value)),node("small","",i === 2 ? audienceNote(g.filtered_audience) : value == null ? "尚未收集" : i === 1 ? "個頻道・全體" : "人・全體"));
+      if (i === 2) metric.setAttribute("aria-label",`篩選後觀眾中位數 ${fmt(value)} 人，${audienceNote(g.filtered_audience)}；免費追隨者超過 1,000 且觀眾至少 10 人`);
+      summary.append(metric);
     });
     const signals = node("div","tw-signals");
     [officialBadge(g),...D.SOURCES.map(source => predictionBadge(g.release_experiment[source]))].forEach((b,i) => { const line = node("span","tw-signal"); line.append(node("span","",["官方觀測","Twitch 日期","IGDB 日期"][i]),b); signals.append(line); });
@@ -168,7 +195,7 @@
       built = true;
       const body = node("div","tw-game-body"), line = node("p","tw-observation-line");
       line.append(node("span","",state.data.legacy ? "此筆來自舊版全球直播取樣，沒有完整類別量測。" : `量測 ${time(g.measurement_started_at)} → ${time(g.measurement_finished_at)}${g.pagination_complete === true ? " · 已讀完該類別分頁" : " · 分頁完整性未確認"}`));
-      body.append(line,evidence(g));
+      body.append(line,audienceDetails(g),evidence(g));
       if (!state.data.legacy) body.append(historyPanel(g));
       card.append(body);
     });
@@ -239,8 +266,8 @@
     const d = state.data, coverage = d.coverage;
     $("snapshotTime").textContent = time(d.generated_at); $("snapshotTime").dateTime = d.generated_at;
     $("scopeLabel").textContent = `${d.legacy ? "等待新版觀測" : "全球觀測"} · 觀眾 ≥ ${fmt(d.threshold)}`;
-    document.querySelector('[data-metric-label="viewers"]').textContent = d.legacy ? "取樣觀眾數" : "觀眾人數";
-    document.querySelector('[data-metric-label="streamers"]').textContent = d.legacy ? "取樣開台數" : "開台數";
+    document.querySelector('[data-metric-label="viewers"]').textContent = d.legacy ? "取樣觀眾數" : "總觀眾人數";
+    document.querySelector('[data-metric-label="streamers"]').textContent = d.legacy ? "取樣開台數" : "總開台數";
     if (d.legacy) {
       notice("舊版熱門取樣不列入新作清單","現有快照沒有新作判斷依據，不能僅憑觀眾數列為新作。新版資料發布後會自動切換。" );
     } else if (coverage.collection_complete !== true || d.invalidRows) {
@@ -249,7 +276,7 @@
     const stale = Date.now() - Date.parse(d.generated_at) > 3 * 3600000;
     $("freshnessNote").hidden = !stale;
     $("freshnessNote").textContent = d.legacy ? "最近一份公開檔案仍為舊版，等待新版排程收集並發布。" : "這份快照已超過 3 小時未更新；以下是已保存的觀測，不代表目前直播狀態。";
-    $("tableNote").textContent = d.legacy ? "不以熱門程度推定新作，也不以舊取樣補出中位數或全新標記。" : "中位數以各開台頻道的觀眾人數計算，不是平均值。各類別依序量測；展開遊戲可核對時間與判讀依據。";
+    $("tableNote").textContent = d.legacy ? "不以熱門程度推定新作，也不以舊取樣補出中位數或全新標記。" : "篩選後中位數只計免費追隨者 > 1,000 且觀眾 ≥ 10 的頻道，並標示納入台數。總觀眾與總開台維持全體頻道統計；各類別依序量測，展開可核對樣本與時間。";
     exclusions();
   }
   async function load() {

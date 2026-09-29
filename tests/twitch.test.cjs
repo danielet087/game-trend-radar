@@ -4,6 +4,7 @@ const D = require('../assets/radar-twitch-data-v1.js');
 const at = '2026-09-29T12:20:00Z';
 const forecast = (result, overrides = {}) => ({ status:'evaluated', predicted_new:result, evaluated_at:at, release_at:'2026-09-25T00:00:00Z', metadata_observed_at:at, ...overrides });
 const candidate = (overrides = {}) => ({ game_id:'101', game_name:'Test Game', viewer_count:7000, streamer_count:21, median_viewer_count:0, verification:{status:'pending'}, ...overrides });
+const filtered = (overrides = {}) => ({ rule:D.AUDIENCE_RULE, min_followers_exclusive:1000, min_viewers_inclusive:10, followers_max_age_hours:24, status:'complete', median_viewer_count:12.5, eligible_streamer_count:2, eligible_viewer_count:25, excluded_low_viewer_count:15, excluded_low_follower_count:4, unknown_follower_count:0, ...overrides });
 const snapshot = (rows, overrides = {}) => ({ schema_version:2, generated_at:at, min_viewers:7000, coverage:{collection_complete:true}, candidate_games:rows, ...overrides });
 
 test('uses the complete candidate list, preserving pending and exact-threshold rows', () => {
@@ -51,9 +52,9 @@ test('expired or incomplete predictions and undated badge claims remain unknown'
   assert.equal(g.release_experiment.twitch_original_release_date.predicted_new,null);
   assert.equal(g.release_experiment.igdb_first_release_date.predicted_new,null);
 });
-test('unknown medians sort after real zero and fractional values; search supports IDs', () => {
-  const d = D.normalize(snapshot([candidate(),candidate({game_id:'102',median_viewer_count:null}),candidate({game_id:'103',median_viewer_count:2.5})]));
-  assert.deepEqual(D.select(d.games,{sort:'median'}).map(g=>g.game_id),['103','101','102']);
+test('filtered medians sort without using large old medians; search supports IDs', () => {
+  const d = D.normalize(snapshot([candidate({median_viewer_count:9000}),candidate({game_id:'102',filtered_audience:filtered({median_viewer_count:10,eligible_viewer_count:20})}),candidate({game_id:'103',filtered_audience:filtered()})]));
+  assert.deepEqual(D.select(d.games,{sort:'median'}).map(g=>g.game_id),['103','102','101']);
   assert.deepEqual(D.select(d.games,{query:'１０２'}).map(g=>g.game_id),['102']);
   assert.equal(D.count('7'),null);
   assert.equal(D.count(Infinity),null);
@@ -91,4 +92,54 @@ test('historical absence differs from zero; rejects future snapshots and incorre
   assert.equal(rows.at(-1).status,'missing');
   assert.equal(rows.at(-1).viewer_count,null);
   assert.ok(D.historyRows([{...file,date:'2026-09-28'}],'101',at).every(r=>r.status==='missing'));
+});
+
+test('complete filtered audience requires exact thresholds and valid sample data', () => {
+  const g = D.normalize(snapshot([candidate({filtered_audience:filtered()})])).games[0];
+  assert.equal(g.filtered_audience.median_viewer_count,12.5);
+  assert.equal(g.filtered_audience.eligible_streamer_count,2);
+  assert.equal(g.viewer_count,7000);
+  assert.equal(g.streamer_count,21);
+  assert.equal(g.median_viewer_count,0);
+  for (const change of [
+    {rule:'different_rule'}, {min_followers_exclusive:999}, {min_viewers_inclusive:9}, {followers_max_age_hours:48},
+    {median_viewer_count:0}, {median_viewer_count:9}, {median_viewer_count:null}, {median_viewer_count:'12.5'},
+    {eligible_streamer_count:1.5}, {eligible_viewer_count:19}, {unknown_follower_count:1}, {excluded_low_viewer_count:-1},
+    {status:'partial',unknown_follower_count:0},
+  ]) {
+    const a = D.filteredAudience(filtered(change));
+    assert.equal(a.status,'invalid',JSON.stringify(change));
+    assert.equal(a.median_viewer_count,null);
+  }
+});
+test('missing, pending and empty filtered samples stay distinct and never become zero', () => {
+  const missing = D.normalize(snapshot([candidate()])).games[0];
+  assert.equal(missing.filtered_audience.status,'unavailable');
+  assert.equal(missing.filtered_audience.median_viewer_count,null);
+  const pending = D.filteredAudience(filtered({status:'partial',unknown_follower_count:3}));
+  assert.equal(pending.status,'partial');
+  assert.equal(pending.unknown_follower_count,3);
+  assert.equal(pending.median_viewer_count,null);
+  const empty = D.filteredAudience(filtered({eligible_streamer_count:0,eligible_viewer_count:0,median_viewer_count:null}));
+  assert.equal(empty.status,'complete');
+  assert.equal(empty.median_viewer_count,null);
+  assert.equal(D.filteredAudience(filtered({eligible_streamer_count:0,eligible_viewer_count:0,median_viewer_count:0})).status,'invalid');
+  const games = D.normalize(snapshot([
+    candidate({game_id:'101',viewer_count:100000,filtered_audience:filtered({status:'partial',unknown_follower_count:3,median_viewer_count:10000})}),
+    candidate({game_id:'102',filtered_audience:filtered()}),
+  ])).games;
+  assert.deepEqual(D.select(games,{sort:'median'}).map(g=>g.game_id),['102','101']);
+});
+test('hourly history retains each measurement definition, including old and partial snapshots', () => {
+  const rows = D.historyRows([{schema_version:1,date:'2026-09-29',timezone:'Asia/Taipei',hours:{
+    '2026-09-29T08:00:00Z':{generated_at:'2026-09-29T08:02:00Z',games:[candidate({median_viewer_count:999})]},
+    '2026-09-29T09:00:00Z':{generated_at:'2026-09-29T09:02:00Z',games:[candidate({filtered_audience:filtered({status:'partial',unknown_follower_count:1})})]},
+    '2026-09-29T10:00:00Z':{generated_at:'2026-09-29T10:02:00Z',games:[candidate({filtered_audience:filtered()})]},
+  }}],'101',at);
+  const old = rows.find(r=>r.hour.includes('T08:'));
+  assert.equal(old.median_viewer_count,999);
+  assert.equal(old.filtered_audience.median_viewer_count,null);
+  assert.equal(old.filtered_audience.status,'unavailable');
+  assert.equal(rows.find(r=>r.hour.includes('T09:')).filtered_audience.median_viewer_count,null);
+  assert.equal(rows.find(r=>r.hour.includes('T10:')).filtered_audience.median_viewer_count,12.5);
 });
