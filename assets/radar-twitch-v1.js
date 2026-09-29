@@ -5,11 +5,10 @@
   const $ = id => document.getElementById(id);
   const number = new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 1 });
   const dateTime = new Intl.DateTimeFormat("zh-TW", { timeZone:"Asia/Taipei", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hourCycle:"h23" });
-  const hourTime = new Intl.DateTimeFormat("zh-TW", { timeZone:"Asia/Taipei", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hourCycle:"h23" });
   const filterNames = { signals:"新作線索", all:"全部候選", official:"官方全新", twitch:"Twitch 推算命中", igdb:"IGDB 推算命中", pending:"官方待確認" };
   const sourceNames = ["Twitch 日期", "IGDB 日期"];
   const state = { data:null, query:"", filter:D.DEFAULT_FILTER, sort:"viewers", limit:24, loading:false };
-  const cards = new Map(), historyCache = new Map();
+  const cards = new Map(), historyCache = new Map(), chartDisposers = new Set();
   let searchTimer, composing = false;
   function node(tag, className, text) {
     const el = document.createElement(tag);
@@ -121,13 +120,17 @@
   }
   function historyPanel(g) {
     const details = node("details","tw-history");
-    details.append(node("summary","","查看逐時紀錄 · 最近 24 小時"));
+    const summary = node("summary","tw-history-toggle");
+    summary.append(node("span","tw-history-title","查看逐時紀錄"),node("span","tw-history-kind","互動折線圖 · 24 小時"));
+    details.append(summary);
     const content = node("div","tw-history-content"); details.append(content);
-    let loaded = false;
+    let loaded = false, disposeChart = null, requestVersion = 0;
     async function renderHistory() {
       loaded = true;
+      const version = ++requestVersion, snapshot = state.data;
+      if (disposeChart) { disposeChart(); chartDisposers.delete(disposeChart); disposeChart = null; }
       content.replaceChildren(node("p","","正在讀取已保存的逐時紀錄…"));
-      const anchor = state.data.generated_at;
+      const anchor = snapshot.generated_at;
       const days = D.historyDays(anchor);
       const results = await Promise.allSettled(days.map(day => {
         if (!historyCache.has(day)) historyCache.set(day,readJSON(`./data/twitch_history/${day}.json`,true).then(file => {
@@ -136,6 +139,7 @@
         }));
         return historyCache.get(day);
       }));
+      if (version !== requestVersion || state.data !== snapshot) return;
       const files = results.filter(r => r.status === "fulfilled").map(r => r.value).filter(Boolean);
       const failed = results.some(r => r.status === "rejected");
       const rows = D.historyRows(files,g.game_id,anchor);
@@ -148,24 +152,10 @@
       if (!rows.some(r => r.status === "observed")) {
         content.append(node("p","","這段期間尚無此遊戲可讀取的逐時紀錄。歷史會在新版排程保存資料後出現；缺測不計為 0。")); return;
       }
-      content.append(node("p","",`以 ${time(anchor)} 這筆快照為截止點。觀眾與開台為全體總量；中位數只計追隨者 > 1,000 且觀眾 ≥ 10 的頻道。舊紀錄未收集新條件時顯示「—」，不以舊中位數補入。未入列與缺測不代表零觀眾。`));
-      const table = node("table","tw-history-table"), caption = node("caption","sr-only",g.game_name + " 最近 24 小時實測紀錄，台灣時間");
-      const head = node("thead"), tr = node("tr");
-      ["時間 / 狀態","總觀眾","總開台","篩選後中位數"].forEach(label => { const th = node("th","",label); th.scope = "col"; tr.append(th); }); head.append(tr);
-      const body = node("tbody");
-      rows.slice().reverse().forEach(row => {
-        const line = node("tr"), cell = node("td","",hourTime.format(new Date(row.hour)));
-        cell.append(node("small","",row.status === "observed" ? "有紀錄" : row.status === "absent" ? "該次未入列" : "無可用紀錄"));
-        if (row.generated_at) cell.title = "實際快照 " + time(row.generated_at);
-        line.append(cell);
-        ["viewer_count","streamer_count"].forEach(key => line.append(node("td","",fmt(row[key]))));
-        const median = node("td","",fmt(row.filtered_audience.median_viewer_count));
-        if (row.status === "observed") median.append(node("small","",audienceNote(row.filtered_audience)));
-        line.append(median); body.append(line);
-      });
-      table.append(caption,head,body);
-      const scroll = node("div","tw-history-scroll"); scroll.tabIndex = 0; scroll.setAttribute("role","region"); scroll.setAttribute("aria-label",g.game_name + " 逐時紀錄，可上下捲動");
-      scroll.append(table); content.append(scroll);
+      const chart = node("div","tw-history-chart"); content.append(chart);
+      disposeChart = window.RadarTwitchChart.mount(chart,{ rows,gameName:g.game_name,anchor });
+      chartDisposers.add(disposeChart);
+      content.append(node("p","tw-history-note",`台灣時間 · 截至 ${time(anchor)}。總觀眾與開台為全體統計；篩選中位數只計追隨者 > 1,000 且觀眾 ≥ 10 的頻道。缺測及未入列保留空缺，不補成 0。`));
     }
     details.addEventListener("toggle",() => { if (details.open && !loaded) renderHistory(); });
     return details;
@@ -195,8 +185,9 @@
       built = true;
       const body = node("div","tw-game-body"), line = node("p","tw-observation-line");
       line.append(node("span","",state.data.legacy ? "此筆來自舊版全球直播取樣，沒有完整類別量測。" : `量測 ${time(g.measurement_started_at)} → ${time(g.measurement_finished_at)}${g.pagination_complete === true ? " · 已讀完該類別分頁" : " · 分頁完整性未確認"}`));
-      body.append(line,audienceDetails(g),evidence(g));
+      body.append(line);
       if (!state.data.legacy) body.append(historyPanel(g));
+      body.append(audienceDetails(g),evidence(g));
       card.append(body);
     });
     return card;
@@ -286,6 +277,7 @@
     try {
       const data = D.normalize(await readJSON("./data/twitch_live.json"));
       const same = data.generated_at === state.data?.generated_at;
+      chartDisposers.forEach(dispose => dispose()); chartDisposers.clear();
       state.data = data; cards.clear(); historyCache.clear();
       metadata(); render();
       if (same) $("resultsStatus").textContent += " · 已是最新公開快照";
