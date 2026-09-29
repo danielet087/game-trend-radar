@@ -7,6 +7,7 @@
   "use strict";
   const SOURCES = ["twitch_original_release_date", "igdb_first_release_date"];
   const HOUR = 3600000;
+  const DEFAULT_FILTER = "signals";
   function timestamp(value) {
     return typeof value === "string" && /T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value)) ? value : null;
   }
@@ -60,12 +61,13 @@
       return g.viewer_count >= threshold ? [g] : [];
     });
     const excluded = legacy ? [] : (Array.isArray(payload.excluded_games) ? payload.excluded_games : []).map(g => game(g, false)).filter(Boolean);
-    return { legacy, generated_at: payload.generated_at, threshold, games, excluded, invalidRows,
+    return { legacy, generated_at: payload.generated_at, threshold, games: legacy ? [] : games, legacy_sample_count: legacy ? games.length : 0, excluded, invalidRows,
       coverage: payload.coverage || {},
       reference_checks: !legacy && Array.isArray(payload.newness_experiment?.reference_checks) ? payload.newness_experiment.reference_checks : [],
     };
   }
   function matches(game, filter) {
+    if (filter === "signals") return game.verification.status !== "not_new" && (game.verification.status === "new" || SOURCES.some(source => game.release_experiment[source].predicted_new === true));
     if (filter === "official") return game.verification.status === "new";
     if (filter === "twitch") return game.release_experiment[SOURCES[0]].predicted_new === true;
     if (filter === "igdb") return game.release_experiment[SOURCES[1]].predicted_new === true;
@@ -108,5 +110,5 @@
       };
     });
   }
-  return { SOURCES, timestamp, count, safeURL, normalize, matches, select, taipeiDay, historyDays, historyRows };
+  return { SOURCES, DEFAULT_FILTER, timestamp, count, safeURL, normalize, matches, select, taipeiDay, historyDays, historyRows };
 });

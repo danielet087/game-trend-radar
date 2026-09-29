@@ -41,6 +41,7 @@ body[data-page="twitch"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; --page
 .tw-filters button > span { display:inline-grid; place-items:center; min-width:20px; padding:2px 5px; background:#f0eaf5; font-size:10px; border-radius:5px; font-variant-numeric:tabular-nums; }
 .tw-filters button[aria-pressed="true"] { background:var(--tw-purple); border-color:var(--tw-purple); color:white; box-shadow:0 2px 0 #413158; }
 .tw-filters button[aria-pressed="true"] > span { background:#ffffff24; }
+.tw-view-notice { margin:15px 25px 0; border-left:3px solid #adbb9c; padding:8px 12px; background:#f3f6ed; color:#627053; border-radius:0 7px 7px 0; font-size:11px; line-height:1.8; }
 .tw-results-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:16px 26px; min-height:57px; font-size:11px; color:var(--muted); }
 .tw-results-bar > a { margin-left:auto; color:var(--tw-purple); font-weight:650; text-underline-offset:4px; }
 .tw-results-bar > a:hover { text-decoration:underline; }
@@ -200,6 +201,7 @@ body[data-page="twitch"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; --page
   .tw-sort { width:100%; justify-content:flex-end; }
   .tw-sort select { min-height:40px; padding-top:8px; padding-bottom:8px; font-size:11px; }
   .tw-filters { padding:0 16px; gap:7px; }
+  .tw-view-notice { margin:14px 16px 0; padding:8px 10px; font-size:10px; }
   .tw-filters button { padding:7px 9px; gap:5px; font-size:10px; min-height:38px; }
   .tw-filters button > span { font-size:9px; min-width:18px; padding:2px 4px; }
   .tw-results-bar { padding:15px 16px; font-size:10px; gap:10px; border-bottom:1px solid #eee7f2; }

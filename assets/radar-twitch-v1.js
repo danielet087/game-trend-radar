@@ -6,9 +6,9 @@
   const number = new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 1 });
   const dateTime = new Intl.DateTimeFormat("zh-TW", { timeZone:"Asia/Taipei", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hourCycle:"h23" });
   const hourTime = new Intl.DateTimeFormat("zh-TW", { timeZone:"Asia/Taipei", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hourCycle:"h23" });
-  const filterNames = { all:"全部候選", official:"官方全新", twitch:"Twitch 推算命中", igdb:"IGDB 推算命中", pending:"官方待確認" };
+  const filterNames = { signals:"新作線索", all:"全部候選", official:"官方全新", twitch:"Twitch 推算命中", igdb:"IGDB 推算命中", pending:"官方待確認" };
   const sourceNames = ["Twitch 日期", "IGDB 日期"];
-  const state = { data:null, query:"", filter:"all", sort:"viewers", limit:24, loading:false };
+  const state = { data:null, query:"", filter:D.DEFAULT_FILTER, sort:"viewers", limit:24, loading:false };
   const cards = new Map(), historyCache = new Map();
   let searchTimer, composing = false;
   function node(tag, className, text) {
@@ -22,7 +22,7 @@
   function urlState() {
     const p = new URLSearchParams(location.search);
     state.query = (p.get("q") || "").slice(0,160);
-    state.filter = Object.hasOwn(filterNames, p.get("state")) ? p.get("state") : "all";
+    state.filter = Object.hasOwn(filterNames, p.get("state")) ? p.get("state") : D.DEFAULT_FILTER;
     state.sort = ["viewers","streamers","median"].includes(p.get("sort")) ? p.get("sort") : "viewers";
     state.limit = 24;
     $("gameSearch").value = state.query;
@@ -30,7 +30,7 @@
   }
   function syncURL() {
     const url = new URL(location.href);
-    for (const [key,value,defaultValue] of [["q",state.query,""],["state",state.filter,"all"],["sort",state.sort,"viewers"]]) {
+    for (const [key,value,defaultValue] of [["q",state.query,""],["state",state.filter,D.DEFAULT_FILTER],["sort",state.sort,"viewers"]]) {
       if (value === defaultValue) url.searchParams.delete(key); else url.searchParams.set(key,value);
     }
     history.replaceState(null,"",url);
@@ -181,7 +181,7 @@
     return div;
   }
   function reset() {
-    clearTimeout(searchTimer); state.query = ""; state.filter = "all"; state.sort = "viewers"; state.limit = 24;
+    clearTimeout(searchTimer); state.query = ""; state.filter = D.DEFAULT_FILTER; state.sort = "viewers"; state.limit = 24;
     $("gameSearch").value = ""; $("gameSort").value = "viewers"; render(); syncURL();
   }
   function render() {
@@ -190,16 +190,32 @@
     const visible = D.select(games,state);
     document.querySelectorAll("[data-filter]").forEach(button => {
       button.setAttribute("aria-pressed",String(button.dataset.filter === state.filter));
-      button.querySelector("span").textContent = fmt(games.filter(g => D.matches(g,button.dataset.filter)).length);
+      button.disabled = legacy;
+      button.querySelector("span").textContent = legacy ? "—" : fmt(games.filter(g => D.matches(g,button.dataset.filter)).length);
     });
-    $("resultsStatus").textContent = `${visible.length} 款${legacy ? "取樣候選" : "候選"} · ${filterNames[state.filter]}${visible.length > state.limit ? ` · 顯示前 ${state.limit} 款` : ""}`;
-    $("resetFilters").hidden = !state.query && state.filter === "all" && state.sort === "viewers";
+    $("gameSearch").disabled = legacy; $("gameSort").disabled = legacy;
+    $("resetFilters").hidden = legacy || (!state.query && state.filter === D.DEFAULT_FILTER && state.sort === "viewers");
+    $("viewNotice").hidden = legacy;
+    document.querySelector(".tw-column-head").hidden = legacy;
+    $("candidatesTitle").textContent = state.filter === "all" ? "全部候選" : state.filter === "pending" ? "官方待確認候選" : "新作觀測";
+    if (legacy) {
+      $("resultsStatus").textContent = "新版新作觀測尚未發布";
+      $("gameResults").replaceChildren(empty("等待新版新作觀測","現有檔案是未經新作篩選的舊版熱門取樣，暫不列入。新版排程成功發布後，這裡會自動顯示新作線索。"));
+      $("gameResults").setAttribute("aria-busy","false"); $("loadMore").hidden = true;
+      return;
+    }
+    $("viewNotice").textContent = state.filter === "all" ? "全部候選包含尚未確認的遊戲；達到觀眾門檻，不代表是新作。" : state.filter === "pending" ? "這些候選尚未確認官方全新標記；即使有日期推算結果，也不等於官方已確認。" : state.filter === "official" ? "只列快照中有效的官方全新觀測；請展開核對觀測時間。" : state.filter === D.DEFAULT_FILTER ? "只列官方曾見全新或日期推算命中的遊戲；日期推算仍屬實驗，不等於官方全新。" : `只列 ${state.filter === "twitch" ? "Twitch" : "IGDB"} 日期推算命中的遊戲；推算仍屬實驗，不等於官方全新。`;
+    $("resultsStatus").textContent = `${visible.length} 款 · ${filterNames[state.filter]}${visible.length > state.limit ? ` · 顯示前 ${state.limit} 款` : ""}`;
     const fragment = document.createDocumentFragment();
     visible.slice(0,state.limit).forEach(g => {
       if (!cards.has(g.game_id)) cards.set(g.game_id,gameCard(g));
       fragment.append(cards.get(g.game_id));
     });
-    if (!visible.length) fragment.append(empty(games.length ? "這個條件下，還沒有結果" : "這次沒有達標候選",games.length ? "試著調整關鍵字或切回全部候選。未取得觀測與日期，不會自動算成全新。" : "這份快照沒有可呈現的達標遊戲。下一輪有資料後會出現在這裡。",games.length ? reset : null,"查看全部候選"));
+    if (!visible.length) {
+      const noSignals = games.length && state.filter === D.DEFAULT_FILTER && !state.query;
+      const showAll = () => { state.filter = "all"; state.limit = 24; render(); syncURL(); };
+      fragment.append(empty(noSignals ? "目前還沒有新作線索" : games.length ? "這個條件下，還沒有結果" : "這次沒有達標候選",noSignals ? "目前候選尚無有效的全新觀測或日期推算命中。可以另外查看全部候選，但它們不代表已確認的新作。" : games.length ? "試著調整關鍵字或重設篩選。未取得觀測與日期，不會自動算成全新。" : "這份快照沒有可呈現的達標遊戲。下一輪有資料後會出現在這裡。",noSignals ? showAll : games.length ? reset : null,noSignals ? "查看全部候選" : "重設篩選"));
+    }
     $("gameResults").replaceChildren(fragment); $("gameResults").setAttribute("aria-busy","false");
     $("loadMore").hidden = visible.length <= state.limit;
     $("loadMore").textContent = `再看 ${Math.min(24,visible.length-state.limit)} 款 ↓`;
@@ -222,19 +238,18 @@
   function metadata() {
     const d = state.data, coverage = d.coverage;
     $("snapshotTime").textContent = time(d.generated_at); $("snapshotTime").dateTime = d.generated_at;
-    $("scopeLabel").textContent = `${d.legacy ? "全球取樣" : "全球觀測"} · 觀眾 ≥ ${fmt(d.threshold)}`;
+    $("scopeLabel").textContent = `${d.legacy ? "等待新版觀測" : "全球觀測"} · 觀眾 ≥ ${fmt(d.threshold)}`;
     document.querySelector('[data-metric-label="viewers"]').textContent = d.legacy ? "取樣觀眾數" : "觀眾人數";
     document.querySelector('[data-metric-label="streamers"]').textContent = d.legacy ? "取樣開台數" : "開台數";
     if (d.legacy) {
-      const sample = D.count(coverage.global_stream_sample_size);
-      notice("等待新版排程的第一筆觀測",`目前顯示舊版${sample === null ? "" : "前 " + fmt(sample) + " 個頻道的"}直播取樣。中位數與新作判讀尚未收集，這份清單不是完整類別排名；新版資料發布後會自動切換。`);
+      notice("舊版熱門取樣不列入新作清單","現有快照沒有新作判斷依據，不能僅憑觀眾數列為新作。新版資料發布後會自動切換。" );
     } else if (coverage.collection_complete !== true || d.invalidRows) {
       notice("這份快照有資料缺口",`本次資料的完整性未確認${d.invalidRows ? `，略過 ${d.invalidRows} 筆無效或重複資料` : ""}。以下只呈現可讀取的觀測。`);
     } else notice(null);
     const stale = Date.now() - Date.parse(d.generated_at) > 3 * 3600000;
     $("freshnessNote").hidden = !stale;
-    $("freshnessNote").textContent = "這份快照已超過 3 小時未更新；以下是已保存的觀測，不代表目前直播狀態。";
-    $("tableNote").textContent = d.legacy ? "取樣觀眾數與取樣開台數僅涵蓋已抓取頻道；未收集的中位數保持空白。展開遊戲可查看各來源狀態。" : "中位數以各開台頻道的觀眾人數計算，不是平均值。各類別依序量測；展開遊戲可核對時間與判讀依據。";
+    $("freshnessNote").textContent = d.legacy ? "最近一份公開檔案仍為舊版，等待新版排程收集並發布。" : "這份快照已超過 3 小時未更新；以下是已保存的觀測，不代表目前直播狀態。";
+    $("tableNote").textContent = d.legacy ? "不以熱門程度推定新作，也不以舊取樣補出中位數或全新標記。" : "中位數以各開台頻道的觀眾人數計算，不是平均值。各類別依序量測；展開遊戲可核對時間與判讀依據。";
     exclusions();
   }
   async function load() {

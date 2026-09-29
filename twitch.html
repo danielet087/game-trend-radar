@@ -9,11 +9,11 @@
   <title>Twitch 新作觀測・實驗｜Game Trend Radar</title>
   <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.6.1">
-  <link rel="stylesheet" href="./assets/radar-twitch-v1.css?v=1.0.0">
+  <link rel="stylesheet" href="./assets/radar-twitch-v1.css?v=1.0.1">
   <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
   <script src="./assets/radar-navigation-v1.js?v=1.0.1" defer></script>
-  <script src="./assets/radar-twitch-data-v1.js?v=1.0.0" defer></script>
-  <script src="./assets/radar-twitch-v1.js?v=1.0.0" defer></script>
+  <script src="./assets/radar-twitch-data-v1.js?v=1.0.1" defer></script>
+  <script src="./assets/radar-twitch-v1.js?v=1.0.1" defer></script>
 </head>
 <body data-page="twitch">
   <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -97,7 +97,7 @@
 
     <section class="tw-workspace" aria-labelledby="candidatesTitle">
       <div class="tw-workspace-head">
-        <div><span class="tw-section-no" aria-hidden="true">01</span><h2 id="candidatesTitle">候選遊戲</h2></div>
+        <div><span class="tw-section-no" aria-hidden="true">01</span><h2 id="candidatesTitle">新作觀測</h2></div>
         <p id="scopeLabel">全球觀測 · 觀眾 ≥ 7,000</p>
       </div>
       <div class="tw-tools">
@@ -105,12 +105,14 @@
         <label class="tw-sort">排序<select id="gameSort"><option value="viewers">觀眾人數最多</option><option value="streamers">開台數最多</option><option value="median">觀眾中位數最高</option></select></label>
       </div>
       <div class="tw-filters" role="group" aria-label="新作判讀篩選">
-        <button type="button" data-filter="all" aria-pressed="true">全部候選 <span>—</span></button>
+        <button type="button" data-filter="signals" aria-pressed="true">新作線索 <span>—</span></button>
         <button type="button" data-filter="official" aria-pressed="false">官方全新 <span>—</span></button>
         <button type="button" data-filter="twitch" aria-pressed="false">Twitch 推算 <span>—</span></button>
         <button type="button" data-filter="igdb" aria-pressed="false">IGDB 推算 <span>—</span></button>
         <button type="button" data-filter="pending" aria-pressed="false">官方待確認 <span>—</span></button>
+        <button type="button" data-filter="all" aria-pressed="false">全部候選 <span>—</span></button>
       </div>
+      <p id="viewNotice" class="tw-view-notice">預設只列有全新觀測或日期推算命中的遊戲；日期推算仍屬實驗。</p>
       <div class="tw-results-bar"><p id="resultsStatus" role="status" aria-live="polite">正在讀取 Twitch 資料…</p><button id="resetFilters" class="tw-text-button" type="button" hidden>清除篩選 ×</button><a href="#readingGuide">怎麼看這些結果？ ↓</a></div>
       <div class="tw-column-head" aria-hidden="true"><span>遊戲 / Twitch 類別</span><span data-metric-label="viewers">觀眾人數</span><span data-metric-label="streamers">開台數</span><span>觀眾中位數</span><span>新作判讀 · 各自獨立</span><span></span></div>
       <div id="gameResults" class="tw-results" aria-busy="true"><div class="tw-loading"><span aria-hidden="true">◎</span><p>正在打開觀測筆記…</p></div></div>

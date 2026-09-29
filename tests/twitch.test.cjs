@@ -13,12 +13,25 @@ test('uses the complete candidate list, preserving pending and exact-threshold r
   assert.equal(d.games[0].median_viewer_count,0);
   assert.equal(D.matches(d.games[0],'official'),false);
 });
-test('keeps legacy totals labelled as samples and never derives their median or NEW status', () => {
+test('never admits legacy popularity samples to any candidate or new-release view', () => {
   const d = D.normalize({generated_at:at,top_games:[candidate({median_viewer_count:100,verification:{status:'new',observed_at:at},release_experiment:{igdb_first_release_date:forecast(true)}})]});
   assert.equal(d.legacy,true);
-  assert.equal(d.games[0].median_viewer_count,null);
-  assert.equal(d.games[0].verification.status,'pending');
-  assert.equal(d.games[0].release_experiment.igdb_first_release_date.predicted_new,null);
+  assert.equal(d.legacy_sample_count,1);
+  assert.deepEqual(d.games,[]);
+  assert.deepEqual(D.select(d.games,{filter:'all'}),[]);
+});
+test('default new-release view requires positive evidence, not popularity or unknown status', () => {
+  const d = D.normalize(snapshot([
+    candidate({game_id:'21779',game_name:'League of Legends',viewer_count:69070,release_experiment:{igdb_first_release_date:forecast(false,{release_at:'2009-10-27T00:00:00Z'})}}),
+    candidate({game_id:'102',release_experiment:{igdb_first_release_date:forecast(true)}}),
+    candidate({game_id:'103',verification:{status:'new',observed_at:at}}),
+    candidate({game_id:'104'}),
+    candidate({game_id:'105',verification:{status:'not_new',observed_at:at},release_experiment:{igdb_first_release_date:forecast(true)}}),
+  ]));
+  assert.equal(D.DEFAULT_FILTER,'signals');
+  assert.deepEqual(D.select(d.games,{filter:D.DEFAULT_FILTER}).map(g=>g.game_id),['102','103']);
+  assert.equal(D.select(d.games,{filter:'all'}).length,5);
+  assert.ok(D.select(d.games,{filter:'pending'}).some(g=>g.game_id==='21779'));
 });
 test('does not promote IGDB predictions to Twitch metadata or official observations', () => {
   const g = D.normalize(snapshot([candidate({release_experiment:{igdb_first_release_date:forecast(true)}})])).games[0];
