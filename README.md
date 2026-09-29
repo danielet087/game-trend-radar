@@ -16,6 +16,14 @@ Steam 新作關注度、發售月曆與個人收藏。純 HTML / CSS / JavaScrip
 
 卡片整體連至遊戲詳細頁，愛心收藏與 Steam 商店連結可分別操作。語言支援以「支援繁中」「支援簡中」分別標示，保留英文、其他語言與待確認狀態。詳細頁返回時保留原清單的篩選條件。頁首動態開關跨頁同步，並尊重裝置的減少動態設定。首頁已移除大型主視覺、輪播、跑馬燈與三格統計。
 
+## Twitch 新作觀測（實驗）
+
+`twitch.html` 從「遊戲探索」下拉清單進入。支援名稱／Twitch 類別 ID 搜尋、官方全新／各來源推算命中／待確認篩選，以及觀眾數、開台數、中位數排序；網址可分享篩選狀態。展開候選可看來源、量測時間、日期有效性及延遲載入的逐時紀錄。已排除類別另有可展開的依據。
+
+頁面只抓本站靜態 JSON，不使用 API Key、不呼叫 Twitch API，也不讀取 Steam 大型目錄。官方標記與 Twitch 原始發售日期、IGDB 首次發售日期的 14 天推算各自呈現；未知不改為否定、未入列不改為零、不以平均數冒充中位數。過期快照明確提示。實驗包含未來發售日期，推算命中不等於官方 NEW；回溯對照不宣稱準確率。
+
+檢查：`node --test tests/twitch.test.cjs`。共用導覽保留原生 details/summary，頁面動畫遵守動態開關與裝置偏好。
+
 ## 日期與收錄條件
 
 - 今日與日期區間都使用 Asia/Taipei（UTC+8）。後端提供的日期直接顯示，不任意加一天；精確時刻的換日由現有後端處理。
@@ -30,7 +38,9 @@ Steam 新作關注度、發售月曆與個人收藏。純 HTML / CSS / JavaScrip
 - `data/steam_upcoming.json`：精簡清單無法讀取時的完整備援；再失敗才讀 `data/index.json` 與月份分片。
 - `data/steam_preview.json`：僅在正式清單不可用或舊版格式時使用，避免舊快照覆蓋正式資料。
 - `data/content_refresh_status.json`：內容對帳的待補欄位、失敗與重試時間；不代表所有 Steam 候選都已查完。
-- `data/twitch_live.json`、`data/youtube_live.json`：既有直播資料，本次 UI 不新增直播頁。
+- `data/twitch_live.json`：Twitch 新作觀測頁的公開快照；schema v2 支援中位數、官方觀測與獨立日期推算。舊版只顯示取樣範圍，不補中位數或全新判斷。
+- `data/twitch_history/YYYY-MM-DD.json`：台灣日期的逐時紀錄，只在展開歷史時讀取截止快照最近 24 小時涵蓋的日期檔。
+- `data/youtube_live.json`：既有 YouTube 直播資料。
 
 前端只讀取公開靜態 JSON。排程、抓取、API 串接與所有資料檔案仍由後端專案負責。收錄尚未完成時，網站會顯示「新作持續收錄中」與更新時間，詳細說明收在「關於資料」。
 
@@ -60,3 +70,4 @@ node --test tests/*.test.cjs
 既有網站使用 main 分支根目錄：<https://danielet087.github.io/game-trend-radar/>。
 
 若從新 repository 啟用，於 Settings → Pages 選 Deploy from a branch，指定 main 與 /(root)。
+

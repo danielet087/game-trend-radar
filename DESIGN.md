@@ -52,3 +52,13 @@ The shared `radar-navigation-v1.js` enhances native navigation without requestin
 ### Historical comparison clarification
 
 `radar-comparison-history-v1.js` consumes only histories from `data/growth.json`. The default cutoff is the newest valid saved observation among the selected games, visibly labeled; it is never relabeled as today. Changing the period, cutoff or metric reuses the loaded daily data. The shareable URL stores IDs, period, resolved cutoff and metric. Missing days break the SVG path and cannot produce a daily delta; a zero baseline cannot produce a percentage. All values can be read with a keyboard-operated date slider. Legend switches recalculate the visible chart scale. Old games stop recording after release + 30 days but can be inspected using a historical cutoff. The separate live growth leaderboard retains its freshness rule.
+
+
+
+## Twitch observation experiment (2026-09-29)
+
+`twitch.html` is a standalone, static-JSON observation notebook, linked from every current navigation disclosure. Lavender paper, mint/peach evidence cards and an original television drawing extend the existing identity without a promotional hero. The responsive list pairs three real metrics with three independently labelled signals. Native details exposes provenance, reference checks and lazy hourly history; native controls, search composition, focus, clear states and reduced motion remain supported.
+
+`radar-twitch-data-v1.js` validates and normalizes legacy and schema-v2 Twitch snapshots. Legacy top-stream samples are explicitly labelled, never promoted to category totals; their median and NEW observations remain unavailable. All schema-v2 candidates at the configured threshold are considered, including pending verification, rather than only confirmed top_games. Official observations retain their timestamps/expiry; source-specific predictions are read as saved, not recalculated in the browser. Historical absence is not zero, fractional or zero medians survive, and future samples cannot fill older snapshots. History uses at most two Taipei-day JSON files on demand, cached across opened rows.
+
+No catalog, secret, Twitch API or private endpoint is used. Game names and source text enter the DOM through textContent. Outbound evidence URLs must be HTTPS; artwork is limited to the published Twitch CDN host and has a letter fallback. Filters persist in the URL, list nodes are reused, results load 24 at a time and images load lazily. `tests/twitch.test.cjs` covers source distinctions, missing values, date boundaries, thresholds, unsafe URLs and history gaps.

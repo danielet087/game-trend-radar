@@ -351,6 +351,11 @@ summary {
 .explore-route-upcoming { --route-tone: #30684f; --route-fill: #e4f0dd; --route-edge: #acc9b2; }
 .explore-route-released { --route-tone: #95512f; --route-fill: #ffe4d2; --route-edge: #dab49a; }
 .explore-route-tags { --route-tone: #625096; --route-fill: #e9e3f8; --route-edge: #c2b4de; }
+.explore-route-twitch { --route-tone: #70518e; --route-fill: #eee3f7; --route-edge: #c7b4dc; }
+.explore-route-twitch small { font-size: 9px; border: 1px solid #cbb4dc; border-radius: 4px; padding: 1px 4px; margin-left: 3px; font-weight: 500; }
+.explore-menu-label { margin: 8px 10px 0; padding-top: 13px; border-top: 1px dashed #d7d1dc; color: #746783; font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+.explore-route-growth { --route-tone: #477047; --route-fill: #e3efcf; --route-edge: #b3c899; }
+.explore-route-analysis { --route-tone: #776094; --route-fill: #ede2f3; --route-edge: #c8b4d6; }
 .explore-route:hover,
 .explore-route:focus-visible,
 .explore-route[aria-current] {
