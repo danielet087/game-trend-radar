@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-30T08:09:10Z",
+  "updated_at": "2026-09-30T08:18:38Z",
   "games": {
     "1217522406": {
       "game_id": "1217522406",
@@ -1995,6 +1995,45 @@
       },
       "igdb_id": "347541",
       "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/958726331_IGDB-{width}x{height}.jpg"
+    },
+    "2106755390": {
+      "game_id": "2106755390",
+      "game_name": "Graveyard Keeper II",
+      "igdb_id": "397817",
+      "steam_appid": 4358690,
+      "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/2106755390_IGDB-{width}x{height}.jpg",
+      "first_seen_at": "2026-09-28T16:02:42Z",
+      "enrolled_at": "2026-09-30T08:18:38Z",
+      "updated_at": "2026-09-30T08:18:38Z",
+      "status": "active",
+      "release_at": "2026-09-22T16:55:00Z",
+      "release_source": "steam_store_query_release_time",
+      "release_provenance": {
+        "source_repository": "danielet087/game-trend-radar",
+        "source_commit": "384b4eb71da0ff90a26e1cd6b1e87c6285cf2eda",
+        "path": "data/games/4358690.json",
+        "source_url": "https://api.steampowered.com/IStoreQueryService/Query/v1/"
+      },
+      "enrollment": {
+        "source": "user_requested_legacy_recovery",
+        "kind": "legacy_recovery",
+        "observed_at": "2026-09-30T08:18:38Z",
+        "qualification": "unverified",
+        "viewer_count": null,
+        "min_viewers": 7000,
+        "reason": "Restore the user-identified legacy game; historical automatic admission was not verified. Future automatic admissions still require the unchanged threshold.",
+        "legacy_sample": {
+          "observed_at": "2026-09-28T16:02:42Z",
+          "viewer_count": 6542,
+          "streamer_count": 5,
+          "scope": "partial_global_stream_sample",
+          "source_commit": "220d6a8de5c594270fad035cc810897b131f84fb",
+          "source_url": "https://github.com/danielet087/game-trend-radar/blob/220d6a8de5c594270fad035cc810897b131f84fb/data/twitch_live.json",
+          "note": "Partial global sample only, not a full category census, verified threshold crossing, NEW badge, or median."
+        }
+      },
+      "expires_at": "2026-10-22T16:55:00Z",
+      "status_reason": "within_release_window"
     }
   },
   "recovery": {

@@ -17,6 +17,8 @@
     return el;
   }
   function fmt(value) { return value === null || value === undefined ? "—" : number.format(value); }
+  function legacyRecovery(g) { return g.tracking?.enrollment?.source === "user_requested_legacy_recovery"; }
+  function pendingLegacyMeasurement(g) { return legacyRecovery(g) && g.observation_status === "retained" && g.viewer_count == null && g.streamer_count == null; }
   function sourceWindow(source) { return state.data.source_windows[source].map(fmt).join("／") + " 天"; }
   function audienceNote(a) {
     if (a.status === "unavailable") return "待新條件收集";
@@ -27,7 +29,8 @@
   function audienceDetails(g) {
     const a = g.filtered_audience, section = node("section","tw-audience-details");
     section.append(node("h4","","中位數納入條件"),node("p","","免費追隨者 > 1,000，且本次觀眾 ≥ 10；追隨數使用 24 小時內取得的紀錄。遊戲總觀眾、開台數與 7,000 人首次收錄門檻仍以全體頻道計算；已收錄的新作會持續追蹤至發售滿 30 天。"));
-    if (g.observation_status === "retained") section.append(node("p","",`以下是 ${time(g.observation_at)} 保存的樣本，等待本輪更新，並非目前直播數據。`));
+    if (pendingLegacyMeasurement(g)) section.append(node("p","","尚未取得完整類別量測，舊版局部樣本不拿來計算目前觀眾數或中位數。"));
+    else if (g.observation_status === "retained") section.append(node("p","",`以下是 ${time(g.observation_at)} 保存的樣本，等待本輪更新，並非目前直播數據。`));
     if (["complete","partial"].includes(a.status)) {
       const list = node("dl","tw-audience-counts");
       keyValue(list,"符合條件",`${fmt(a.eligible_streamer_count)} 台`);
@@ -37,7 +40,7 @@
       section.append(list);
       if (a.status === "partial") section.append(node("p","","尚有頻道追隨數未確認，本次篩選後中位數暫不顯示，避免只用部分樣本造成誤判。"));
       else if (!a.eligible_streamer_count) section.append(node("p","","本次沒有符合兩項條件的頻道，因此沒有可計算的中位數；不是 0 人。"));
-    } else section.append(node("p","",a.status === "unavailable" ? "這筆快照尚未收集上述條件，保留遊戲與原始總量，等待新版量測。" : "篩選規則或資料欄位不完整，暫不呈現此中位數。"));
+    } else section.append(node("p","",a.status === "unavailable" ? pendingLegacyMeasurement(g) ? "等待排程查詢全部直播頻道後，再依上述條件計算中位數。" : "這筆快照尚未收集上述條件，保留遊戲與原始總量，等待新版量測。" : "篩選規則或資料欄位不完整，暫不呈現此中位數。"));
     if (g.median_viewer_count != null) section.append(node("p","tw-unfiltered-reference",`全體頻道中位數（未篩選，僅供參考）：${fmt(g.median_viewer_count)} 人。`));
     return section;
   }
@@ -163,6 +166,7 @@
     return details;
   }
   function gameCard(g) {
+    const pendingLegacy = pendingLegacyMeasurement(g);
     const card = node("details","tw-game"); card.dataset.gameId = g.game_id; card.dataset.observation = g.observation_status;
     const summary = node("summary","tw-game-summary");
     const identity = node("div","tw-game-identity"), cover = node("span","tw-cover",g.game_name.charAt(0).toUpperCase()); cover.setAttribute("aria-hidden","true");
@@ -171,13 +175,13 @@
       image.addEventListener("error",() => image.remove(),{ once:true }); cover.append(image);
     }
     const title = node("div","tw-game-title"); title.append(node("h3","",g.game_name),node("p","","CATEGORY " + g.game_id)); if (g.is_tracked) title.append(node("span","tw-tracking-label","持續追蹤"));
-    if (g.observation_status === "retained") title.append(node("span","tw-retained-note",`上次觀測 ${time(g.observation_at)} · 待更新`));
+    if (g.observation_status === "retained") title.append(node("span","tw-retained-note",pendingLegacy ? "舊版補回・待首次完整量測" : `上次觀測 ${time(g.observation_at)} · 待更新`));
     identity.append(cover,title); summary.append(identity);
     const metricNames = ["總觀眾人數","總開台數","篩選後中位數"];
     [g.viewer_count,g.streamer_count,g.filtered_audience.median_viewer_count].forEach((value,i) => {
       const metric = node("div","tw-metric"); metric.dataset.kind = ["viewers","streamers","median"][i];
-      metric.append(node("span","tw-metric-label",metricNames[i]),node("strong","",fmt(value)),node("small","",g.observation_status === "retained" ? value == null ? "待更新・無保存數值" : "上次觀測・待更新" : i === 2 ? audienceNote(g.filtered_audience) : value == null ? "尚未收集" : i === 1 ? "個頻道・全體" : "人・全體"));
-      if (i === 2) metric.setAttribute("aria-label",`${g.observation_status === "retained" ? "上次觀測，待更新；" : ""}篩選後觀眾中位數 ${fmt(value)} 人，${audienceNote(g.filtered_audience)}；免費追隨者超過 1,000 且觀眾至少 10 人`);
+      metric.append(node("span","tw-metric-label",metricNames[i]),node("strong","",fmt(value)),node("small","",pendingLegacy ? "待首次完整量測" : g.observation_status === "retained" ? value == null ? "待更新・無保存數值" : "上次觀測・待更新" : i === 2 ? audienceNote(g.filtered_audience) : value == null ? "尚未收集" : i === 1 ? "個頻道・全體" : "人・全體"));
+      if (i === 2) metric.setAttribute("aria-label",`${pendingLegacy ? "舊版補回，待首次完整量測；" : g.observation_status === "retained" ? "上次觀測，待更新；" : ""}篩選後觀眾中位數 ${fmt(value)} 人，${audienceNote(g.filtered_audience)}；免費追隨者超過 1,000 且觀眾至少 10 人`);
       summary.append(metric);
     });
     const signals = node("div","tw-signals");
@@ -188,7 +192,7 @@
       if (!card.open || built) return;
       built = true;
       const body = node("div","tw-game-body"), line = node("p","tw-observation-line");
-      line.append(node("span","",state.data.legacy ? "此筆來自舊版全球直播取樣，沒有完整類別量測。" : `量測 ${time(g.measurement_started_at)} → ${time(g.measurement_finished_at)}${g.pagination_complete === true ? " · 已讀完該類別分頁" : " · 分頁完整性未確認"}`));
+      line.append(node("span","",pendingLegacy ? "舊版補回・待首次完整量測，尚無完整類別觀眾與開台數。" : state.data.legacy ? "此筆來自舊版全球直播取樣，沒有完整類別量測。" : `量測 ${time(g.measurement_started_at)} → ${time(g.measurement_finished_at)}${g.pagination_complete === true ? " · 已讀完該類別分頁" : " · 分頁完整性未確認"}`));
       body.append(line);
       if (g.is_tracked) {
         const retention = node("div","tw-tracking-details"), dates = node("dl");
@@ -197,7 +201,12 @@
         keyValue(dates,"發售日期",time(g.tracking?.release_at));
         keyValue(dates,"追蹤至",g.tracking?.expires_at ? time(g.tracking.expires_at) : "待確認發售日期，持續保留");
         retention.append(dates,node("p","","觀眾降至 7,000 以下、暫時無人開台，或官方標記改變，都不會讓已收錄遊戲消失。發售滿 30 天後結束追蹤，歷史仍保留。"));
-        if (g.observation_status === "retained") retention.append(node("p","",`已從歷史補回；目前顯示 ${time(g.observation_at)} 的保存數值，等待下一輪更新。不將舊數值當成本輪排名或新增逐時紀錄。`));
+        if (legacyRecovery(g)) {
+          retention.append(node("p","",`指定補回；舊版局部樣本不代表完整類別觀眾，尚未證實當時達 7,000 人。${pendingLegacy ? "新數值等待排程完成首次完整量測。" : "之後的完整量測會依實際收集時間顯示。"}自動收錄門檻仍為 7,000 人，舊樣本不補成逐時紀錄。`));
+          const source = g.tracking.enrollment.legacy_sample?.source_url || g.tracking.enrollment.source_url;
+          try { const url = new URL(source); if (url.protocol === "https:" && url.hostname === "github.com" && !url.username && !url.password) { const link = node("a","tw-source-link","查看舊版收錄來源 ↗"); link.href = url.href; link.target = "_blank"; link.rel = "noopener noreferrer"; retention.append(link); } } catch {}
+        }
+        if (g.observation_status === "retained" && !pendingLegacy) retention.append(node("p","",`已從歷史補回；目前顯示 ${time(g.observation_at)} 的保存數值，等待下一輪更新。不將舊數值當成本輪排名或新增逐時紀錄。`));
         body.append(retention);
       }
       if (!state.data.legacy) body.append(historyPanel(g));

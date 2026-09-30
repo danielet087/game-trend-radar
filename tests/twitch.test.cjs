@@ -214,6 +214,27 @@ test('fresh tracked measurement replaces duplicate candidate and historical copy
   assert.equal(d.games[0].observation_status,'current');
   assert.equal(d.invalidRows,0);
 });
+test('manual legacy recovery stays visible without converting sampled counts into metrics or history', () => {
+  const id = '2106755390';
+  const stored = entry(id, {game_name:'Graveyard Keeper II',enrollment:{source:'user_requested_legacy_recovery',qualification:'unverified',min_viewers:7000,legacy_sample:{observed_at:'2026-09-28T16:02:42Z',viewer_count:6542,streamer_count:5,scope:'partial_global_stream_sample'}}});
+  const d = D.normalize(snapshot([]),registry({[id]:stored}));
+  assert.equal(D.select(d.games,{filter:'signals'}).length,1);
+  const game = d.games[0];
+  assert.equal(game.observation_status,'retained');
+  assert.equal(game.observation_at,null);
+  assert.equal(game.viewer_count,null);
+  assert.equal(game.streamer_count,null);
+  assert.equal(game.filtered_audience.median_viewer_count,null);
+  assert.equal(D.matches(game,'official'),false);
+  assert.equal(D.matches(game,'igdb'),false);
+  const rows = D.historyRows([{schema_version:1,date:'2026-09-29',timezone:'Asia/Taipei',hours:{'2026-09-29T10:00:00Z':{generated_at:'2026-09-29T10:05:00Z',games:[game]}}}],id,at);
+  assert.equal(rows.filter(row=>row.status==='observed').length,0);
+  assert.ok(rows.every(row=>row.viewer_count===null));
+  const fresh = D.normalize(snapshot([],{tracked_games:[candidate({game_id:id,game_name:stored.game_name,viewer_count:1200,streamer_count:10,tracking:stored,observation_status:'current',observation_at:at})]}),registry({[id]:stored}));
+  assert.equal(fresh.games[0].observation_status,'current');
+  assert.equal(fresh.games[0].viewer_count,1200);
+  assert.equal(fresh.games[0].tracking.enrollment.qualification,'unverified');
+});
 test('registry ends tracking at release plus 30 days, preserves undated games, and always excludes non-games', () => {
   const state = registry({
     '101':entry('101',{expires_at:at}),
