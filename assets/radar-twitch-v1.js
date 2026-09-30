@@ -17,6 +17,7 @@
     return el;
   }
   function fmt(value) { return value === null || value === undefined ? "—" : number.format(value); }
+  function sourceWindow(source) { return state.data.source_windows[source].map(fmt).join("／") + " 天"; }
   function audienceNote(a) {
     if (a.status === "unavailable") return "待新條件收集";
     if (a.status === "invalid") return "資料待確認";
@@ -88,14 +89,14 @@
     grid.append(official);
     D.SOURCES.forEach((source,index) => {
       const p = g.release_experiment[source], card = node("section","tw-evidence-card");
-      card.append(node("h4","",sourceNames[index] + "・14 天推算"),predictionBadge(p));
+      card.append(node("h4","",`${sourceNames[index]}・${fmt(p.window_days)} 天推算`),predictionBadge(p));
       const list = node("dl");
       keyValue(list,"發售時間",time(p.release_at));
       keyValue(list,"日期擷取",time(p.metadata_observed_at));
       keyValue(list,"推算時間",time(p.evaluated_at));
       if (p.source_name) keyValue(list,"資料來源",String(p.source_name));
       card.append(list);
-      card.append(node("p","",p.predicted_new === null ? (p.reason === "metadata_expired_or_future" ? "日期資料的有效時間不符本次量測，等待更新後再推算。" : "缺少有效日期，暫時無法推算。") : p.release_phase === "upcoming" ? "尚未發售也會命中這項規則；不代表已經上市或官方標示全新。" : "以快照當下距發售是否未滿 14 天判斷；此結果不確認官方 NEW 標記。"));
+      card.append(node("p","",p.predicted_new === null ? (p.reason === "metadata_expired_or_future" ? "日期資料的有效時間不符本次量測，等待更新後再推算。" : "缺少有效日期，暫時無法推算。") : p.release_phase === "upcoming" ? "尚未發售也會命中這項規則；不代表已經上市或官方標示全新。" : `以快照當下距發售是否未滿 ${fmt(p.window_days)} 天判斷；此結果不確認官方 NEW 標記。`));
       sourceLink(card,p.source_url,"查看日期來源");
       grid.append(card);
     });
@@ -222,7 +223,7 @@
       $("gameResults").setAttribute("aria-busy","false"); $("loadMore").hidden = true;
       return;
     }
-    $("viewNotice").textContent = state.filter === "all" ? "全部候選包含尚未確認的遊戲；達到觀眾門檻，不代表是新作。" : state.filter === "pending" ? "這些候選尚未確認官方全新標記；即使有日期推算結果，也不等於官方已確認。" : state.filter === "official" ? "只列快照中有效的官方全新觀測；請展開核對觀測時間。" : state.filter === D.DEFAULT_FILTER ? "只列官方曾見全新或日期推算命中的遊戲；日期推算仍屬實驗，不等於官方全新。" : `只列 ${state.filter === "twitch" ? "Twitch" : "IGDB"} 日期推算命中的遊戲；推算仍屬實驗，不等於官方全新。`;
+    $("viewNotice").textContent = state.filter === "all" ? "全部候選包含尚未確認的遊戲；達到觀眾門檻，不代表是新作。停止收集的類別可在下方查看排除依據。" : state.filter === "pending" ? "這些候選尚未確認官方全新標記；即使有日期推算結果，也不等於官方已確認。" : state.filter === "official" ? "只列快照中有效的官方全新觀測；請展開核對觀測時間。" : state.filter === D.DEFAULT_FILTER ? "只列官方曾見全新或日期推算命中的遊戲；日期推算仍屬實驗，不等於官方全新。" : `只列 ${state.filter === "twitch" ? "Twitch" : "IGDB"} 日期 ${sourceWindow(D.SOURCES[state.filter === "twitch" ? 0 : 1])}推算命中的遊戲；以各筆快照規則為準，不等於官方全新。`;
     $("resultsStatus").textContent = `${visible.length} 款 · ${filterNames[state.filter]}${visible.length > state.limit ? ` · 顯示前 ${state.limit} 款` : ""}`;
     const fragment = document.createDocumentFragment();
     visible.slice(0,state.limit).forEach(g => {
@@ -244,7 +245,8 @@
     const fragment = document.createDocumentFragment();
     games.forEach(g => {
       const card = node("details","tw-excluded-game"), summary = node("summary","",g.game_name);
-      card.append(summary,node("p","",g.reason === "non_game_category" ? "非遊戲類別 · 未量測觀眾" : g.reason === "observed_not_new" ? "已有非全新觀測 · 未量測觀眾" : "已排除 · 原因待確認"));
+      const reason = g.reason === "non_game_category" ? "非遊戲類別 · 未量測觀眾" : g.reason === "observed_not_new" ? "已有非全新觀測 · 未量測觀眾" : g.reason === "igdb_release_outside_window" ? `IGDB 日期未命中 ${fmt(g.release_experiment.igdb_first_release_date.window_days)} 天範圍 · 已停止本輪觀眾與追隨數收集` : "已排除 · 原因待確認";
+      card.append(summary,node("p","",reason));
       let built = false; card.addEventListener("toggle",() => { if (card.open && !built) { built = true; card.append(evidence(g)); } }); fragment.append(card);
     });
     $("excludedGames").replaceChildren(fragment);
@@ -257,6 +259,8 @@
     const d = state.data, coverage = d.coverage;
     $("snapshotTime").textContent = time(d.generated_at); $("snapshotTime").dateTime = d.generated_at;
     $("scopeLabel").textContent = `${d.legacy ? "等待新版觀測" : "全球觀測"} · 觀眾 ≥ ${fmt(d.threshold)}`;
+    $("twitchDateGuide").textContent = `使用有來源記錄的 Twitch 原始發售日期；本次快照採 ${sourceWindow(D.SOURCES[0])}範圍。未來發售也會命中，詳細規則見各款明細。`;
+    $("igdbDateGuide").textContent = `使用 IGDB 首次發售日期；本次快照採 ${sourceWindow(D.SOURCES[1])}範圍。結果獨立保留；缺少 Twitch 日期時，不拿它冒充。`;
     document.querySelector('[data-metric-label="viewers"]').textContent = d.legacy ? "取樣觀眾數" : "總觀眾人數";
     document.querySelector('[data-metric-label="streamers"]').textContent = d.legacy ? "取樣開台數" : "總開台數";
     if (d.legacy) {

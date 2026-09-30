@@ -31,10 +31,14 @@
       return url.protocol === "https:" && !url.username && !url.password && (!host || url.hostname === host) ? url.href : null;
     } catch { return null; }
   }
-  function prediction(value) {
+  function windowDays(value, fallback = 14) {
+    return Number.isSafeInteger(value) && value > 0 ? value : fallback;
+  }
+  function prediction(value, reportWindow) {
     const p = value && typeof value === "object" ? value : {};
     return {
       ...p,
+      window_days: windowDays(p.window_days, windowDays(reportWindow)),
       predicted_new: p.status === "evaluated" && typeof p.predicted_new === "boolean" && timestamp(p.release_at) && timestamp(p.evaluated_at) ? p.predicted_new : null,
       release_at: timestamp(p.release_at),
       evaluated_at: timestamp(p.evaluated_at),
@@ -46,7 +50,7 @@
     const v = value && typeof value === "object" ? value : {};
     return { ...v, status: ["new", "not_new"].includes(v.status) && timestamp(v.observed_at) ? v.status : "pending", observed_at: timestamp(v.observed_at), expires_at: timestamp(v.expires_at), source_url: safeURL(v.source_url) };
   }
-  function game(value, legacy) {
+  function game(value, legacy, report = {}) {
     if (!value || !/^\d+$/.test(String(value.game_id || ""))) return null;
     const cover = typeof value.box_art_url === "string" ? value.box_art_url.replaceAll("{width}", "144").replaceAll("{height}", "192") : "";
     return {
@@ -56,7 +60,7 @@
       filtered_audience: filteredAudience(legacy ? null : value.filtered_audience),
       box_art_url: safeURL(cover, "static-cdn.jtvnw.net"),
       verification: verification(legacy ? null : value.verification),
-      release_experiment: Object.fromEntries(SOURCES.map(source => [source, prediction(legacy ? null : value.release_experiment?.[source])])),
+      release_experiment: Object.fromEntries(SOURCES.map(source => [source, prediction(legacy ? null : value.release_experiment?.[source], legacy ? null : report[source]?.window_days)])),
       measurement_started_at: timestamp(value.measurement_started_at),
       measurement_finished_at: timestamp(value.measurement_finished_at),
     };
@@ -66,16 +70,23 @@
     const legacy = payload.schema_version == null && Array.isArray(payload.top_games);
     if (!legacy && (payload.schema_version !== 2 || !Array.isArray(payload.candidate_games))) throw new Error("UNSUPPORTED_SNAPSHOT");
     const threshold = !legacy && Number.isInteger(payload.min_viewers) && payload.min_viewers > 0 ? payload.min_viewers : 7000;
+    const report = legacy ? {} : payload.newness_experiment || {};
     const seen = new Set();
     let invalidRows = 0;
     const games = (legacy ? payload.top_games : payload.candidate_games).flatMap(value => {
-      const g = game(value, legacy);
+      const g = game(value, legacy, report);
       if (!g || g.viewer_count === null || seen.has(g.game_id)) { invalidRows++; return []; }
       seen.add(g.game_id);
       return g.viewer_count >= threshold ? [g] : [];
     });
-    const excluded = legacy ? [] : (Array.isArray(payload.excluded_games) ? payload.excluded_games : []).map(g => game(g, false)).filter(Boolean);
+    const excluded = legacy ? [] : (Array.isArray(payload.excluded_games) ? payload.excluded_games : []).map(g => game(g, false, report)).filter(Boolean);
+    const source_windows = Object.fromEntries(SOURCES.map(source => {
+      const windows = [...new Set([...games, ...excluded].map(g => g.release_experiment[source].window_days))];
+      if (!windows.length) windows.push(windowDays(report[source]?.window_days));
+      return [source, windows.sort((a, b) => a - b)];
+    }));
     return { legacy, generated_at: payload.generated_at, threshold, games: legacy ? [] : games, legacy_sample_count: legacy ? games.length : 0, excluded, invalidRows,
+      source_windows,
       coverage: payload.coverage || {},
       reference_checks: !legacy && Array.isArray(payload.newness_experiment?.reference_checks) ? payload.newness_experiment.reference_checks : [],
     };

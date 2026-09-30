@@ -46,6 +46,41 @@ test('keeps the saved prediction including upcoming releases, rather than recomp
   assert.equal(d.games[0].release_experiment.twitch_original_release_date.predicted_new,true);
   assert.equal(d.games[0].release_experiment.twitch_original_release_date.release_phase,'upcoming');
 });
+test('uses independent date windows without reinterpreting historical predictions', () => {
+  const old = D.normalize(snapshot([candidate({release_experiment:{igdb_first_release_date:forecast(false,{release_at:'2026-09-09T00:00:00Z'})}})]));
+  assert.equal(old.games[0].release_experiment.igdb_first_release_date.window_days,14);
+  assert.equal(old.games[0].release_experiment.igdb_first_release_date.predicted_new,false);
+  assert.deepEqual(old.source_windows.igdb_first_release_date,[14]);
+  const current = D.normalize(snapshot([candidate({release_experiment:{twitch_original_release_date:forecast(false,{window_days:14}),igdb_first_release_date:forecast(true,{window_days:30})}})]));
+  assert.equal(current.games[0].release_experiment.twitch_original_release_date.window_days,14);
+  assert.equal(current.games[0].release_experiment.igdb_first_release_date.window_days,30);
+  assert.deepEqual(current.source_windows.igdb_first_release_date,[30]);
+});
+test('uses source report windows as fallback and retains per-prediction overrides', () => {
+  const report = {twitch_original_release_date:{window_days:14},igdb_first_release_date:{window_days:30}};
+  const d = D.normalize(snapshot([
+    candidate({release_experiment:{igdb_first_release_date:forecast(true)}}),
+    candidate({game_id:'102',release_experiment:{igdb_first_release_date:forecast(false,{window_days:14})}}),
+    candidate({game_id:'103',release_experiment:{igdb_first_release_date:forecast(null,{status:'unknown',release_at:null,window_days:-1})}}),
+  ],{newness_experiment:report}));
+  assert.deepEqual(d.games.map(g=>g.release_experiment.igdb_first_release_date.window_days),[30,14,30]);
+  assert.equal(d.games[2].release_experiment.igdb_first_release_date.predicted_new,null);
+  assert.deepEqual(d.source_windows.igdb_first_release_date,[14,30]);
+  assert.deepEqual(D.normalize(snapshot([],{newness_experiment:report})).source_windows.igdb_first_release_date,[30]);
+});
+test('retains date exclusions and evidence without creating zero measurements', () => {
+  const d = D.normalize(snapshot([],{excluded_games:[{
+    game_id:'104',game_name:'Outside release window',reason:'igdb_release_outside_window',metrics_collected:false,
+    release_experiment:{igdb_first_release_date:forecast(false,{window_days:30,release_at:'2026-08-01T00:00:00Z'})},
+  }]}));
+  assert.equal(d.games.length,0);
+  assert.equal(d.excluded[0].reason,'igdb_release_outside_window');
+  assert.equal(d.excluded[0].release_experiment.igdb_first_release_date.predicted_new,false);
+  assert.equal(d.excluded[0].viewer_count,null);
+  assert.equal(d.excluded[0].streamer_count,null);
+  assert.equal(d.excluded[0].filtered_audience.median_viewer_count,null);
+  assert.deepEqual(d.source_windows.igdb_first_release_date,[30]);
+});
 test('expired or incomplete predictions and undated badge claims remain unknown', () => {
   const g = D.normalize(snapshot([candidate({verification:{status:'new'},release_experiment:{twitch_original_release_date:forecast(true,{status:'unknown'}),igdb_first_release_date:forecast(true,{release_at:null})}})])).games[0];
   assert.equal(g.verification.status,'pending');

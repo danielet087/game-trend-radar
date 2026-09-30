@@ -12,9 +12,9 @@
   <link rel="stylesheet" href="./assets/radar-twitch-v1.css?v=1.1.1">
   <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
   <script src="./assets/radar-navigation-v1.js?v=1.0.1" defer></script>
-  <script src="./assets/radar-twitch-data-v1.js?v=1.0.2" defer></script>
+  <script src="./assets/radar-twitch-data-v1.js?v=1.0.3" defer></script>
   <script src="./assets/radar-twitch-chart-v1.js?v=1.0.1" defer></script>
-  <script src="./assets/radar-twitch-v1.js?v=1.1.0" defer></script>
+  <script src="./assets/radar-twitch-v1.js?v=1.1.1" defer></script>
 </head>
 <body data-page="twitch">
   <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -121,16 +121,16 @@
       <p class="tw-table-note" id="tableNote">篩選後中位數只計免費追隨者 > 1,000 且觀眾 ≥ 10 的頻道。總觀眾與總開台維持全體頻道統計。展開遊戲可查看納入台數與判讀依據。</p>
     </section>
 
-    <details class="tw-exclusions" id="exclusions" hidden><summary><span>已排除的類別 <b id="excludedCount">0</b></span><span class="tw-disclosure-label">查看依據 ＋</span></summary><p>已知非遊戲或有「非全新」觀測的類別，會在量測前排除；這裡不補上觀眾數。</p><div id="excludedGames"></div></details>
+    <details class="tw-exclusions" id="exclusions" hidden><summary><span>已排除的類別 <b id="excludedCount">0</b></span><span class="tw-disclosure-label">查看依據 ＋</span></summary><p>已知非遊戲、有「非全新」觀測，或 IGDB 日期有效但未命中的類別，會停止本輪後續收集；保留判讀依據，不補上觀眾數。</p><div id="excludedGames"></div></details>
 
     <section class="tw-guide" id="readingGuide" aria-labelledby="guideTitle">
       <div class="tw-guide-heading"><p class="tw-eyebrow">READ THE SIGNALS</p><h2 id="guideTitle">三種線索，分開看。</h2><p>日期推算是實驗，不能替代 Twitch 的官方「全新」標記。</p></div>
       <div class="tw-guide-grid">
         <article class="tw-guide-card tw-tone-official"><span class="tw-guide-index">A / OBSERVED</span><h3>官方全新觀測</h3><p>記錄曾在 Twitch 分類頁看到的標記與時間。未取得觀測時就是「待確認」，不等於不是新作。</p></article>
-        <article class="tw-guide-card tw-tone-twitch"><span class="tw-guide-index">B / TWITCH DATE</span><h3>Twitch 日期推算</h3><p>使用有來源記錄的 Twitch 原始發售日期，以「距發售未滿 14 天」推算；未來發售也會命中。</p></article>
-        <article class="tw-guide-card tw-tone-igdb"><span class="tw-guide-index">C / IGDB DATE</span><h3>IGDB 日期推算</h3><p>用 IGDB 的首次發售日期套用同一規則，獨立保留結果。缺少 Twitch 日期時，不拿它冒充。</p></article>
+        <article class="tw-guide-card tw-tone-twitch"><span class="tw-guide-index">B / TWITCH DATE</span><h3>Twitch 日期推算</h3><p id="twitchDateGuide">使用有來源記錄的 Twitch 原始發售日期，以「距發售未滿 14 天」推算；未來發售也會命中。</p></article>
+        <article class="tw-guide-card tw-tone-igdb"><span class="tw-guide-index">C / IGDB DATE</span><h3>IGDB 日期推算</h3><p id="igdbDateGuide">用 IGDB 首次發售日期推算，新版放寬至未滿 30 天；各筆仍以快照記錄的規則為準。</p></article>
       </div>
-      <details class="tw-method"><summary>量測範圍與判讀細節 <span aria-hidden="true">＋</span></summary><div><p>清單只呈現達觀眾門檻的候選；各類別依序抓取，並非完全同一秒的全球排名。已知非全新類別可能在量測前排除。</p><p>篩選後中位數只納入免費追隨者超過 1,000 人、且當次觀眾至少 10 人的頻道。追隨數最多使用 24 小時內的紀錄；未知不當成 0，有待查頻道時暫不顯示中位數。原始總觀眾與總開台仍涵蓋全體頻道；舊歷史無法回算新條件。</p><p>推算採後端快照當下的結果。恰好滿 14 天不命中，尚未發售也算命中；結果會另標「未上市」。資料過期、缺少日期與未取得官方觀測都保持未知。</p><p>「官方全新」篩選指快照中的有效觀測。展開後可核對觀測與有效期限；舊快照不代表此刻仍有標記。若有回溯對照，只能用來找差異，不能據此宣稱準確率。</p><p>目前觀測範圍為全球。直播語言不等於主播所在地，因此不推定台灣或亞洲歸屬。逐時紀錄保留缺測，沒有出現在清單不代表零觀眾。</p></div></details>
+      <details class="tw-method"><summary>量測範圍與判讀細節 <span aria-hidden="true">＋</span></summary><div><p>清單只呈現達觀眾門檻的候選；各類別依序抓取，並非完全同一秒的全球排名。已知非全新或 IGDB 日期有效但未命中的類別，會在量測前排除。未取得有效日期仍保持待確認。</p><p>篩選後中位數只納入免費追隨者超過 1,000 人、且當次觀眾至少 10 人的頻道。追隨數最多使用 24 小時內的紀錄；未知不當成 0，有待查頻道時暫不顯示中位數。原始總觀眾與總開台仍涵蓋全體頻道；舊歷史無法回算新條件。</p><p>推算採後端快照當下的結果：新版 Twitch 日期範圍為 14 天、IGDB 為 30 天，恰好滿該天數不命中；尚未發售仍命中並另標「未上市」。舊快照維持原有 14 天判讀，各筆明細會顯示當時範圍。資料過期、缺少日期與未取得官方觀測都保持未知。</p><p>「官方全新」篩選指快照中的有效觀測。展開後可核對觀測與有效期限；舊快照不代表此刻仍有標記。若有回溯對照，只能用來找差異，不能據此宣稱準確率。</p><p>目前觀測範圍為全球。直播語言不等於主播所在地，因此不推定台灣或亞洲歸屬。逐時紀錄保留缺測，沒有出現在清單不代表零觀眾。</p></div></details>
     </section>
     <noscript><p class="tw-notice">請啟用 JavaScript 以讀取已公開的靜態 Twitch 資料。<a href="./data/twitch_live.json">開啟原始資料 ↗</a></p></noscript>
   </main>
