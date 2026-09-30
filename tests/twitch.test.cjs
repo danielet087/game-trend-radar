@@ -178,3 +178,82 @@ test('hourly history retains each measurement definition, including old and part
   assert.equal(rows.find(r=>r.hour.includes('T09:')).filtered_audience.median_viewer_count,null);
   assert.equal(rows.find(r=>r.hour.includes('T10:')).filtered_audience.median_viewer_count,12.5);
 });
+
+const entry = (id, overrides = {}) => ({ game_id:id, game_name:`Tracked ${id}`, status:'active', first_seen_at:'2026-09-25T10:00:00Z', release_at:'2026-09-25T00:00:00Z', expires_at:'2026-10-25T00:00:00Z', enrollment:{source:'igdb_first_release_date'}, ...overrides });
+const registry = (games, updated_at = at) => ({schema_version:1,updated_at,games});
+test('enrolled games stay visible below threshold, at zero, and after badge/date signal disappears', () => {
+  const state = registry({'101':entry('101'),'102':entry('102')});
+  const d = D.normalize(snapshot([], {tracked_games:[
+    candidate({viewer_count:450,tracking:entry('101'),verification:{status:'not_new',observed_at:at},release_experiment:{twitch_original_release_date:forecast(false)}}),
+    candidate({game_id:'102',viewer_count:0,streamer_count:0,tracking:entry('102')}),
+  ]}),state);
+  assert.deepEqual(D.select(d.games,{filter:'signals'}).map(g=>g.game_id),['101','102']);
+  assert.equal(d.games[1].viewer_count,0);
+  assert.equal(D.matches(d.games[0],'official'),false);
+  assert.equal(D.matches(d.games[0],'twitch'),false);
+});
+test('restores registry-only games with last values clearly retained and never ranked as current', () => {
+  const past = '2026-09-28T10:05:00Z';
+  const d = D.normalize(snapshot([candidate({viewer_count:7100,release_experiment:{igdb_first_release_date:forecast(true)}})]),registry({
+    '102':entry('102',{observation_at:past,last_observation:candidate({game_id:'102',viewer_count:999999,measurement_finished_at:past,filtered_audience:filtered()})}),
+    '103':entry('103'),
+  }));
+  assert.deepEqual(D.select(d.games,{filter:'signals',sort:'viewers'}).map(g=>g.game_id),['101','102','103']);
+  const retained = d.games.find(g=>g.game_id==='102');
+  assert.equal(retained.observation_status,'retained');
+  assert.equal(retained.observation_at,past);
+  assert.equal(retained.viewer_count,999999);
+  assert.equal(d.games.find(g=>g.game_id==='103').viewer_count,null);
+  assert.equal(d.games.find(g=>g.game_id==='103').observation_at,null);
+  assert.deepEqual(D.select(d.games,{sort:'median'}).map(g=>g.game_id),['101','102','103']);
+});
+test('fresh tracked measurement replaces duplicate candidate and historical copy without invalid-row warning', () => {
+  const d = D.normalize(snapshot([candidate()],{tracked_games:[candidate({viewer_count:7800,tracking:entry('101'),observation_status:'current',observation_at:at})]}),registry({'101':entry('101',{last_observation:candidate({viewer_count:100000})})}));
+  assert.equal(d.games.length,1);
+  assert.equal(d.games[0].viewer_count,7800);
+  assert.equal(d.games[0].observation_status,'current');
+  assert.equal(d.invalidRows,0);
+});
+test('registry ends tracking at release plus 30 days, preserves undated games, and always excludes non-games', () => {
+  const state = registry({
+    '101':entry('101',{expires_at:at}),
+    '102':entry('102',{status:'expired'}),
+    '103':entry('103',{status:'excluded'}),
+    '104':entry('104',{release_at:null,expires_at:null}),
+    '105':entry('105'),
+  });
+  const d = D.normalize(snapshot([candidate({release_experiment:{igdb_first_release_date:forecast(true)}})],{excluded_games:[{game_id:'105',game_name:'Music',reason:'non_game_category'}]}),state);
+  assert.deepEqual(d.games.map(g=>g.game_id),['104']);
+  assert.equal(d.games[0].is_tracked,true);
+  assert.deepEqual(d.excluded.map(g=>g.game_id),['105']);
+});
+test('latest registry state wins while old transient exclusions do not remove enrolled games', () => {
+  const old = registry({'101':entry('101',{status:'expired'})},'2026-09-28T00:00:00Z');
+  const current = registry({'101':entry('101',{last_observation:candidate()})});
+  const d = D.normalize(snapshot([],{tracking_state:old,excluded_games:[{game_id:'101',reason:'observed_not_new'}]}),current);
+  assert.equal(d.games.length,1);
+  assert.equal(d.excluded.length,0);
+  const fresh = D.normalize(snapshot([],{tracking_state:registry({'101':entry('101',{status:'expired'})},'2026-09-30T00:00:00Z')}),current);
+  assert.equal(fresh.games.length,0);
+  assert.equal(D.normalize(snapshot([]),{schema_version:1,updated_at:at,games:[]}).tracking_registry_invalid,true);
+});
+test('retained snapshots cannot create artificial hourly chart points', () => {
+  const files=[{schema_version:1,date:'2026-09-29',timezone:'Asia/Taipei',hours:{
+    '2026-09-29T10:00:00Z':{generated_at:'2026-09-29T10:05:00Z',games:[candidate({observation_status:'retained'})]},
+    '2026-09-29T11:00:00Z':{generated_at:'2026-09-29T11:05:00Z',games:[candidate({observation_freshness:'stale'})]},
+  }}];
+  const rows=D.historyRows(files,'101',at);
+  assert.equal(rows.find(r=>r.hour.includes('T10:')).viewer_count,null);
+  assert.equal(rows.find(r=>r.hour.includes('T11:')).viewer_count,null);
+  assert.equal(rows.filter(r=>r.status==='observed').length,0);
+});
+
+test('scheduled collections spanning an hour retain their actual collection-start bucket', () => {
+  const file={schema_version:1,date:'2026-09-29',timezone:'Asia/Taipei',hours:{
+    '2026-09-29T15:00:00Z':{collection_schedule:{observed_slot:'2026-09-29T15:00:00Z'},collection_started_at:'2026-09-29T15:55:00Z',generated_at:'2026-09-29T16:20:00Z',games:[candidate()]},
+  }};
+  const row=D.historyRows([file],'101','2026-09-29T16:25:00Z').find(r=>r.hour.includes('T15:'));
+  assert.equal(row.status,'observed');
+  assert.equal(row.viewer_count,7000);
+  assert.equal(D.historyRows([file],'101','2026-09-29T16:05:00Z').find(r=>r.hour.includes('T15:')).status,'missing');
+});

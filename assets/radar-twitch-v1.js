@@ -5,7 +5,7 @@
   const $ = id => document.getElementById(id);
   const number = new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 1 });
   const dateTime = new Intl.DateTimeFormat("zh-TW", { timeZone:"Asia/Taipei", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hourCycle:"h23" });
-  const filterNames = { signals:"新作線索", all:"全部候選", official:"官方全新", twitch:"Twitch 推算命中", igdb:"IGDB 推算命中", pending:"官方待確認" };
+  const filterNames = { signals:"持續追蹤", all:"所有觀測", official:"官方全新", twitch:"Twitch 推算命中", igdb:"IGDB 推算命中", pending:"官方待確認" };
   const sourceNames = ["Twitch 日期", "IGDB 日期"];
   const state = { data:null, query:"", filter:D.DEFAULT_FILTER, sort:"viewers", limit:24, loading:false };
   const cards = new Map(), historyCache = new Map(), chartDisposers = new Set();
@@ -26,7 +26,8 @@
   }
   function audienceDetails(g) {
     const a = g.filtered_audience, section = node("section","tw-audience-details");
-    section.append(node("h4","","中位數納入條件"),node("p","","免費追隨者 > 1,000，且本次觀眾 ≥ 10；追隨數使用 24 小時內取得的紀錄。遊戲總觀眾、開台數與 7,000 人入選門檻仍以全體頻道計算。"));
+    section.append(node("h4","","中位數納入條件"),node("p","","免費追隨者 > 1,000，且本次觀眾 ≥ 10；追隨數使用 24 小時內取得的紀錄。遊戲總觀眾、開台數與 7,000 人首次收錄門檻仍以全體頻道計算；已收錄的新作會持續追蹤至發售滿 30 天。"));
+    if (g.observation_status === "retained") section.append(node("p","",`以下是 ${time(g.observation_at)} 保存的樣本，等待本輪更新，並非目前直播數據。`));
     if (["complete","partial"].includes(a.status)) {
       const list = node("dl","tw-audience-counts");
       keyValue(list,"符合條件",`${fmt(a.eligible_streamer_count)} 台`);
@@ -162,19 +163,21 @@
     return details;
   }
   function gameCard(g) {
-    const card = node("details","tw-game"); card.dataset.gameId = g.game_id;
+    const card = node("details","tw-game"); card.dataset.gameId = g.game_id; card.dataset.observation = g.observation_status;
     const summary = node("summary","tw-game-summary");
     const identity = node("div","tw-game-identity"), cover = node("span","tw-cover",g.game_name.charAt(0).toUpperCase()); cover.setAttribute("aria-hidden","true");
     if (g.box_art_url) {
       const image = node("img"); image.src = g.box_art_url; image.alt = ""; image.width = 144; image.height = 192; image.loading = "lazy"; image.decoding = "async";
       image.addEventListener("error",() => image.remove(),{ once:true }); cover.append(image);
     }
-    const title = node("div","tw-game-title"); title.append(node("h3","",g.game_name),node("p","","CATEGORY " + g.game_id)); identity.append(cover,title); summary.append(identity);
+    const title = node("div","tw-game-title"); title.append(node("h3","",g.game_name),node("p","","CATEGORY " + g.game_id)); if (g.is_tracked) title.append(node("span","tw-tracking-label","持續追蹤"));
+    if (g.observation_status === "retained") title.append(node("span","tw-retained-note",`上次觀測 ${time(g.observation_at)} · 待更新`));
+    identity.append(cover,title); summary.append(identity);
     const metricNames = ["總觀眾人數","總開台數","篩選後中位數"];
     [g.viewer_count,g.streamer_count,g.filtered_audience.median_viewer_count].forEach((value,i) => {
       const metric = node("div","tw-metric"); metric.dataset.kind = ["viewers","streamers","median"][i];
-      metric.append(node("span","tw-metric-label",metricNames[i]),node("strong","",fmt(value)),node("small","",i === 2 ? audienceNote(g.filtered_audience) : value == null ? "尚未收集" : i === 1 ? "個頻道・全體" : "人・全體"));
-      if (i === 2) metric.setAttribute("aria-label",`篩選後觀眾中位數 ${fmt(value)} 人，${audienceNote(g.filtered_audience)}；免費追隨者超過 1,000 且觀眾至少 10 人`);
+      metric.append(node("span","tw-metric-label",metricNames[i]),node("strong","",fmt(value)),node("small","",g.observation_status === "retained" ? value == null ? "待更新・無保存數值" : "上次觀測・待更新" : i === 2 ? audienceNote(g.filtered_audience) : value == null ? "尚未收集" : i === 1 ? "個頻道・全體" : "人・全體"));
+      if (i === 2) metric.setAttribute("aria-label",`${g.observation_status === "retained" ? "上次觀測，待更新；" : ""}篩選後觀眾中位數 ${fmt(value)} 人，${audienceNote(g.filtered_audience)}；免費追隨者超過 1,000 且觀眾至少 10 人`);
       summary.append(metric);
     });
     const signals = node("div","tw-signals");
@@ -187,6 +190,16 @@
       const body = node("div","tw-game-body"), line = node("p","tw-observation-line");
       line.append(node("span","",state.data.legacy ? "此筆來自舊版全球直播取樣，沒有完整類別量測。" : `量測 ${time(g.measurement_started_at)} → ${time(g.measurement_finished_at)}${g.pagination_complete === true ? " · 已讀完該類別分頁" : " · 分頁完整性未確認"}`));
       body.append(line);
+      if (g.is_tracked) {
+        const retention = node("div","tw-tracking-details"), dates = node("dl");
+        retention.append(node("h4","","這款遊戲會持續留在觀測清單"));
+        keyValue(dates,"首次收錄",time(g.tracking?.first_seen_at));
+        keyValue(dates,"發售日期",time(g.tracking?.release_at));
+        keyValue(dates,"追蹤至",g.tracking?.expires_at ? time(g.tracking.expires_at) : "待確認發售日期，持續保留");
+        retention.append(dates,node("p","","觀眾降至 7,000 以下、暫時無人開台，或官方標記改變，都不會讓已收錄遊戲消失。發售滿 30 天後結束追蹤，歷史仍保留。"));
+        if (g.observation_status === "retained") retention.append(node("p","",`已從歷史補回；目前顯示 ${time(g.observation_at)} 的保存數值，等待下一輪更新。不將舊數值當成本輪排名或新增逐時紀錄。`));
+        body.append(retention);
+      }
       if (!state.data.legacy) body.append(historyPanel(g));
       body.append(audienceDetails(g),evidence(g));
       card.append(body);
@@ -216,14 +229,14 @@
     $("resetFilters").hidden = legacy || (!state.query && state.filter === D.DEFAULT_FILTER && state.sort === "viewers");
     $("viewNotice").hidden = legacy;
     document.querySelector(".tw-column-head").hidden = legacy;
-    $("candidatesTitle").textContent = state.filter === "all" ? "全部候選" : state.filter === "pending" ? "官方待確認候選" : "新作觀測";
+    $("candidatesTitle").textContent = state.filter === "all" ? "所有觀測" : state.filter === "pending" ? "官方待確認候選" : "新作觀測";
     if (legacy) {
       $("resultsStatus").textContent = "新版新作觀測尚未發布";
       $("gameResults").replaceChildren(empty("等待新版新作觀測","現有檔案是未經新作篩選的舊版熱門取樣，暫不列入。新版排程成功發布後，這裡會自動顯示新作線索。"));
       $("gameResults").setAttribute("aria-busy","false"); $("loadMore").hidden = true;
       return;
     }
-    $("viewNotice").textContent = state.filter === "all" ? "全部候選包含尚未確認的遊戲；達到觀眾門檻，不代表是新作。停止收集的類別可在下方查看排除依據。" : state.filter === "pending" ? "這些候選尚未確認官方全新標記；即使有日期推算結果，也不等於官方已確認。" : state.filter === "official" ? "只列快照中有效的官方全新觀測；請展開核對觀測時間。" : state.filter === D.DEFAULT_FILTER ? "只列官方曾見全新或日期推算命中的遊戲；日期推算仍屬實驗，不等於官方全新。" : `只列 ${state.filter === "twitch" ? "Twitch" : "IGDB"} 日期 ${sourceWindow(D.SOURCES[state.filter === "twitch" ? 0 : 1])}推算命中的遊戲；以各筆快照規則為準，不等於官方全新。`;
+    $("viewNotice").textContent = state.filter === "all" ? "包含持續追蹤的新作與本輪達標候選。尚未確認的候選不會僅因熱門就自動加入新作追蹤。" : state.filter === "pending" ? "這些候選尚未確認官方全新標記；即使有日期推算結果，也不等於官方已確認。" : state.filter === "official" ? "只列快照中有效的官方全新觀測；請展開核對觀測時間。" : state.filter === D.DEFAULT_FILTER ? "達 7,000 人並有新作依據後收錄，持續保留至發售滿 30 天。觀眾下降或暫時無人開台也不會移除；日期推算仍屬實驗。" : `只列 ${state.filter === "twitch" ? "Twitch" : "IGDB"} 日期 ${sourceWindow(D.SOURCES[state.filter === "twitch" ? 0 : 1])}推算命中的遊戲；以各筆快照規則為準，不等於官方全新。`;
     $("resultsStatus").textContent = `${visible.length} 款 · ${filterNames[state.filter]}${visible.length > state.limit ? ` · 顯示前 ${state.limit} 款` : ""}`;
     const fragment = document.createDocumentFragment();
     visible.slice(0,state.limit).forEach(g => {
@@ -233,7 +246,7 @@
     if (!visible.length) {
       const noSignals = games.length && state.filter === D.DEFAULT_FILTER && !state.query;
       const showAll = () => { state.filter = "all"; state.limit = 24; render(); syncURL(); };
-      fragment.append(empty(noSignals ? "目前還沒有新作線索" : games.length ? "這個條件下，還沒有結果" : "這次沒有達標候選",noSignals ? "目前候選尚無有效的全新觀測或日期推算命中。可以另外查看全部候選，但它們不代表已確認的新作。" : games.length ? "試著調整關鍵字或重設篩選。未取得觀測與日期，不會自動算成全新。" : "這份快照沒有可呈現的達標遊戲。下一輪有資料後會出現在這裡。",noSignals ? showAll : games.length ? reset : null,noSignals ? "查看全部候選" : "重設篩選"));
+      fragment.append(empty(noSignals ? "目前還沒有追蹤中的新作" : games.length ? "這個條件下，還沒有結果" : "目前沒有可呈現的觀測",noSignals ? "目前候選尚無有效的全新觀測或日期推算命中。可以另外查看全部候選，但它們不代表已確認的新作。" : games.length ? "試著調整關鍵字或重設篩選。未取得觀測與日期，不會自動算成全新。" : "這份快照沒有可呈現的達標遊戲。下一輪有資料後會出現在這裡。",noSignals ? showAll : games.length ? reset : null,noSignals ? "查看所有觀測" : "重設篩選"));
     }
     $("gameResults").replaceChildren(fragment); $("gameResults").setAttribute("aria-busy","false");
     $("loadMore").hidden = visible.length <= state.limit;
@@ -245,7 +258,7 @@
     const fragment = document.createDocumentFragment();
     games.forEach(g => {
       const card = node("details","tw-excluded-game"), summary = node("summary","",g.game_name);
-      const reason = g.reason === "non_game_category" ? "非遊戲類別 · 未量測觀眾" : g.reason === "observed_not_new" ? "已有非全新觀測 · 未量測觀眾" : g.reason === "igdb_release_outside_window" ? `IGDB 日期未命中 ${fmt(g.release_experiment.igdb_first_release_date.window_days)} 天範圍 · 已停止本輪觀眾與追隨數收集` : "已排除 · 原因待確認";
+      const reason = g.reason === "non_game_category" ? "非遊戲類別 · 未量測觀眾" : g.reason === "observed_not_new" ? "已有非全新觀測 · 未量測觀眾" : g.reason === "tracking_expired" ? "發售已滿 30 天 · 已結束追蹤，保留歷史" : g.reason === "igdb_release_outside_window" ? `IGDB 日期未命中 ${fmt(g.release_experiment.igdb_first_release_date.window_days)} 天範圍 · 已停止本輪觀眾與追隨數收集` : "已排除 · 原因待確認";
       card.append(summary,node("p","",reason));
       let built = false; card.addEventListener("toggle",() => { if (card.open && !built) { built = true; card.append(evidence(g)); } }); fragment.append(card);
     });
@@ -258,20 +271,22 @@
   function metadata() {
     const d = state.data, coverage = d.coverage;
     $("snapshotTime").textContent = time(d.generated_at); $("snapshotTime").dateTime = d.generated_at;
-    $("scopeLabel").textContent = `${d.legacy ? "等待新版觀測" : "全球觀測"} · 觀眾 ≥ ${fmt(d.threshold)}`;
+    $("scopeLabel").textContent = `${d.legacy ? "等待新版觀測" : "全球觀測"} · 首次收錄 ≥ ${fmt(d.threshold)} 人 · 追蹤至發售滿 30 天`;
     $("twitchDateGuide").textContent = `使用有來源記錄的 Twitch 原始發售日期；本次快照採 ${sourceWindow(D.SOURCES[0])}範圍。未來發售也會命中，詳細規則見各款明細。`;
     $("igdbDateGuide").textContent = `使用 IGDB 首次發售日期；本次快照採 ${sourceWindow(D.SOURCES[1])}範圍。結果獨立保留；缺少 Twitch 日期時，不拿它冒充。`;
     document.querySelector('[data-metric-label="viewers"]').textContent = d.legacy ? "取樣觀眾數" : "總觀眾人數";
     document.querySelector('[data-metric-label="streamers"]').textContent = d.legacy ? "取樣開台數" : "總開台數";
     if (d.legacy) {
       notice("舊版熱門取樣不列入新作清單","現有快照沒有新作判斷依據，不能僅憑觀眾數列為新作。新版資料發布後會自動切換。" );
+    } else if (d.tracking_warning) {
+      notice("持續追蹤清單暫時無法完整更新",d.tracking_registry ? "先保留已取得的追蹤名單與最新可讀取的量測；請稍後重新讀取。" : "目前只能呈現最新快照中可讀取的遊戲，追蹤總數可能不完整。請稍後重新讀取，不代表其他遊戲已結束追蹤。");
     } else if (coverage.collection_complete !== true || d.invalidRows) {
       notice("這份快照有資料缺口",`本次資料的完整性未確認${d.invalidRows ? `，略過 ${d.invalidRows} 筆無效或重複資料` : ""}。以下只呈現可讀取的觀測。`);
     } else notice(null);
     const stale = Date.now() - Date.parse(d.generated_at) > 3 * 3600000;
     $("freshnessNote").hidden = !stale;
     $("freshnessNote").textContent = d.legacy ? "最近一份公開檔案仍為舊版，等待新版排程收集並發布。" : "這份快照已超過 3 小時未更新；以下是已保存的觀測，不代表目前直播狀態。";
-    $("tableNote").textContent = d.legacy ? "不以熱門程度推定新作，也不以舊取樣補出中位數或全新標記。" : "篩選後中位數只計免費追隨者 > 1,000 且觀眾 ≥ 10 的頻道，並標示納入台數。總觀眾與總開台維持全體頻道統計；各類別依序量測，展開可核對樣本與時間。";
+    $("tableNote").textContent = d.legacy ? "不以熱門程度推定新作，也不以舊取樣補出中位數或全新標記。" : "篩選後中位數只計免費追隨者 > 1,000 且觀眾 ≥ 10 的頻道，並標示納入台數。總觀眾與總開台維持全體頻道統計。「上次觀測」數值只供參考，排序置於本輪量測之後。展開可核對追蹤期限與樣本。";
     exclusions();
   }
   async function load() {
@@ -279,8 +294,15 @@
     state.loading = true; $("snapshotRefresh").disabled = true; $("gameResults").setAttribute("aria-busy","true");
     $("resultsStatus").textContent = "正在讀取最新公開快照…";
     try {
-      const data = D.normalize(await readJSON("./data/twitch_live.json"));
-      const same = data.generated_at === state.data?.generated_at;
+      const [liveResult, trackingResult] = await Promise.allSettled([readJSON("./data/twitch_live.json"),readJSON("./data/twitch_tracking.json",true)]);
+      if (liveResult.status !== "fulfilled") throw liveResult.reason;
+      const previousRegistry = state.data?.tracking_registry;
+      const suppliedRegistry = trackingResult.status === "fulfilled" && trackingResult.value != null ? trackingResult.value : previousRegistry;
+      let data = D.normalize(liveResult.value,suppliedRegistry);
+      const invalidTracking = data.tracking_registry_invalid;
+      if (invalidTracking && previousRegistry) data = D.normalize(liveResult.value,previousRegistry);
+      data.tracking_warning = trackingResult.status !== "fulfilled" || (trackingResult.value == null && Boolean(previousRegistry)) || invalidTracking;
+      const same = data.generated_at === state.data?.generated_at && data.tracking_registry?.updated_at === state.data?.tracking_registry?.updated_at;
       chartDisposers.forEach(dispose => dispose()); chartDisposers.clear();
       state.data = data; cards.clear(); historyCache.clear();
       metadata(); render();

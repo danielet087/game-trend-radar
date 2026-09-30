@@ -65,34 +65,72 @@
       measurement_finished_at: timestamp(value.measurement_finished_at),
     };
   }
-  function normalize(payload) {
+  function tracking(value) {
+    if (!value || typeof value !== "object" || !["active", "expired", "excluded"].includes(value.status)) return null;
+    return { ...value, first_seen_at: timestamp(value.first_seen_at), release_at: timestamp(value.release_at), expires_at: timestamp(value.expires_at) };
+  }
+  function registry(value) {
+    return value?.schema_version === 1 && timestamp(value.updated_at) && value.games && typeof value.games === "object" && !Array.isArray(value.games) ? value : null;
+  }
+  function normalize(payload, supplementalRegistry = null) {
     if (!payload || typeof payload !== "object" || !timestamp(payload.generated_at)) throw new Error("INVALID_SNAPSHOT");
     const legacy = payload.schema_version == null && Array.isArray(payload.top_games);
     if (!legacy && (payload.schema_version !== 2 || !Array.isArray(payload.candidate_games))) throw new Error("UNSUPPORTED_SNAPSHOT");
     const threshold = !legacy && Number.isInteger(payload.min_viewers) && payload.min_viewers > 0 ? payload.min_viewers : 7000;
     const report = legacy ? {} : payload.newness_experiment || {};
-    const seen = new Set();
+    const supplied = registry(supplementalRegistry), embedded = registry(payload.tracking_state);
+    const trackingRegistry = [supplied, embedded].filter(Boolean).sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))[0] || null;
+    const trackedRows = !legacy && Array.isArray(payload.tracked_games) ? payload.tracked_games : [];
+    const asOf = Math.max(Date.parse(payload.generated_at), Date.parse(trackingRegistry?.updated_at) || 0);
+    const active = value => value?.status === "active" && (!value.expires_at || Date.parse(value.expires_at) > asOf);
+    const seen = new Map(), excluded = legacy ? [] : (Array.isArray(payload.excluded_games) ? payload.excluded_games : []).map(g => game(g, false, report)).filter(Boolean);
+    const nonGames = new Set(excluded.filter(g => g.reason === "non_game_category").map(g => g.game_id));
     let invalidRows = 0;
-    const games = (legacy ? payload.top_games : payload.candidate_games).flatMap(value => {
+    const record = (value, fromTracked = false, retained = false) => {
       const g = game(value, legacy, report);
-      if (!g || g.viewer_count === null || seen.has(g.game_id)) { invalidRows++; return []; }
-      seen.add(g.game_id);
-      return g.viewer_count >= threshold ? [g] : [];
+      if (!g) { invalidRows++; return; }
+      const stored = trackingRegistry?.games[g.game_id];
+      g.tracking = tracking(stored) || tracking(value.tracking);
+      if (nonGames.has(g.game_id) || (g.tracking && !active(g.tracking))) return;
+      g.is_tracked = active(g.tracking) || (fromTracked && !g.tracking);
+      g.observation_status = retained || value.observation_status === "retained" || value.observation_status === "stale" || value.observation_freshness === "stale" ? "retained" : "current";
+      g.observation_at = timestamp(value.observation_at) || g.measurement_finished_at || (g.observation_status === "current" ? payload.generated_at : null);
+      if ((!g.is_tracked && (g.viewer_count === null || g.viewer_count < threshold)) || (g.viewer_count === null && !fromTracked && !g.is_tracked)) {
+        if (g.viewer_count === null) invalidRows++;
+        return;
+      }
+      const previous = seen.get(g.game_id);
+      if (previous) {
+        if (!fromTracked && !retained) invalidRows++;
+        if (previous.observation_status === "current" && retained) return;
+        if (!fromTracked) return;
+      }
+      seen.set(g.game_id, g);
+    };
+    (legacy ? payload.top_games : payload.candidate_games).forEach(value => record(value));
+    trackedRows.forEach(value => record(value, true));
+    if (!legacy && trackingRegistry) Object.entries(trackingRegistry.games).forEach(([id, entry]) => {
+      if (!/^\d+$/.test(id) || !active(tracking(entry)) || seen.has(id)) return;
+      const observation = entry.last_observation && typeof entry.last_observation === "object" ? entry.last_observation : {};
+      record({ ...entry, ...observation, game_id:id, tracking:entry, observation_at:timestamp(entry.observation_at) || timestamp(observation.observation_at) || timestamp(observation.measurement_finished_at), observation_status:"retained" }, true, true);
     });
-    const excluded = legacy ? [] : (Array.isArray(payload.excluded_games) ? payload.excluded_games : []).map(g => game(g, false, report)).filter(Boolean);
+    const games = [...seen.values()];
+    const activeIDs = new Set(games.filter(g => g.is_tracked).map(g => g.game_id));
+    const visibleExcluded = excluded.filter(g => !activeIDs.has(g.game_id));
     const source_windows = Object.fromEntries(SOURCES.map(source => {
       const windows = [...new Set([...games, ...excluded].map(g => g.release_experiment[source].window_days))];
       if (!windows.length) windows.push(windowDays(report[source]?.window_days));
       return [source, windows.sort((a, b) => a - b)];
     }));
-    return { legacy, generated_at: payload.generated_at, threshold, games: legacy ? [] : games, legacy_sample_count: legacy ? games.length : 0, excluded, invalidRows,
+    return { legacy, generated_at: payload.generated_at, threshold, games: legacy ? [] : games, legacy_sample_count: legacy ? games.length : 0, excluded:visibleExcluded, invalidRows,
+      tracking_registry: trackingRegistry, tracking_registry_invalid: supplementalRegistry != null && !supplied,
       source_windows,
       coverage: payload.coverage || {},
       reference_checks: !legacy && Array.isArray(payload.newness_experiment?.reference_checks) ? payload.newness_experiment.reference_checks : [],
     };
   }
   function matches(game, filter) {
-    if (filter === "signals") return game.verification.status !== "not_new" && (game.verification.status === "new" || SOURCES.some(source => game.release_experiment[source].predicted_new === true));
+    if (filter === "signals") return game.is_tracked || game.verification.status !== "not_new" && (game.verification.status === "new" || SOURCES.some(source => game.release_experiment[source].predicted_new === true));
     if (filter === "official") return game.verification.status === "new";
     if (filter === "twitch") return game.release_experiment[SOURCES[0]].predicted_new === true;
     if (filter === "igdb") return game.release_experiment[SOURCES[1]].predicted_new === true;
@@ -102,8 +140,8 @@
   function select(games, { query = "", filter = "all", sort = "viewers" } = {}) {
     const search = query.normalize("NFKC").trim().toLocaleLowerCase();
     const metric = { viewers: "viewer_count", streamers: "streamer_count" }[sort] || "viewer_count";
-    const measure = g => sort === "median" ? g.filtered_audience?.median_viewer_count : g[metric];
-    return games.filter(g => matches(g, filter) && `${g.game_name} ${g.game_id}`.normalize("NFKC").toLocaleLowerCase().includes(search)).sort((a, b) => (measure(b) ?? -1) - (measure(a) ?? -1) || (b.viewer_count ?? -1) - (a.viewer_count ?? -1) || a.game_id.localeCompare(b.game_id));
+    const measure = g => g.observation_status === "retained" ? null : sort === "median" ? g.filtered_audience?.median_viewer_count : g[metric];
+    return games.filter(g => matches(g, filter) && `${g.game_name} ${g.game_id}`.normalize("NFKC").toLocaleLowerCase().includes(search)).sort((a, b) => Number(a.observation_status === "retained") - Number(b.observation_status === "retained") || (measure(b) ?? -1) - (measure(a) ?? -1) || (a.observation_status === "retained" ? 0 : (b.viewer_count ?? -1) - (a.viewer_count ?? -1)) || a.game_id.localeCompare(b.game_id));
   }
   function taipeiDay(value) {
     const date = new Date(value);
@@ -122,14 +160,15 @@
       for (const [key, entry] of Object.entries(file.hours)) {
         const time = timestamp(key) ? Date.parse(key) : NaN;
         const observed = timestamp(entry?.generated_at) ? Date.parse(entry.generated_at) : NaN;
-        if (!Number.isFinite(time) || time % HOUR || !Number.isFinite(observed) || observed > cutoff || Math.floor(observed / HOUR) * HOUR !== time || taipeiDay(observed) !== file.date || !Array.isArray(entry.games)) continue;
+        const bucketAt = entry?.collection_schedule && timestamp(entry.collection_started_at) ? Date.parse(entry.collection_started_at) : observed;
+        if (!Number.isFinite(time) || time % HOUR || !Number.isFinite(observed) || observed > cutoff || Math.floor(bucketAt / HOUR) * HOUR !== time || taipeiDay(bucketAt) !== file.date || !Array.isArray(entry.games)) continue;
         const previous = hours.get(time);
         if (!previous || observed > Date.parse(previous.generated_at)) hours.set(time, entry);
       }
     }
     return Array.from({ length: 24 }, (_, i) => {
       const time = end - (23 - i) * HOUR, snapshot = hours.get(time);
-      const row = snapshot?.games.find(g => String(g.game_id) === String(gameID));
+      const row = snapshot?.games.find(g => String(g.game_id) === String(gameID) && !["retained", "stale"].includes(g.observation_status) && g.observation_freshness !== "stale");
       return { hour: new Date(time).toISOString(), generated_at: snapshot?.generated_at || null,
         status: row ? "observed" : snapshot ? "absent" : "missing",
         viewer_count: count(row?.viewer_count), streamer_count: count(row?.streamer_count), median_viewer_count: count(row?.median_viewer_count),
