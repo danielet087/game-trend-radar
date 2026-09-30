@@ -236,7 +236,7 @@
     });
     $("gameSearch").disabled = legacy; $("gameSort").disabled = legacy;
     $("resetFilters").hidden = legacy || (!state.query && state.filter === D.DEFAULT_FILTER && state.sort === "viewers");
-    $("viewNotice").hidden = legacy;
+    $("viewNotice").hidden = legacy || state.filter === D.DEFAULT_FILTER;
     document.querySelector(".tw-column-head").hidden = legacy;
     $("candidatesTitle").textContent = state.filter === "all" ? "所有觀測" : state.filter === "pending" ? "官方待確認候選" : "新作觀測";
     if (legacy) {
@@ -245,7 +245,7 @@
       $("gameResults").setAttribute("aria-busy","false"); $("loadMore").hidden = true;
       return;
     }
-    $("viewNotice").textContent = state.filter === "all" ? "包含持續追蹤的新作與本輪達標候選。尚未確認的候選不會僅因熱門就自動加入新作追蹤。" : state.filter === "pending" ? "這些候選尚未確認官方全新標記；即使有日期推算結果，也不等於官方已確認。" : state.filter === "official" ? "只列快照中有效的官方全新觀測；請展開核對觀測時間。" : state.filter === D.DEFAULT_FILTER ? "達 7,000 人並有新作依據後收錄，持續保留至發售滿 30 天。觀眾下降或暫時無人開台也不會移除；日期推算仍屬實驗。" : `只列 ${state.filter === "twitch" ? "Twitch" : "IGDB"} 日期 ${sourceWindow(D.SOURCES[state.filter === "twitch" ? 0 : 1])}推算命中的遊戲；以各筆快照規則為準，不等於官方全新。`;
+    $("viewNotice").textContent = state.filter === "all" ? "包含持續追蹤的新作與本輪達標候選。尚未確認的候選不會僅因熱門就自動加入新作追蹤。" : state.filter === "pending" ? "這些候選尚未確認官方全新標記；即使有日期推算結果，也不等於官方已確認。" : state.filter === "official" ? "只列快照中有效的官方全新觀測；請展開核對觀測時間。" : state.filter === D.DEFAULT_FILTER ? "" : `只列 ${state.filter === "twitch" ? "Twitch" : "IGDB"} 日期 ${sourceWindow(D.SOURCES[state.filter === "twitch" ? 0 : 1])}推算命中的遊戲；以各筆快照規則為準，不等於官方全新。`;
     $("resultsStatus").textContent = `${visible.length} 款 · ${filterNames[state.filter]}${visible.length > state.limit ? ` · 顯示前 ${state.limit} 款` : ""}`;
     const fragment = document.createDocumentFragment();
     visible.slice(0,state.limit).forEach(g => {
