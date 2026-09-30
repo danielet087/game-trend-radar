@@ -107,7 +107,7 @@
     const scrubber = element("input", "tw-chart-scrubber");
     scrubber.type = "range"; scrubber.min = "0"; scrubber.step = "1";
     scrubber.setAttribute("aria-label", `${gameName}逐時紀錄，使用左右方向鍵切換時段`);
-    const hint = element("p", "tw-chart-hint", "滑過或點選圖表查看數值，也可拖動下方時間軸。台灣時間；缺漏不補 0、不連線。");
+    const hint = element("p", "tw-chart-hint", "滑過或點選圖表查看數值，也可拖動下方時間軸。台灣時間；實線連接連續紀錄，虛線跨越缺測，僅供觀察趨勢。");
     footer.append(scrubber, hint);
     const announcement = element("p", "tw-chart-announcement");
     announcement.setAttribute("role", "status"); announcement.setAttribute("aria-live", "polite"); announcement.setAttribute("aria-atomic", "true");
@@ -178,10 +178,10 @@
       const x = index => left + (visible.length > 1 ? index / (visible.length - 1) : 0.5) * innerWidth;
       const y = value => above + innerHeight * (1 - value / top);
       svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-      svg.setAttribute("aria-label", `${gameName}近 ${range} 小時${METRICS[metric].label}折線圖，${values.filter(numeric).length} 個有效時段。使用下方時間軸查看各時段數值；缺漏不補零、不連線。`);
+      svg.setAttribute("aria-label", `${gameName}近 ${range} 小時${METRICS[metric].label}折線圖，${values.filter(numeric).length} 個有效時段。使用下方時間軸查看各時段數值；虛線連接缺測前後的紀錄，缺測時段仍無數據。`);
       svg.replaceChildren();
       svg.append(svgElement("title", {}, `${gameName} · ${METRICS[metric].label}`));
-      svg.append(svgElement("desc", {}, "X 軸為台灣時間，Y 軸從零起算。缺漏與未完成的數據保留空白。下方時間軸可用鍵盤切換時段。"));
+      svg.append(svgElement("desc", {}, "X 軸為台灣時間，Y 軸從零起算。資料點為有效紀錄，實線連接連續紀錄，虛線跨越缺測區間，並非實測或補值。下方時間軸可用鍵盤切換時段。"));
       for (let tick = 0; tick <= top; tick += gridStep) {
         svg.append(svgElement("line", { class: "tw-chart-grid", x1: left, x2: width - right, y1: y(tick), y2: y(tick), stroke: "var(--tw-chart-grid, #dbe3eb)", "stroke-width": 1 }));
         svg.append(svgElement("text", { class: "tw-chart-axis", x: left - 9, y: y(tick) + 4, "text-anchor": "end", "font-size": 11, fill: "var(--tw-chart-ink, #59677d)" }, number(tick)));
@@ -192,12 +192,21 @@
       for (const index of ticks) {
         svg.append(svgElement("text", { class: "tw-chart-axis", x: x(index), y: height - 12, "text-anchor": index === 0 ? "start" : index === visible.length - 1 ? "end" : "middle", "font-size": 11, fill: "var(--tw-chart-ink, #59677d)" }, tickTime(visible[index]?.hour)));
       }
-      let segment = [];
+      let segment = [], previous = null;
+      function line(points, bridge = false) {
+        svg.append(svgElement("path", { class: bridge ? "tw-chart-line tw-chart-bridge" : "tw-chart-line", d: points.map(([px, py], index) => `${index ? "L" : "M"}${px.toFixed(2)},${py.toFixed(2)}`).join(" "), fill: "none", stroke: "var(--tw-chart-accent, #6453d9)", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round", "stroke-dasharray": bridge ? "6 5" : "none", "vector-effect": "non-scaling-stroke" }));
+      }
       function flush() {
-        if (segment.length > 1) svg.append(svgElement("path", { class: "tw-chart-line", d: segment.map(([px, py], index) => `${index ? "L" : "M"}${px.toFixed(2)},${py.toFixed(2)}`).join(" "), fill: "none", stroke: "var(--tw-chart-accent, #6453d9)", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke" }));
+        if (segment.length > 1) line(segment);
         segment = [];
       }
-      values.forEach((value, index) => { if (value === null) flush(); else segment.push([x(index), y(value)]); });
+      values.forEach((value, index) => {
+        if (value === null) { flush(); return; }
+        const point = [x(index), y(value)];
+        if (previous && index > previous.index + 1) line([previous.point, point], true);
+        segment.push(point);
+        previous = { index, point };
+      });
       flush();
       values.forEach((value, index) => {
         if (value !== null) svg.append(svgElement("circle", { class: "tw-chart-point", "data-index": index, "data-value": value, cx: x(index), cy: y(value), r: 3.5, fill: "var(--tw-chart-accent, #6453d9)", stroke: "#fffdf7", "stroke-width": 1.5 }));

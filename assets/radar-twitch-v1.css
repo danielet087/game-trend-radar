@@ -140,6 +140,7 @@ body[data-page="twitch"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; --page
 .tw-chart-grid { stroke:var(--tw-chart-grid); stroke-width:1; stroke-dasharray:3 5; }
 .tw-chart-axis { fill:var(--tw-chart-ink); font:10px Arial,"Noto Sans TC",sans-serif; font-variant-numeric:tabular-nums; }
 .tw-chart-line { fill:none; stroke:var(--tw-chart-accent); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.tw-chart-bridge { stroke-dasharray:6 5; opacity:.7; }
 .tw-chart-point { fill:#fffdf9; stroke:var(--tw-chart-accent); stroke-width:2; vector-effect:non-scaling-stroke; }
 .tw-chart-cursor { stroke:var(--tw-chart-accent); stroke-width:1; stroke-dasharray:3 4; opacity:.6; }
 .tw-chart-selected-point { fill:var(--tw-chart-accent); stroke:#fff; stroke-width:2.5; }
