@@ -81,52 +81,6 @@
     const safe = D.safeURL(url); if (!safe) return;
     const p = node("p"), a = node("a","",label + " ↗"); a.href = safe; a.target = "_blank"; a.rel = "noopener noreferrer"; p.append(a); parent.append(p);
   }
-  function steamDetails(g) {
-    if (!g.steam_matches.length) return null;
-    const section = node("section","tw-steam-details");
-    section.append(node("h4","","Steam 遊戲資訊"));
-    g.steam_matches.forEach(s => {
-      const item = node("article","tw-steam-match"), heading = node("div","tw-steam-heading"), title = node("h5");
-      const link = node("a","",s.display_name); link.href = `./game.html?appid=${encodeURIComponent(s.steam_appid)}`;
-      title.append(link); heading.append(title);
-      if (s.store_url) { const store = node("a","tw-steam-store","Steam 商店 ↗"); store.href = s.store_url; store.target = "_blank"; store.rel = "noopener noreferrer"; heading.append(store); }
-      const dates = node("dl","tw-steam-facts");
-      keyValue(dates,"Steam 台灣上市日",s.release_date || (s.release_at ? time(s.release_at) : "待確認"));
-      keyValue(dates,"Steam 關注人數",s.followers == null ? "尚無資料" : `${fmt(s.followers)} 人`);
-      keyValue(dates,"Steam 追蹤至",g.tracking?.tracking_sources?.[`steam:${s.steam_appid}`]?.expires_at ? time(g.tracking.tracking_sources[`steam:${s.steam_appid}`].expires_at) : "僅補充資訊");
-      item.append(heading,dates);
-      if (s.tags.length) {
-        const tags = node("div","tw-steam-tags"); tags.setAttribute("aria-label",`${s.display_name} 的 Steam TAG`);
-        s.tags.slice(0,8).forEach(tag => { const a = node("a","",s.tag_labels_zh_tw[tag] || tag); a.href = `./explore.html?tag=${encodeURIComponent(tag)}`; tags.append(a); });
-        item.append(tags);
-      }
-      section.append(item);
-    });
-    section.append(node("p","tw-steam-note","直播數據為整個 Twitch 遊戲類別，涵蓋不同平台；封面沿用 Twitch。"));
-    return section;
-  }
-  function trackingDetails(g, pendingLegacy) {
-    const retention = node("section","tw-tracking-details"), dates = node("dl");
-    retention.append(node("h4","","追蹤來源與期限"));
-    keyValue(dates,"首次收錄",time(g.tracking?.first_seen_at));
-    const releaseLabel = value => value?.release_source === "igdb_first_release_date" ? "IGDB 首次發售日" : value?.release_source === "twitch_original_release_date" ? "Twitch 原始發售日" : "追蹤依據日期";
-    const sources = g.tracking?.tracking_sources;
-    if (sources) Object.entries(sources).forEach(([key, source]) => {
-      const label = key === "twitch_new" ? "Twitch 熱門新作" : `Steam · ${g.steam_matches.find(s => `steam:${s.steam_appid}` === key)?.display_name || source.steam_appid || key.slice(6)}`;
-      const active = Boolean(g.active_tracking_sources[key]);
-      keyValue(dates,label,active ? source.expires_at ? `追蹤至 ${time(source.expires_at)}` : "發售日期待確認，持續保留" : "此來源已結束追蹤");
-      keyValue(dates,key === "twitch_new" ? releaseLabel(source) : "Steam 台灣上市日",time(source.release_at));
-    });
-    else { keyValue(dates,releaseLabel(g.tracking),time(g.tracking?.release_at)); keyValue(dates,"Twitch 追蹤至",g.tracking?.expires_at ? time(g.tracking.expires_at) : "待確認發售日期，持續保留"); }
-    retention.append(dates,node("p","","各來源分別計算追蹤期限；任何一個來源仍有效，就會繼續每小時觀測。暫時無人開台也保留，結束追蹤後仍可查看已保存的歷史。"));
-    if (legacyRecovery(g)) {
-      retention.append(node("p","",`指定補回；舊版局部樣本不代表完整類別觀眾。${pendingLegacy ? "等待首次完整量測。" : "後續數值依實際量測時間顯示。"}`));
-      const source = g.tracking.enrollment.legacy_sample?.source_url || g.tracking.enrollment.source_url;
-      try { const url = new URL(source); if (url.protocol === "https:" && url.hostname === "github.com" && !url.username && !url.password) { const link = node("a","tw-source-link","查看舊版收錄來源 ↗"); link.href = url.href; link.target = "_blank"; link.rel = "noopener noreferrer"; retention.append(link); } } catch {}
-    }
-    if (g.observation_status === "retained" && !pendingLegacy) retention.append(node("p","",`目前顯示 ${time(g.observation_at)} 的保存數值，等待新一輪更新。`));
-    return retention;
-  }
   function evidence(g) {
     const wrapper = node("div"), grid = node("div","tw-evidence-grid"), v = g.verification;
     const official = node("section","tw-evidence-card");
@@ -242,11 +196,7 @@
     card.addEventListener("toggle",() => {
       if (!card.open || built) return;
       built = true;
-      const body = node("div","tw-game-body"), line = node("p","tw-observation-line");
-      line.append(node("span","",pendingLegacy ? "舊版補回・待首次完整量測，尚無完整類別觀眾與開台數。" : state.data.legacy ? "此筆來自舊版全球直播取樣，沒有完整類別量測。" : `量測 ${time(g.measurement_started_at)} → ${time(g.measurement_finished_at)}${g.pagination_complete === true ? " · 已讀完該類別分頁" : " · 分頁完整性未確認"}`));
-      body.append(line);
-      if (g.is_tracked) body.append(trackingDetails(g,pendingLegacy));
-      const steamInfo = steamDetails(g); if (steamInfo) body.append(steamInfo);
+      const body = node("div","tw-game-body");
       if (!state.data.legacy) body.append(historyPanel(g));
       body.append(audienceDetails(g),evidence(g));
       card.append(body);
@@ -349,7 +299,7 @@
     const stale = Date.now() - Date.parse(d.generated_at) > 3 * 3600000;
     $("freshnessNote").hidden = !stale;
     $("freshnessNote").textContent = d.legacy ? "最近一份公開檔案仍為舊版，等待新版排程收集並發布。" : "這份快照已超過 3 小時未更新；以下是已保存的觀測，不代表目前直播狀態。";
-    $("tableNote").textContent = d.legacy ? "不以熱門程度推定新作，也不以舊取樣補出中位數或全新標記。" : "篩選後中位數只計免費追隨者 > 1,000 且觀眾 ≥ 10 的頻道，並標示納入台數。總觀眾與總開台維持全體頻道統計。「上次觀測」數值只供參考，排序置於本輪量測之後。展開可核對追蹤期限與樣本。";
+    $("tableNote").textContent = d.legacy ? "不以熱門程度推定新作，也不以舊取樣補出中位數或全新標記。" : "篩選後中位數只計免費追隨者 > 1,000 且觀眾 ≥ 10 的頻道，並標示納入台數。總觀眾與總開台維持全體頻道統計。「上次觀測」數值只供參考，排序置於本輪量測之後。展開可查看逐時紀錄與樣本。";
     exclusions(); pendingSteam();
   }
   async function load() {
