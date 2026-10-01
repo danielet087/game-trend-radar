@@ -10,11 +10,12 @@
   <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.6.1">
   <link rel="stylesheet" href="./assets/radar-twitch-v1.css?v=1.3.0">
+  <link rel="stylesheet" href="./assets/radar-twitch-igdb-v1.css?v=1.0.0">
   <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
   <script src="./assets/radar-navigation-v1.js?v=1.0.1" defer></script>
   <script src="./assets/radar-twitch-data-v1.js?v=1.2.0" defer></script>
   <script src="./assets/radar-twitch-chart-v1.js?v=1.0.1" defer></script>
-  <script src="./assets/radar-twitch-v1.js?v=1.3.1" defer></script>
+  <script src="./assets/radar-twitch-v1.js?v=1.4.0" defer></script>
 </head>
 <body data-page="twitch">
   <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -113,19 +114,16 @@
       <details class="tw-signal-filters">
         <summary>查看新作判讀篩選 <span aria-hidden="true">＋</span></summary>
         <div class="tw-filters" role="group" aria-label="新作判讀篩選">
-          <button type="button" data-filter="official" aria-pressed="false">官方全新 <span>—</span></button>
-          <button type="button" data-filter="twitch" aria-pressed="false">Twitch 推算 <span>—</span></button>
-          <button type="button" data-filter="igdb" aria-pressed="false">IGDB 推算 <span>—</span></button>
-          <button type="button" data-filter="pending" aria-pressed="false">官方待確認 <span>—</span></button>
+          <button type="button" data-filter="igdb" aria-pressed="false">IGDB 推算命中 <span>—</span></button>
           <button type="button" data-filter="all" aria-pressed="false">所有觀測 <span>—</span></button>
         </div>
       </details>
       <p id="viewNotice" class="tw-view-notice" hidden></p>
       <div class="tw-results-bar"><p id="resultsStatus" role="status" aria-live="polite">正在讀取 Twitch 資料…</p><button id="resetFilters" class="tw-text-button" type="button" hidden>清除篩選 ×</button><a href="#readingGuide">怎麼看這些結果？ ↓</a></div>
-      <div class="tw-column-head" aria-hidden="true"><span>遊戲 / Twitch 類別</span><span data-metric-label="viewers">總觀眾人數</span><span data-metric-label="streamers">總開台數</span><span>篩選後中位數</span><span>新作判讀 · 各自獨立</span><span></span></div>
+      <div class="tw-column-head" aria-hidden="true"><span>遊戲 / Twitch 類別</span><span data-metric-label="viewers">總觀眾人數</span><span data-metric-label="streamers">總開台數</span><span>篩選後中位數</span><span>IGDB 日期推算</span><span></span></div>
       <div id="gameResults" class="tw-results" aria-busy="true"><div class="tw-loading"><span aria-hidden="true">◎</span><p>正在打開觀測筆記…</p></div></div>
       <div class="tw-load-more"><button id="loadMore" type="button" hidden>再看 24 款 ↓</button></div>
-      <p class="tw-table-note" id="tableNote">篩選後中位數只計免費追隨者 > 1,000 且觀眾 ≥ 10 的頻道。總觀眾與總開台維持全體頻道統計。展開遊戲可查看納入台數與判讀依據。</p>
+      <p class="tw-table-note" id="tableNote">篩選後中位數只計免費追隨者 > 1,000 且觀眾 ≥ 10 的頻道。總觀眾與總開台維持全體頻道統計。展開遊戲可查看逐時紀錄與 IGDB 日期推算。</p>
     </section>
 
     <details class="tw-steam-pending" id="steamPending" hidden>
@@ -137,13 +135,11 @@
     <details class="tw-exclusions" id="exclusions" hidden><summary><span>已排除的類別 <b id="excludedCount">0</b></span><span class="tw-disclosure-label">查看依據 ＋</span></summary><p>已知非遊戲、所有來源的追蹤期限均已結束，或首次篩選未符合條件的類別，會停止後續收集；保留依據與既有歷史，不補上觀眾數。</p><div id="excludedGames"></div></details>
 
     <section class="tw-guide" id="readingGuide" aria-labelledby="guideTitle">
-      <div class="tw-guide-heading"><p class="tw-eyebrow">READ THE SIGNALS</p><h2 id="guideTitle">三種線索，分開看。</h2><p>日期推算是實驗，不能替代 Twitch 的官方「全新」標記。</p></div>
-      <div class="tw-guide-grid">
-        <article class="tw-guide-card tw-tone-official"><span class="tw-guide-index">A / OBSERVED</span><h3>官方全新觀測</h3><p>記錄曾在 Twitch 分類頁看到的標記與時間。未取得觀測時就是「待確認」，不等於不是新作。</p></article>
-        <article class="tw-guide-card tw-tone-twitch"><span class="tw-guide-index">B / TWITCH DATE</span><h3>Twitch 日期推算</h3><p id="twitchDateGuide">使用有來源記錄的 Twitch 原始發售日期，以「距發售未滿 14 天」推算；未來發售也會命中。</p></article>
-        <article class="tw-guide-card tw-tone-igdb"><span class="tw-guide-index">C / IGDB DATE</span><h3>IGDB 日期推算</h3><p id="igdbDateGuide">用 IGDB 首次發售日期推算，新版放寬至未滿 30 天；各筆仍以快照記錄的規則為準。</p></article>
+      <div class="tw-guide-heading"><p class="tw-eyebrow">READ THE SIGNALS</p><h2 id="guideTitle">用 IGDB 日期，觀察新作。</h2><p>依 IGDB 首次發售日期推算，結果屬實驗。</p></div>
+      <div class="tw-guide-grid tw-igdb-only">
+        <article class="tw-guide-card tw-tone-igdb"><span class="tw-guide-index">IGDB / RELEASE DATE</span><h3>IGDB 日期・30 天推算</h3><p id="igdbDateGuide">以距 IGDB 首次發售未滿 30 天推算；各筆仍以快照記錄的規則為準。缺少有效日期時保持未知。</p></article>
       </div>
-      <details class="tw-method"><summary>量測範圍與判讀細節 <span aria-hidden="true">＋</span></summary><div><p>Twitch 熱門新作涵蓋不同平台，以 7,000 名觀眾與新作依據首次收錄。Steam 近期上市則取本站已收錄、台灣上市未滿 30 天且成功配對的遊戲，不受觀眾門檻限制。兩種來源分別計算期限，任一來源有效便繼續追蹤；同一 Twitch 類別只量測一次。</p><p>Steam 配對補充名稱、TAG、關注度與該版本上市日；封面沿用 Twitch，直播數據涵蓋整個 Twitch 類別。Steam 台灣上市日與 IGDB 首次發售日分開保存；未配對的遊戲不計為零觀眾。不同類別依序抓取，並非同一秒的全球排名。</p><p>篩選後中位數只納入免費追隨者超過 1,000 人、且當次觀眾至少 10 人的頻道。追隨數最多使用 24 小時內的紀錄；未知不當成 0，有待查頻道時暫不顯示中位數。原始總觀眾與總開台仍涵蓋全體頻道；舊歷史無法回算新條件。</p><p>推算採後端快照當下的結果：新版 Twitch 日期範圍為 14 天、IGDB 為 30 天，恰好滿該天數不命中；尚未發售仍命中並另標「未上市」。舊快照維持原有 14 天判讀，各筆明細會顯示當時範圍。資料過期、缺少日期與未取得官方觀測都保持未知。</p><p>「官方全新」篩選指快照中的有效觀測。展開後可核對觀測與有效期限；舊快照不代表此刻仍有標記。若有回溯對照，只能用來找差異，不能據此宣稱準確率。</p><p>從歷史補回而尚未重新量測的遊戲，會註明「上次觀測」與保存時間；舊值不列入本輪排名，也不寫成新的逐時資料。目前觀測範圍為全球。直播語言不等於主播所在地，因此不推定台灣或亞洲歸屬。逐時紀錄保留缺測，沒有出現在清單不代表零觀眾。</p></div></details>
+      <details class="tw-method"><summary>量測範圍與判讀細節 <span aria-hidden="true">＋</span></summary><div><p>Twitch 熱門新作涵蓋不同平台，以 7,000 名觀眾與新作依據首次收錄。Steam 近期上市則取本站已收錄、台灣上市未滿 30 天且成功配對的遊戲，不受觀眾門檻限制。兩種來源分別計算期限，任一來源有效便繼續追蹤；同一 Twitch 類別只量測一次。</p><p>Steam 配對補充名稱、TAG、關注度與該版本上市日；封面沿用 Twitch，直播數據涵蓋整個 Twitch 類別。Steam 台灣上市日與 IGDB 首次發售日分開保存；未配對的遊戲不計為零觀眾。不同類別依序抓取，並非同一秒的全球排名。</p><p>篩選後中位數只納入免費追隨者超過 1,000 人、且當次觀眾至少 10 人的頻道。追隨數最多使用 24 小時內的紀錄；未知不當成 0，有待查頻道時暫不顯示中位數。原始總觀眾與總開台仍涵蓋全體頻道；舊歷史無法回算新條件。</p><p>IGDB 推算採後端快照當下的結果，以距首次發售未滿 30 天為範圍，恰好滿 30 天不命中；尚未發售仍命中並另標「未上市」。歷史快照保留當時規則，不用瀏覽器時間重算。資料過期或缺少日期時保持未知。</p><p>從歷史補回而尚未重新量測的遊戲，會註明「上次觀測」與保存時間；舊值不列入本輪排名，也不寫成新的逐時資料。目前觀測範圍為全球。直播語言不等於主播所在地，因此不推定台灣或亞洲歸屬。逐時紀錄保留缺測，沒有出現在清單不代表零觀眾。</p></div></details>
     </section>
     <noscript><p class="tw-notice">請啟用 JavaScript 以讀取已公開的靜態 Twitch 資料。<a href="./data/twitch_live.json">開啟原始資料 ↗</a></p></noscript>
   </main>
