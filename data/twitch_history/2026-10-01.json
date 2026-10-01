@@ -24243,6 +24243,2059 @@
           "observation_at": "2026-10-01T03:12:06Z"
         }
       ]
+    },
+    "2026-10-01T04:00:00Z": {
+      "generated_at": "2026-10-01T04:12:34Z",
+      "collection_started_at": "2026-10-01T04:06:11Z",
+      "min_viewers": 7000,
+      "stop_reason": "measured_eligible_page_below_threshold",
+      "collection_schedule": {
+        "target_slot": "2026-10-01T04:00:00Z",
+        "trigger_source": "cloudflare",
+        "run_id": "36813529722",
+        "run_attempt": "1"
+      },
+      "games": [
+        {
+          "game_id": "336484893",
+          "game_name": "Backrooms: Code Yellow",
+          "viewer_count": 61731,
+          "streamer_count": 4,
+          "median_viewer_count": 4.0,
+          "measurement_started_at": "2026-10-01T04:06:13Z",
+          "measurement_finished_at": "2026-10-01T04:06:13Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-21T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 244.103
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 61721,
+            "eligible_streamer_count": 1,
+            "eligible_viewer_count": 61721,
+            "excluded_low_viewer_count": 3,
+            "excluded_low_follower_count": 0,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-10-01T04:12:34Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-21T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-21T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-10-01T04:12:34Z",
+              "viewer_count": 61731,
+              "min_viewers": 7000
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "743893402",
+          "game_name": "WARDOGS",
+          "viewer_count": 52342,
+          "streamer_count": 1072,
+          "median_viewer_count": 2.0,
+          "measurement_started_at": "2026-10-01T04:06:13Z",
+          "measurement_finished_at": "2026-10-01T04:06:18Z",
+          "verification": {
+            "status": "pending",
+            "reason": "observation_expired_or_future",
+            "previous_status": "new",
+            "observed_at": "2026-09-28T16:11:31Z",
+            "expires_at": "2026-09-29T16:11:31Z",
+            "source": "twitch_directory_dom",
+            "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-10T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 508.103
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 28.0,
+            "eligible_streamer_count": 182,
+            "eligible_viewer_count": 49245,
+            "excluded_low_viewer_count": 847,
+            "excluded_low_follower_count": 43,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T14:28:32Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-10T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-10T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T14:28:32Z",
+              "viewer_count": 35755,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "2132205352",
+          "game_name": "Deadlock",
+          "viewer_count": 22047,
+          "streamer_count": 652,
+          "median_viewer_count": 3.0,
+          "measurement_started_at": "2026-10-01T04:06:18Z",
+          "measurement_finished_at": "2026-10-01T04:06:22Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 27.5,
+            "eligible_streamer_count": 114,
+            "eligible_viewer_count": 20010,
+            "excluded_low_viewer_count": 501,
+            "excluded_low_follower_count": 37,
+            "unknown_follower_count": 0
+          }
+        },
+        {
+          "game_id": "32399",
+          "game_name": "Counter-Strike",
+          "viewer_count": 20021,
+          "streamer_count": 750,
+          "median_viewer_count": 2.0,
+          "measurement_started_at": "2026-10-01T04:06:22Z",
+          "measurement_finished_at": "2026-10-01T04:06:25Z",
+          "verification": {
+            "status": "pending",
+            "reason": "observation_expired_or_future",
+            "previous_status": "not_new",
+            "observed_at": "2026-09-28T16:11:31Z",
+            "expires_at": "2026-09-29T16:11:31Z",
+            "source": "twitch_directory_dom",
+            "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 46.5,
+            "eligible_streamer_count": 132,
+            "eligible_viewer_count": 17557,
+            "excluded_low_viewer_count": 584,
+            "excluded_low_follower_count": 34,
+            "unknown_follower_count": 0
+          }
+        },
+        {
+          "game_id": "1960720223",
+          "game_name": "SILENT HILL: townfall",
+          "viewer_count": 16292,
+          "streamer_count": 401,
+          "median_viewer_count": 4,
+          "measurement_started_at": "2026-10-01T04:06:25Z",
+          "measurement_finished_at": "2026-10-01T04:06:28Z",
+          "verification": {
+            "status": "pending",
+            "reason": "observation_expired_or_future",
+            "previous_status": "new",
+            "observed_at": "2026-09-28T16:11:31Z",
+            "expires_at": "2026-09-29T16:11:31Z",
+            "source": "twitch_directory_dom",
+            "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-24T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 172.103
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 36.5,
+            "eligible_streamer_count": 98,
+            "eligible_viewer_count": 15002,
+            "excluded_low_viewer_count": 275,
+            "excluded_low_follower_count": 28,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T14:28:32Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-24T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-24T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T14:28:32Z",
+              "viewer_count": 9290,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "499973",
+          "game_name": "Always On",
+          "viewer_count": 15192,
+          "streamer_count": 441,
+          "median_viewer_count": 3,
+          "measurement_started_at": "2026-10-01T04:06:28Z",
+          "measurement_finished_at": "2026-10-01T04:06:30Z",
+          "verification": {
+            "status": "pending",
+            "reason": "observation_expired_or_future",
+            "previous_status": "not_new",
+            "observed_at": "2026-09-28T16:11:31Z",
+            "expires_at": "2026-09-29T16:11:31Z",
+            "source": "twitch_directory_dom",
+            "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 42,
+            "eligible_streamer_count": 117,
+            "eligible_viewer_count": 13875,
+            "excluded_low_viewer_count": 297,
+            "excluded_low_follower_count": 27,
+            "unknown_follower_count": 0
+          }
+        },
+        {
+          "game_id": "498566",
+          "game_name": "Slots",
+          "viewer_count": 15084,
+          "streamer_count": 106,
+          "median_viewer_count": 8.0,
+          "measurement_started_at": "2026-10-01T04:06:30Z",
+          "measurement_finished_at": "2026-10-01T04:06:31Z",
+          "verification": {
+            "status": "pending",
+            "reason": "observation_expired_or_future",
+            "previous_status": "not_new",
+            "observed_at": "2026-09-28T16:11:31Z",
+            "expires_at": "2026-09-29T16:11:31Z",
+            "source": "twitch_directory_dom",
+            "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 176,
+            "eligible_streamer_count": 17,
+            "eligible_viewer_count": 3295,
+            "excluded_low_viewer_count": 53,
+            "excluded_low_follower_count": 36,
+            "unknown_follower_count": 0
+          }
+        },
+        {
+          "game_id": "29595",
+          "game_name": "Dota 2",
+          "viewer_count": 13214,
+          "streamer_count": 367,
+          "median_viewer_count": 2,
+          "measurement_started_at": "2026-10-01T04:06:31Z",
+          "measurement_finished_at": "2026-10-01T04:06:33Z",
+          "verification": {
+            "status": "pending",
+            "reason": "observation_expired_or_future",
+            "previous_status": "not_new",
+            "observed_at": "2026-09-28T16:11:31Z",
+            "expires_at": "2026-09-29T16:11:31Z",
+            "source": "twitch_directory_dom",
+            "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 38,
+            "eligible_streamer_count": 59,
+            "eligible_viewer_count": 8108,
+            "excluded_low_viewer_count": 278,
+            "excluded_low_follower_count": 30,
+            "unknown_follower_count": 0
+          }
+        },
+        {
+          "game_id": "602040818",
+          "game_name": "NBA 2K27",
+          "viewer_count": 10418,
+          "streamer_count": 1708,
+          "median_viewer_count": 1.0,
+          "measurement_started_at": "2026-10-01T04:06:33Z",
+          "measurement_finished_at": "2026-10-01T04:06:41Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-04T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 652.103
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 47,
+            "eligible_streamer_count": 79,
+            "eligible_viewer_count": 7977,
+            "excluded_low_viewer_count": 1615,
+            "excluded_low_follower_count": 14,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T15:19:47Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-04T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-04T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T15:19:47Z",
+              "viewer_count": 7705,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "123184772",
+          "game_name": "EA Sports FC 27",
+          "viewer_count": 10277,
+          "streamer_count": 872,
+          "median_viewer_count": 1.0,
+          "measurement_started_at": "2026-10-01T04:06:41Z",
+          "measurement_finished_at": "2026-10-01T04:06:45Z",
+          "verification": {
+            "status": "pending",
+            "reason": "observation_expired_or_future",
+            "previous_status": "new",
+            "observed_at": "2026-09-28T16:11:31Z",
+            "expires_at": "2026-09-29T16:11:31Z",
+            "source": "twitch_directory_dom",
+            "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-25T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 148.103
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 32.5,
+            "eligible_streamer_count": 74,
+            "eligible_viewer_count": 8761,
+            "excluded_low_viewer_count": 782,
+            "excluded_low_follower_count": 16,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T14:28:32Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-25T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-25T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T14:28:32Z",
+              "viewer_count": 40496,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "2042681592",
+          "game_name": "Minecraft Dungeons II",
+          "viewer_count": 10013,
+          "streamer_count": 576,
+          "median_viewer_count": 2.0,
+          "measurement_started_at": "2026-10-01T04:06:45Z",
+          "measurement_finished_at": "2026-10-01T04:06:48Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-29T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 52.103
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 30.5,
+            "eligible_streamer_count": 52,
+            "eligible_viewer_count": 8532,
+            "excluded_low_viewer_count": 501,
+            "excluded_low_follower_count": 23,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T14:28:32Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-29T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-29T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T14:28:32Z",
+              "viewer_count": 25153,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "1254042066",
+          "game_name": "The Witcher 3: Wild Hunt Remastered",
+          "viewer_count": 8910,
+          "streamer_count": 340,
+          "median_viewer_count": 3.0,
+          "measurement_started_at": "2026-10-01T04:06:48Z",
+          "measurement_finished_at": "2026-10-01T04:06:50Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-29T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 52.103
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 44,
+            "eligible_streamer_count": 55,
+            "eligible_viewer_count": 7217,
+            "excluded_low_viewer_count": 253,
+            "excluded_low_follower_count": 32,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T14:28:32Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-29T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-29T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T14:28:32Z",
+              "viewer_count": 62473,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "509660",
+          "game_name": "Art",
+          "viewer_count": 8463,
+          "streamer_count": 544,
+          "median_viewer_count": 7.0,
+          "measurement_started_at": "2026-10-01T04:06:50Z",
+          "measurement_finished_at": "2026-10-01T04:06:53Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 28,
+            "eligible_streamer_count": 139,
+            "eligible_viewer_count": 5766,
+            "excluded_low_viewer_count": 322,
+            "excluded_low_follower_count": 83,
+            "unknown_follower_count": 0
+          }
+        },
+        {
+          "game_id": "508455",
+          "game_name": "Valheim",
+          "viewer_count": 7628,
+          "streamer_count": 579,
+          "median_viewer_count": 3,
+          "measurement_started_at": "2026-10-01T04:06:53Z",
+          "measurement_finished_at": "2026-10-01T04:06:56Z",
+          "verification": {
+            "status": "pending",
+            "reason": "observation_expired_or_future",
+            "previous_status": "new",
+            "observed_at": "2026-09-28T16:11:31Z",
+            "expires_at": "2026-09-29T16:11:31Z",
+            "source": "twitch_directory_dom",
+            "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-09T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 532.103
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 24,
+            "eligible_streamer_count": 71,
+            "eligible_viewer_count": 5708,
+            "excluded_low_viewer_count": 477,
+            "excluded_low_follower_count": 31,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T14:28:32Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-09T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-09T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T14:28:32Z",
+              "viewer_count": 9675,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "27284",
+          "game_name": "Retro",
+          "viewer_count": 7472,
+          "streamer_count": 285,
+          "median_viewer_count": 6,
+          "measurement_started_at": "2026-10-01T04:06:56Z",
+          "measurement_finished_at": "2026-10-01T04:06:58Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 39,
+            "eligible_streamer_count": 73,
+            "eligible_viewer_count": 6104,
+            "excluded_low_viewer_count": 177,
+            "excluded_low_follower_count": 35,
+            "unknown_follower_count": 0
+          }
+        },
+        {
+          "game_id": "1267582829",
+          "game_name": "Aniimo",
+          "viewer_count": 4936,
+          "streamer_count": 685,
+          "median_viewer_count": 2,
+          "measurement_started_at": "2026-10-01T04:07:03Z",
+          "measurement_finished_at": "2026-10-01T04:07:06Z",
+          "verification": {
+            "status": "pending",
+            "reason": "observation_expired_or_future",
+            "previous_status": "new",
+            "observed_at": "2026-09-28T16:11:31Z",
+            "expires_at": "2026-09-29T16:11:31Z",
+            "source": "twitch_directory_dom",
+            "source_url": "https://www.twitch.tv/directory?sort=VIEWER_COUNT"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-16T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 364.103
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 19,
+            "eligible_streamer_count": 77,
+            "eligible_viewer_count": 2711,
+            "excluded_low_viewer_count": 573,
+            "excluded_low_follower_count": 35,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T14:28:32Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-16T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-16T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T14:28:32Z",
+              "viewer_count": 11721,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "404069058",
+          "game_name": "ACE COMBAT 8: WINGS OF THEVE",
+          "viewer_count": 4603,
+          "streamer_count": 198,
+          "median_viewer_count": 2.0,
+          "measurement_started_at": "2026-10-01T04:07:02Z",
+          "measurement_finished_at": "2026-10-01T04:07:03Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-10-02T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "upcoming",
+              "age_hours": -19.897
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 36,
+            "eligible_streamer_count": 27,
+            "eligible_viewer_count": 3498,
+            "excluded_low_viewer_count": 160,
+            "excluded_low_follower_count": 11,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T14:28:32Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-10-02T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-11-01T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T14:28:32Z",
+              "viewer_count": 18520,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "1338428218",
+          "game_name": "CONTROL Resonant",
+          "viewer_count": 4541,
+          "streamer_count": 369,
+          "median_viewer_count": 2,
+          "measurement_started_at": "2026-10-01T04:07:12Z",
+          "measurement_finished_at": "2026-10-01T04:07:14Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-24T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 172.103
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 34,
+            "eligible_streamer_count": 59,
+            "eligible_viewer_count": 3595,
+            "excluded_low_viewer_count": 292,
+            "excluded_low_follower_count": 18,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T16:02:55Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-24T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-24T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T16:02:55Z",
+              "viewer_count": 7117,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "779192097",
+          "game_name": "Fire Emblem: Fortune's Weave",
+          "viewer_count": 3905,
+          "streamer_count": 231,
+          "median_viewer_count": 3,
+          "measurement_started_at": "2026-10-01T04:07:11Z",
+          "measurement_finished_at": "2026-10-01T04:07:12Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-17T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 340.103
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 26.0,
+            "eligible_streamer_count": 36,
+            "eligible_viewer_count": 3305,
+            "excluded_low_viewer_count": 189,
+            "excluded_low_follower_count": 6,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-30T03:20:32Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-17T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-17T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-30T03:20:32Z",
+              "viewer_count": 7648,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "1288749557",
+          "game_name": "Dressmaker (2026)",
+          "viewer_count": 2702,
+          "streamer_count": 134,
+          "median_viewer_count": 6.0,
+          "measurement_started_at": "2026-10-01T04:07:17Z",
+          "measurement_finished_at": "2026-10-01T04:07:18Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 41.0,
+            "eligible_streamer_count": 38,
+            "eligible_viewer_count": 2149,
+            "excluded_low_viewer_count": 80,
+            "excluded_low_follower_count": 16,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-30T18:14:34Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-21T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-21T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-30T18:14:34Z",
+              "viewer_count": 7220,
+              "min_viewers": 7000
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "327598602",
+          "game_name": "Onimusha: Way of the Sword",
+          "viewer_count": 1824,
+          "streamer_count": 185,
+          "median_viewer_count": 1,
+          "measurement_started_at": "2026-10-01T04:07:20Z",
+          "measurement_finished_at": "2026-10-01T04:07:21Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:06:12Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-04T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:06:12Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 652.103
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 26,
+            "eligible_streamer_count": 25,
+            "eligible_viewer_count": 1411,
+            "excluded_low_viewer_count": 155,
+            "excluded_low_follower_count": 5,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-30T00:56:47Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-04T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-04T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-30T00:56:47Z",
+              "viewer_count": 11331,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "897166081",
+          "game_name": "Nivalis Nights",
+          "viewer_count": 1576,
+          "streamer_count": 61,
+          "median_viewer_count": 4,
+          "measurement_started_at": "2026-10-01T04:07:26Z",
+          "measurement_finished_at": "2026-10-01T04:07:26Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:07:22Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-29T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:07:22Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 52.123
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 32,
+            "eligible_streamer_count": 11,
+            "eligible_viewer_count": 1354,
+            "excluded_low_viewer_count": 43,
+            "excluded_low_follower_count": 7,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T15:19:47Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-29T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-29T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T15:19:47Z",
+              "viewer_count": 7756,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "2106755390",
+          "game_name": "Graveyard Keeper II",
+          "viewer_count": 1514,
+          "streamer_count": 76,
+          "median_viewer_count": 3.0,
+          "measurement_started_at": "2026-10-01T04:07:27Z",
+          "measurement_finished_at": "2026-10-01T04:07:28Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:07:22Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-22T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:07:22Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 220.123
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 16.5,
+            "eligible_streamer_count": 12,
+            "eligible_viewer_count": 1287,
+            "excluded_low_viewer_count": 61,
+            "excluded_low_follower_count": 3,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-28T16:02:42Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-22T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-22T00:00:00Z",
+            "enrollment": {
+              "source": "user_requested_legacy_recovery",
+              "kind": "legacy_recovery",
+              "observed_at": "2026-09-30T08:18:38Z",
+              "qualification": "unverified",
+              "viewer_count": null,
+              "min_viewers": 7000,
+              "reason": "Restore the user-identified legacy game; historical automatic admission was not verified. Future automatic admissions still require the unchanged threshold.",
+              "legacy_sample": {
+                "observed_at": "2026-09-28T16:02:42Z",
+                "viewer_count": 6542,
+                "streamer_count": 5,
+                "scope": "partial_global_stream_sample",
+                "source_commit": "220d6a8de5c594270fad035cc810897b131f84fb",
+                "source_url": "https://github.com/danielet087/game-trend-radar/blob/220d6a8de5c594270fad035cc810897b131f84fb/data/twitch_live.json",
+                "note": "Partial global sample only, not a full category census, verified threshold crossing, NEW badge, or median."
+              }
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "738080442",
+          "game_name": "Dicevaders",
+          "viewer_count": 1156,
+          "streamer_count": 3,
+          "median_viewer_count": 20,
+          "measurement_started_at": "2026-10-01T04:07:33Z",
+          "measurement_finished_at": "2026-10-01T04:07:34Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:07:22Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-29T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:07:22Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 52.123
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 1129,
+            "eligible_streamer_count": 1,
+            "eligible_viewer_count": 1129,
+            "excluded_low_viewer_count": 1,
+            "excluded_low_follower_count": 1,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-30T17:14:43Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-29T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-29T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-30T17:14:43Z",
+              "viewer_count": 9770,
+              "min_viewers": 7000
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "1979693660",
+          "game_name": "Transport Fever 3",
+          "viewer_count": 670,
+          "streamer_count": 24,
+          "median_viewer_count": 2.5,
+          "measurement_started_at": "2026-10-01T04:07:42Z",
+          "measurement_finished_at": "2026-10-01T04:07:43Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:07:22Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-29T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:07:22Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 52.123
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 21.5,
+            "eligible_streamer_count": 4,
+            "eligible_viewer_count": 611,
+            "excluded_low_viewer_count": 20,
+            "excluded_low_follower_count": 0,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T21:17:08Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-29T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-29T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T21:17:08Z",
+              "viewer_count": 7434,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "903469103",
+          "game_name": "Batomon Showdown",
+          "viewer_count": 297,
+          "streamer_count": 15,
+          "median_viewer_count": 4,
+          "measurement_started_at": "2026-10-01T04:07:46Z",
+          "measurement_finished_at": "2026-10-01T04:07:47Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:07:43Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-15T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:07:43Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 388.129
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 100.5,
+            "eligible_streamer_count": 2,
+            "eligible_viewer_count": 201,
+            "excluded_low_viewer_count": 10,
+            "excluded_low_follower_count": 3,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T21:17:08Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-15T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-15T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T21:17:08Z",
+              "viewer_count": 9448,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "1217522406",
+          "game_name": "Dawson Oaks Trailer Park",
+          "viewer_count": 157,
+          "streamer_count": 19,
+          "median_viewer_count": 1,
+          "measurement_started_at": "2026-10-01T04:07:44Z",
+          "measurement_finished_at": "2026-10-01T04:07:44Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:07:43Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-17T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:07:43Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 340.129
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": 46.0,
+            "eligible_streamer_count": 2,
+            "eligible_viewer_count": 92,
+            "excluded_low_viewer_count": 15,
+            "excluded_low_follower_count": 2,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-30T05:10:10Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-17T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-17T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-30T05:10:10Z",
+              "viewer_count": 33187,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "666506999",
+          "game_name": "Alchemy Factory",
+          "viewer_count": 19,
+          "streamer_count": 5,
+          "median_viewer_count": 4,
+          "measurement_started_at": "2026-10-01T04:07:45Z",
+          "measurement_finished_at": "2026-10-01T04:07:46Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:07:43Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-07T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:07:43Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 580.129
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": null,
+            "eligible_streamer_count": 0,
+            "eligible_viewer_count": 0,
+            "excluded_low_viewer_count": 5,
+            "excluded_low_follower_count": 0,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-30T21:14:58Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-07T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-07T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-30T21:14:58Z",
+              "viewer_count": 10306,
+              "min_viewers": 7000
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "474709880",
+          "game_name": "STAR WARS: Galactic Racer",
+          "viewer_count": 1,
+          "streamer_count": 1,
+          "median_viewer_count": 1,
+          "measurement_started_at": "2026-10-01T04:07:45Z",
+          "measurement_finished_at": "2026-10-01T04:07:45Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:07:43Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-10-06T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:07:43Z",
+              "release_phase": "upcoming",
+              "age_hours": -115.871
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": null,
+            "eligible_streamer_count": 0,
+            "eligible_viewer_count": 0,
+            "excluded_low_viewer_count": 1,
+            "excluded_low_follower_count": 0,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-30T19:15:32Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-10-06T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-11-05T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-30T19:15:32Z",
+              "viewer_count": 9897,
+              "min_viewers": 7000
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "1896092709",
+          "game_name": "OpenFront",
+          "viewer_count": 0,
+          "streamer_count": 0,
+          "median_viewer_count": null,
+          "measurement_started_at": "2026-10-01T04:07:44Z",
+          "measurement_finished_at": "2026-10-01T04:07:45Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:07:43Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-17T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:07:43Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 340.129
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": null,
+            "eligible_streamer_count": 0,
+            "eligible_viewer_count": 0,
+            "excluded_low_viewer_count": 0,
+            "excluded_low_follower_count": 0,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-30T21:14:58Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-17T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-17T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-30T21:14:58Z",
+              "viewer_count": 9587,
+              "min_viewers": 7000
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        },
+        {
+          "game_id": "958726331",
+          "game_name": "Beetleball",
+          "viewer_count": 0,
+          "streamer_count": 0,
+          "median_viewer_count": null,
+          "measurement_started_at": "2026-10-01T04:07:47Z",
+          "measurement_finished_at": "2026-10-01T04:07:47Z",
+          "verification": {
+            "status": "pending",
+            "reason": "no_observation"
+          },
+          "release_experiment": {
+            "twitch_original_release_date": {
+              "source": "twitch_original_release_date",
+              "evaluated_at": "2026-10-01T04:07:47Z",
+              "window_days": 14,
+              "rule": "glance_release_age_lt_14_days_v1",
+              "status": "unknown",
+              "predicted_new": null,
+              "confirms_twitch_new_badge": false,
+              "reason": "missing_release_date"
+            },
+            "igdb_first_release_date": {
+              "source": "igdb_first_release_date",
+              "evaluated_at": "2026-10-01T04:07:43Z",
+              "window_days": 30,
+              "rule": "igdb_release_age_lt_30_days_v1",
+              "status": "evaluated",
+              "predicted_new": true,
+              "confirms_twitch_new_badge": false,
+              "release_at": "2026-09-03T00:00:00Z",
+              "metadata_observed_at": "2026-10-01T04:07:43Z",
+              "release_phase": "released_within_30_days",
+              "age_hours": 676.129
+            }
+          },
+          "filtered_audience": {
+            "rule": "followers_gt_1000_viewers_gte_10_v1",
+            "min_followers_exclusive": 1000,
+            "min_viewers_inclusive": 10,
+            "followers_max_age_hours": 24,
+            "status": "complete",
+            "median_viewer_count": null,
+            "eligible_streamer_count": 0,
+            "eligible_viewer_count": 0,
+            "excluded_low_viewer_count": 0,
+            "excluded_low_follower_count": 0,
+            "unknown_follower_count": 0
+          },
+          "tracking": {
+            "status": "active",
+            "status_reason": "within_release_window",
+            "first_seen_at": "2026-09-29T21:17:08Z",
+            "last_seen_at": "2026-10-01T04:12:34Z",
+            "release_at": "2026-09-03T00:00:00Z",
+            "release_source": "igdb_first_release_date",
+            "expires_at": "2026-10-03T00:00:00Z",
+            "enrollment": {
+              "source": "igdb_first_release_date",
+              "observed_at": "2026-09-29T21:17:08Z",
+              "viewer_count": 40682,
+              "min_viewers": 7000,
+              "kind": "history_recovery"
+            }
+          },
+          "observation_status": "current",
+          "observation_at": "2026-10-01T04:12:34Z"
+        }
+      ]
     }
   }
 }
