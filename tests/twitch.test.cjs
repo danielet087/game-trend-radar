@@ -161,7 +161,8 @@ test('missing, pending and empty filtered samples stay distinct and never become
   assert.equal(D.filteredAudience(filtered({eligible_streamer_count:0,eligible_viewer_count:0,median_viewer_count:0})).status,'invalid');
   const games = D.normalize(snapshot([
     candidate({game_id:'101',viewer_count:100000,filtered_audience:filtered({status:'partial',unknown_follower_count:3,median_viewer_count:10000})}),
-    candidate({game_id:'102',filtered_audience:filtered()}),
+    // Same viewer/streamer priority group: only the usable median should decide.
+    candidate({game_id:'102',viewer_count:10000,filtered_audience:filtered()}),
   ])).games;
   assert.deepEqual(D.select(games,{sort:'median'}).map(g=>g.game_id),['102','101']);
 });

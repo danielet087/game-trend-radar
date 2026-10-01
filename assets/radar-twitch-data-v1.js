@@ -9,6 +9,7 @@
   const HOUR = 3600000;
   const DEFAULT_FILTER = "signals";
   const DEFAULT_SORT = "median";
+  const VIEWER_PRIORITY_THRESHOLD = 10000;
   const STREAMER_PRIORITY_THRESHOLD = 40;
   const AUDIENCE_RULE = "followers_gt_1000_viewers_gte_10_v1";
   function timestamp(value) {
@@ -183,15 +184,18 @@
     const search = query.normalize("NFKC").trim().toLocaleLowerCase();
     const metric = { viewers: "viewer_count", streamers: "streamer_count" }[sort] || "viewer_count";
     const measure = g => g.observation_status === "retained" ? null : sort === "median" ? g.filtered_audience?.median_viewer_count : g[metric];
-    const priority = g => count(g.streamer_count) !== null && g.streamer_count >= STREAMER_PRIORITY_THRESHOLD;
+    const viewerPriority = g => count(g.viewer_count) !== null && g.viewer_count >= VIEWER_PRIORITY_THRESHOLD;
+    const streamerPriority = g => count(g.streamer_count) !== null && g.streamer_count >= STREAMER_PRIORITY_THRESHOLD;
     return games.filter(g => matches(g, filter) && `${g.game_name} ${g.twitch_name || ""} ${g.game_id} ${(g.steam_matches || []).map(s => `${s.name} ${s.name_en} ${s.steam_appid} ${s.tags.join(" ")}`).join(" ")}`.normalize("NFKC").toLocaleLowerCase().includes(search)).sort((a, b) => {
       // Saved observations stay behind current measurements in every sorting mode.
       const freshness = Number(a.observation_status === "retained") - Number(b.observation_status === "retained");
       if (freshness) return freshness;
       if (a.observation_status === "retained") return a.game_id.localeCompare(b.game_id);
-      // Use total streamers (not the eligible median sample size); 40 is inclusive.
-      const group = sort === "median" ? Number(priority(b)) - Number(priority(a)) : 0;
-      return group || (measure(b) ?? -1) - (measure(a) ?? -1) || (b.viewer_count ?? -1) - (a.viewer_count ?? -1) || a.game_id.localeCompare(b.game_id);
+      // In median mode, prioritize total viewers >= 10,000 before total streamers >= 40.
+      // Both thresholds are inclusive and use whole-category totals, not filtered samples.
+      const viewerGroup = sort === "median" ? Number(viewerPriority(b)) - Number(viewerPriority(a)) : 0;
+      const streamerGroup = sort === "median" ? Number(streamerPriority(b)) - Number(streamerPriority(a)) : 0;
+      return viewerGroup || streamerGroup || (measure(b) ?? -1) - (measure(a) ?? -1) || (b.viewer_count ?? -1) - (a.viewer_count ?? -1) || a.game_id.localeCompare(b.game_id);
     });
   }
   function taipeiDay(value) {
@@ -227,5 +231,5 @@
       };
     });
   }
-  return { SOURCES, DEFAULT_FILTER, DEFAULT_SORT, STREAMER_PRIORITY_THRESHOLD, AUDIENCE_RULE, timestamp, count, filteredAudience, safeURL, normalize, matches, select, taipeiDay, historyDays, historyRows };
+  return { SOURCES, DEFAULT_FILTER, DEFAULT_SORT, VIEWER_PRIORITY_THRESHOLD, STREAMER_PRIORITY_THRESHOLD, AUDIENCE_RULE, timestamp, count, filteredAudience, safeURL, normalize, matches, select, taipeiDay, historyDays, historyRows };
 });
