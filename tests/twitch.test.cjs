@@ -278,3 +278,83 @@ test('scheduled collections spanning an hour retain their actual collection-star
   assert.equal(row.viewer_count,7000);
   assert.equal(D.historyRows([file],'101','2026-09-29T16:05:00Z').find(r=>r.hour.includes('T15:')).status,'missing');
 });
+
+const steamGame = (overrides = {}) => ({ steam_appid:'4358690', display_name:'守墓人 2', name:'守墓人 2', name_en:'Graveyard Keeper 2', store_url:'https://store.steampowered.com/app/4358690/', followers:52000, release_at:'2026-09-25T00:00:00Z', release_date:'2026-09-25', expires_at:'2026-10-25T00:00:00Z', is_recent:true, tags:['Simulation','Adventure'], tag_labels_zh_tw:{Simulation:'模擬',Adventure:'冒險'}, ...overrides });
+const steamMap = (games, updated_at = at) => ({ schema_version:1, updated_at, games });
+const source = (kind, overrides = {}) => ({ source:kind, status:'active', release_at:'2026-09-25T00:00:00Z', expires_at:'2026-10-25T00:00:00Z', first_seen_at:at, ...overrides });
+
+test('dual admission sources share one census while Steam-only releases bypass popularity and NEW evidence', () => {
+  const s = steamGame(), tracked = entry('101',{tracking_sources:{twitch_new:source('twitch_new'), 'steam:4358690':source('steam_recent',{steam_appid:'4358690'})},steam_matches:[s]});
+  const steamOnly = entry('102',{tracking_sources:{'steam:4358691':source('steam_recent',{steam_appid:'4358691'})},steam_matches:[steamGame({steam_appid:'4358691',display_name:'Steam 另一款'})]});
+  const d = D.normalize(snapshot([candidate({tracking:tracked})],{tracked_games:[candidate({viewer_count:450,tracking:tracked}),candidate({game_id:'102',viewer_count:0,streamer_count:0,tracking:steamOnly,verification:{status:'not_new',observed_at:at},release_experiment:{igdb_first_release_date:forecast(false)}})]}),registry({'101':tracked,'102':steamOnly}));
+  assert.equal(d.games.length,2);
+  assert.equal(d.invalidRows,0);
+  assert.equal(d.games[0].viewer_count,450);
+  assert.deepEqual(D.select(d.games,{filter:'signals'}).map(g=>g.game_id),['101','102']);
+  assert.deepEqual(D.select(d.games,{filter:'twitch_new'}).map(g=>g.game_id),['101']);
+  assert.deepEqual(D.select(d.games,{filter:'steam_recent'}).map(g=>g.game_id),['101','102']);
+  assert.equal(D.matches(d.games[1],'official'),false);
+  assert.equal(D.matches(d.games[1],'igdb'),false);
+});
+test('each source expires independently and Steam release dates never replace IGDB first-release predictions', () => {
+  const twitchOld = source('twitch_new',{status:'expired',release_at:'2026-08-01T00:00:00Z',expires_at:'2026-08-31T00:00:00Z'});
+  const steamActive = source('steam_recent',{steam_appid:'4358690'});
+  const sources = { twitch_new:twitchOld, 'steam:4358690':steamActive };
+  const d = D.normalize(snapshot([],{tracked_games:[candidate({viewer_count:300,tracking:entry('101',{expires_at:'2026-08-31T00:00:00Z',tracking_sources:sources}),steam_matches:[steamGame()],release_experiment:{igdb_first_release_date:forecast(false,{release_at:'2026-08-01T00:00:00Z'})}})]}));
+  assert.equal(d.games.length,1);
+  assert.equal(D.matches(d.games[0],'twitch_new'),false);
+  assert.equal(D.matches(d.games[0],'steam_recent'),true);
+  assert.equal(d.games[0].release_experiment.igdb_first_release_date.release_at,'2026-08-01T00:00:00Z');
+  assert.equal(d.games[0].release_experiment.igdb_first_release_date.predicted_new,false);
+  const expiry = D.normalize(snapshot([], {tracked_games:[candidate({tracking:entry('101',{tracking_sources:{twitch_new:twitchOld,'steam:4358690':source('steam_recent',{expires_at:at})}})})]}));
+  assert.equal(expiry.games.length,0);
+  const unknownTwitch = D.normalize(snapshot([], {tracked_games:[candidate({viewer_count:0,tracking:entry('101',{tracking_sources:{twitch_new:source('twitch_new',{release_at:null,expires_at:null}),'steam:4358690':source('steam_recent',{status:'expired',expires_at:at})}})})]}));
+  assert.equal(unknownTwitch.games.length,1);
+  assert.equal(D.matches(unknownTwitch.games[0],'twitch_new'),true);
+  assert.equal(D.matches(unknownTwitch.games[0],'steam_recent'),false);
+});
+test('Steam enrichment preserves Twitch artwork and all searchable names without admitting upcoming Steam-only games', () => {
+  const cover = 'https://static-cdn.jtvnw.net/ttv-boxart/101-{width}x{height}.jpg';
+  const metadata = steamGame({release_at:'2027-01-01T00:00:00Z',release_date:'2027-01-01',is_recent:false,box_art_url:'https://steam.example/cover.jpg'});
+  const d = D.normalize(snapshot([candidate({game_name:'Graveyard Keeper II',box_art_url:cover,tracking:entry('101'),release_experiment:{igdb_first_release_date:forecast(true)}})]),registry({'101':entry('101')}),steamMap({'4358690':{status:'matched',twitch_game_id:'101',steam:metadata}}));
+  const g = d.games[0];
+  assert.equal(g.game_name,'守墓人 2');
+  assert.equal(g.twitch_name,'Graveyard Keeper II');
+  assert.match(g.box_art_url,/static-cdn\.jtvnw\.net.*144x192/);
+  assert.equal(g.steam_matches[0].followers,52000);
+  assert.equal(g.steam_matches[0].tag_labels_zh_tw.Simulation,'模擬');
+  for (const query of ['守墓人','Graveyard Keeper II','Graveyard Keeper 2','４３５８６９０','Simulation']) assert.equal(D.select(d.games,{query}).length,1,query);
+  assert.equal(D.matches(g,'steam_recent'),false);
+  const futureOnly = D.normalize(snapshot([], {tracked_games:[candidate({viewer_count:400,tracking:entry('103',{tracking_sources:{'steam:4358690':source('steam_recent',{release_at:'2027-01-01T00:00:00Z'})}})})]}));
+  assert.equal(futureOnly.games.length,0);
+  assert.equal(D.normalize(snapshot([]),null,steamMap({'4358690':{status:'matched',twitch_game_id:'101',steam:steamGame()}})).games.length,0);
+});
+test('unmatched Steam releases stay pending with no fake Twitch rows or zero metrics; consoles remain independent', () => {
+  const mapping = steamMap({
+    '4358690':{status:'pending',steam:steamGame()},
+    '4358691':{status:'ambiguous',twitch_game_id:'101',steam:steamGame({steam_appid:'4358691',display_name:'不可套用'})},
+    '4358692':{status:'unmatched',steam:steamGame({steam_appid:'4358692',expires_at:at})},
+    '4358693':{status:'unmatched',steam:steamGame({steam_appid:'4358693',release_at:'2027-01-01T00:00:00Z'})},
+  });
+  const d = D.normalize(snapshot([candidate({game_name:'Console Game',release_experiment:{igdb_first_release_date:forecast(true)}})]),null,mapping);
+  assert.equal(d.games.length,1);
+  assert.equal(d.games[0].game_name,'Console Game');
+  assert.equal(d.games[0].steam_matches.length,0);
+  assert.equal(D.matches(d.games[0],'twitch_new'),true);
+  assert.equal(D.matches(d.games[0],'steam_recent'),false);
+  assert.deepEqual(d.pending_steam.map(e=>e.steam.steam_appid),['4358690','4358691']);
+  assert.ok(d.pending_steam.every(e=>!Object.hasOwn(e,'viewer_count')));
+});
+test('valid embedded mapping survives supplemental invalidity and chooses the newer mapping state', () => {
+  const older = steamMap({'4358690':{status:'matched',twitch_game_id:'101',steam:steamGame({display_name:'舊名稱'})}},'2026-09-28T00:00:00Z');
+  const newer = steamMap({'4358690':{status:'matched',twitch_game_id:'101',steam:steamGame()}});
+  const d = D.normalize(snapshot([candidate()],{steam_mapping_state:newer}),null,older);
+  assert.equal(d.games[0].game_name,'守墓人 2');
+  const invalid = D.normalize(snapshot([candidate()],{steam_mapping_state:newer}),null,{schema_version:1,updated_at:at,games:[]});
+  assert.equal(invalid.steam_mapping_invalid,true);
+  assert.equal(invalid.games[0].game_name,'守墓人 2');
+  assert.equal(D.normalize(snapshot([candidate()])).steam_mapping_invalid,false);
+  const corruptRow = D.normalize(snapshot([candidate()],{steam_mapping_state:newer}),null,steamMap({'4358690':{status:'matched',steam:steamGame()}}));
+  assert.equal(corruptRow.steam_mapping_invalid,true);
+  assert.equal(corruptRow.games[0].game_name,'守墓人 2');
+});

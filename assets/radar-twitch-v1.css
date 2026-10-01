@@ -330,3 +330,53 @@ body[data-page="twitch"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; --page
 .tw-tracking-details dt { color:#84718f; margin-bottom:5px; }
 .tw-tracking-details dd { margin:0; color:#513f61; line-height:1.6; }
 .tw-tracking-details p { font-size:11px; line-height:1.9; color:#766180; margin-top:12px; }
+
+/* Two discovery sources share one real Twitch measurement. */
+.tw-source-filters { gap:9px; }
+.tw-source-filters button { min-height:44px; padding:10px 14px; font-size:12px; }
+.tw-source-filters button[data-filter="steam_recent"] { border-color:#bad2c8; color:#356b5d; background:#f0f7f2; }
+.tw-source-filters button[data-filter="steam_recent"][aria-pressed="true"] { border-color:#386e60; background:#386e60; color:white; box-shadow:0 2px 0 #204b40; }
+.tw-signal-filters { margin:11px 25px 0; padding:0 0 3px; }
+.tw-signal-filters > summary { display:flex; gap:10px; width:fit-content; padding:7px 0; cursor:pointer; font-size:10px; color:#84738e; list-style:none; }
+.tw-signal-filters > summary::-webkit-details-marker { display:none; }
+.tw-signal-filters[open] > summary > span { transform:rotate(45deg); }
+.tw-signal-filters .tw-filters { padding:8px 0 0; }
+.tw-source-labels { display:flex; flex-wrap:wrap; gap:5px; }
+.tw-steam-label { color:#356b5d; border-color:#bfd7cb; background:#edf7f0; }
+.tw-steam-details { margin:0 0 16px; padding:17px; border:1px solid #c4d8cf; border-radius:11px; background:linear-gradient(135deg,#f0f8f1,#fbfdf8); }
+.tw-steam-details h4 { color:#3a6e5e; font-size:12px; margin:0 0 12px; }
+.tw-steam-match + .tw-steam-match { margin-top:17px; padding-top:17px; border-top:1px solid #d2e3d8; }
+.tw-steam-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.tw-steam-heading h5 { margin:0; font-size:15px; line-height:1.6; overflow-wrap:anywhere; }
+.tw-steam-heading h5 a { color:#315c51; text-decoration:underline; text-underline-offset:4px; }
+.tw-steam-store { font-size:11px; color:#4d7766; white-space:nowrap; }
+.tw-steam-facts { display:flex; flex-wrap:wrap; gap:12px 25px; margin:13px 0; font-size:11px; }
+.tw-steam-facts dt { color:#6b8c7a; margin-bottom:5px; }
+.tw-steam-facts dd { margin:0; color:#345b49; line-height:1.6; }
+.tw-steam-tags { display:flex; flex-wrap:wrap; gap:6px; }
+.tw-steam-tags a { padding:5px 8px; font-size:10px; line-height:1.5; color:#416b58; border:1px solid #d0e2d7; border-radius:6px; background:#fffdf7; text-decoration:none; transition:background .15s,transform .15s; }
+.tw-steam-tags a:hover { background:#dfeee3; transform:translateY(-1px); }
+.tw-steam-tags a:focus-visible { outline:3px solid #478a6d; outline-offset:2px; }
+.tw-steam-note { font-size:10px; line-height:1.8; color:#72917e; margin:12px 0 0; }
+.tw-steam-pending { margin-top:22px; border:1px solid #bfd3c6; border-radius:13px; background:#f4f9ee; padding:0 22px; }
+.tw-steam-pending > summary { display:flex; justify-content:space-between; align-items:center; gap:12px; cursor:pointer; list-style:none; padding:17px 0; font-size:12px; font-weight:650; color:#436249; }
+.tw-steam-pending > summary::-webkit-details-marker { display:none; }
+.tw-steam-pending b { margin-left:5px; padding:3px 7px; font:700 10px Arial,sans-serif; border-radius:5px; background:#e1edda; }
+.tw-steam-pending > p { font-size:11px; line-height:1.8; color:#6f856e; }
+#steamPendingGames { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; padding:16px 0 20px; }
+.tw-pending-game { border:1px solid #dbe5d3; border-radius:9px; background:#fffdf8; padding:12px 14px; }
+.tw-pending-game h3 { font-size:12px; line-height:1.7; overflow-wrap:anywhere; }
+.tw-pending-game h3 a { text-decoration:underline; text-underline-offset:3px; }
+.tw-pending-game p { font-size:10px; color:#7b8d70; margin-top:5px; line-height:1.8; }
+@media(max-width:620px) {
+  .tw-source-filters { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .tw-source-filters button { justify-content:center; min-height:44px; padding:9px 7px; font-size:11px; }
+  .tw-source-filters button:first-child { grid-column:1/-1; }
+  .tw-signal-filters { margin:10px 16px 0; }
+  .tw-steam-heading { align-items:flex-start; flex-direction:column; gap:6px; }
+  .tw-steam-heading h5 { font-size:14px; }
+  .tw-steam-facts { gap:12px 20px; }
+  .tw-steam-pending { padding:0 15px; }
+  #steamPendingGames { grid-template-columns:minmax(0,1fr); }
+}
+@media(prefers-reduced-motion:reduce) { .tw-steam-tags a { transition:none; } }
