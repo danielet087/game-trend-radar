@@ -7,7 +7,7 @@
   const dateTime = new Intl.DateTimeFormat("zh-TW", { timeZone:"Asia/Taipei", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hourCycle:"h23" });
   const filterNames = { signals:"全部追蹤", twitch_new:"Twitch 熱門新作", steam_recent:"Steam 近期上市", all:"所有觀測", igdb:"IGDB 推算命中" };
   const IGDB_SOURCE = "igdb_first_release_date";
-  const state = { data:null, query:"", filter:D.DEFAULT_FILTER, sort:"viewers", limit:24, loading:false };
+  const state = { data:null, query:"", filter:D.DEFAULT_FILTER, sort:D.DEFAULT_SORT, limit:24, loading:false };
   const cards = new Map(), historyCache = new Map(), chartDisposers = new Set();
   let searchTimer, composing = false;
   function node(tag, className, text) {
@@ -31,7 +31,7 @@
     const p = new URLSearchParams(location.search);
     state.query = (p.get("q") || "").slice(0,160);
     state.filter = Object.hasOwn(filterNames, p.get("state")) ? p.get("state") : D.DEFAULT_FILTER;
-    state.sort = ["viewers","streamers","median"].includes(p.get("sort")) ? p.get("sort") : "viewers";
+    state.sort = ["viewers","streamers","median"].includes(p.get("sort")) ? p.get("sort") : D.DEFAULT_SORT;
     state.limit = 24;
     $("gameSearch").value = state.query;
     $("gameSort").value = state.sort;
@@ -40,7 +40,7 @@
   }
   function syncURL() {
     const url = new URL(location.href);
-    for (const [key,value,defaultValue] of [["q",state.query,""],["state",state.filter,D.DEFAULT_FILTER],["sort",state.sort,"viewers"]]) {
+    for (const [key,value,defaultValue] of [["q",state.query,""],["state",state.filter,D.DEFAULT_FILTER],["sort",state.sort,D.DEFAULT_SORT]]) {
       if (value === defaultValue) url.searchParams.delete(key); else url.searchParams.set(key,value);
     }
     history.replaceState(null,"",url);
@@ -172,8 +172,8 @@
     return div;
   }
   function reset() {
-    clearTimeout(searchTimer); state.query = ""; state.filter = D.DEFAULT_FILTER; state.sort = "viewers"; state.limit = 24;
-    $("gameSearch").value = ""; $("gameSort").value = "viewers"; render(); syncURL();
+    clearTimeout(searchTimer); state.query = ""; state.filter = D.DEFAULT_FILTER; state.sort = D.DEFAULT_SORT; state.limit = 24;
+    $("gameSearch").value = ""; $("gameSort").value = D.DEFAULT_SORT; render(); syncURL();
   }
   function render() {
     if (!state.data) return;
@@ -185,7 +185,7 @@
       button.querySelector("span").textContent = legacy ? "—" : fmt(games.filter(g => D.matches(g,button.dataset.filter)).length);
     });
     $("gameSearch").disabled = legacy; $("gameSort").disabled = legacy;
-    $("resetFilters").hidden = legacy || (!state.query && state.filter === D.DEFAULT_FILTER && state.sort === "viewers");
+    $("resetFilters").hidden = legacy || (!state.query && state.filter === D.DEFAULT_FILTER && state.sort === D.DEFAULT_SORT);
     $("viewNotice").hidden = legacy || state.filter === D.DEFAULT_FILTER;
     document.querySelector(".tw-column-head").hidden = legacy;
     $("candidatesTitle").textContent = state.filter === "all" ? "所有觀測" : ["twitch_new","steam_recent"].includes(state.filter) ? filterNames[state.filter] : "新作觀測";

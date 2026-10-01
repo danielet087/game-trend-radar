@@ -8,6 +8,8 @@
   const SOURCES = ["twitch_original_release_date", "igdb_first_release_date"];
   const HOUR = 3600000;
   const DEFAULT_FILTER = "signals";
+  const DEFAULT_SORT = "median";
+  const STREAMER_PRIORITY_THRESHOLD = 40;
   const AUDIENCE_RULE = "followers_gt_1000_viewers_gte_10_v1";
   function timestamp(value) {
     return typeof value === "string" && /T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value)) ? value : null;
@@ -177,11 +179,20 @@
     if (filter === "pending") return game.verification.status === "pending";
     return true;
   }
-  function select(games, { query = "", filter = "all", sort = "viewers" } = {}) {
+  function select(games, { query = "", filter = "all", sort = DEFAULT_SORT } = {}) {
     const search = query.normalize("NFKC").trim().toLocaleLowerCase();
     const metric = { viewers: "viewer_count", streamers: "streamer_count" }[sort] || "viewer_count";
     const measure = g => g.observation_status === "retained" ? null : sort === "median" ? g.filtered_audience?.median_viewer_count : g[metric];
-    return games.filter(g => matches(g, filter) && `${g.game_name} ${g.twitch_name || ""} ${g.game_id} ${(g.steam_matches || []).map(s => `${s.name} ${s.name_en} ${s.steam_appid} ${s.tags.join(" ")}`).join(" ")}`.normalize("NFKC").toLocaleLowerCase().includes(search)).sort((a, b) => Number(a.observation_status === "retained") - Number(b.observation_status === "retained") || (measure(b) ?? -1) - (measure(a) ?? -1) || (a.observation_status === "retained" ? 0 : (b.viewer_count ?? -1) - (a.viewer_count ?? -1)) || a.game_id.localeCompare(b.game_id));
+    const priority = g => count(g.streamer_count) !== null && g.streamer_count >= STREAMER_PRIORITY_THRESHOLD;
+    return games.filter(g => matches(g, filter) && `${g.game_name} ${g.twitch_name || ""} ${g.game_id} ${(g.steam_matches || []).map(s => `${s.name} ${s.name_en} ${s.steam_appid} ${s.tags.join(" ")}`).join(" ")}`.normalize("NFKC").toLocaleLowerCase().includes(search)).sort((a, b) => {
+      // Saved observations stay behind current measurements in every sorting mode.
+      const freshness = Number(a.observation_status === "retained") - Number(b.observation_status === "retained");
+      if (freshness) return freshness;
+      if (a.observation_status === "retained") return a.game_id.localeCompare(b.game_id);
+      // Use total streamers (not the eligible median sample size); 40 is inclusive.
+      const group = sort === "median" ? Number(priority(b)) - Number(priority(a)) : 0;
+      return group || (measure(b) ?? -1) - (measure(a) ?? -1) || (b.viewer_count ?? -1) - (a.viewer_count ?? -1) || a.game_id.localeCompare(b.game_id);
+    });
   }
   function taipeiDay(value) {
     const date = new Date(value);
@@ -216,5 +227,5 @@
       };
     });
   }
-  return { SOURCES, DEFAULT_FILTER, AUDIENCE_RULE, timestamp, count, filteredAudience, safeURL, normalize, matches, select, taipeiDay, historyDays, historyRows };
+  return { SOURCES, DEFAULT_FILTER, DEFAULT_SORT, STREAMER_PRIORITY_THRESHOLD, AUDIENCE_RULE, timestamp, count, filteredAudience, safeURL, normalize, matches, select, taipeiDay, historyDays, historyRows };
 });

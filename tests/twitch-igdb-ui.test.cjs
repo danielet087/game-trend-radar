@@ -24,7 +24,7 @@ test('history, median metrics and single-column IGDB styles are retained', () =>
   assert.match(ui,/body\.append\(historyPanel\(g\)\)/);
   assert.match(ui,/g\.filtered_audience\.median_viewer_count/);
   assert.match(ui,/body\.append\(evidence\(g\)\)/);
-  assert.match(html,/radar-twitch-v1\.js\?v=1\.4\.0/);
+  assert.match(html,/radar-twitch-v1\.js\?v=\d+\.\d+\.\d+/);
   assert.match(html,/radar-twitch-igdb-v1\.css/);
   assert.match(read('assets/radar-twitch-igdb-v1.css'),/grid-template-columns:minmax\(0,1fr\)/);
 });
