@@ -4,7 +4,6 @@
   "display_name": "OpenFront",
   "display_name_source": "english",
   "name_en": "OpenFront",
-  "name_en_traditional": "OpenFront",
   "language_support": {
     "tchinese": false,
     "schinese": false,
@@ -143,12 +142,13 @@
     "checked_at": "2026-10-02T09:57:54Z",
     "source_frontend_commit": "6955aa5ce695357475d62c6ad5b0844613db0e26",
     "source_enrollment": {
-      "min_viewers": 7000,
-      "observed_at": "2026-09-30T21:14:58Z",
       "source": "igdb_first_release_date",
-      "viewer_count": 9587
+      "observed_at": "2026-09-30T21:14:58Z",
+      "viewer_count": 9587,
+      "min_viewers": 7000
     }
   },
   "content_enrichment_signature": "3560670:12839:2026-09-17",
-  "storage_version": 2
+  "storage_version": 2,
+  "community_url": "https://steamcommunity.com/app/3560670/"
 }

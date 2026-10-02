@@ -4,7 +4,6 @@
   "display_name": "WARDOGS",
   "display_name_source": "english",
   "name_en": "WARDOGS",
-  "name_en_traditional": "WARDOGS",
   "language_support": {
     "tchinese": true,
     "schinese": true,
@@ -147,13 +146,14 @@
     "checked_at": "2026-10-02T09:57:54Z",
     "source_frontend_commit": "6955aa5ce695357475d62c6ad5b0844613db0e26",
     "source_enrollment": {
-      "kind": "history_recovery",
-      "min_viewers": 7000,
-      "observed_at": "2026-09-29T14:28:32Z",
       "source": "igdb_first_release_date",
-      "viewer_count": 35755
+      "observed_at": "2026-09-29T14:28:32Z",
+      "viewer_count": 35755,
+      "min_viewers": 7000,
+      "kind": "history_recovery"
     }
   },
   "content_enrichment_signature": "1867240:226998:2026-09-10",
-  "storage_version": 2
+  "storage_version": 2,
+  "community_url": "https://steamcommunity.com/app/1867240/"
 }
