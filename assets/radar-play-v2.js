@@ -276,12 +276,12 @@
     $("updateText").textContent =
       `${prefix} · ${formatUpdate(updated)}（台灣）`;
     const init = data.initialization;
-    let coverage = `目前收錄 ${number.format(data.games.length)} 款具備明確日期、至少 5,000 人關注的遊戲。${data.partial ? "清單尚在持續補齊，不代表全部符合條件的遊戲。" : ""}`;
+    let coverage = `目前收錄 ${number.format(data.games.length)} 款具備明確 Steam 上市日期的遊戲。一般新作需至少 5,000 人關注；已驗證的 Twitch 新作可另行收錄。${data.partial ? "清單尚在持續補齊，不代表全部符合條件的遊戲。" : ""}`;
     if (init?.candidate_count)
       coverage += ` 已取得 ${number.format(init.candidate_count)} 款候選新作，逐步核對關注人數。`;
     if (mode === "released")
       coverage =
-        "近期上市僅列出近 30 天內、已確認發售且關注人數嚴格超過 3,000 的遊戲。近期黑馬另須於上市首週達標。";
+        "近期上市列出近 30 天內、已確認發售的收錄遊戲，包含已驗證的 Twitch 新作。近期黑馬須於上市首週確認超過 3,000 人關注。";
     if (mode === "all")
       coverage = `目前可查詢 ${number.format(D.selectGames(data, "all", today).length)} 款已公開收錄的遊戲，包含待上市與既有上市紀錄，不限近期日期範圍。這是本站收錄清單，並非 Steam 全站遊戲。`;
     if (data.source === "preview")
@@ -311,7 +311,7 @@
       $("spotlightGames").append(
         empty(
           "下一波新作，正在路上",
-          "目前尚無未來 45 天內符合關注門檻的遊戲。",
+          "目前尚無未來 45 天內已收錄的遊戲。",
         ),
       );
     $("recentGames").replaceChildren(
@@ -835,11 +835,11 @@
     });
   } else {
     const notes = {
-      upcoming: "未來 45 天 · 至少 5,000 人關注 · 僅列出明確發售日期",
-      released: "近 30 天 · 關注人數超過 3,000 · 已確認發售",
+      upcoming: "未來 45 天 · 明確 Steam 上市日期 · 含已驗證的 Twitch 新作",
+      released: "近 30 天 · 已確認發售 · 含已驗證的 Twitch 新作",
       saved: "收藏儲存在此瀏覽器；此處顯示仍在目前公開資料內的遊戲。",
-      date: "至少 5,000 人關注 · 僅列出明確發售日期",
-      explore: "目前已收錄的待上市遊戲 · 至少 5,000 人關注 · TAG 依 Steam 資料",
+      date: "明確 Steam 上市日期 · 含已驗證的 Twitch 新作",
+      explore: "已收錄的 Steam 遊戲 · 含已驗證的 Twitch 新作 · TAG 依 Steam 資料",
       all: "本站所有公開收錄 · 包含待上市與既有上市紀錄",
     };
     $("scopeNote").textContent = notes[mode] || "";
