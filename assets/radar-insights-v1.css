@@ -14,15 +14,15 @@ body[data-page="analysis"] { --page-wash:#e2dcf4; --page-wash-soft:#f5e8ed; --pa
 .activity-ticker { display:flex; align-items:center; gap:12px; min-width:0; margin:-4px 0 27px; padding:7px 9px 7px 16px; background:#fffdf5; border:1px solid #d0c8b5; border-radius:14px; box-shadow:0 3px 0 #d8ceba4d; }
 .activity-label { display:flex; align-items:center; gap:7px; flex-shrink:0; padding-right:12px; border-right:1px solid #dfd9c8; font-size:11px; font-weight:800; color:#665336; white-space:nowrap; }
 .activity-label > span { font-size:22px; color:#ba783d; }
-.activity-viewport { flex:1; min-width:0; overflow:hidden; }
-.activity-track { display:flex; width:max-content; align-items:center; }
-.activity-group { display:flex; align-items:center; width:max-content; }
-.activity-item { display:flex; align-items:center; gap:9px; padding:8px 28px 8px 0; min-height:35px; font-size:11px; white-space:nowrap; }
+.activity-viewport { flex:1; min-width:0; height:42px; overflow:hidden; }
+.activity-track { width:100%; }
+.activity-item { display:flex; align-items:center; gap:9px; width:100%; height:42px; box-sizing:border-box; padding:8px 0; font-size:11px; white-space:nowrap; }
+.activity-added-at { flex-shrink:0; color:#80715b; font-size:10px; font-variant-numeric:tabular-nums; }
 .activity-item:hover .activity-name { text-decoration:underline; text-underline-offset:4px; }
 .activity-kind { padding:3px 6px; border-radius:5px; color:#426449; background:#e7efda; font-size:9px; font-weight:700; flex-shrink:0; }
 .activity-kind.is-date { color:#8d562f; background:#ffead2; }
-.activity-name { font-weight:700; }
-.activity-change { color:#766e62; font-size:10px; font-variant-numeric:tabular-nums; }
+.activity-name { min-width:0; overflow:hidden; text-overflow:ellipsis; font-weight:700; }
+.activity-change { flex-shrink:0; color:#766e62; font-size:10px; font-variant-numeric:tabular-nums; }
 .activity-ticker > button { flex-shrink:0; min-height:38px; border-radius:9px; font-size:11px; }
 #activityPause { width:38px; border:1px solid #ded6c5; background:#fffaf0; font:700 14px Arial,sans-serif; }
 #activityPause:hover:not(:disabled) { background:#eee6d6; }
@@ -30,12 +30,6 @@ body[data-page="analysis"] { --page-wash:#e2dcf4; --page-wash-soft:#f5e8ed; --pa
 #activityMore { padding:8px 12px; color:#65553d; background:#f1ead9; font-weight:700; }
 #activityMore:hover { background:#e8dfc9; }
 .activity-empty { font-size:11px; color:#776d5d; padding:8px 0; }
-@keyframes radar-activity { to { transform:translateX(calc(-1 * var(--ticker-distance, 0px))); } }
-body:not(.motion-off) .activity-ticker:not(.ticker-static) .activity-track { animation:radar-activity var(--ticker-duration, 60s) linear infinite; }
-.activity-ticker:is(:hover,:focus-within,.ticker-paused,.ticker-background,.ticker-reading) .activity-track { animation-play-state:paused !important; }
-.activity-viewport:focus-within, .ticker-static .activity-viewport { overflow-x:auto; scrollbar-width:thin; }
-.activity-viewport:focus-within .activity-track, .ticker-static .activity-track { animation:none !important; transform:none; }
-.activity-viewport:focus-within .activity-duplicate, .ticker-static .activity-duplicate { display:none; }
 .activity-dialog { width:min(760px, calc(100% - 24px)); max-height:80vh; max-height:80dvh; padding:27px; border:1px solid #bdb5a5; border-radius:23px; color:var(--ink); background:#fffdf7; box-shadow:0 16px 60px #202c4633; }
 .activity-dialog::backdrop { background:#202c466b; }
 .activity-dialog-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
@@ -44,10 +38,9 @@ body:not(.motion-off) .activity-ticker:not(.ticker-static) .activity-track { ani
 .activity-dialog > p { font-size:12px; color:var(--muted); line-height:1.9; margin:12px 0; }
 .activity-list { list-style:none; padding:0; margin:0; }
 .activity-list li { padding:12px 0; border-top:1px solid #ebe5da; }
-.activity-list .activity-item { display:flex; flex-wrap:wrap; justify-content:flex-start; white-space:normal; padding:3px 0; line-height:1.8; }
-.activity-list .activity-name { overflow-wrap:anywhere; }
-.activity-list .activity-change { width:100%; padding-left:61px; }
-.activity-observed { display:block; margin:5px 0 0 61px; font-size:10px; color:#807767; }
+.activity-list .activity-item { display:flex; flex-wrap:wrap; justify-content:flex-start; height:auto; white-space:normal; padding:3px 0; line-height:1.8; }
+.activity-list .activity-name { overflow:visible; overflow-wrap:anywhere; }
+.activity-list .activity-change { width:100%; }
 
 /* Included and excluded tags remain readable without relying on color alone. */
 .tag-combination-controls { display:flex; align-items:center; flex-wrap:wrap; gap:12px 18px; padding:15px 0; margin:0 0 14px; border-top:1px dashed #c4d5c1; border-bottom:1px dashed #c4d5c1; }
@@ -209,11 +202,14 @@ body:not(.motion-off) .activity-ticker:not(.ticker-static) .activity-track { ani
   .compare-suggestions { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (max-width:700px) {
-  .activity-ticker { gap:6px; margin-bottom:22px; padding:5px 6px 5px 10px; }
-  .activity-label { padding-right:8px; gap:3px; font-size:10px; }
+  .activity-ticker { display:grid; grid-template-columns:1fr auto auto; gap:2px 8px; margin-bottom:22px; padding:5px 10px; }
+  .activity-label { grid-column:1; grid-row:1; padding-right:0; border-right:0; gap:5px; font-size:10px; }
+  .activity-viewport { grid-column:1 / -1; grid-row:2; width:100%; }
+  .activity-ticker .activity-name { flex:1; }
+  .activity-ticker .activity-change { display:none; }
   .activity-label > span { font-size:17px; }
-  #activityMore { padding:8px; font-size:10px; }
-  #activityPause { width:34px; }
+  #activityMore { grid-column:3; grid-row:1; padding:8px; font-size:10px; }
+  #activityPause { grid-column:2; grid-row:1; width:34px; }
   .activity-dialog { padding:19px; }
   .tag-combination-controls { gap:12px; }
   .tag-intent { width:100%; }
@@ -291,9 +287,6 @@ body:not(.motion-off) .activity-ticker:not(.ticker-static) .activity-track { ani
   .slot-empty-symbol { font-size:23px; }
 }
 @media (prefers-reduced-motion:reduce) {
-  .activity-track { animation:none !important; transform:none !important; }
-  .activity-viewport { overflow-x:auto; }
-  .activity-duplicate { display:none; }
   ::view-transition-old(root), ::view-transition-new(root) { animation:none; }
 }
 

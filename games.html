@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://shared.fastly.steamstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
     <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.6.1" />
-    <link rel="stylesheet" href="./assets/radar-insights-v1.css?v=1.1.0" />
+    <link rel="stylesheet" href="./assets/radar-insights-v1.css?v=1.2.0" />
     <link rel="stylesheet" href="./assets/radar-catalog-v1.css?v=1.0.0" />
     <script src="./assets/radar-data-v1.js?v=3.2.0" defer></script>
     <script src="./assets/radar-storage-v2.js?v=3.0.0" defer></script>
@@ -24,7 +24,7 @@
     <script src="./assets/radar-navigation-v1.js?v=1.0.1" defer></script>
     <script src="./assets/radar-artwork-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-insights-v1.js?v=1.1.0" defer></script>
-    <script src="./assets/radar-enhancements-v1.js?v=1.0.0" defer></script>
+    <script src="./assets/radar-enhancements-v1.js?v=1.1.0" defer></script>
     <script src="./assets/radar-play-v2.js?v=3.8.1" defer></script>
   </head>
   <body data-page="all">
@@ -94,7 +94,7 @@
       <section class="activity-ticker" id="activityTicker" aria-label="新收錄與發售日期更新">
         <span class="activity-label"><span aria-hidden="true">✳</span> 雷達動態</span>
         <div class="activity-viewport" id="activityViewport"><div class="activity-track" id="activityTrack"><span class="activity-empty">正在整理最新動態…</span></div></div>
-        <button class="activity-pause" id="activityPause" type="button" aria-label="暫停更新跑馬燈" aria-pressed="false">Ⅱ</button>
+        <button class="activity-pause" id="activityPause" type="button" aria-label="暫停雷達動態" aria-pressed="false">Ⅱ</button>
         <button class="activity-more" id="activityMore" type="button" aria-haspopup="dialog">全部動態 ↗</button>
       </section>
       <dialog class="activity-dialog" id="activityDialog" aria-labelledby="activityDialogTitle"><div class="activity-dialog-head"><div><p class="eyebrow">RADAR UPDATES</p><h2 id="activityDialogTitle">最近的雷達動態</h2></div><button id="activityClose" type="button" aria-label="關閉更新動態">×</button></div><p class="activity-dialog-note">近 14 天的新收錄與公開發售日期更新；日期修正不一定代表遊戲延期。</p><ol id="activityList" class="activity-list"></ol></dialog>
