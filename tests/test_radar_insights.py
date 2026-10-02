@@ -1,4 +1,5 @@
 import importlib.util
+from copy import deepcopy
 from pathlib import Path
 from datetime import date
 import unittest
@@ -17,7 +18,67 @@ def game(aid=1, **fields):
             "follower_checked_at": "2026-09-01T15:00:00Z", **fields}
 
 
+def twitch_game(aid=2, **fields):
+    return game(aid, followers=812, release_precision="day",
+        release_end="2026-09-01", release_time_utc="2026-08-31T17:00:00Z",
+        release_timestamp_taipei_date="2026-09-01",
+        release_display_precision="date_full", release_date_timezone="Asia/Taipei",
+        steam_type="game", sexual_content_screened=True,
+        twitch_admission={"schema_version": 1, "method": "twitch_igdb_external_steam_v1",
+            "appid": aid, "twitch_game_id": "100", "igdb_id": "200",
+            "checked_at": "2026-09-28T00:00:00Z", "source_frontend_commit": "a" * 40,
+            "source_enrollment": {"source": "igdb_first_release_date",
+                "observed_at": "2026-09-01T00:00:00Z", "viewer_count": 7200, "min_viewers": 7000}},
+        **fields)
+
+
 class InsightTests(unittest.TestCase):
+    def test_verified_twitch_import_records_addition_and_daily_real_followers_history(self):
+        first = M.update(None, catalog(game()), observed_at="2026-09-27T00:00:00Z")
+        changed = M.update(first, catalog(game(), twitch_game()), observed_at="2026-09-28T00:00:00Z")
+        activity, growth = M.projections(changed, date(2026, 9, 28))
+        self.assertEqual([row["appid"] for row in activity["events"]], [2])
+        self.assertEqual(changed["records"]["2"]["history"][0]["followers"], 812)
+        self.assertEqual([row["appid"] for row in growth["games"]], [1, 2])
+        again = M.update(changed, catalog(game(), twitch_game()), observed_at="2026-09-28T01:00:00Z")
+        self.assertEqual(again, changed)
+
+    def test_low_followers_twitch_import_requires_complete_proof_and_verified_steam_row(self):
+        valid = twitch_game()
+        self.assertEqual(list(M.accepted([valid])), ["2"])
+        bad_proofs = [None, {}, {**valid["twitch_admission"], "appid": 3},
+            {**valid["twitch_admission"], "method": "manual"},
+            {**valid["twitch_admission"], "source_frontend_commit": "main"}]
+        for proof in bad_proofs:
+            with self.subTest(proof=proof):
+                self.assertEqual(M.accepted([{**valid, "twitch_admission": proof}]), {})
+        for fields in [{"steam_type": "dlc"}, {"sexual_content_screened": False},
+                {"release_end": "2026-09-02"}, {"release_precision": "month"},
+                {"release_display_precision": "month"}, {"release_date_conflict": True},
+                {"release_time_utc": "2026-08-31T15:59:59Z"},
+                {"release_time_utc": None}, {"release_date_timezone": "UTC"},
+                {"release_timestamp_taipei_date": "2026-08-31"},
+                {"follower_checked_at": None}, {"followers": None}]:
+            with self.subTest(fields=fields):
+                self.assertEqual(M.accepted([{**valid, **fields}]), {})
+        for fields in [{"viewer_count": 6999}, {"min_viewers": 7001},
+                {"source": "steam_recent_release"}, {"qualification": "unverified"},
+                {"observed_at": "2026-09-29T00:00:00Z"}]:
+            broken = deepcopy(valid)
+            broken["twitch_admission"]["source_enrollment"].update(fields)
+            self.assertEqual(M.accepted([broken]), {})
+        self.assertEqual(M.accepted([game(followers=4999)]), {})
+        self.assertEqual(M.accepted([game(followers=3000, recent_source="direct_release")]), {})
+        self.assertEqual(list(M.accepted([game(followers=3001, recent_source="direct_release")])), ["1"])
+        self.assertEqual(list(M.accepted([game(followers=5000)])), ["1"])
+
+    def test_date_conflict_is_rejected_without_changing_date_only_legacy_support(self):
+        self.assertEqual(list(M.accepted([game()])), ["1"])
+        for fields in [{"release_end": "2026-09-02"}, {"release_date_conflict": True},
+                {"release_timestamp_taipei_date": "2026-08-31"},
+                {"release_time_utc": "2026-08-31T15:59:59Z"}]:
+            self.assertEqual(M.accepted([game(**fields)]), {})
+
     def test_baseline_is_not_a_fake_batch_of_new_games_and_repoll_is_idempotent(self):
         first = M.update(None, catalog(game()), observed_at="2026-09-28T00:00:00Z")
         self.assertEqual(first["events"], [])

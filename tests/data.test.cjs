@@ -296,3 +296,135 @@ test("Traditional display names do not alter actual Steam game support or origin
   assert.equal(both.name, "影之刃零");
   assert.equal(both.languageBadge, "支援繁中・支援簡中");
 });
+
+const twitchImported = (overrides = {}) => game({
+  followers: 812,
+  follower_checked_at: "2026-10-02T09:00:00Z",
+  release_start: "2026-09-20", release_end: "2026-09-20",
+  release_time_utc: "2026-09-19T16:30:00Z",
+  release_timestamp_taipei_date: "2026-09-20",
+  release_display_precision: "date_full",
+  release_date_timezone: "Asia/Taipei", release_date_conflict: false,
+  steam_type: "game", sexual_content_screened: true,
+  twitch_admission: {
+    schema_version: 1, method: "twitch_igdb_external_steam_v1", appid: 10,
+    twitch_game_id: "100", igdb_id: "200", checked_at: "2026-10-02T09:00:00Z",
+    source_frontend_commit: "a".repeat(40),
+    source_enrollment: { source: "igdb_first_release_date", viewer_count: 7200,
+      min_viewers: 7000, observed_at: "2026-09-20T01:00:00Z" },
+  },
+  ...overrides,
+});
+
+test("authoritatively imported Twitch games bypass only the Followers threshold", () => {
+  for (const followers of [0, 1, 812, 3000, 4999]) {
+    const raw = twitchImported({ followers });
+    assert.equal(D.isTwitchQualified(raw), true);
+    for (const recent of [false, true]) {
+      const normalized = D.normalize(raw, recent);
+      assert.equal(normalized.followers, followers);
+      assert.equal(normalized.twitchAdmission.twitch_game_id, "100");
+      assert.equal(normalized.darkHorse, false);
+    }
+  }
+  const now = "2026-10-02";
+  const released = twitchImported({ release_start: "2026-09-20" });
+  const upcoming = twitchImported({ appid: 20, release_start: "2026-10-10", release_end: "2026-10-10",
+    release_time_utc: "2026-10-09T17:00:00Z", release_timestamp_taipei_date: "2026-10-10",
+    twitch_admission: { ...released.twitch_admission, appid: 20 } });
+  const data = D.datasets({ version: 2, games: [released, upcoming] }, null);
+  assert.deepEqual(D.selectGames(data, "all", now).map(row => row.appid), [10, 20]);
+  assert.deepEqual(D.selectGames(data, "released", now).map(row => row.appid), [10]);
+  assert.deepEqual(D.selectGames(data, "upcoming", now).map(row => row.appid), [20]);
+  assert.deepEqual(D.selectGames(data, "date", now, "2026-10-10").map(row => row.appid), [20]);
+  assert.equal(data.games.find(row => row.appid === 10).followers, 812);
+});
+
+test("Twitch source labels, forged identities and unverified enrollment cannot bypass Followers", () => {
+  const valid = twitchImported();
+  const corruptProofs = [null, {}, { ...valid.twitch_admission, schema_version: true },
+    { ...valid.twitch_admission, method: "manual_match" },
+    { ...valid.twitch_admission, appid: 20 },
+    { ...valid.twitch_admission, twitch_game_id: "name" },
+    { ...valid.twitch_admission, twitch_game_id: true },
+    { ...valid.twitch_admission, igdb_id: "0" },
+    { ...valid.twitch_admission, checked_at: "2026-10-02T09:00:00" },
+    { ...valid.twitch_admission, checked_at: "2026-10-02T24:00:00Z" },
+    { ...valid.twitch_admission, source_frontend_commit: "main" },
+    { ...valid.twitch_admission, source_frontend_commit: "a".repeat(39) },
+    ...[{ source: "steam_recent_release" }, { source: "historical_manual_restore" },
+      { viewer_count: 6999 }, { viewer_count: "7200" }, { min_viewers: 6999 },
+      { qualification: "unverified" }, { observed_at: "2026-10-02T10:00:00Z" },
+      { observed_at: "2026-09-20T01:00:00" }].map(fields => ({ ...valid.twitch_admission,
+        source_enrollment: { ...valid.twitch_admission.source_enrollment, ...fields } })),
+  ];
+  for (const twitch_admission of corruptProofs) {
+    const raw = { ...valid, twitch_admission, recent_source: "twitch_new" };
+    assert.equal(D.hasTwitchAdmission(raw), false, JSON.stringify(twitch_admission));
+    assert.equal(D.normalize(raw), null);
+    assert.equal(D.normalize(raw, true), null);
+  }
+  assert.equal(D.normalize(game({ followers: 4999, source: "twitch", official_ge5000: true })), null);
+  assert.equal(D.normalize(game({ followers: 3000, recent_source: "twitch_new" }), true), null);
+  // Existing Steam admissions keep their original thresholds even if a bad
+  // optional import proof is attached to an otherwise qualified Steam row.
+  assert.ok(D.normalize(game({ twitch_admission: {}, followers: 5000 })));
+  assert.ok(D.normalize(game({ followers: 3001, recent_source: "direct_release" }), true));
+});
+
+test("Twitch admission still requires verified Steam game, content, exact Taipei date and real Followers", () => {
+  const invalid = [{ steam_type: "dlc" }, { steam_type: undefined },
+    { sexual_content_screened: false }, { sexual_content_screened: "true" },
+    { release_precision: "month" }, { release_display_precision: "date_month" },
+    { release_date_timezone: "UTC" }, { release_end: "2026-09-21" },
+    { release_date_conflict: true }, { release_timestamp_taipei_date: "2026-09-19" },
+    { release_timestamp_taipei_date: null }, { release_start: undefined, release_date: "2026-09-20" },
+    { release_time_utc: "2026-09-19T15:59:59Z" }, { release_time_utc: "2026-09-20T16:00:00Z" },
+    { release_time_utc: "2026-09-19T16:30:00" }, { release_time_utc: null },
+    { followers: null }, { followers: "812" }, { followers: -1 }, { followers: 812.5 },
+    { follower_checked_at: null }, { follower_checked_at: "2026-10-02T09:00:00" }];
+  for (const fields of invalid) {
+    const raw = twitchImported(fields);
+    assert.equal(D.isTwitchQualified(raw), false, JSON.stringify(fields));
+    assert.equal(D.normalize(raw), null, JSON.stringify(fields));
+  }
+  for (const fields of [{ release_end: "2026-09-21" }, { release_date_conflict: true },
+    { release_timestamp_taipei_date: "2026-09-19" },
+    { release_time_utc: "2026-09-19T15:59:59Z" }])
+    assert.equal(D.normalize(game(fields)), null);
+  assert.ok(D.normalize(game())); // Date-only legacy rows remain supported.
+});
+
+test("published Twitch admission survives duplicate stale preview entries and repeated normalization", () => {
+  const official = { version: 2, games: [twitchImported()], generated_at: "2026-10-02T09:00:00Z" };
+  const preview = { games: [], recent_games: [game({ followers: 9000,
+    release_start: "2026-09-19", name: "Stale preview" })] };
+  for (let run = 0; run < 2; run++) {
+    const data = D.datasets(official, preview);
+    const all = D.selectGames(data, "all", "2026-10-02");
+    assert.equal(all.length, 1);
+    assert.equal(all[0].date, "2026-09-20");
+    assert.equal(all[0].followers, 812);
+    assert.equal(all[0].twitchAdmission.method, "twitch_igdb_external_steam_v1");
+  }
+});
+
+test("every catalog page defaults to all Followers so accepted Twitch discoveries are visible", () => {
+  const { readFileSync } = require("node:fs");
+  const { join } = require("node:path");
+  const data = D.datasets({ version: 2, games: [twitchImported(),
+    game({ appid: 20, followers: 812, recent_source: "twitch_new" })] }, null);
+  const catalog = D.selectGames(data, "all", "2026-10-02");
+  for (const page of ["index", "date", "explore", "upcoming", "released", "games", "saved"]) {
+    const html = readFileSync(join(__dirname, "..", page + ".html"), "utf8");
+    const select = html.match(/<select id="followersFilter">([\s\S]*?)<\/select>/)?.[1];
+    assert.ok(select, page);
+    const first = select.match(/<option value="(\d+)">([^<]+)<\/option>/);
+    assert.equal(first?.[2], "全部關注度", page);
+    assert.equal(Number(first?.[1]), 0, page);
+    assert.doesNotMatch(select, /selected(?:\s|=|>)/, page);
+    assert.deepEqual(catalog.filter(game => game.followers >= Number(first[1])).map(game => game.appid), [10], page);
+    assert.match(select, /<option value="5000">5 千人以上<\/option>/, page);
+    assert.deepEqual(catalog.filter(game => game.followers >= 5000), [], page);
+  }
+});

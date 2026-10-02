@@ -5,7 +5,7 @@ Steam 新作關注度、發售月曆與個人收藏。純 HTML / CSS / JavaScrip
 ## 頁面與操作
 
 - `index.html`：直接進入發售月曆，下方為即將上市精選與近期上市。月曆每天顯示關注度最高的兩款；可直接選月份，點日期查看完整清單，點遊戲開啟站內詳細頁。
-- `upcoming.html`：未來 45 天、至少 5,000 人關注的新作。
+- `upcoming.html`：未來 45 天的已收錄新作；一般 Steam 來源至少 5,000 人關注，有效 Twitch 新作來源另行收錄。
 - `released.html`：近 30 天的已收錄遊戲；沿用正式清單與經驗證近期黑馬的既有條件。
 - `date.html?date=YYYY-MM-DD`：指定日期的完整清單，前一天／後一天直接切換相鄰日（含空日期、跨月、跨年），沿用已載入資料與篩選／排序。網址及瀏覽器上一頁／下一頁同步，返回月曆時保留目前日期的月份。
 - `game.html?appid=...`：遊戲主題配色、大圖放大、發售資訊卡、語言支援與收藏。主視覺與完整 TAG 清單都直接連至 `explore.html?tag=...`，保留原始 TAG 編碼；推薦卡依共同 TAG 自動排序。手機底部保留商店與收藏操作。
@@ -31,9 +31,10 @@ Steam 新作關注度、發售月曆與個人收藏。純 HTML / CSS / JavaScrip
 ## 日期與收錄條件
 
 - 今日與日期區間都使用 Asia/Taipei（UTC+8）。後端提供的日期直接顯示，不任意加一天；精確時刻的換日由現有後端處理。
-- 月曆、即將上市與指定日期頁只列明確發售日期且 Followers >= 5,000 的遊戲。
+- 月曆、即將上市與指定日期頁只列明確發售日期，且符合既有 Followers 門檻或完整有效 Twitch 新作來源的遊戲。全部關注度預設不設下限，仍可自行選擇 5,000 以上。
 - 近期上市保留正式清單中至少 5,000 人關注的遊戲，以及嚴格超過 3,000 人關注且具 `tracked_release`／`direct_release` 來源的既有紀錄。只有直接上市且具有 `first_week_qualified_at` 的遊戲顯示「近期黑馬」。沒有遊戲時呈現空狀態，不以暢銷榜或虛構資料補齊。
 - Followers 是 Steam Community 關注人數，並非願望清單數。
+- Twitch 新作反查 Steam 後，來源證據與真實 Followers 隨主清單保存；前端核對正式遊戲、成人篩選與台灣精確日期。缺少／無效證據不放寬門檻，未完成驗證不假裝已收錄。
 
 ## 資料介面
 
@@ -44,6 +45,7 @@ Steam 新作關注度、發售月曆與個人收藏。純 HTML / CSS / JavaScrip
 - `data/content_refresh_status.json`：內容對帳的待補欄位、失敗與重試時間；不代表所有 Steam 候選都已查完。
 - `data/twitch_live.json`：Twitch 新作觀測頁的公開快照；schema v2 支援中位數、官方觀測與獨立日期推算。舊版熱門取樣不進入任何遊戲清單，只顯示等待新版的狀態。
 - `data/twitch_steam_mapping.json`：Steam／IGDB／Twitch ID 對照、Steam 補充資訊及待配對狀態，由後端一併發布。
+- `data/twitch_steam_discovery.json`：正式 Twitch 新作反查的官方 Steam AppID 與待確認佇列；由 Steam 主後端消費，存在於佇列不代表內容已發布。
 - `data/twitch_history/YYYY-MM-DD.json`：台灣日期的逐時紀錄，只在展開歷史時讀取截止快照最近 24 小時涵蓋的日期檔。
 - `data/youtube_live.json`：既有 YouTube 直播資料。
 

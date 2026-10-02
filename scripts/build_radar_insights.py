@@ -12,6 +12,11 @@ import hashlib
 import json
 from pathlib import Path
 
+try:
+    from scripts.twitch_steam_admission import is_twitch_qualified
+except ModuleNotFoundError:
+    from twitch_steam_admission import is_twitch_qualified
+
 TAIPEI = timezone(timedelta(hours=8))
 POST_RELEASE_DAYS = 30
 
@@ -41,7 +46,18 @@ def accepted(rows):
                 or not day(row.get("release_start"))
                 or row.get("release_precision", "day") != "day"):
             continue
-        if count < 5000 and not (count > 3000 and row.get("recent_source") in {"direct_release", "tracked_release"}):
+        # An explicit imported Twitch source is independent of Steam Followers.
+        # Verify the complete admission and Steam row before taking that branch.
+        instant = stamp(row.get("release_time_utc"))
+        release = row.get("release_start")
+        if (row.get("release_date_conflict") is True
+                or (row.get("release_end") and row["release_end"] != release)
+                or (row.get("release_timestamp_taipei_date") and row["release_timestamp_taipei_date"] != release)
+                or (row.get("release_time_utc") is not None
+                    and (not instant or instant.astimezone(TAIPEI).date().isoformat() != release))):
+            continue
+        if (not is_twitch_qualified(row) and count < 5000
+                and not (count > 3000 and row.get("recent_source") in {"direct_release", "tracked_release"})):
             continue
         result[str(aid)] = row
     return result

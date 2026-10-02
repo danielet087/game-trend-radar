@@ -37,20 +37,75 @@
       return "";
     }
   }
+  const decimalID = (value) =>
+    (typeof value === "string" || Number.isSafeInteger(value)) &&
+    /^[1-9][0-9]*$/.test(String(value)) ? String(value) : null;
+  function awareTime(value) {
+    if (typeof value !== "string" ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) ||
+      !validDate(value.slice(0, 10)) || Number(value.slice(11, 13)) > 23 ||
+      Number(value.slice(14, 16)) > 59 || Number(value.slice(17, 19)) > 59) return null;
+    const result = Date.parse(value);
+    return Number.isFinite(result) ? result : null;
+  }
+  function exactReleaseDate(raw) {
+    if (!raw || typeof raw !== "object") return false;
+    const date = raw.release_start || raw.release_date;
+    if (!validDate(date) ||
+      (raw.release_precision && raw.release_precision !== "day") ||
+      (raw.release_end && raw.release_end !== date) ||
+      raw.release_date_conflict === true ||
+      (raw.release_timestamp_taipei_date && raw.release_timestamp_taipei_date !== date))
+      return false;
+    if (raw.release_time_utc != null) {
+      const instant = awareTime(raw.release_time_utc);
+      if (instant === null || todayInTaipei(new Date(instant)) !== date) return false;
+    }
+    return true;
+  }
+  // Followers exceptions require the complete importer proof and verified Steam
+  // row. A source name or an unverified manual Twitch entry cannot admit a game.
+  function hasTwitchAdmission(raw) {
+    const proof = raw?.twitch_admission;
+    const evidence = proof?.source_enrollment;
+    const checked = awareTime(proof?.checked_at);
+    const observed = awareTime(evidence?.observed_at);
+    return !!proof && proof.schema_version === 1 &&
+      proof.method === "twitch_igdb_external_steam_v1" &&
+      decimalID(raw.appid) !== null && decimalID(proof.appid) === decimalID(raw.appid) &&
+      decimalID(proof.twitch_game_id) !== null && decimalID(proof.igdb_id) !== null &&
+      checked !== null && observed !== null && observed <= checked &&
+      typeof proof.source_frontend_commit === "string" &&
+      /^[0-9a-f]{40}$/.test(proof.source_frontend_commit) &&
+      ["igdb_first_release_date", "twitch_original_release_date", "twitch_directory_dom"].includes(evidence.source) &&
+      Number.isSafeInteger(evidence.viewer_count) && evidence.viewer_count >= 7000 &&
+      evidence.min_viewers === 7000 && evidence.qualification !== "unverified";
+  }
+  function isTwitchQualified(raw) {
+    return hasTwitchAdmission(raw) && exactReleaseDate(raw) && validDate(raw.release_start) &&
+      (!Object.prototype.hasOwnProperty.call(raw, "release_timestamp_taipei_date") ||
+        raw.release_timestamp_taipei_date === raw.release_start) &&
+      raw.steam_type === "game" && raw.sexual_content_screened === true &&
+      raw.release_precision === "day" && raw.release_display_precision === "date_full" &&
+      raw.release_date_timezone === "Asia/Taipei" &&
+      awareTime(raw.release_time_utc) !== null && raw.release_end === raw.release_start &&
+      Number.isSafeInteger(raw.followers) && raw.followers >= 0 &&
+      awareTime(raw.follower_checked_at) !== null;
+  }
   function normalize(raw, recent = false, translated = null) {
     if (!raw || typeof raw !== "object") return null;
     const date = raw.release_start || raw.release_date;
     const followers = raw.followers == null ? NaN : Number(raw.followers);
     const appid = Number(raw.appid);
     if (
-      !validDate(date) ||
-      (raw.release_precision && raw.release_precision !== "day") ||
+      !exactReleaseDate(raw) ||
       !Number.isInteger(appid) ||
       appid <= 0 ||
       !Number.isFinite(followers)
     )
       return null;
-    if (
+    const twitchQualified = isTwitchQualified(raw);
+    if (!twitchQualified && (
       recent
         ? !(
             followers >= 5000 ||
@@ -60,7 +115,7 @@
             )
           )
         : followers < 5000
-    )
+    ))
       return null;
     const nameEn = String(
       raw.name_en || raw.name || translated?.name_en || translated?.name || "",
@@ -191,6 +246,7 @@
       languageStatus,
       date,
       followers,
+      twitchAdmission: twitchQualified ? raw.twitch_admission : null,
       art: images[0] || "",
       artSources: images,
       art2x: artVariants[images[0]] || "",
@@ -224,10 +280,10 @@
       ),
       recent: unique(
         [
+          ...(preview?.recent_games || []).map((game) => normalize(game, true)),
           ...(chosen.games || []).map((game) =>
             normalize(game, true, translations.get(Number(game?.appid))),
           ),
-          ...(preview?.recent_games || []).map((game) => normalize(game, true)),
         ].filter(Boolean),
       ),
       updated: chosen.generated_at || chosen.updated_at || null,
@@ -259,6 +315,9 @@
     todayInTaipei,
     offsetDate,
     imageURL,
+    exactReleaseDate,
+    hasTwitchAdmission,
+    isTwitchQualified,
     normalize,
     unique,
     datasets,
