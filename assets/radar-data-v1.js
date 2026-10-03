@@ -377,6 +377,11 @@
   }
   const unique = (items) =>
     Array.from(new Map(items.map((game) => [gameKey(game), game])).values());
+  function latestSourceUpdate(...values) {
+    const valid = values.map(value => ({ value, instant: awareTime(value) }))
+      .filter(entry => entry.instant !== null);
+    return valid.sort((a, b) => b.instant - a.instant)[0]?.value || null;
+  }
   function datasets(official, preview, nintendo = null) {
     const chosen = official || preview;
     const nintendoRows = nintendoGames(nintendo);
@@ -386,6 +391,8 @@
         .filter(Boolean)
         .map((game) => [Number(game.appid), game]),
     );
+    const steamUpdated = latestSourceUpdate(chosen?.generated_at, chosen?.updated_at);
+    const nintendoUpdated = latestSourceUpdate(nintendo?.generated_at);
     return {
       games: unique(
         [...(chosen?.games || [])
@@ -403,9 +410,10 @@
           ...nintendoRows,
         ].filter(Boolean),
       ),
-      updated: chosen?.generated_at || chosen?.updated_at || nintendo?.generated_at || null,
+      updated: latestSourceUpdate(steamUpdated, nintendoUpdated),
+      steamUpdated,
       recentUpdated: chosen?.generated_at || preview?.generated_at || nintendo?.generated_at || null,
-      nintendoUpdated: nintendo?.generated_at || null,
+      nintendoUpdated,
       nintendoAvailable: !!nintendo,
       partial:
         !!chosen?.is_partial_preview ||

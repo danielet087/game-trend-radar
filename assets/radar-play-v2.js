@@ -304,6 +304,7 @@
       coverage = `目前可查詢 ${number.format(D.selectGames(data, "all", today).length)} 款已公開收錄的遊戲，包含待上市與既有上市紀錄，不限近期日期範圍。這是本站收錄清單，並非 Steam 全站遊戲。`;
     if (data.source === "preview")
       coverage += " 正式清單暫時無法讀取，目前使用已公開的預覽資料。";
+    if (data.steamUpdated) coverage += ` Steam 更新：${formatUpdate(data.steamUpdated)}（台灣）。`;
     if (!data.nintendoAvailable) coverage += " Nintendo 資料暫時無法讀取，Steam 清單仍可查看。";
     else coverage += ` Nintendo 更新：${formatUpdate(data.nintendoUpdated)}（台灣）。NS 與 NS2 標籤代表原生版本；目前僅列單一平台不代表官方確認獨佔。`;
     $("coverageText").textContent = coverage;

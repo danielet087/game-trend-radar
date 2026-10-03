@@ -65,7 +65,7 @@ test("recent releases require provenance and strictly more than 3,000 followers"
   );
 });
 test("source preference, localization and de-duplication preserve verified official records", () => {
-  const official = { games: [game(), game()], generated_at: "official" };
+  const official = { games: [game(), game()], generated_at: "2026-09-20T00:00:00Z" };
   const preview = {
     games: [game({ name_zh_tw: "測試遊戲", followers: 90000 })],
     recent_games: [],
@@ -74,7 +74,7 @@ test("source preference, localization and de-duplication preserve verified offic
   assert.equal(data.games.length, 1);
   assert.equal(data.games[0].name, "測試遊戲");
   assert.equal(data.games[0].followers, 5000);
-  assert.equal(data.updated, "official");
+  assert.equal(data.updated, "2026-09-20T00:00:00Z");
   assert.equal(D.datasets({ games: [] }, preview).games.length, 0);
   assert.equal(D.datasets(null, preview).source, "preview");
   assert.equal(D.datasets(null, null), null);

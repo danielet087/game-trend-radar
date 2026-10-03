@@ -232,6 +232,6 @@ test("catalog descriptions explain the verified Twitch admission without univers
   for (const page of ["index", "date", "explore", "upcoming", "released", "games", "saved"]) {
     const html = readFileSync(join(__dirname, "..", page + ".html"), "utf8");
     assert.match(html, /清單包含 Steam、已驗證 Twitch 新作與 NS／NS2 遊戲/);
-    assert.match(html, /radar-play-v2\.js\?v=3\.9\.0/);
+    assert.match(html, /radar-play-v2\.js\?v=3\.9\.1/);
   }
 });

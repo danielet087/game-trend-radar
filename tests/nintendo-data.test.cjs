@@ -103,3 +103,35 @@ test('Nintendo failure does not hide Steam and discovery does not overwrite Nint
   assert.deepEqual(enriched.tags, ['Strategy']);
   assert.deepEqual(enriched.genres, ['RPG']);
 });
+
+test('catalog update reflects the newest valid source while retaining each source timestamp', () => {
+  const older = '2026-10-03T15:01:00Z', newer = '2026-10-03T16:40:00Z';
+  for (const [steamTime, nintendoTime] of [[older, newer], [newer, older]]) {
+    const data = D.datasets({ games: [], generated_at: steamTime }, null,
+      { ...payload([row()]), generated_at: nintendoTime });
+    assert.equal(data.updated, newer);
+    assert.equal(data.steamUpdated, steamTime);
+    assert.equal(data.nintendoUpdated, nintendoTime);
+    assert.equal(data.recentUpdated, steamTime);
+  }
+  const sameInstant = D.datasets({ games: [], generated_at: older }, null,
+    { ...payload([]), generated_at: '2026-10-04T00:40:00+08:00' });
+  assert.equal(sameInstant.updated, '2026-10-04T00:40:00+08:00');
+});
+
+test('invalid or absent source timestamps cannot override a valid catalog update', () => {
+  const valid = '2026-10-03T16:40:00Z';
+  for (const invalid of [null, '', 'invalid', '2026-10-05T01:00:00', '2026-02-30T01:00:00Z', '2026-10-05T99:00:00Z']) {
+    const badNintendo = D.datasets({ games: [], generated_at: valid }, null,
+      { ...payload([]), generated_at: invalid });
+    assert.equal(badNintendo.updated, valid);
+    assert.equal(badNintendo.nintendoUpdated, null);
+    const badSteam = D.datasets({ games: [], generated_at: invalid }, null,
+      { ...payload([]), generated_at: valid });
+    assert.equal(badSteam.updated, valid);
+    assert.equal(badSteam.steamUpdated, null);
+  }
+  assert.equal(D.datasets({ games: [] }, null, payload([])).updated, payload([]).generated_at);
+  assert.equal(D.datasets({ games: [], generated_at: 'bad', updated_at: valid }, null).steamUpdated, valid);
+  assert.equal(D.datasets({ games: [] }, null).updated, null);
+});
