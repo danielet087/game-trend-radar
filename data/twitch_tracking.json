@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-03T13:11:37Z",
+  "updated_at": "2026-10-03T14:04:42Z",
   "games": {
     "1190590442": {
       "game_id": "1190590442",
@@ -98,7 +98,7 @@
             "release_at": "2026-09-24T13:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-24T13:00:00Z"
@@ -406,7 +406,7 @@
                 "release_at": "2026-09-24T13:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-24T13:00:00Z"
@@ -585,7 +585,7 @@
             "release_at": "2026-10-01T01:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-31T01:00:00Z"
@@ -909,7 +909,7 @@
                 "release_at": "2026-10-01T01:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-31T01:00:00Z"
@@ -1232,7 +1232,7 @@
                 "release_at": "2026-09-17T17:00:41Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-17T17:00:41Z"
@@ -1405,7 +1405,7 @@
             "release_at": "2026-09-17T17:00:41Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-17T17:00:41Z"
@@ -1579,7 +1579,7 @@
             "release_at": "2026-09-14T16:50:03Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-14T16:50:03Z"
@@ -1836,23 +1836,6 @@
             "min_viewers": 7000
           },
           "tracking_sources": {
-            "twitch_new": {
-              "source": "twitch_new",
-              "first_seen_at": "2026-10-03T12:10:47Z",
-              "enrollment": {
-                "source": "igdb_first_release_date",
-                "observed_at": "2026-10-03T12:10:47Z",
-                "viewer_count": 13830,
-                "min_viewers": 7000
-              },
-              "status": "active",
-              "status_reason": "within_release_window",
-              "release_at": "2026-09-15T00:00:00Z",
-              "release_source": "igdb_first_release_date",
-              "updated_at": "2026-10-03T13:11:37Z",
-              "expires_at": "2026-10-15T00:00:00Z",
-              "last_seen_at": "2026-10-03T13:11:37Z"
-            },
             "steam:3070070": {
               "source": "steam_recent_release",
               "steam_appid": "3070070",
@@ -1931,10 +1914,27 @@
                 "release_at": "2026-09-14T16:50:03Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-14T16:50:03Z"
+            },
+            "twitch_new": {
+              "source": "twitch_new",
+              "first_seen_at": "2026-10-03T12:10:47Z",
+              "enrollment": {
+                "source": "igdb_first_release_date",
+                "observed_at": "2026-10-03T12:10:47Z",
+                "viewer_count": 13830,
+                "min_viewers": 7000
+              },
+              "status": "active",
+              "status_reason": "within_release_window",
+              "release_at": "2026-09-15T00:00:00Z",
+              "release_source": "igdb_first_release_date",
+              "updated_at": "2026-10-03T13:11:37Z",
+              "expires_at": "2026-10-15T00:00:00Z",
+              "last_seen_at": "2026-10-03T13:11:37Z"
             }
           },
           "steam_matches": [
@@ -2196,6 +2196,24 @@
             "kind": "history_recovery"
           },
           "tracking_sources": {
+            "twitch_new": {
+              "first_seen_at": "2026-09-29T14:28:32Z",
+              "last_seen_at": "2026-10-03T13:11:37Z",
+              "updated_at": "2026-10-03T13:11:37Z",
+              "release_at": "2026-09-25T00:00:00Z",
+              "release_source": "igdb_first_release_date",
+              "expires_at": "2026-10-25T00:00:00Z",
+              "status": "active",
+              "status_reason": "within_release_window",
+              "enrollment": {
+                "source": "igdb_first_release_date",
+                "observed_at": "2026-09-29T14:28:32Z",
+                "viewer_count": 40496,
+                "min_viewers": 7000,
+                "kind": "history_recovery"
+              },
+              "source": "twitch_new"
+            },
             "steam:4080220": {
               "source": "steam_recent_release",
               "steam_appid": "4080220",
@@ -2266,28 +2284,10 @@
                 "release_at": "2026-09-24T23:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-24T22:59:41Z"
-            },
-            "twitch_new": {
-              "first_seen_at": "2026-09-29T14:28:32Z",
-              "last_seen_at": "2026-10-03T13:11:37Z",
-              "updated_at": "2026-10-03T13:11:37Z",
-              "release_at": "2026-09-25T00:00:00Z",
-              "release_source": "igdb_first_release_date",
-              "expires_at": "2026-10-25T00:00:00Z",
-              "status": "active",
-              "status_reason": "within_release_window",
-              "enrollment": {
-                "source": "igdb_first_release_date",
-                "observed_at": "2026-09-29T14:28:32Z",
-                "viewer_count": 40496,
-                "min_viewers": 7000,
-                "kind": "history_recovery"
-              },
-              "source": "twitch_new"
             }
           },
           "steam_matches": [
@@ -2445,7 +2445,7 @@
             "release_at": "2026-09-24T23:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-24T22:59:41Z"
@@ -2695,7 +2695,7 @@
       "release_at": "2026-09-16T00:00:00Z",
       "release_source": "igdb_first_release_date",
       "expires_at": "2026-10-16T00:00:00Z",
-      "status_reason": "within_release_window",
+      "status_reason": "active_tracking_sources",
       "last_seen_at": "2026-10-03T13:11:37Z",
       "updated_at": "2026-10-03T13:11:37Z",
       "last_observation": {
@@ -2788,10 +2788,95 @@
           "excluded_low_follower_count": 29,
           "unknown_follower_count": 0
         },
-        "steam_matches": [],
+        "steam_matches": [
+          {
+            "steam_appid": "4126040",
+            "name": "Aniimo",
+            "display_name": "伊莫",
+            "name_en": "Aniimo",
+            "store_url": "https://store.steampowered.com/app/4126040/",
+            "followers": 91070,
+            "release_at": "2026-09-14T16:00:00Z",
+            "release_date": "2026-09-15",
+            "release_date_timezone": "Asia/Taipei",
+            "release_precision": "day",
+            "release_time_basis": "steam_taiwan_store_date_authoritative",
+            "is_recent": true,
+            "expires_at": "2026-10-14T16:00:00Z",
+            "tags": [
+              "Open World",
+              "Creature Collector",
+              "Multiplayer",
+              "Adventure",
+              "Exploration",
+              "RPG",
+              "Collectathon",
+              "Online Co-Op",
+              "Co-op",
+              "Cute",
+              "PvP",
+              "Artificial Intelligence",
+              "Story Rich",
+              "PvE",
+              "Building",
+              "Singleplayer",
+              "Fantasy",
+              "Combat",
+              "Free to Play",
+              "Action"
+            ],
+            "genres": [
+              "Action",
+              "Adventure",
+              "Massively Multiplayer",
+              "RPG",
+              "Simulation",
+              "Strategy",
+              "Free to Play"
+            ],
+            "tag_labels_zh_tw": {
+              "Open World": "開放世界",
+              "Creature Collector": "生物收集",
+              "Multiplayer": "多人",
+              "Adventure": "冒險",
+              "Exploration": "探索",
+              "RPG": "角色扮演",
+              "Collectathon": "收集型平台",
+              "Online Co-Op": "線上合作",
+              "Co-op": "合作",
+              "Cute": "可愛",
+              "PvP": "玩家對戰",
+              "Artificial Intelligence": "人工智慧",
+              "Story Rich": "劇情豐富",
+              "PvE": "玩家合作",
+              "Building": "建造",
+              "Singleplayer": "單人",
+              "Fantasy": "奇幻",
+              "Combat": "戰鬥",
+              "Free to Play": "免費遊玩",
+              "Action": "動作"
+            },
+            "genre_labels_zh_tw": {
+              "Action": "動作",
+              "Adventure": "冒險",
+              "Massively Multiplayer": "大型多人連線",
+              "RPG": "角色扮演",
+              "Simulation": "模擬",
+              "Strategy": "策略",
+              "Free to Play": "免費遊玩"
+            },
+            "release_time_utc": "2026-09-16T01:51:33Z",
+            "release_timestamp_taipei_date": "2026-09-16",
+            "release_date_conflict": true,
+            "release_store_date": "2026-09-15",
+            "release_date_normalization": "steam_taiwan_store_date_authoritative",
+            "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+            "release_date_verified_at": "2026-10-03T13:02:59Z"
+          }
+        ],
         "tracking": {
           "status": "active",
-          "status_reason": "within_release_window",
+          "status_reason": "active_tracking_sources",
           "first_seen_at": "2026-09-29T14:28:32Z",
           "last_seen_at": "2026-10-03T13:11:37Z",
           "release_at": "2026-09-16T00:00:00Z",
@@ -2822,9 +2907,196 @@
                 "kind": "history_recovery"
               },
               "source": "twitch_new"
+            },
+            "steam:4126040": {
+              "source": "steam_recent_release",
+              "steam_appid": "4126040",
+              "steam": {
+                "steam_appid": "4126040",
+                "name": "Aniimo",
+                "display_name": "伊莫",
+                "name_en": "Aniimo",
+                "store_url": "https://store.steampowered.com/app/4126040/",
+                "followers": 91070,
+                "release_at": "2026-09-14T16:00:00Z",
+                "release_date": "2026-09-15",
+                "release_date_timezone": "Asia/Taipei",
+                "release_precision": "day",
+                "release_time_basis": "steam_taiwan_store_date_authoritative",
+                "is_recent": true,
+                "expires_at": "2026-10-14T16:00:00Z",
+                "tags": [
+                  "Open World",
+                  "Creature Collector",
+                  "Multiplayer",
+                  "Adventure",
+                  "Exploration",
+                  "RPG",
+                  "Collectathon",
+                  "Online Co-Op",
+                  "Co-op",
+                  "Cute",
+                  "PvP",
+                  "Artificial Intelligence",
+                  "Story Rich",
+                  "PvE",
+                  "Building",
+                  "Singleplayer",
+                  "Fantasy",
+                  "Combat",
+                  "Free to Play",
+                  "Action"
+                ],
+                "genres": [
+                  "Action",
+                  "Adventure",
+                  "Massively Multiplayer",
+                  "RPG",
+                  "Simulation",
+                  "Strategy",
+                  "Free to Play"
+                ],
+                "tag_labels_zh_tw": {
+                  "Open World": "開放世界",
+                  "Creature Collector": "生物收集",
+                  "Multiplayer": "多人",
+                  "Adventure": "冒險",
+                  "Exploration": "探索",
+                  "RPG": "角色扮演",
+                  "Collectathon": "收集型平台",
+                  "Online Co-Op": "線上合作",
+                  "Co-op": "合作",
+                  "Cute": "可愛",
+                  "PvP": "玩家對戰",
+                  "Artificial Intelligence": "人工智慧",
+                  "Story Rich": "劇情豐富",
+                  "PvE": "玩家合作",
+                  "Building": "建造",
+                  "Singleplayer": "單人",
+                  "Fantasy": "奇幻",
+                  "Combat": "戰鬥",
+                  "Free to Play": "免費遊玩",
+                  "Action": "動作"
+                },
+                "genre_labels_zh_tw": {
+                  "Action": "動作",
+                  "Adventure": "冒險",
+                  "Massively Multiplayer": "大型多人連線",
+                  "RPG": "角色扮演",
+                  "Simulation": "模擬",
+                  "Strategy": "策略",
+                  "Free to Play": "免費遊玩"
+                },
+                "release_time_utc": "2026-09-16T01:51:33Z",
+                "release_timestamp_taipei_date": "2026-09-16",
+                "release_date_conflict": true,
+                "release_store_date": "2026-09-15",
+                "release_date_normalization": "steam_taiwan_store_date_authoritative",
+                "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+                "release_date_verified_at": "2026-10-03T13:02:59Z"
+              },
+              "release_at": "2026-09-14T16:00:00Z",
+              "release_source": "steam_taiwan_store",
+              "first_seen_at": "2026-10-03T14:04:42Z",
+              "enrollment": {
+                "source": "steam_recent_release",
+                "observed_at": "2026-10-03T14:04:42Z",
+                "steam_appid": "4126040",
+                "release_at": "2026-09-14T16:00:00Z",
+                "release_source": "steam_taiwan_store"
+              },
+              "updated_at": "2026-10-03T14:04:42Z",
+              "status": "active",
+              "status_reason": "steam_recent_release",
+              "expires_at": "2026-10-14T16:00:00Z"
             }
           },
-          "steam_matches": []
+          "steam_matches": [
+            {
+              "steam_appid": "4126040",
+              "name": "Aniimo",
+              "display_name": "伊莫",
+              "name_en": "Aniimo",
+              "store_url": "https://store.steampowered.com/app/4126040/",
+              "followers": 91070,
+              "release_at": "2026-09-14T16:00:00Z",
+              "release_date": "2026-09-15",
+              "release_date_timezone": "Asia/Taipei",
+              "release_precision": "day",
+              "release_time_basis": "steam_taiwan_store_date_authoritative",
+              "is_recent": true,
+              "expires_at": "2026-10-14T16:00:00Z",
+              "tags": [
+                "Open World",
+                "Creature Collector",
+                "Multiplayer",
+                "Adventure",
+                "Exploration",
+                "RPG",
+                "Collectathon",
+                "Online Co-Op",
+                "Co-op",
+                "Cute",
+                "PvP",
+                "Artificial Intelligence",
+                "Story Rich",
+                "PvE",
+                "Building",
+                "Singleplayer",
+                "Fantasy",
+                "Combat",
+                "Free to Play",
+                "Action"
+              ],
+              "genres": [
+                "Action",
+                "Adventure",
+                "Massively Multiplayer",
+                "RPG",
+                "Simulation",
+                "Strategy",
+                "Free to Play"
+              ],
+              "tag_labels_zh_tw": {
+                "Open World": "開放世界",
+                "Creature Collector": "生物收集",
+                "Multiplayer": "多人",
+                "Adventure": "冒險",
+                "Exploration": "探索",
+                "RPG": "角色扮演",
+                "Collectathon": "收集型平台",
+                "Online Co-Op": "線上合作",
+                "Co-op": "合作",
+                "Cute": "可愛",
+                "PvP": "玩家對戰",
+                "Artificial Intelligence": "人工智慧",
+                "Story Rich": "劇情豐富",
+                "PvE": "玩家合作",
+                "Building": "建造",
+                "Singleplayer": "單人",
+                "Fantasy": "奇幻",
+                "Combat": "戰鬥",
+                "Free to Play": "免費遊玩",
+                "Action": "動作"
+              },
+              "genre_labels_zh_tw": {
+                "Action": "動作",
+                "Adventure": "冒險",
+                "Massively Multiplayer": "大型多人連線",
+                "RPG": "角色扮演",
+                "Simulation": "模擬",
+                "Strategy": "策略",
+                "Free to Play": "免費遊玩"
+              },
+              "release_time_utc": "2026-09-16T01:51:33Z",
+              "release_timestamp_taipei_date": "2026-09-16",
+              "release_date_conflict": true,
+              "release_store_date": "2026-09-15",
+              "release_date_normalization": "steam_taiwan_store_date_authoritative",
+              "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+              "release_date_verified_at": "2026-10-03T13:02:59Z"
+            }
+          ]
         },
         "observation_at": "2026-10-03T13:11:37Z",
         "observation_status": "current",
@@ -2850,9 +3122,196 @@
             "kind": "history_recovery"
           },
           "source": "twitch_new"
+        },
+        "steam:4126040": {
+          "source": "steam_recent_release",
+          "steam_appid": "4126040",
+          "steam": {
+            "steam_appid": "4126040",
+            "name": "Aniimo",
+            "display_name": "伊莫",
+            "name_en": "Aniimo",
+            "store_url": "https://store.steampowered.com/app/4126040/",
+            "followers": 91070,
+            "release_at": "2026-09-14T16:00:00Z",
+            "release_date": "2026-09-15",
+            "release_date_timezone": "Asia/Taipei",
+            "release_precision": "day",
+            "release_time_basis": "steam_taiwan_store_date_authoritative",
+            "is_recent": true,
+            "expires_at": "2026-10-14T16:00:00Z",
+            "tags": [
+              "Open World",
+              "Creature Collector",
+              "Multiplayer",
+              "Adventure",
+              "Exploration",
+              "RPG",
+              "Collectathon",
+              "Online Co-Op",
+              "Co-op",
+              "Cute",
+              "PvP",
+              "Artificial Intelligence",
+              "Story Rich",
+              "PvE",
+              "Building",
+              "Singleplayer",
+              "Fantasy",
+              "Combat",
+              "Free to Play",
+              "Action"
+            ],
+            "genres": [
+              "Action",
+              "Adventure",
+              "Massively Multiplayer",
+              "RPG",
+              "Simulation",
+              "Strategy",
+              "Free to Play"
+            ],
+            "tag_labels_zh_tw": {
+              "Open World": "開放世界",
+              "Creature Collector": "生物收集",
+              "Multiplayer": "多人",
+              "Adventure": "冒險",
+              "Exploration": "探索",
+              "RPG": "角色扮演",
+              "Collectathon": "收集型平台",
+              "Online Co-Op": "線上合作",
+              "Co-op": "合作",
+              "Cute": "可愛",
+              "PvP": "玩家對戰",
+              "Artificial Intelligence": "人工智慧",
+              "Story Rich": "劇情豐富",
+              "PvE": "玩家合作",
+              "Building": "建造",
+              "Singleplayer": "單人",
+              "Fantasy": "奇幻",
+              "Combat": "戰鬥",
+              "Free to Play": "免費遊玩",
+              "Action": "動作"
+            },
+            "genre_labels_zh_tw": {
+              "Action": "動作",
+              "Adventure": "冒險",
+              "Massively Multiplayer": "大型多人連線",
+              "RPG": "角色扮演",
+              "Simulation": "模擬",
+              "Strategy": "策略",
+              "Free to Play": "免費遊玩"
+            },
+            "release_time_utc": "2026-09-16T01:51:33Z",
+            "release_timestamp_taipei_date": "2026-09-16",
+            "release_date_conflict": true,
+            "release_store_date": "2026-09-15",
+            "release_date_normalization": "steam_taiwan_store_date_authoritative",
+            "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+            "release_date_verified_at": "2026-10-03T13:02:59Z"
+          },
+          "release_at": "2026-09-14T16:00:00Z",
+          "release_source": "steam_taiwan_store",
+          "first_seen_at": "2026-10-03T14:04:42Z",
+          "enrollment": {
+            "source": "steam_recent_release",
+            "observed_at": "2026-10-03T14:04:42Z",
+            "steam_appid": "4126040",
+            "release_at": "2026-09-14T16:00:00Z",
+            "release_source": "steam_taiwan_store"
+          },
+          "updated_at": "2026-10-03T14:04:42Z",
+          "status": "active",
+          "status_reason": "steam_recent_release",
+          "expires_at": "2026-10-14T16:00:00Z"
         }
       },
-      "steam_matches": []
+      "steam_matches": [
+        {
+          "steam_appid": "4126040",
+          "name": "Aniimo",
+          "display_name": "伊莫",
+          "name_en": "Aniimo",
+          "store_url": "https://store.steampowered.com/app/4126040/",
+          "followers": 91070,
+          "release_at": "2026-09-14T16:00:00Z",
+          "release_date": "2026-09-15",
+          "release_date_timezone": "Asia/Taipei",
+          "release_precision": "day",
+          "release_time_basis": "steam_taiwan_store_date_authoritative",
+          "is_recent": true,
+          "expires_at": "2026-10-14T16:00:00Z",
+          "tags": [
+            "Open World",
+            "Creature Collector",
+            "Multiplayer",
+            "Adventure",
+            "Exploration",
+            "RPG",
+            "Collectathon",
+            "Online Co-Op",
+            "Co-op",
+            "Cute",
+            "PvP",
+            "Artificial Intelligence",
+            "Story Rich",
+            "PvE",
+            "Building",
+            "Singleplayer",
+            "Fantasy",
+            "Combat",
+            "Free to Play",
+            "Action"
+          ],
+          "genres": [
+            "Action",
+            "Adventure",
+            "Massively Multiplayer",
+            "RPG",
+            "Simulation",
+            "Strategy",
+            "Free to Play"
+          ],
+          "tag_labels_zh_tw": {
+            "Open World": "開放世界",
+            "Creature Collector": "生物收集",
+            "Multiplayer": "多人",
+            "Adventure": "冒險",
+            "Exploration": "探索",
+            "RPG": "角色扮演",
+            "Collectathon": "收集型平台",
+            "Online Co-Op": "線上合作",
+            "Co-op": "合作",
+            "Cute": "可愛",
+            "PvP": "玩家對戰",
+            "Artificial Intelligence": "人工智慧",
+            "Story Rich": "劇情豐富",
+            "PvE": "玩家合作",
+            "Building": "建造",
+            "Singleplayer": "單人",
+            "Fantasy": "奇幻",
+            "Combat": "戰鬥",
+            "Free to Play": "免費遊玩",
+            "Action": "動作"
+          },
+          "genre_labels_zh_tw": {
+            "Action": "動作",
+            "Adventure": "冒險",
+            "Massively Multiplayer": "大型多人連線",
+            "RPG": "角色扮演",
+            "Simulation": "模擬",
+            "Strategy": "策略",
+            "Free to Play": "免費遊玩"
+          },
+          "release_time_utc": "2026-09-16T01:51:33Z",
+          "release_timestamp_taipei_date": "2026-09-16",
+          "release_date_conflict": true,
+          "release_store_date": "2026-09-15",
+          "release_date_normalization": "steam_taiwan_store_date_authoritative",
+          "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+          "release_date_verified_at": "2026-10-03T13:02:59Z"
+        }
+      ]
     },
     "1288749557": {
       "game_id": "1288749557",
@@ -3185,6 +3644,24 @@
             "kind": "history_recovery"
           },
           "tracking_sources": {
+            "twitch_new": {
+              "first_seen_at": "2026-09-29T16:02:55Z",
+              "last_seen_at": "2026-10-03T13:11:37Z",
+              "updated_at": "2026-10-03T13:11:37Z",
+              "release_at": "2026-09-24T00:00:00Z",
+              "release_source": "igdb_first_release_date",
+              "expires_at": "2026-10-24T00:00:00Z",
+              "status": "active",
+              "status_reason": "within_release_window",
+              "enrollment": {
+                "source": "igdb_first_release_date",
+                "observed_at": "2026-09-29T16:02:55Z",
+                "viewer_count": 7117,
+                "min_viewers": 7000,
+                "kind": "history_recovery"
+              },
+              "source": "twitch_new"
+            },
             "steam:3669870": {
               "source": "steam_recent_release",
               "steam_appid": "3669870",
@@ -3267,28 +3744,10 @@
                 "release_at": "2026-09-24T14:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-24T14:01:15Z"
-            },
-            "twitch_new": {
-              "first_seen_at": "2026-09-29T16:02:55Z",
-              "last_seen_at": "2026-10-03T13:11:37Z",
-              "updated_at": "2026-10-03T13:11:37Z",
-              "release_at": "2026-09-24T00:00:00Z",
-              "release_source": "igdb_first_release_date",
-              "expires_at": "2026-10-24T00:00:00Z",
-              "status": "active",
-              "status_reason": "within_release_window",
-              "enrollment": {
-                "source": "igdb_first_release_date",
-                "observed_at": "2026-09-29T16:02:55Z",
-                "viewer_count": 7117,
-                "min_viewers": 7000,
-                "kind": "history_recovery"
-              },
-              "source": "twitch_new"
             }
           },
           "steam_matches": [
@@ -3470,7 +3929,7 @@
             "release_at": "2026-09-24T14:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-24T14:01:15Z"
@@ -3634,7 +4093,7 @@
             "release_at": "2026-09-15T08:59:05Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-15T08:59:05Z"
@@ -3899,23 +4358,6 @@
             "min_viewers": 7000
           },
           "tracking_sources": {
-            "twitch_new": {
-              "source": "twitch_new",
-              "first_seen_at": "2026-10-02T16:13:26Z",
-              "enrollment": {
-                "source": "igdb_first_release_date",
-                "observed_at": "2026-10-02T16:13:26Z",
-                "viewer_count": 19497,
-                "min_viewers": 7000
-              },
-              "status": "active",
-              "status_reason": "within_release_window",
-              "release_at": "2026-09-15T00:00:00Z",
-              "release_source": "igdb_first_release_date",
-              "updated_at": "2026-10-03T13:11:37Z",
-              "expires_at": "2026-10-15T00:00:00Z",
-              "last_seen_at": "2026-10-03T13:11:37Z"
-            },
             "steam:2887580": {
               "source": "steam_recent_release",
               "steam_appid": "2887580",
@@ -3996,10 +4438,27 @@
                 "release_at": "2026-09-15T08:59:05Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-15T08:59:05Z"
+            },
+            "twitch_new": {
+              "source": "twitch_new",
+              "first_seen_at": "2026-10-02T16:13:26Z",
+              "enrollment": {
+                "source": "igdb_first_release_date",
+                "observed_at": "2026-10-02T16:13:26Z",
+                "viewer_count": 19497,
+                "min_viewers": 7000
+              },
+              "status": "active",
+              "status_reason": "within_release_window",
+              "release_at": "2026-09-15T00:00:00Z",
+              "release_source": "igdb_first_release_date",
+              "updated_at": "2026-10-03T13:11:37Z",
+              "expires_at": "2026-10-15T00:00:00Z",
+              "last_seen_at": "2026-10-03T13:11:37Z"
             }
           },
           "steam_matches": [
@@ -4179,7 +4638,8 @@
             "Indie": "獨立製作",
             "Simulation": "模擬",
             "Early Access": "搶先體驗"
-          }
+          },
+          "mapping_checked_at": "2026-10-01T08:41:49Z"
         }
       ],
       "release_at": "2026-09-30T00:00:00Z",
@@ -4427,7 +4887,8 @@
                 "Indie": "獨立製作",
                 "Simulation": "模擬",
                 "Early Access": "搶先體驗"
-              }
+              },
+              "mapping_checked_at": "2026-10-01T08:41:49Z"
             }
           ]
         },
@@ -4534,7 +4995,8 @@
           "genre_labels_zh_tw": {
             "Action": "動作",
             "Adventure": "冒險"
-          }
+          },
+          "mapping_checked_at": "2026-10-01T08:41:49Z"
         }
       ],
       "release_at": "2026-10-06T00:00:00Z",
@@ -4791,7 +5253,8 @@
               "genre_labels_zh_tw": {
                 "Action": "動作",
                 "Adventure": "冒險"
-              }
+              },
+              "mapping_checked_at": "2026-10-01T08:41:49Z"
             }
           ]
         },
@@ -4880,7 +5343,7 @@
             "release_at": "2026-09-22T01:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-22T01:00:00Z"
@@ -5140,7 +5603,7 @@
                 "release_at": "2026-09-22T01:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-22T01:00:00Z"
@@ -5301,7 +5764,7 @@
             "release_at": "2026-09-23T17:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-23T17:00:00Z"
@@ -5611,7 +6074,7 @@
                 "release_at": "2026-09-23T17:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-23T17:00:00Z"
@@ -6099,7 +6562,7 @@
                 "release_at": "2026-09-17T12:16:17Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-17T12:16:17Z"
@@ -6285,7 +6748,7 @@
             "release_at": "2026-09-17T12:16:17Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-17T12:16:17Z"
@@ -6397,7 +6860,7 @@
       "release_at": "2026-09-24T00:00:00Z",
       "release_source": "igdb_first_release_date",
       "expires_at": "2026-10-24T00:00:00Z",
-      "status_reason": "within_release_window",
+      "status_reason": "active_tracking_sources",
       "last_seen_at": "2026-10-03T13:11:37Z",
       "updated_at": "2026-10-03T13:11:37Z",
       "last_observation": {
@@ -6491,10 +6954,85 @@
           "excluded_low_follower_count": 21,
           "unknown_follower_count": 0
         },
-        "steam_matches": [],
+        "steam_matches": [
+          {
+            "steam_appid": "1636440",
+            "name": "SILENT HILL: Townfall",
+            "display_name": "SILENT HILL: Townfall",
+            "name_en": "SILENT HILL: Townfall",
+            "store_url": "https://store.steampowered.com/app/1636440/",
+            "followers": 22670,
+            "release_at": "2026-09-22T16:00:00Z",
+            "release_date": "2026-09-23",
+            "release_date_timezone": "Asia/Taipei",
+            "release_precision": "day",
+            "release_time_basis": "steam_taiwan_store_date_authoritative",
+            "is_recent": true,
+            "expires_at": "2026-10-22T16:00:00Z",
+            "tags": [
+              "Adventure",
+              "Action",
+              "Horror",
+              "Psychological Horror",
+              "First-Person",
+              "Survival Horror",
+              "Exploration",
+              "Action-Adventure",
+              "3D",
+              "Psychological",
+              "Atmospheric",
+              "Violent",
+              "Singleplayer",
+              "Cinematic",
+              "1990's",
+              "Story Rich",
+              "LGBTQ+",
+              "Multiple Endings",
+              "Stealth",
+              "FPS"
+            ],
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "tag_labels_zh_tw": {
+              "Adventure": "冒險",
+              "Action": "動作",
+              "Horror": "恐怖",
+              "Psychological Horror": "心理恐怖",
+              "First-Person": "第一人稱視角",
+              "Survival Horror": "生存恐怖",
+              "Exploration": "探索",
+              "Action-Adventure": "動作冒險",
+              "3D": "3D",
+              "Psychological": "心理",
+              "Atmospheric": "氛圍",
+              "Violent": "暴力",
+              "Singleplayer": "單人",
+              "Cinematic": "電影感",
+              "1990's": "90 年代",
+              "Story Rich": "劇情豐富",
+              "LGBTQ+": "LGBTQ+",
+              "Multiple Endings": "多結局",
+              "Stealth": "潛行",
+              "FPS": "第一人稱射擊"
+            },
+            "genre_labels_zh_tw": {
+              "Action": "動作",
+              "Adventure": "冒險"
+            },
+            "release_time_utc": "2026-09-24T04:01:09Z",
+            "release_timestamp_taipei_date": "2026-09-24",
+            "release_date_conflict": true,
+            "release_store_date": "2026-09-23",
+            "release_date_normalization": "steam_taiwan_store_date_authoritative",
+            "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+            "release_date_verified_at": "2026-10-03T12:51:02Z"
+          }
+        ],
         "tracking": {
           "status": "active",
-          "status_reason": "within_release_window",
+          "status_reason": "active_tracking_sources",
           "first_seen_at": "2026-09-29T14:28:32Z",
           "last_seen_at": "2026-10-03T13:11:37Z",
           "release_at": "2026-09-24T00:00:00Z",
@@ -6517,14 +7055,14 @@
                 "display_name": "SILENT HILL: Townfall",
                 "name_en": "SILENT HILL: Townfall",
                 "store_url": "https://store.steampowered.com/app/1636440/",
-                "followers": 20796,
-                "release_at": "2026-09-24T04:00:00Z",
-                "release_date": "2026-09-24",
+                "followers": 22670,
+                "release_at": "2026-09-22T16:00:00Z",
+                "release_date": "2026-09-23",
                 "release_date_timezone": "Asia/Taipei",
                 "release_precision": "day",
-                "release_time_basis": "exact_utc",
+                "release_time_basis": "steam_taiwan_store_date_authoritative",
                 "is_recent": true,
-                "expires_at": "2026-10-24T04:00:00Z",
+                "expires_at": "2026-10-22T16:00:00Z",
                 "tags": [
                   "Adventure",
                   "Action",
@@ -6535,14 +7073,14 @@
                   "Exploration",
                   "Action-Adventure",
                   "3D",
-                  "Atmospheric",
                   "Psychological",
+                  "Atmospheric",
                   "Violent",
                   "Singleplayer",
-                  "1990's",
                   "Cinematic",
-                  "LGBTQ+",
+                  "1990's",
                   "Story Rich",
+                  "LGBTQ+",
                   "Multiple Endings",
                   "Stealth",
                   "FPS"
@@ -6561,14 +7099,14 @@
                   "Exploration": "探索",
                   "Action-Adventure": "動作冒險",
                   "3D": "3D",
-                  "Atmospheric": "氛圍",
                   "Psychological": "心理",
+                  "Atmospheric": "氛圍",
                   "Violent": "暴力",
                   "Singleplayer": "單人",
-                  "1990's": "90 年代",
                   "Cinematic": "電影感",
-                  "LGBTQ+": "LGBTQ+",
+                  "1990's": "90 年代",
                   "Story Rich": "劇情豐富",
+                  "LGBTQ+": "LGBTQ+",
                   "Multiple Endings": "多結局",
                   "Stealth": "潛行",
                   "FPS": "第一人稱射擊"
@@ -6576,9 +7114,16 @@
                 "genre_labels_zh_tw": {
                   "Action": "動作",
                   "Adventure": "冒險"
-                }
+                },
+                "release_time_utc": "2026-09-24T04:01:09Z",
+                "release_timestamp_taipei_date": "2026-09-24",
+                "release_date_conflict": true,
+                "release_store_date": "2026-09-23",
+                "release_date_normalization": "steam_taiwan_store_date_authoritative",
+                "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+                "release_date_verified_at": "2026-10-03T12:51:02Z"
               },
-              "release_at": "2026-09-24T04:00:00Z",
+              "release_at": "2026-09-22T16:00:00Z",
               "release_source": "steam_taiwan_store",
               "first_seen_at": "2026-10-01T08:41:49Z",
               "enrollment": {
@@ -6588,10 +7133,10 @@
                 "release_at": "2026-09-24T04:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
-              "status": "excluded",
-              "status_reason": "steam_not_in_catalog",
-              "expires_at": "2026-10-24T04:00:00Z"
+              "updated_at": "2026-10-03T14:04:42Z",
+              "status": "active",
+              "status_reason": "steam_recent_release",
+              "expires_at": "2026-10-22T16:00:00Z"
             },
             "twitch_new": {
               "first_seen_at": "2026-09-29T14:28:32Z",
@@ -6612,7 +7157,82 @@
               "source": "twitch_new"
             }
           },
-          "steam_matches": []
+          "steam_matches": [
+            {
+              "steam_appid": "1636440",
+              "name": "SILENT HILL: Townfall",
+              "display_name": "SILENT HILL: Townfall",
+              "name_en": "SILENT HILL: Townfall",
+              "store_url": "https://store.steampowered.com/app/1636440/",
+              "followers": 22670,
+              "release_at": "2026-09-22T16:00:00Z",
+              "release_date": "2026-09-23",
+              "release_date_timezone": "Asia/Taipei",
+              "release_precision": "day",
+              "release_time_basis": "steam_taiwan_store_date_authoritative",
+              "is_recent": true,
+              "expires_at": "2026-10-22T16:00:00Z",
+              "tags": [
+                "Adventure",
+                "Action",
+                "Horror",
+                "Psychological Horror",
+                "First-Person",
+                "Survival Horror",
+                "Exploration",
+                "Action-Adventure",
+                "3D",
+                "Psychological",
+                "Atmospheric",
+                "Violent",
+                "Singleplayer",
+                "Cinematic",
+                "1990's",
+                "Story Rich",
+                "LGBTQ+",
+                "Multiple Endings",
+                "Stealth",
+                "FPS"
+              ],
+              "genres": [
+                "Action",
+                "Adventure"
+              ],
+              "tag_labels_zh_tw": {
+                "Adventure": "冒險",
+                "Action": "動作",
+                "Horror": "恐怖",
+                "Psychological Horror": "心理恐怖",
+                "First-Person": "第一人稱視角",
+                "Survival Horror": "生存恐怖",
+                "Exploration": "探索",
+                "Action-Adventure": "動作冒險",
+                "3D": "3D",
+                "Psychological": "心理",
+                "Atmospheric": "氛圍",
+                "Violent": "暴力",
+                "Singleplayer": "單人",
+                "Cinematic": "電影感",
+                "1990's": "90 年代",
+                "Story Rich": "劇情豐富",
+                "LGBTQ+": "LGBTQ+",
+                "Multiple Endings": "多結局",
+                "Stealth": "潛行",
+                "FPS": "第一人稱射擊"
+              },
+              "genre_labels_zh_tw": {
+                "Action": "動作",
+                "Adventure": "冒險"
+              },
+              "release_time_utc": "2026-09-24T04:01:09Z",
+              "release_timestamp_taipei_date": "2026-09-24",
+              "release_date_conflict": true,
+              "release_store_date": "2026-09-23",
+              "release_date_normalization": "steam_taiwan_store_date_authoritative",
+              "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+              "release_date_verified_at": "2026-10-03T12:51:02Z"
+            }
+          ]
         },
         "observation_at": "2026-10-03T13:11:37Z",
         "observation_status": "current",
@@ -6630,14 +7250,14 @@
             "display_name": "SILENT HILL: Townfall",
             "name_en": "SILENT HILL: Townfall",
             "store_url": "https://store.steampowered.com/app/1636440/",
-            "followers": 20796,
-            "release_at": "2026-09-24T04:00:00Z",
-            "release_date": "2026-09-24",
+            "followers": 22670,
+            "release_at": "2026-09-22T16:00:00Z",
+            "release_date": "2026-09-23",
             "release_date_timezone": "Asia/Taipei",
             "release_precision": "day",
-            "release_time_basis": "exact_utc",
+            "release_time_basis": "steam_taiwan_store_date_authoritative",
             "is_recent": true,
-            "expires_at": "2026-10-24T04:00:00Z",
+            "expires_at": "2026-10-22T16:00:00Z",
             "tags": [
               "Adventure",
               "Action",
@@ -6648,14 +7268,14 @@
               "Exploration",
               "Action-Adventure",
               "3D",
-              "Atmospheric",
               "Psychological",
+              "Atmospheric",
               "Violent",
               "Singleplayer",
-              "1990's",
               "Cinematic",
-              "LGBTQ+",
+              "1990's",
               "Story Rich",
+              "LGBTQ+",
               "Multiple Endings",
               "Stealth",
               "FPS"
@@ -6674,14 +7294,14 @@
               "Exploration": "探索",
               "Action-Adventure": "動作冒險",
               "3D": "3D",
-              "Atmospheric": "氛圍",
               "Psychological": "心理",
+              "Atmospheric": "氛圍",
               "Violent": "暴力",
               "Singleplayer": "單人",
-              "1990's": "90 年代",
               "Cinematic": "電影感",
-              "LGBTQ+": "LGBTQ+",
+              "1990's": "90 年代",
               "Story Rich": "劇情豐富",
+              "LGBTQ+": "LGBTQ+",
               "Multiple Endings": "多結局",
               "Stealth": "潛行",
               "FPS": "第一人稱射擊"
@@ -6689,9 +7309,16 @@
             "genre_labels_zh_tw": {
               "Action": "動作",
               "Adventure": "冒險"
-            }
+            },
+            "release_time_utc": "2026-09-24T04:01:09Z",
+            "release_timestamp_taipei_date": "2026-09-24",
+            "release_date_conflict": true,
+            "release_store_date": "2026-09-23",
+            "release_date_normalization": "steam_taiwan_store_date_authoritative",
+            "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+            "release_date_verified_at": "2026-10-03T12:51:02Z"
           },
-          "release_at": "2026-09-24T04:00:00Z",
+          "release_at": "2026-09-22T16:00:00Z",
           "release_source": "steam_taiwan_store",
           "first_seen_at": "2026-10-01T08:41:49Z",
           "enrollment": {
@@ -6701,10 +7328,10 @@
             "release_at": "2026-09-24T04:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
-          "status": "excluded",
-          "status_reason": "steam_not_in_catalog",
-          "expires_at": "2026-10-24T04:00:00Z"
+          "updated_at": "2026-10-03T14:04:42Z",
+          "status": "active",
+          "status_reason": "steam_recent_release",
+          "expires_at": "2026-10-22T16:00:00Z"
         },
         "twitch_new": {
           "first_seen_at": "2026-09-29T14:28:32Z",
@@ -6725,7 +7352,82 @@
           "source": "twitch_new"
         }
       },
-      "steam_matches": []
+      "steam_matches": [
+        {
+          "steam_appid": "1636440",
+          "name": "SILENT HILL: Townfall",
+          "display_name": "SILENT HILL: Townfall",
+          "name_en": "SILENT HILL: Townfall",
+          "store_url": "https://store.steampowered.com/app/1636440/",
+          "followers": 22670,
+          "release_at": "2026-09-22T16:00:00Z",
+          "release_date": "2026-09-23",
+          "release_date_timezone": "Asia/Taipei",
+          "release_precision": "day",
+          "release_time_basis": "steam_taiwan_store_date_authoritative",
+          "is_recent": true,
+          "expires_at": "2026-10-22T16:00:00Z",
+          "tags": [
+            "Adventure",
+            "Action",
+            "Horror",
+            "Psychological Horror",
+            "First-Person",
+            "Survival Horror",
+            "Exploration",
+            "Action-Adventure",
+            "3D",
+            "Psychological",
+            "Atmospheric",
+            "Violent",
+            "Singleplayer",
+            "Cinematic",
+            "1990's",
+            "Story Rich",
+            "LGBTQ+",
+            "Multiple Endings",
+            "Stealth",
+            "FPS"
+          ],
+          "genres": [
+            "Action",
+            "Adventure"
+          ],
+          "tag_labels_zh_tw": {
+            "Adventure": "冒險",
+            "Action": "動作",
+            "Horror": "恐怖",
+            "Psychological Horror": "心理恐怖",
+            "First-Person": "第一人稱視角",
+            "Survival Horror": "生存恐怖",
+            "Exploration": "探索",
+            "Action-Adventure": "動作冒險",
+            "3D": "3D",
+            "Psychological": "心理",
+            "Atmospheric": "氛圍",
+            "Violent": "暴力",
+            "Singleplayer": "單人",
+            "Cinematic": "電影感",
+            "1990's": "90 年代",
+            "Story Rich": "劇情豐富",
+            "LGBTQ+": "LGBTQ+",
+            "Multiple Endings": "多結局",
+            "Stealth": "潛行",
+            "FPS": "第一人稱射擊"
+          },
+          "genre_labels_zh_tw": {
+            "Action": "動作",
+            "Adventure": "冒險"
+          },
+          "release_time_utc": "2026-09-24T04:01:09Z",
+          "release_timestamp_taipei_date": "2026-09-24",
+          "release_date_conflict": true,
+          "release_store_date": "2026-09-23",
+          "release_date_normalization": "steam_taiwan_store_date_authoritative",
+          "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+          "release_date_verified_at": "2026-10-03T12:51:02Z"
+        }
+      ]
     },
     "1965962033": {
       "game_id": "1965962033",
@@ -6823,7 +7525,7 @@
             "release_at": "2026-09-30T14:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-30T14:00:00Z"
@@ -7135,7 +7837,7 @@
                 "release_at": "2026-09-30T14:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-30T14:00:00Z"
@@ -7479,7 +8181,7 @@
                 "release_at": "2026-09-29T16:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-29T15:59:21Z"
@@ -7664,7 +8366,7 @@
             "release_at": "2026-09-29T16:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-29T15:59:21Z"
@@ -7857,7 +8559,7 @@
             "release_at": "2026-09-22T19:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-22T19:00:00Z"
@@ -8168,7 +8870,7 @@
                 "release_at": "2026-09-22T19:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-22T19:00:00Z"
@@ -8433,6 +9135,24 @@
             "kind": "history_recovery"
           },
           "tracking_sources": {
+            "twitch_new": {
+              "first_seen_at": "2026-09-29T14:28:32Z",
+              "last_seen_at": "2026-10-03T13:11:37Z",
+              "updated_at": "2026-10-03T13:11:37Z",
+              "release_at": "2026-09-29T00:00:00Z",
+              "release_source": "igdb_first_release_date",
+              "expires_at": "2026-10-29T00:00:00Z",
+              "status": "active",
+              "status_reason": "within_release_window",
+              "enrollment": {
+                "source": "igdb_first_release_date",
+                "observed_at": "2026-09-29T14:28:32Z",
+                "viewer_count": 25153,
+                "min_viewers": 7000,
+                "kind": "history_recovery"
+              },
+              "source": "twitch_new"
+            },
             "steam:1912410": {
               "source": "steam_recent_release",
               "steam_appid": "1912410",
@@ -8515,28 +9235,10 @@
                 "release_at": "2026-09-29T20:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-29T07:59:56Z"
-            },
-            "twitch_new": {
-              "first_seen_at": "2026-09-29T14:28:32Z",
-              "last_seen_at": "2026-10-03T13:11:37Z",
-              "updated_at": "2026-10-03T13:11:37Z",
-              "release_at": "2026-09-29T00:00:00Z",
-              "release_source": "igdb_first_release_date",
-              "expires_at": "2026-10-29T00:00:00Z",
-              "status": "active",
-              "status_reason": "within_release_window",
-              "enrollment": {
-                "source": "igdb_first_release_date",
-                "observed_at": "2026-09-29T14:28:32Z",
-                "viewer_count": 25153,
-                "min_viewers": 7000,
-                "kind": "history_recovery"
-              },
-              "source": "twitch_new"
             }
           },
           "steam_matches": [
@@ -8718,7 +9420,7 @@
             "release_at": "2026-09-29T20:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-29T07:59:56Z"
@@ -9090,7 +9792,7 @@
                 "release_at": "2026-09-22T16:55:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-22T16:55:00Z"
@@ -9284,7 +9986,7 @@
             "release_at": "2026-09-22T16:55:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-22T16:55:00Z"
@@ -9489,7 +10191,7 @@
             "release_at": "2026-09-24T17:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-24T17:00:00Z"
@@ -9805,7 +10507,7 @@
                 "release_at": "2026-09-24T17:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-24T17:00:00Z"
@@ -9990,7 +10692,7 @@
             "release_at": "2026-09-21T20:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-21T20:00:00Z"
@@ -10316,7 +11018,7 @@
                 "release_at": "2026-09-21T20:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-21T20:00:00Z"
@@ -10503,7 +11205,7 @@
             "release_at": "2026-09-21T14:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-21T14:00:00Z"
@@ -10826,7 +11528,7 @@
                 "release_at": "2026-09-21T14:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-21T14:00:00Z"
@@ -11007,7 +11709,7 @@
             "release_at": "2026-09-22T14:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-22T14:00:00Z"
@@ -11319,7 +12021,7 @@
                 "release_at": "2026-09-22T14:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-22T14:00:00Z"
@@ -11499,7 +12201,84 @@
           "excluded_low_follower_count": 11,
           "unknown_follower_count": 0
         },
-        "steam_matches": [],
+        "steam_matches": [
+          {
+            "steam_appid": "2638890",
+            "name": "Onimusha: Way of the Sword",
+            "display_name": "鬼武者 Way of the Sword",
+            "name_en": "Onimusha: Way of the Sword",
+            "store_url": "https://store.steampowered.com/app/2638890/",
+            "followers": 82455,
+            "release_at": "2026-09-02T16:00:00Z",
+            "release_date": "2026-09-03",
+            "release_date_timezone": "Asia/Taipei",
+            "release_precision": "day",
+            "release_time_basis": "steam_taiwan_store_date_authoritative",
+            "is_recent": false,
+            "expires_at": "2026-10-02T16:00:00Z",
+            "tags": [
+              "Action",
+              "Singleplayer",
+              "Swordplay",
+              "Action-Adventure",
+              "Souls-like",
+              "Samurai",
+              "Action RPG",
+              "Hack and Slash",
+              "Dark Fantasy",
+              "Spectacle fighter",
+              "Gore",
+              "Violent",
+              "Adventure",
+              "RPG",
+              "Horror",
+              "Open World",
+              "3D",
+              "Realistic",
+              "Mystery",
+              "Survival Horror"
+            ],
+            "genres": [
+              "Action",
+              "Adventure",
+              "RPG"
+            ],
+            "tag_labels_zh_tw": {
+              "Action": "動作",
+              "Singleplayer": "單人",
+              "Swordplay": "劍術",
+              "Action-Adventure": "動作冒險",
+              "Souls-like": "類魂",
+              "Samurai": "日本武士",
+              "Action RPG": "動作角色扮演",
+              "Hack and Slash": "砍殺",
+              "Dark Fantasy": "黑暗奇幻",
+              "Spectacle fighter": "華麗格鬥",
+              "Gore": "鮮血",
+              "Violent": "暴力",
+              "Adventure": "冒險",
+              "RPG": "角色扮演",
+              "Horror": "恐怖",
+              "Open World": "開放世界",
+              "3D": "3D",
+              "Realistic": "擬真",
+              "Mystery": "懸疑",
+              "Survival Horror": "生存恐怖"
+            },
+            "genre_labels_zh_tw": {
+              "Action": "動作",
+              "Adventure": "冒險",
+              "RPG": "角色扮演"
+            },
+            "release_time_utc": "2026-09-04T04:02:14Z",
+            "release_timestamp_taipei_date": "2026-09-04",
+            "release_date_conflict": true,
+            "release_store_date": "2026-09-03",
+            "release_date_normalization": "steam_taiwan_store_date_authoritative",
+            "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+            "release_date_verified_at": "2026-10-03T13:02:59Z"
+          }
+        ],
         "tracking": {
           "status": "active",
           "status_reason": "within_release_window",
@@ -11535,7 +12314,85 @@
               "source": "twitch_new"
             }
           },
-          "steam_matches": []
+          "steam_matches": [
+            {
+              "steam_appid": "2638890",
+              "name": "Onimusha: Way of the Sword",
+              "display_name": "鬼武者 Way of the Sword",
+              "name_en": "Onimusha: Way of the Sword",
+              "store_url": "https://store.steampowered.com/app/2638890/",
+              "followers": 82455,
+              "release_at": "2026-09-02T16:00:00Z",
+              "release_date": "2026-09-03",
+              "release_date_timezone": "Asia/Taipei",
+              "release_precision": "day",
+              "release_time_basis": "steam_taiwan_store_date_authoritative",
+              "is_recent": false,
+              "expires_at": "2026-10-02T16:00:00Z",
+              "tags": [
+                "Action",
+                "Singleplayer",
+                "Swordplay",
+                "Action-Adventure",
+                "Souls-like",
+                "Samurai",
+                "Action RPG",
+                "Hack and Slash",
+                "Dark Fantasy",
+                "Spectacle fighter",
+                "Gore",
+                "Violent",
+                "Adventure",
+                "RPG",
+                "Horror",
+                "Open World",
+                "3D",
+                "Realistic",
+                "Mystery",
+                "Survival Horror"
+              ],
+              "genres": [
+                "Action",
+                "Adventure",
+                "RPG"
+              ],
+              "tag_labels_zh_tw": {
+                "Action": "動作",
+                "Singleplayer": "單人",
+                "Swordplay": "劍術",
+                "Action-Adventure": "動作冒險",
+                "Souls-like": "類魂",
+                "Samurai": "日本武士",
+                "Action RPG": "動作角色扮演",
+                "Hack and Slash": "砍殺",
+                "Dark Fantasy": "黑暗奇幻",
+                "Spectacle fighter": "華麗格鬥",
+                "Gore": "鮮血",
+                "Violent": "暴力",
+                "Adventure": "冒險",
+                "RPG": "角色扮演",
+                "Horror": "恐怖",
+                "Open World": "開放世界",
+                "3D": "3D",
+                "Realistic": "擬真",
+                "Mystery": "懸疑",
+                "Survival Horror": "生存恐怖"
+              },
+              "genre_labels_zh_tw": {
+                "Action": "動作",
+                "Adventure": "冒險",
+                "RPG": "角色扮演"
+              },
+              "release_time_utc": "2026-09-04T04:02:14Z",
+              "release_timestamp_taipei_date": "2026-09-04",
+              "release_date_conflict": true,
+              "release_store_date": "2026-09-03",
+              "release_date_normalization": "steam_taiwan_store_date_authoritative",
+              "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+              "release_date_verified_at": "2026-10-03T13:02:59Z",
+              "mapping_checked_at": "2026-10-03T10:10:30Z"
+            }
+          ]
         },
         "observation_at": "2026-10-03T13:11:37Z",
         "observation_status": "current",
@@ -11563,7 +12420,85 @@
           "source": "twitch_new"
         }
       },
-      "steam_matches": []
+      "steam_matches": [
+        {
+          "steam_appid": "2638890",
+          "name": "Onimusha: Way of the Sword",
+          "display_name": "鬼武者 Way of the Sword",
+          "name_en": "Onimusha: Way of the Sword",
+          "store_url": "https://store.steampowered.com/app/2638890/",
+          "followers": 82455,
+          "release_at": "2026-09-02T16:00:00Z",
+          "release_date": "2026-09-03",
+          "release_date_timezone": "Asia/Taipei",
+          "release_precision": "day",
+          "release_time_basis": "steam_taiwan_store_date_authoritative",
+          "is_recent": false,
+          "expires_at": "2026-10-02T16:00:00Z",
+          "tags": [
+            "Action",
+            "Singleplayer",
+            "Swordplay",
+            "Action-Adventure",
+            "Souls-like",
+            "Samurai",
+            "Action RPG",
+            "Hack and Slash",
+            "Dark Fantasy",
+            "Spectacle fighter",
+            "Gore",
+            "Violent",
+            "Adventure",
+            "RPG",
+            "Horror",
+            "Open World",
+            "3D",
+            "Realistic",
+            "Mystery",
+            "Survival Horror"
+          ],
+          "genres": [
+            "Action",
+            "Adventure",
+            "RPG"
+          ],
+          "tag_labels_zh_tw": {
+            "Action": "動作",
+            "Singleplayer": "單人",
+            "Swordplay": "劍術",
+            "Action-Adventure": "動作冒險",
+            "Souls-like": "類魂",
+            "Samurai": "日本武士",
+            "Action RPG": "動作角色扮演",
+            "Hack and Slash": "砍殺",
+            "Dark Fantasy": "黑暗奇幻",
+            "Spectacle fighter": "華麗格鬥",
+            "Gore": "鮮血",
+            "Violent": "暴力",
+            "Adventure": "冒險",
+            "RPG": "角色扮演",
+            "Horror": "恐怖",
+            "Open World": "開放世界",
+            "3D": "3D",
+            "Realistic": "擬真",
+            "Mystery": "懸疑",
+            "Survival Horror": "生存恐怖"
+          },
+          "genre_labels_zh_tw": {
+            "Action": "動作",
+            "Adventure": "冒險",
+            "RPG": "角色扮演"
+          },
+          "release_time_utc": "2026-09-04T04:02:14Z",
+          "release_timestamp_taipei_date": "2026-09-04",
+          "release_date_conflict": true,
+          "release_store_date": "2026-09-03",
+          "release_date_normalization": "steam_taiwan_store_date_authoritative",
+          "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+          "release_date_verified_at": "2026-10-03T13:02:59Z",
+          "mapping_checked_at": "2026-10-03T10:10:30Z"
+        }
+      ]
     },
     "336484893": {
       "game_id": "336484893",
@@ -11803,7 +12738,7 @@
                 "release_at": "2026-09-25T16:00:45Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-25T16:00:45Z"
@@ -11973,7 +12908,7 @@
             "release_at": "2026-09-25T16:00:45Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-25T16:00:45Z"
@@ -12156,7 +13091,7 @@
             "release_at": "2026-09-24T12:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-24T12:00:00Z"
@@ -12461,7 +13396,7 @@
                 "release_at": "2026-09-24T12:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-24T12:00:00Z"
@@ -12798,7 +13733,7 @@
                 "release_at": "2026-10-01T22:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-31T22:00:06Z"
@@ -12975,7 +13910,7 @@
             "release_at": "2026-10-01T22:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-31T22:00:06Z"
@@ -13332,7 +14267,8 @@
                 "Racing": "競速",
                 "Simulation": "模擬",
                 "Sports": "運動"
-              }
+              },
+              "mapping_checked_at": "2026-10-01T08:41:49Z"
             }
           ]
         },
@@ -13431,7 +14367,8 @@
             "Racing": "競速",
             "Simulation": "模擬",
             "Sports": "運動"
-          }
+          },
+          "mapping_checked_at": "2026-10-01T08:41:49Z"
         }
       ]
     },
@@ -13785,24 +14722,6 @@
             "kind": "history_recovery"
           },
           "tracking_sources": {
-            "twitch_new": {
-              "first_seen_at": "2026-09-29T14:28:32Z",
-              "last_seen_at": "2026-10-03T13:11:37Z",
-              "updated_at": "2026-10-03T13:11:37Z",
-              "release_at": "2026-09-09T00:00:00Z",
-              "release_source": "igdb_first_release_date",
-              "expires_at": "2026-10-09T00:00:00Z",
-              "status": "active",
-              "status_reason": "within_release_window",
-              "enrollment": {
-                "source": "igdb_first_release_date",
-                "observed_at": "2026-09-29T14:28:32Z",
-                "viewer_count": 9675,
-                "min_viewers": 7000,
-                "kind": "history_recovery"
-              },
-              "source": "twitch_new"
-            },
             "steam:892970": {
               "source": "steam_recent_release",
               "steam_appid": "892970",
@@ -13887,10 +14806,28 @@
                 "release_at": "2026-09-09T12:56:35Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-09T12:56:35Z"
+            },
+            "twitch_new": {
+              "first_seen_at": "2026-09-29T14:28:32Z",
+              "last_seen_at": "2026-10-03T13:11:37Z",
+              "updated_at": "2026-10-03T13:11:37Z",
+              "release_at": "2026-09-09T00:00:00Z",
+              "release_source": "igdb_first_release_date",
+              "expires_at": "2026-10-09T00:00:00Z",
+              "status": "active",
+              "status_reason": "within_release_window",
+              "enrollment": {
+                "source": "igdb_first_release_date",
+                "observed_at": "2026-09-29T14:28:32Z",
+                "viewer_count": 9675,
+                "min_viewers": 7000,
+                "kind": "history_recovery"
+              },
+              "source": "twitch_new"
             }
           },
           "steam_matches": [
@@ -14058,7 +14995,7 @@
             "release_at": "2026-09-09T12:56:35Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-09T12:56:35Z"
@@ -14256,7 +15193,7 @@
             "release_at": "2026-09-22T15:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-22T15:00:00Z"
@@ -14587,7 +15524,7 @@
                 "release_at": "2026-09-22T15:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-22T15:00:00Z"
@@ -14766,7 +15703,80 @@
           "excluded_low_follower_count": 4,
           "unknown_follower_count": 0
         },
-        "steam_matches": [],
+        "steam_matches": [
+          {
+            "steam_appid": "4356430",
+            "name": "NBA 2K27",
+            "display_name": "NBA 2K27",
+            "name_en": "NBA 2K27",
+            "store_url": "https://store.steampowered.com/app/4356430/",
+            "followers": 10451,
+            "release_at": "2026-09-02T16:00:00Z",
+            "release_date": "2026-09-03",
+            "release_date_timezone": "Asia/Taipei",
+            "release_precision": "day",
+            "release_time_basis": "steam_taiwan_store_date_authoritative",
+            "is_recent": false,
+            "expires_at": "2026-10-02T16:00:00Z",
+            "tags": [
+              "Sports",
+              "Simulation",
+              "3D",
+              "Basketball",
+              "PvP",
+              "Character Customization",
+              "Multiplayer",
+              "Co-op",
+              "Gambling",
+              "Singleplayer",
+              "Local Co-Op",
+              "Local Multiplayer",
+              "Controller",
+              "Online Co-Op",
+              "eSports",
+              "Immersive Sim",
+              "Management",
+              "Team-Based",
+              "LGBTQ+",
+              "Sexual Content"
+            ],
+            "genres": [
+              "Sports"
+            ],
+            "tag_labels_zh_tw": {
+              "Sports": "運動",
+              "Simulation": "模擬",
+              "3D": "3D",
+              "Basketball": "籃球",
+              "PvP": "玩家對戰",
+              "Character Customization": "自訂角色",
+              "Multiplayer": "多人",
+              "Co-op": "合作",
+              "Gambling": "賭博",
+              "Singleplayer": "單人",
+              "Local Co-Op": "單機合作",
+              "Local Multiplayer": "單機多人",
+              "Controller": "控制器",
+              "Online Co-Op": "線上合作",
+              "eSports": "電競",
+              "Immersive Sim": "沉浸模擬",
+              "Management": "管理",
+              "Team-Based": "團隊導向",
+              "LGBTQ+": "LGBTQ+",
+              "Sexual Content": "色情內容"
+            },
+            "genre_labels_zh_tw": {
+              "Sports": "運動"
+            },
+            "release_time_utc": "2026-09-04T04:00:57Z",
+            "release_timestamp_taipei_date": "2026-09-04",
+            "release_date_conflict": true,
+            "release_store_date": "2026-09-03",
+            "release_date_normalization": "steam_taiwan_store_date_authoritative",
+            "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+            "release_date_verified_at": "2026-10-03T13:02:59Z"
+          }
+        ],
         "tracking": {
           "status": "active",
           "status_reason": "within_release_window",
@@ -14802,7 +15812,81 @@
               "source": "twitch_new"
             }
           },
-          "steam_matches": []
+          "steam_matches": [
+            {
+              "steam_appid": "4356430",
+              "name": "NBA 2K27",
+              "display_name": "NBA 2K27",
+              "name_en": "NBA 2K27",
+              "store_url": "https://store.steampowered.com/app/4356430/",
+              "followers": 10451,
+              "release_at": "2026-09-02T16:00:00Z",
+              "release_date": "2026-09-03",
+              "release_date_timezone": "Asia/Taipei",
+              "release_precision": "day",
+              "release_time_basis": "steam_taiwan_store_date_authoritative",
+              "is_recent": false,
+              "expires_at": "2026-10-02T16:00:00Z",
+              "tags": [
+                "Sports",
+                "Simulation",
+                "3D",
+                "Basketball",
+                "PvP",
+                "Character Customization",
+                "Multiplayer",
+                "Co-op",
+                "Gambling",
+                "Singleplayer",
+                "Local Co-Op",
+                "Local Multiplayer",
+                "Controller",
+                "Online Co-Op",
+                "eSports",
+                "Immersive Sim",
+                "Management",
+                "Team-Based",
+                "LGBTQ+",
+                "Sexual Content"
+              ],
+              "genres": [
+                "Sports"
+              ],
+              "tag_labels_zh_tw": {
+                "Sports": "運動",
+                "Simulation": "模擬",
+                "3D": "3D",
+                "Basketball": "籃球",
+                "PvP": "玩家對戰",
+                "Character Customization": "自訂角色",
+                "Multiplayer": "多人",
+                "Co-op": "合作",
+                "Gambling": "賭博",
+                "Singleplayer": "單人",
+                "Local Co-Op": "單機合作",
+                "Local Multiplayer": "單機多人",
+                "Controller": "控制器",
+                "Online Co-Op": "線上合作",
+                "eSports": "電競",
+                "Immersive Sim": "沉浸模擬",
+                "Management": "管理",
+                "Team-Based": "團隊導向",
+                "LGBTQ+": "LGBTQ+",
+                "Sexual Content": "色情內容"
+              },
+              "genre_labels_zh_tw": {
+                "Sports": "運動"
+              },
+              "release_time_utc": "2026-09-04T04:00:57Z",
+              "release_timestamp_taipei_date": "2026-09-04",
+              "release_date_conflict": true,
+              "release_store_date": "2026-09-03",
+              "release_date_normalization": "steam_taiwan_store_date_authoritative",
+              "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+              "release_date_verified_at": "2026-10-03T13:02:59Z",
+              "mapping_checked_at": "2026-10-03T10:10:30Z"
+            }
+          ]
         },
         "observation_at": "2026-10-03T13:11:37Z",
         "observation_status": "current",
@@ -14830,7 +15914,81 @@
           "source": "twitch_new"
         }
       },
-      "steam_matches": []
+      "steam_matches": [
+        {
+          "steam_appid": "4356430",
+          "name": "NBA 2K27",
+          "display_name": "NBA 2K27",
+          "name_en": "NBA 2K27",
+          "store_url": "https://store.steampowered.com/app/4356430/",
+          "followers": 10451,
+          "release_at": "2026-09-02T16:00:00Z",
+          "release_date": "2026-09-03",
+          "release_date_timezone": "Asia/Taipei",
+          "release_precision": "day",
+          "release_time_basis": "steam_taiwan_store_date_authoritative",
+          "is_recent": false,
+          "expires_at": "2026-10-02T16:00:00Z",
+          "tags": [
+            "Sports",
+            "Simulation",
+            "3D",
+            "Basketball",
+            "PvP",
+            "Character Customization",
+            "Multiplayer",
+            "Co-op",
+            "Gambling",
+            "Singleplayer",
+            "Local Co-Op",
+            "Local Multiplayer",
+            "Controller",
+            "Online Co-Op",
+            "eSports",
+            "Immersive Sim",
+            "Management",
+            "Team-Based",
+            "LGBTQ+",
+            "Sexual Content"
+          ],
+          "genres": [
+            "Sports"
+          ],
+          "tag_labels_zh_tw": {
+            "Sports": "運動",
+            "Simulation": "模擬",
+            "3D": "3D",
+            "Basketball": "籃球",
+            "PvP": "玩家對戰",
+            "Character Customization": "自訂角色",
+            "Multiplayer": "多人",
+            "Co-op": "合作",
+            "Gambling": "賭博",
+            "Singleplayer": "單人",
+            "Local Co-Op": "單機合作",
+            "Local Multiplayer": "單機多人",
+            "Controller": "控制器",
+            "Online Co-Op": "線上合作",
+            "eSports": "電競",
+            "Immersive Sim": "沉浸模擬",
+            "Management": "管理",
+            "Team-Based": "團隊導向",
+            "LGBTQ+": "LGBTQ+",
+            "Sexual Content": "色情內容"
+          },
+          "genre_labels_zh_tw": {
+            "Sports": "運動"
+          },
+          "release_time_utc": "2026-09-04T04:00:57Z",
+          "release_timestamp_taipei_date": "2026-09-04",
+          "release_date_conflict": true,
+          "release_store_date": "2026-09-03",
+          "release_date_normalization": "steam_taiwan_store_date_authoritative",
+          "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+          "release_date_verified_at": "2026-10-03T13:02:59Z",
+          "mapping_checked_at": "2026-10-03T10:10:30Z"
+        }
+      ]
     },
     "610706148": {
       "game_id": "610706148",
@@ -14928,7 +16086,7 @@
             "release_at": "2026-09-25T13:00:27Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-25T13:00:27Z"
@@ -15298,7 +16456,7 @@
                 "release_at": "2026-09-25T13:00:27Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-25T13:00:27Z"
@@ -15502,7 +16660,7 @@
             "release_at": "2026-09-24T13:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-24T13:00:00Z"
@@ -15812,7 +16970,7 @@
                 "release_at": "2026-09-24T13:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-24T13:00:00Z"
@@ -15909,7 +17067,7 @@
       "release_at": "2026-09-07T00:00:00Z",
       "release_source": "igdb_first_release_date",
       "expires_at": "2026-10-07T00:00:00Z",
-      "status_reason": "within_release_window",
+      "status_reason": "active_tracking_sources",
       "last_seen_at": "2026-10-03T13:11:37Z",
       "updated_at": "2026-10-03T13:11:37Z",
       "last_observation": {
@@ -15982,10 +17140,89 @@
           "excluded_low_follower_count": 2,
           "unknown_follower_count": 0
         },
-        "steam_matches": [],
+        "steam_matches": [
+          {
+            "steam_appid": "3669570",
+            "name": "Alchemy Factory",
+            "display_name": "鍊金工廠",
+            "name_en": "Alchemy Factory",
+            "store_url": "https://store.steampowered.com/app/3669570/",
+            "followers": 27091,
+            "release_at": "2026-09-06T16:00:00Z",
+            "release_date": "2026-09-07",
+            "release_date_timezone": "Asia/Taipei",
+            "release_precision": "day",
+            "release_time_basis": "steam_taiwan_store_date_authoritative",
+            "is_recent": true,
+            "expires_at": "2026-10-06T16:00:00Z",
+            "tags": [
+              "Automation",
+              "Medieval",
+              "Building",
+              "Sandbox",
+              "Strategy",
+              "Multiplayer",
+              "Casual",
+              "Singleplayer",
+              "Crafting",
+              "Base Building",
+              "First-Person",
+              "Simulation",
+              "3D",
+              "Resource Management",
+              "Co-op",
+              "Online Co-Op",
+              "Logic",
+              "Indie",
+              "Job Simulator",
+              "Shop Keeper"
+            ],
+            "genres": [
+              "Casual",
+              "Indie",
+              "Simulation",
+              "Strategy"
+            ],
+            "tag_labels_zh_tw": {
+              "Automation": "自動化",
+              "Medieval": "中世紀",
+              "Building": "建造",
+              "Sandbox": "沙盒",
+              "Strategy": "策略",
+              "Multiplayer": "多人",
+              "Casual": "休閒",
+              "Singleplayer": "單人",
+              "Crafting": "工藝",
+              "Base Building": "基地建設",
+              "First-Person": "第一人稱視角",
+              "Simulation": "模擬",
+              "3D": "3D",
+              "Resource Management": "資源管理",
+              "Co-op": "合作",
+              "Online Co-Op": "線上合作",
+              "Logic": "邏輯",
+              "Indie": "獨立",
+              "Job Simulator": "工作模擬",
+              "Shop Keeper": "商店經營"
+            },
+            "genre_labels_zh_tw": {
+              "Casual": "休閒",
+              "Indie": "獨立製作",
+              "Simulation": "模擬",
+              "Strategy": "策略"
+            },
+            "release_time_utc": "2026-09-08T06:51:18Z",
+            "release_timestamp_taipei_date": "2026-09-08",
+            "release_date_conflict": true,
+            "release_store_date": "2026-09-07",
+            "release_date_normalization": "steam_taiwan_store_date_authoritative",
+            "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+            "release_date_verified_at": "2026-10-03T13:02:57Z"
+          }
+        ],
         "tracking": {
           "status": "active",
-          "status_reason": "within_release_window",
+          "status_reason": "active_tracking_sources",
           "first_seen_at": "2026-09-30T21:14:58Z",
           "last_seen_at": "2026-10-03T13:11:37Z",
           "release_at": "2026-09-07T00:00:00Z",
@@ -16014,9 +17251,184 @@
                 "min_viewers": 7000
               },
               "source": "twitch_new"
+            },
+            "steam:3669570": {
+              "source": "steam_recent_release",
+              "steam_appid": "3669570",
+              "steam": {
+                "steam_appid": "3669570",
+                "name": "Alchemy Factory",
+                "display_name": "鍊金工廠",
+                "name_en": "Alchemy Factory",
+                "store_url": "https://store.steampowered.com/app/3669570/",
+                "followers": 27091,
+                "release_at": "2026-09-06T16:00:00Z",
+                "release_date": "2026-09-07",
+                "release_date_timezone": "Asia/Taipei",
+                "release_precision": "day",
+                "release_time_basis": "steam_taiwan_store_date_authoritative",
+                "is_recent": true,
+                "expires_at": "2026-10-06T16:00:00Z",
+                "tags": [
+                  "Automation",
+                  "Medieval",
+                  "Building",
+                  "Sandbox",
+                  "Strategy",
+                  "Multiplayer",
+                  "Casual",
+                  "Singleplayer",
+                  "Crafting",
+                  "Base Building",
+                  "First-Person",
+                  "Simulation",
+                  "3D",
+                  "Resource Management",
+                  "Co-op",
+                  "Online Co-Op",
+                  "Logic",
+                  "Indie",
+                  "Job Simulator",
+                  "Shop Keeper"
+                ],
+                "genres": [
+                  "Casual",
+                  "Indie",
+                  "Simulation",
+                  "Strategy"
+                ],
+                "tag_labels_zh_tw": {
+                  "Automation": "自動化",
+                  "Medieval": "中世紀",
+                  "Building": "建造",
+                  "Sandbox": "沙盒",
+                  "Strategy": "策略",
+                  "Multiplayer": "多人",
+                  "Casual": "休閒",
+                  "Singleplayer": "單人",
+                  "Crafting": "工藝",
+                  "Base Building": "基地建設",
+                  "First-Person": "第一人稱視角",
+                  "Simulation": "模擬",
+                  "3D": "3D",
+                  "Resource Management": "資源管理",
+                  "Co-op": "合作",
+                  "Online Co-Op": "線上合作",
+                  "Logic": "邏輯",
+                  "Indie": "獨立",
+                  "Job Simulator": "工作模擬",
+                  "Shop Keeper": "商店經營"
+                },
+                "genre_labels_zh_tw": {
+                  "Casual": "休閒",
+                  "Indie": "獨立製作",
+                  "Simulation": "模擬",
+                  "Strategy": "策略"
+                },
+                "release_time_utc": "2026-09-08T06:51:18Z",
+                "release_timestamp_taipei_date": "2026-09-08",
+                "release_date_conflict": true,
+                "release_store_date": "2026-09-07",
+                "release_date_normalization": "steam_taiwan_store_date_authoritative",
+                "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+                "release_date_verified_at": "2026-10-03T13:02:57Z"
+              },
+              "release_at": "2026-09-06T16:00:00Z",
+              "release_source": "steam_taiwan_store",
+              "first_seen_at": "2026-10-03T14:04:42Z",
+              "enrollment": {
+                "source": "steam_recent_release",
+                "observed_at": "2026-10-03T14:04:42Z",
+                "steam_appid": "3669570",
+                "release_at": "2026-09-06T16:00:00Z",
+                "release_source": "steam_taiwan_store"
+              },
+              "updated_at": "2026-10-03T14:04:42Z",
+              "status": "active",
+              "status_reason": "steam_recent_release",
+              "expires_at": "2026-10-06T16:00:00Z"
             }
           },
-          "steam_matches": []
+          "steam_matches": [
+            {
+              "steam_appid": "3669570",
+              "name": "Alchemy Factory",
+              "display_name": "鍊金工廠",
+              "name_en": "Alchemy Factory",
+              "store_url": "https://store.steampowered.com/app/3669570/",
+              "followers": 27091,
+              "release_at": "2026-09-06T16:00:00Z",
+              "release_date": "2026-09-07",
+              "release_date_timezone": "Asia/Taipei",
+              "release_precision": "day",
+              "release_time_basis": "steam_taiwan_store_date_authoritative",
+              "is_recent": true,
+              "expires_at": "2026-10-06T16:00:00Z",
+              "tags": [
+                "Automation",
+                "Medieval",
+                "Building",
+                "Sandbox",
+                "Strategy",
+                "Multiplayer",
+                "Casual",
+                "Singleplayer",
+                "Crafting",
+                "Base Building",
+                "First-Person",
+                "Simulation",
+                "3D",
+                "Resource Management",
+                "Co-op",
+                "Online Co-Op",
+                "Logic",
+                "Indie",
+                "Job Simulator",
+                "Shop Keeper"
+              ],
+              "genres": [
+                "Casual",
+                "Indie",
+                "Simulation",
+                "Strategy"
+              ],
+              "tag_labels_zh_tw": {
+                "Automation": "自動化",
+                "Medieval": "中世紀",
+                "Building": "建造",
+                "Sandbox": "沙盒",
+                "Strategy": "策略",
+                "Multiplayer": "多人",
+                "Casual": "休閒",
+                "Singleplayer": "單人",
+                "Crafting": "工藝",
+                "Base Building": "基地建設",
+                "First-Person": "第一人稱視角",
+                "Simulation": "模擬",
+                "3D": "3D",
+                "Resource Management": "資源管理",
+                "Co-op": "合作",
+                "Online Co-Op": "線上合作",
+                "Logic": "邏輯",
+                "Indie": "獨立",
+                "Job Simulator": "工作模擬",
+                "Shop Keeper": "商店經營"
+              },
+              "genre_labels_zh_tw": {
+                "Casual": "休閒",
+                "Indie": "獨立製作",
+                "Simulation": "模擬",
+                "Strategy": "策略"
+              },
+              "release_time_utc": "2026-09-08T06:51:18Z",
+              "release_timestamp_taipei_date": "2026-09-08",
+              "release_date_conflict": true,
+              "release_store_date": "2026-09-07",
+              "release_date_normalization": "steam_taiwan_store_date_authoritative",
+              "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+              "release_date_verified_at": "2026-10-03T13:02:57Z"
+            }
+          ]
         },
         "observation_at": "2026-10-03T13:11:37Z",
         "observation_status": "current",
@@ -16039,9 +17451,184 @@
             "min_viewers": 7000
           },
           "source": "twitch_new"
+        },
+        "steam:3669570": {
+          "source": "steam_recent_release",
+          "steam_appid": "3669570",
+          "steam": {
+            "steam_appid": "3669570",
+            "name": "Alchemy Factory",
+            "display_name": "鍊金工廠",
+            "name_en": "Alchemy Factory",
+            "store_url": "https://store.steampowered.com/app/3669570/",
+            "followers": 27091,
+            "release_at": "2026-09-06T16:00:00Z",
+            "release_date": "2026-09-07",
+            "release_date_timezone": "Asia/Taipei",
+            "release_precision": "day",
+            "release_time_basis": "steam_taiwan_store_date_authoritative",
+            "is_recent": true,
+            "expires_at": "2026-10-06T16:00:00Z",
+            "tags": [
+              "Automation",
+              "Medieval",
+              "Building",
+              "Sandbox",
+              "Strategy",
+              "Multiplayer",
+              "Casual",
+              "Singleplayer",
+              "Crafting",
+              "Base Building",
+              "First-Person",
+              "Simulation",
+              "3D",
+              "Resource Management",
+              "Co-op",
+              "Online Co-Op",
+              "Logic",
+              "Indie",
+              "Job Simulator",
+              "Shop Keeper"
+            ],
+            "genres": [
+              "Casual",
+              "Indie",
+              "Simulation",
+              "Strategy"
+            ],
+            "tag_labels_zh_tw": {
+              "Automation": "自動化",
+              "Medieval": "中世紀",
+              "Building": "建造",
+              "Sandbox": "沙盒",
+              "Strategy": "策略",
+              "Multiplayer": "多人",
+              "Casual": "休閒",
+              "Singleplayer": "單人",
+              "Crafting": "工藝",
+              "Base Building": "基地建設",
+              "First-Person": "第一人稱視角",
+              "Simulation": "模擬",
+              "3D": "3D",
+              "Resource Management": "資源管理",
+              "Co-op": "合作",
+              "Online Co-Op": "線上合作",
+              "Logic": "邏輯",
+              "Indie": "獨立",
+              "Job Simulator": "工作模擬",
+              "Shop Keeper": "商店經營"
+            },
+            "genre_labels_zh_tw": {
+              "Casual": "休閒",
+              "Indie": "獨立製作",
+              "Simulation": "模擬",
+              "Strategy": "策略"
+            },
+            "release_time_utc": "2026-09-08T06:51:18Z",
+            "release_timestamp_taipei_date": "2026-09-08",
+            "release_date_conflict": true,
+            "release_store_date": "2026-09-07",
+            "release_date_normalization": "steam_taiwan_store_date_authoritative",
+            "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+            "release_date_verified_at": "2026-10-03T13:02:57Z"
+          },
+          "release_at": "2026-09-06T16:00:00Z",
+          "release_source": "steam_taiwan_store",
+          "first_seen_at": "2026-10-03T14:04:42Z",
+          "enrollment": {
+            "source": "steam_recent_release",
+            "observed_at": "2026-10-03T14:04:42Z",
+            "steam_appid": "3669570",
+            "release_at": "2026-09-06T16:00:00Z",
+            "release_source": "steam_taiwan_store"
+          },
+          "updated_at": "2026-10-03T14:04:42Z",
+          "status": "active",
+          "status_reason": "steam_recent_release",
+          "expires_at": "2026-10-06T16:00:00Z"
         }
       },
-      "steam_matches": []
+      "steam_matches": [
+        {
+          "steam_appid": "3669570",
+          "name": "Alchemy Factory",
+          "display_name": "鍊金工廠",
+          "name_en": "Alchemy Factory",
+          "store_url": "https://store.steampowered.com/app/3669570/",
+          "followers": 27091,
+          "release_at": "2026-09-06T16:00:00Z",
+          "release_date": "2026-09-07",
+          "release_date_timezone": "Asia/Taipei",
+          "release_precision": "day",
+          "release_time_basis": "steam_taiwan_store_date_authoritative",
+          "is_recent": true,
+          "expires_at": "2026-10-06T16:00:00Z",
+          "tags": [
+            "Automation",
+            "Medieval",
+            "Building",
+            "Sandbox",
+            "Strategy",
+            "Multiplayer",
+            "Casual",
+            "Singleplayer",
+            "Crafting",
+            "Base Building",
+            "First-Person",
+            "Simulation",
+            "3D",
+            "Resource Management",
+            "Co-op",
+            "Online Co-Op",
+            "Logic",
+            "Indie",
+            "Job Simulator",
+            "Shop Keeper"
+          ],
+          "genres": [
+            "Casual",
+            "Indie",
+            "Simulation",
+            "Strategy"
+          ],
+          "tag_labels_zh_tw": {
+            "Automation": "自動化",
+            "Medieval": "中世紀",
+            "Building": "建造",
+            "Sandbox": "沙盒",
+            "Strategy": "策略",
+            "Multiplayer": "多人",
+            "Casual": "休閒",
+            "Singleplayer": "單人",
+            "Crafting": "工藝",
+            "Base Building": "基地建設",
+            "First-Person": "第一人稱視角",
+            "Simulation": "模擬",
+            "3D": "3D",
+            "Resource Management": "資源管理",
+            "Co-op": "合作",
+            "Online Co-Op": "線上合作",
+            "Logic": "邏輯",
+            "Indie": "獨立",
+            "Job Simulator": "工作模擬",
+            "Shop Keeper": "商店經營"
+          },
+          "genre_labels_zh_tw": {
+            "Casual": "休閒",
+            "Indie": "獨立製作",
+            "Simulation": "模擬",
+            "Strategy": "策略"
+          },
+          "release_time_utc": "2026-09-08T06:51:18Z",
+          "release_timestamp_taipei_date": "2026-09-08",
+          "release_date_conflict": true,
+          "release_store_date": "2026-09-07",
+          "release_date_normalization": "steam_taiwan_store_date_authoritative",
+          "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+          "release_date_verified_at": "2026-10-03T13:02:57Z"
+        }
+      ]
     },
     "738080442": {
       "game_id": "738080442",
@@ -16295,7 +17882,7 @@
                 "release_at": "2026-09-29T14:46:58Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-29T14:46:58Z"
@@ -16477,7 +18064,7 @@
             "release_at": "2026-09-29T14:46:58Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-29T14:46:58Z"
@@ -16779,6 +18366,24 @@
             "kind": "history_recovery"
           },
           "tracking_sources": {
+            "twitch_new": {
+              "first_seen_at": "2026-09-29T14:28:32Z",
+              "last_seen_at": "2026-10-03T13:11:37Z",
+              "updated_at": "2026-10-03T13:11:37Z",
+              "release_at": "2026-09-10T00:00:00Z",
+              "release_source": "igdb_first_release_date",
+              "expires_at": "2026-10-10T00:00:00Z",
+              "status": "active",
+              "status_reason": "within_release_window",
+              "enrollment": {
+                "source": "igdb_first_release_date",
+                "observed_at": "2026-09-29T14:28:32Z",
+                "viewer_count": 35755,
+                "min_viewers": 7000,
+                "kind": "history_recovery"
+              },
+              "source": "twitch_new"
+            },
             "steam:1867240": {
               "source": "steam_recent_release",
               "steam_appid": "1867240",
@@ -16865,28 +18470,10 @@
                 "release_at": "2026-09-10T15:58:04Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-10T15:58:04Z"
-            },
-            "twitch_new": {
-              "first_seen_at": "2026-09-29T14:28:32Z",
-              "last_seen_at": "2026-10-03T13:11:37Z",
-              "updated_at": "2026-10-03T13:11:37Z",
-              "release_at": "2026-09-10T00:00:00Z",
-              "release_source": "igdb_first_release_date",
-              "expires_at": "2026-10-10T00:00:00Z",
-              "status": "active",
-              "status_reason": "within_release_window",
-              "enrollment": {
-                "source": "igdb_first_release_date",
-                "observed_at": "2026-09-29T14:28:32Z",
-                "viewer_count": 35755,
-                "min_viewers": 7000,
-                "kind": "history_recovery"
-              },
-              "source": "twitch_new"
             }
           },
           "steam_matches": [
@@ -17076,7 +18663,7 @@
             "release_at": "2026-09-10T15:58:04Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-10T15:58:04Z"
@@ -17423,7 +19010,7 @@
             "release_at": "2026-10-01T15:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-31T15:00:00Z"
@@ -17752,7 +19339,7 @@
                 "release_at": "2026-10-01T15:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-31T15:00:00Z"
@@ -17937,7 +19524,7 @@
             "release_at": "2026-09-25T12:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-25T12:00:00Z"
@@ -18255,7 +19842,7 @@
                 "release_at": "2026-09-25T12:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-25T12:00:00Z"
@@ -18596,7 +20183,7 @@
                 "release_at": "2026-09-29T15:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-29T14:46:54Z"
@@ -18781,7 +20368,7 @@
             "release_at": "2026-09-29T15:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-29T14:46:54Z"
@@ -18961,7 +20548,7 @@
             "release_at": "2026-09-08T16:02:32Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-08T16:02:32Z"
@@ -19297,7 +20884,7 @@
                 "release_at": "2026-09-08T16:02:32Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-08T16:02:32Z"
@@ -19564,6 +21151,24 @@
             "kind": "history_recovery"
           },
           "tracking_sources": {
+            "twitch_new": {
+              "first_seen_at": "2026-09-29T21:17:08Z",
+              "last_seen_at": "2026-10-03T13:11:37Z",
+              "updated_at": "2026-10-03T13:11:37Z",
+              "release_at": "2026-09-15T00:00:00Z",
+              "release_source": "igdb_first_release_date",
+              "expires_at": "2026-10-15T00:00:00Z",
+              "status": "active",
+              "status_reason": "within_release_window",
+              "enrollment": {
+                "source": "igdb_first_release_date",
+                "observed_at": "2026-09-29T21:17:08Z",
+                "viewer_count": 9448,
+                "min_viewers": 7000,
+                "kind": "history_recovery"
+              },
+              "source": "twitch_new"
+            },
             "steam:4557380": {
               "source": "steam_recent_release",
               "steam_appid": "4557380",
@@ -19646,28 +21251,10 @@
                 "release_at": "2026-09-15T10:55:47Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-15T10:55:47Z"
-            },
-            "twitch_new": {
-              "first_seen_at": "2026-09-29T21:17:08Z",
-              "last_seen_at": "2026-10-03T13:11:37Z",
-              "updated_at": "2026-10-03T13:11:37Z",
-              "release_at": "2026-09-15T00:00:00Z",
-              "release_source": "igdb_first_release_date",
-              "expires_at": "2026-10-15T00:00:00Z",
-              "status": "active",
-              "status_reason": "within_release_window",
-              "enrollment": {
-                "source": "igdb_first_release_date",
-                "observed_at": "2026-09-29T21:17:08Z",
-                "viewer_count": 9448,
-                "min_viewers": 7000,
-                "kind": "history_recovery"
-              },
-              "source": "twitch_new"
             }
           },
           "steam_matches": [
@@ -19849,7 +21436,7 @@
             "release_at": "2026-09-15T10:55:47Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-15T10:55:47Z"
@@ -20037,8 +21624,8 @@
         },
         "steam_matches": [],
         "tracking": {
-          "status": "active",
-          "status_reason": "within_release_window",
+          "status": "expired",
+          "status_reason": "release_window_elapsed",
           "first_seen_at": "2026-10-01T23:12:35Z",
           "last_seen_at": "2026-10-01T23:12:35Z",
           "release_at": "2026-09-02T00:00:00Z",
@@ -20060,11 +21647,11 @@
                 "viewer_count": 14712,
                 "min_viewers": 7000
               },
-              "status": "active",
-              "status_reason": "within_release_window",
+              "status": "expired",
+              "status_reason": "release_window_elapsed",
               "release_at": "2026-09-02T00:00:00Z",
               "release_source": "igdb_first_release_date",
-              "updated_at": "2026-10-01T23:12:35Z",
+              "updated_at": "2026-10-03T10:07:19Z",
               "expires_at": "2026-10-02T00:00:00Z",
               "last_seen_at": "2026-10-01T23:12:35Z"
             }
@@ -20168,7 +21755,7 @@
             "release_at": "2026-09-22T05:00:00Z",
             "release_source": "steam_taiwan_store"
           },
-          "updated_at": "2026-10-03T13:06:22Z",
+          "updated_at": "2026-10-03T14:04:42Z",
           "status": "active",
           "status_reason": "steam_recent_release",
           "expires_at": "2026-10-22T05:00:00Z"
@@ -20464,7 +22051,7 @@
                 "release_at": "2026-09-22T05:00:00Z",
                 "release_source": "steam_taiwan_store"
               },
-              "updated_at": "2026-10-03T13:06:22Z",
+              "updated_at": "2026-10-03T14:04:42Z",
               "status": "active",
               "status_reason": "steam_recent_release",
               "expires_at": "2026-10-22T05:00:00Z"
@@ -20626,8 +22213,8 @@
         },
         "steam_matches": [],
         "tracking": {
-          "status": "active",
-          "status_reason": "within_release_window",
+          "status": "expired",
+          "status_reason": "release_window_elapsed",
           "first_seen_at": "2026-09-29T21:17:08Z",
           "last_seen_at": "2026-10-02T23:08:56Z",
           "release_at": "2026-09-03T00:00:00Z",
@@ -20648,8 +22235,8 @@
               "release_at": "2026-09-03T00:00:00Z",
               "release_source": "igdb_first_release_date",
               "expires_at": "2026-10-03T00:00:00Z",
-              "status": "active",
-              "status_reason": "within_release_window",
+              "status": "expired",
+              "status_reason": "release_window_elapsed",
               "enrollment": {
                 "source": "igdb_first_release_date",
                 "observed_at": "2026-09-29T21:17:08Z",
