@@ -83,3 +83,7 @@ node --test tests/*.test.cjs
 ## 資料分析排程
 
 `radar-insights.yml` 每小時第 17 分由既有 [Cloudflare 排程控制器](https://github.com/danielet087/game-trend-radar-twitch-backend/tree/main/scheduler/cloudflare) 透過 `workflow_dispatch` 觸發；原 GitHub `schedule` 已移除。`target_slot` 與 `trigger_source=cloudflare` 會出現在執行名稱，供核對來源與原定時段。必要的資料更新 push、手動入口與 concurrency 保留。
+
+排程觀測只透過 [scheduler.html 的直接網址](https://danielet087.github.io/game-trend-radar/scheduler.html) 查看，首頁與導覽不提供入口。頁面以台灣時間顯示六項工作的時間軸、實際執行／429 中斷、下一批與完整待查遊戲、暫停原因，分別標示資料更新時間。`noindex,nofollow` 供搜尋引擎參考，頁面仍為公開網址。
+
+`scripts/sync_scheduler_queue_status.py` 隨既有 `radar-insights.yml` 更新本站佇列備份，只讀取 Steam 後端已發布的 `data/scheduler_queue_status.json`，驗證動態總數、實際名單、Twitch 優先數與時間。來源無法取得或格式不符時保留有效備份及其原始時間；較舊來源不覆蓋較新備份。發布衝突後重新讀取遠端版本再同步，不增加 Cron，也不查詢 Steam。

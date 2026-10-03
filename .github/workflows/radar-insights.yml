@@ -19,6 +19,8 @@ on:
     paths:
       - 'data/catalog.json'
       - 'scripts/build_radar_insights.py'
+      - 'scripts/sync_scheduler_queue_status.py'
+      - 'tests/test_scheduler_queue_sync.py'
       - '.github/workflows/radar-insights.yml'
 
 permissions:
@@ -40,6 +42,8 @@ jobs:
           python-version: '3.12'
       - name: Test observation dates and tracking boundaries
         run: python -m unittest discover -s tests -p test_radar_insights.py
+      - name: Test queue backup validation and preservation
+        run: python -m unittest discover -s tests -p test_scheduler_queue_sync.py
       - name: Derive current activity without calling Steam
         id: publish
         run: |
@@ -50,12 +54,13 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             python scripts/build_radar_insights.py
-            git add data/insights-state.json data/activity.json data/growth.json
+            python scripts/sync_scheduler_queue_status.py
+            git add data/insights-state.json data/activity.json data/growth.json data/scheduler_queue_status.json
             if git diff --cached --quiet; then
               echo 'changed=false' >> "$GITHUB_OUTPUT"
               exit 0
             fi
-            git commit -m 'data: record verified public game activity and growth'
+            git commit -m 'data: record public activity, growth and queue status'
             if git push origin HEAD:main; then
               echo 'changed=true' >> "$GITHUB_OUTPUT"
               exit 0
