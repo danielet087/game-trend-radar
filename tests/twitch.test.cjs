@@ -359,3 +359,79 @@ test('valid embedded mapping survives supplemental invalidity and chooses the ne
   assert.equal(corruptRow.steam_mapping_invalid,true);
   assert.equal(corruptRow.games[0].game_name,'守墓人 2');
 });
+
+const onimusha = (overrides = {}) => candidate({game_id:'327598602',game_name:'Onimusha: Way of the Sword',igdb_id:'325602',...overrides});
+const discoveryEntry = (overrides = {}) => ({twitch_game_id:'327598602',igdb_id:'325602',status:'matched',active:true,method:'twitch_igdb_external_steam_v1',checked_at:at,updated_at:at,steam_appids:['2638890'],links:[{external_game_id:'2969574',external_game_source:'1',uid:'2638890',game:'325602',steam_appid:'2638890',url:'https://store.steampowered.com/app/2638890/'}],public_steam_appids:[],missing_public_appids:['2638890'],...overrides});
+const discoveryState = (row = discoveryEntry(), overrides = {}) => ({schema_version:1,updated_at:at,steam_source_id:'1',games:{'327598602':row},...overrides});
+
+test('verified Onimusha store identity appears on current, tracked and retained rows without admitting it to the Steam catalog', () => {
+  const tracked = entry('327598602',{last_observation:onimusha({viewer_count:1636})});
+  const snapshots = [
+    snapshot([onimusha()],{steam_discovery_state:discoveryState()}),
+    snapshot([],{tracked_games:[onimusha({viewer_count:1636,tracking:tracked})],steam_discovery_state:discoveryState()}),
+    snapshot([],{tracking_state:registry({'327598602':tracked}),steam_discovery_state:discoveryState()}),
+  ];
+  for (const payload of snapshots) {
+    const d = D.normalize(payload), g = d.games[0];
+    assert.equal(g.game_name,'Onimusha: Way of the Sword');
+    assert.deepEqual(g.steam_matches,[]);
+    assert.deepEqual(g.steam_store_links,[{steam_appid:'2638890',store_url:'https://store.steampowered.com/app/2638890/',igdb_id:'325602',checked_at:at,source:'twitch_igdb_external_steam_v1'}]);
+    assert.deepEqual(D.steamStoreLinks(g),[{steam_appid:'2638890',store_url:'https://store.steampowered.com/app/2638890/'}]);
+    assert.equal(D.matches(g,'steam_recent'),false);
+    assert.deepEqual(D.select(d.games,{filter:'steam_recent'}),[]);
+    assert.equal(D.select(d.games,{query:'２６３８８９０'}).length,1);
+    assert.deepEqual(d.pending_steam,[]);
+  }
+});
+
+test('discovery rejects broken ID chains, unsafe store URLs and stale or inactive identities', () => {
+  const link = discoveryEntry().links[0];
+  const invalidRows = [
+    {status:'no_steam_link'}, {active:false}, {method:'name_similarity'}, {twitch_game_id:'101'}, {igdb_id:'325603'},
+    {checked_at:null}, {checked_at:'2026-09-30T00:00:00Z'}, {updated_at:'not-a-date'}, {steam_appids:['02638890']},
+    {links:[{...link,external_game_id:'0'}]}, {links:[{...link,external_game_source:'2'}]},
+    {links:[{...link,game:'325603'}]}, {links:[{...link,uid:'2638891'}]},
+    ...['javascript:alert(1)','https://store.steampowered.com.evil.test/app/2638890/','https://user@store.steampowered.com/app/2638890/','https://store.steampowered.com:443/app/2638890/','https://store.steampowered.com/app/2638890/?x=1','https://store.steampowered.com/app/2638890/#x','https://store.steampowered.com/app/02638890/'].map(url=>({links:[{...link,url}]})),
+  ];
+  for (const overrides of invalidRows) {
+    const g = D.normalize(snapshot([onimusha()],{steam_discovery_state:discoveryState(discoveryEntry(overrides))})).games[0];
+    assert.deepEqual(g.steam_store_links,[],JSON.stringify(overrides));
+  }
+  const changedCategory = D.normalize(snapshot([onimusha({igdb_id:'325603'})],{steam_discovery_state:discoveryState()})).games[0];
+  assert.deepEqual(changedCategory.steam_store_links,[]);
+  for (const state of [null,discoveryState(undefined,{schema_version:2}),discoveryState(undefined,{steam_source_id:'01'}),discoveryState(undefined,{games:[]})]) {
+    assert.deepEqual(D.normalize(snapshot([onimusha()],{steam_discovery_state:state})).games[0].steam_store_links,[]);
+  }
+});
+
+test('verified store links use the registry Steam source and deduplicate canonical app identities', () => {
+  const link = {...discoveryEntry().links[0],external_game_source:'7'};
+  const state = discoveryState(discoveryEntry({links:[link,link]}),{steam_source_id:'7'});
+  const g = D.normalize(snapshot([onimusha()],{steam_discovery_state:state})).games[0];
+  assert.equal(g.steam_store_links.length,1);
+  assert.equal(D.steamStoreURL('02638890'),null);
+  assert.equal(D.steamStoreURL('2638890?x=1'),null);
+  assert.equal(D.steamStoreURL(2638890),'https://store.steampowered.com/app/2638890/');
+});
+
+test('public Steam metadata remains preferred and separate from identity-only links', () => {
+  const metadata = steamGame({steam_appid:'2638890',display_name:'鬼武者：劍之道',name_en:'Onimusha',followers:12345,is_recent:false});
+  const d = D.normalize(snapshot([onimusha()],{steam_discovery_state:discoveryState()}),null,steamMap({'2638890':{status:'matched',twitch_game_id:'327598602',steam:metadata}}));
+  const g = d.games[0];
+  assert.equal(g.game_name,'鬼武者：劍之道');
+  assert.equal(g.twitch_name,'Onimusha: Way of the Sword');
+  assert.equal(g.steam_matches.length,1);
+  assert.equal(g.steam_matches[0].followers,12345);
+  assert.deepEqual(g.steam_matches[0].tags,['Simulation','Adventure']);
+  assert.equal(D.steamStoreLinks(g).length,1);
+  assert.equal(D.matches(g,'steam_recent'),false);
+});
+
+test('a missing or nonmatched discovery never reuses injected or older identity links', () => {
+  const raw = onimusha({steam_store_links:[{steam_appid:'2638890',store_url:'https://store.steampowered.com/app/2638890/'}]});
+  for (const state of [undefined,discoveryState(discoveryEntry({status:'no_steam_link'}))]) {
+    const g = D.normalize(snapshot([raw],{steam_discovery_state:state})).games[0];
+    assert.deepEqual(g.steam_store_links,[]);
+    assert.deepEqual(D.steamStoreLinks(g),[]);
+  }
+});

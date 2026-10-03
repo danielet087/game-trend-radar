@@ -350,6 +350,10 @@ body[data-page="twitch"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; --page
 .tw-steam-heading h5 { margin:0; font-size:15px; line-height:1.6; overflow-wrap:anywhere; }
 .tw-steam-heading h5 a { color:#315c51; text-decoration:underline; text-underline-offset:4px; }
 .tw-steam-store { font-size:11px; color:#4d7766; white-space:nowrap; }
+.tw-game-actions { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 15px; }
+.tw-game-actions .tw-steam-store { display:inline-flex; align-items:center; min-height:38px; padding:8px 13px; border:1px solid #bfd7cb; border-radius:10px; background:#edf7f0; font-size:12px; font-weight:800; text-decoration:none; }
+.tw-game-actions .tw-steam-store:hover { background:#dfeee4; }
+.tw-game-actions .tw-steam-store:focus-visible { outline:3px solid #7261b5; outline-offset:3px; }
 .tw-steam-facts { display:flex; flex-wrap:wrap; gap:12px 25px; margin:13px 0; font-size:11px; }
 .tw-steam-facts dt { color:#6b8c7a; margin-bottom:5px; }
 .tw-steam-facts dd { margin:0; color:#345b49; line-height:1.6; }

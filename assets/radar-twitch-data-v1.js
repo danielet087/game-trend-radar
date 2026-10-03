@@ -34,6 +34,39 @@
       return url.protocol === "https:" && !url.username && !url.password && (!host || url.hostname === host) ? url.href : null;
     } catch { return null; }
   }
+  function canonicalID(value) {
+    if (typeof value === "number" && (!Number.isSafeInteger(value) || value <= 0)) return null;
+    return (typeof value === "string" || typeof value === "number") && /^[1-9]\d{0,15}$/.test(String(value)) ? String(value) : null;
+  }
+  function steamStoreURL(appid) {
+    const id = canonicalID(appid);
+    return id ? `https://store.steampowered.com/app/${id}/` : null;
+  }
+  function discovery(value) {
+    return value?.schema_version === 1 && timestamp(value.updated_at) && canonicalID(value.steam_source_id) && value.games && typeof value.games === "object" && !Array.isArray(value.games) ? value : null;
+  }
+  function verifiedSteamIdentity(g, state) {
+    const entry = state?.games[g.game_id], gameID = canonicalID(g.game_id);
+    if (!entry || !gameID || canonicalID(entry.twitch_game_id) !== gameID || entry.status !== "matched" || entry.active !== true || entry.method !== "twitch_igdb_external_steam_v1" || !timestamp(entry.checked_at) || Date.parse(entry.checked_at) > Date.parse(state.updated_at)) return [];
+    const igdbID = canonicalID(entry.igdb_id);
+    if (!igdbID || g.igdb_id != null && canonicalID(g.igdb_id) !== igdbID || entry.updated_at != null && (!timestamp(entry.updated_at) || Date.parse(entry.updated_at) > Date.parse(state.updated_at))) return [];
+    if (!Array.isArray(entry.steam_appids) || !entry.steam_appids.length || entry.steam_appids.some(id => !canonicalID(id)) || !Array.isArray(entry.links)) return [];
+    const appids = new Set(entry.steam_appids.map(canonicalID));
+    const links = entry.links.flatMap(link => {
+      const appid = canonicalID(link?.steam_appid), url = steamStoreURL(appid);
+      if (!appid || !canonicalID(link.external_game_id) || canonicalID(link.external_game_source) !== canonicalID(state.steam_source_id) || canonicalID(link.game) !== igdbID || canonicalID(link.uid) !== appid || !appids.has(appid) || link.url !== url) return [];
+      return [{ steam_appid:appid, store_url:url, igdb_id:igdbID, checked_at:entry.checked_at, source:entry.method }];
+    });
+    return [...new Map(links.map(link => [link.steam_appid,link])).values()];
+  }
+  function steamStoreLinks(g) {
+    // Store identity never makes a game a member of the published Steam catalog.
+    const links = [...(g.steam_matches || []), ...(g.steam_store_links || [])].flatMap(link => {
+      const url = steamStoreURL(link.steam_appid);
+      return url ? [{ steam_appid:String(link.steam_appid), store_url:url }] : [];
+    });
+    return [...new Map(links.map(link => [link.steam_appid,link])).values()];
+  }
   function windowDays(value, fallback = 14) {
     return Number.isSafeInteger(value) && value > 0 ? value : fallback;
   }
@@ -104,6 +137,7 @@
     const trackingRegistry = [supplied, embedded].filter(Boolean).sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))[0] || null;
     const suppliedMapping = mapping(supplementalMapping), embeddedMapping = mapping(payload.steam_mapping_state || payload.steam_mapping);
     const steamMapping = [suppliedMapping, embeddedMapping].filter(Boolean).sort((a,b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))[0] || null;
+    const steamDiscovery = legacy ? null : discovery(payload.steam_discovery_state);
     const trackedRows = !legacy && Array.isArray(payload.tracked_games) ? payload.tracked_games : [];
     const asOf = Math.max(Date.parse(payload.generated_at), Date.parse(trackingRegistry?.updated_at) || 0);
     const active = value => value?.status !== "excluded" && (value?.tracking_sources ? Object.keys(activeSources(value,asOf)).length > 0 : sourceActive(value,asOf));
@@ -128,6 +162,7 @@
       g.active_tracking_sources = activeSources(g.tracking,asOf);
       const steamRows = [...(Array.isArray(g.tracking?.steam_matches) ? g.tracking.steam_matches : []), ...(Array.isArray(value.steam_matches) ? value.steam_matches : []), ...(mappedGames.get(g.game_id) || [])];
       g.steam_matches = [...new Map(steamRows.map(value => steam(value)).filter(Boolean).map(value => [value.steam_appid,value])).values()];
+      g.steam_store_links = verifiedSteamIdentity(g,steamDiscovery);
       g.twitch_name = g.game_name;
       g.game_name = g.steam_matches[0]?.display_name || g.twitch_name;
       g.is_twitch_new = Boolean(g.active_tracking_sources.twitch_new) || !g.tracking?.tracking_sources && g.is_tracked;
@@ -186,7 +221,7 @@
     const measure = g => g.observation_status === "retained" ? null : sort === "median" ? g.filtered_audience?.median_viewer_count : g[metric];
     const viewerPriority = g => count(g.viewer_count) !== null && g.viewer_count >= VIEWER_PRIORITY_THRESHOLD;
     const streamerPriority = g => count(g.streamer_count) !== null && g.streamer_count >= STREAMER_PRIORITY_THRESHOLD;
-    return games.filter(g => matches(g, filter) && `${g.game_name} ${g.twitch_name || ""} ${g.game_id} ${(g.steam_matches || []).map(s => `${s.name} ${s.name_en} ${s.steam_appid} ${s.tags.join(" ")}`).join(" ")}`.normalize("NFKC").toLocaleLowerCase().includes(search)).sort((a, b) => {
+    return games.filter(g => matches(g, filter) && `${g.game_name} ${g.twitch_name || ""} ${g.game_id} ${(g.steam_matches || []).map(s => `${s.name} ${s.name_en} ${s.steam_appid} ${s.tags.join(" ")}`).join(" ")} ${(g.steam_store_links || []).map(s => s.steam_appid).join(" ")}`.normalize("NFKC").toLocaleLowerCase().includes(search)).sort((a, b) => {
       // Saved observations stay behind current measurements in every sorting mode.
       const freshness = Number(a.observation_status === "retained") - Number(b.observation_status === "retained");
       if (freshness) return freshness;
@@ -231,5 +266,5 @@
       };
     });
   }
-  return { SOURCES, DEFAULT_FILTER, DEFAULT_SORT, VIEWER_PRIORITY_THRESHOLD, STREAMER_PRIORITY_THRESHOLD, AUDIENCE_RULE, timestamp, count, filteredAudience, safeURL, normalize, matches, select, taipeiDay, historyDays, historyRows };
+  return { SOURCES, DEFAULT_FILTER, DEFAULT_SORT, VIEWER_PRIORITY_THRESHOLD, STREAMER_PRIORITY_THRESHOLD, AUDIENCE_RULE, timestamp, count, filteredAudience, safeURL, steamStoreURL, steamStoreLinks, normalize, matches, select, taipeiDay, historyDays, historyRows };
 });
