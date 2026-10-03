@@ -544,3 +544,127 @@ test('newer canonical forward decisions cannot be overwritten by an older revers
   const otherIdentity=steamMap({'2638890':{status:'matched',twitch_game_id:'327598602',igdb_id:'325603',steam:metadata}});
   assert.notEqual(D.normalize(noCurrentIGDB,null,otherIdentity,publicCatalog()).games[0].game_name,'鬼武者 Way of the Sword');
 });
+
+const witcher = (overrides = {}) => candidate({game_id:'1254042066',game_name:'The Witcher 3: Wild Hunt Remastered',igdb_id:'415005',...overrides});
+const websiteIdentity = (overrides = {}) => ({method:'twitch_igdb_steam_website_v1',twitch_game_id:'1254042066',igdb_id:'415005',steam_appid:'292030',checked_at:at,website_links:[{website_id:'9421',game:'415005',steam_appid:'292030',source_url:'https://store.steampowered.com/app/292030/The_Witcher_3_Wild_Hunt/',url:'https://store.steampowered.com/app/292030/'}],steam_identity_metadata:{steam_appid:'292030',steam_type:'game',display_name:'巫師 3：狂獵',store_url:'https://store.steampowered.com/app/292030/',sexual_content_screened:true,content_descriptor_ids:[1,5],release_store_date:'2015-05-18',release_date_raw:'2015 年 5 月 18 日',raw_release_date:{coming_soon:false,date:'2015 年 5 月 18 日'},checked_at:at,provider:'Steam Store appdetails cc=TW l=tchinese'},...overrides});
+const relatedEntry = (overrides = {}) => ({twitch_game_id:'1254042066',igdb_id:'415005',status:'no_steam_link',active:true,method:'twitch_igdb_external_steam_v1',checked_at:at,updated_at:at,steam_appids:[],links:[],related_steam_identity:websiteIdentity(),...overrides});
+const relatedState = (row = relatedEntry()) => ({schema_version:1,updated_at:at,steam_source_id:'1',games:{'1254042066':row}});
+
+test('official IGDB website identity supplies an old Steam Chinese name and link without pretending to be a direct chain or public catalog member', () => {
+  const payload=snapshot([witcher({filtered_audience:filtered(),tracking:entry('1254042066')})],{steam_discovery_state:relatedState()});
+  const before=D.normalize({...payload,steam_discovery_state:relatedState(relatedEntry({related_steam_identity:null}))}),after=D.normalize(payload),g=after.games[0];
+  assert.equal(g.game_name,'巫師 3：狂獵');
+  assert.equal(g.twitch_name,'The Witcher 3: Wild Hunt Remastered');
+  assert.deepEqual(g.steam_matches,[]);
+  assert.equal(g.steam_store_links[0].source,'twitch_igdb_steam_website_v1');
+  assert.deepEqual(D.steamStoreLinks(g),[{steam_appid:'292030',store_url:'https://store.steampowered.com/app/292030/'}]);
+  assert.equal(g.steam_identity_metadata[0].release_store_date,'2015-05-18');
+  assert.equal(g.steam_identity_metadata[0].release_date_raw,'2015 年 5 月 18 日');
+  assert.equal(g.is_steam_recent,false);
+  assert.deepEqual(g.active_tracking_sources,before.games[0].active_tracking_sources);
+  for(const key of ['game_id','igdb_id','viewer_count','streamer_count','filtered_audience','box_art_url','tracking','release_experiment'])assert.deepEqual(g[key],before.games[0][key],key);
+  for(const query of ['巫師','Wild Hunt Remastered','292030'])assert.equal(D.select(after.games,{query,filter:'signals'}).length,1);
+  assert.deepEqual(D.select(after.games,{filter:'steam_recent'}),[]);
+});
+
+test('related website identity rejects broken official IDs, unsafe URLs, stale proof and direct-method impersonation', () => {
+  const proof=websiteIdentity(),link=proof.website_links[0];
+  const invalid=[{method:'twitch_igdb_external_steam_v1'},{twitch_game_id:'101'},{igdb_id:'1942'},{steam_appid:'0292030'},{checked_at:null},{checked_at:'2026-09-29T12:21:00Z'},{website_links:[]},{website_links:[{...link,website_id:'0'}]},{website_links:[{...link,game:'1942'}]},{website_links:[{...link,steam_appid:'292031'}]},{website_links:[{...link,source_url:'https://store.steampowered.com/app/292031/'}]},{website_links:[{...link,source_url:'https://store.steampowered.com.evil.test/app/292030/'}]},{website_links:[{...link,url:'https://store.steampowered.com/app/292030/?x=1'}]}];
+  for(const fields of invalid){const g=D.normalize(snapshot([witcher()],{steam_discovery_state:relatedState(relatedEntry({related_steam_identity:websiteIdentity(fields)}))})).games[0];assert.deepEqual(g.steam_store_links,[],JSON.stringify(fields));assert.equal(g.game_name,'The Witcher 3: Wild Hunt Remastered');}
+  const mismatch=D.normalize(snapshot([witcher({igdb_id:'1942'})],{steam_discovery_state:relatedState()})).games[0];
+  assert.deepEqual(mismatch.steam_store_links,[]);
+  const direct=relatedEntry({status:'matched',steam_appids:['292030'],links:[{external_game_id:'12345',external_game_source:'1',uid:'292030',game:'1942',steam_appid:'292030',url:'https://store.steampowered.com/app/292030/'}],related_steam_identity:null});
+  assert.deepEqual(D.normalize(snapshot([witcher()],{steam_discovery_state:relatedState(direct)})).games[0].steam_store_links,[]);
+});
+
+test('unverified identity-only Steam names cannot bypass type, content, provider or AppID screening', () => {
+  const raw=websiteIdentity().steam_identity_metadata;
+  const bad=[{steam_type:'dlc'},{sexual_content_screened:false},{content_descriptor_ids:[3]},{content_descriptor_ids:[4]},{content_descriptor_ids:['1']},{content_descriptor_ids:null},{provider:'Steam Store cc=US'},{steam_appid:'292031'},{store_url:'https://store.steampowered.com/app/292031/'},{checked_at:null},{checked_at:'2026-09-29T12:21:00Z'},{release_store_date:'2015-02-30'},{raw_release_date:{coming_soon:false,date:'2026 年 9 月 29 日'}},{display_name:''}];
+  for(const fields of bad){const proof=websiteIdentity({steam_identity_metadata:{...raw,...fields}}),g=D.normalize(snapshot([witcher()],{steam_discovery_state:relatedState(relatedEntry({related_steam_identity:proof}))})).games[0];assert.deepEqual(g.steam_store_links,[],JSON.stringify(fields));assert.equal(g.steam_identity_metadata.length,0,JSON.stringify(fields));assert.equal(g.game_name,'The Witcher 3: Wild Hunt Remastered');assert.deepEqual(g.steam_matches,[]);assert.equal(g.is_steam_recent,false);}
+  const ambiguous=websiteIdentity({steam_identity_metadata:{...raw,release_store_date:null,release_date_raw:'待宣布',raw_release_date:{coming_soon:true,date:'待宣布'}}});
+  const g=D.normalize(snapshot([witcher()],{steam_discovery_state:relatedState(relatedEntry({related_steam_identity:ambiguous}))})).games[0];
+  assert.equal(g.game_name,'巫師 3：狂獵');
+  assert.equal(g.steam_identity_metadata[0].release_store_date,null);
+  assert.equal(g.is_steam_recent,false);
+});
+
+test('missing Helix IGDB ID requires an exact official Twitch UID proof before direct Steam identity can be recovered', () => {
+  const gid='1288749557',igdb='365465',appid='4019220';
+  const row={twitch_game_id:gid,igdb_id:igdb,status:'matched',active:true,method:'twitch_igdb_external_steam_v1',checked_at:at,updated_at:at,steam_appids:[appid],links:[{external_game_id:'12345',external_game_source:'1',uid:appid,game:igdb,steam_appid:appid,url:`https://store.steampowered.com/app/${appid}/`}],igdb_identity:{method:'igdb_external_twitch_uid_v1',twitch_game_id:gid,igdb_id:igdb,twitch_source_id:'14',checked_at:at,links:[{external_game_id:'67890',external_game_source:'14',uid:gid,game:igdb}]}};
+  const payload=snapshot([candidate({game_id:gid,game_name:'Dressmaker (2026)',igdb_id:null})],{steam_discovery_state:{schema_version:1,updated_at:at,steam_source_id:'1',twitch_source_id:'14',games:{[gid]:row}}});
+  assert.equal(D.normalize(payload).games[0].steam_store_links[0].steam_appid,appid);
+  for(const proof of [null,{...row.igdb_identity,method:'cached_name_match'},{...row.igdb_identity,igdb_id:'365466'},{...row.igdb_identity,twitch_game_id:'101'},{...row.igdb_identity,twitch_source_id:'1'},{...row.igdb_identity,checked_at:'2026-09-29T12:21:00Z'},{...row.igdb_identity,links:[{...row.igdb_identity.links[0],uid:'101'}]},{...row.igdb_identity,links:[row.igdb_identity.links[0],{...row.igdb_identity.links[0],game:'365466'}]}]){
+    const bad=structuredClone(payload);bad.steam_discovery_state.games[gid].igdb_identity=proof;assert.deepEqual(D.normalize(bad).games[0].steam_store_links,[],JSON.stringify(proof));
+  }
+  for(const alter of [state=>delete state.twitch_source_id,state=>state.twitch_source_id='1',state=>state.games[gid].igdb_identity.links.push({...row.igdb_identity.links[0]}),state=>{state.games[gid].igdb_identity.twitch_source_id='1';state.games[gid].igdb_identity.links[0].external_game_source='1';},state=>state.games[gid].igdb_identity.links[0].external_game_id=67890,state=>state.updated_at='2999-09-29T12:21:00Z']){
+    const bad=structuredClone(payload);alter(bad.steam_discovery_state);assert.deepEqual(D.normalize(bad).games[0].steam_store_links,[]);
+  }
+});
+
+test('accepted public Steam metadata stays preferred over related identity-only names', () => {
+  const payload=snapshot([witcher()],{steam_discovery_state:relatedState()});
+  const known=steamMap({'292030':{status:'matched',twitch_game_id:'1254042066',steam:steamGame({steam_appid:'292030',display_name:'已收錄的官方名稱'})}});
+  const g=D.normalize(payload,null,known).games[0];
+  assert.equal(g.game_name,'已收錄的官方名稱');
+  assert.equal(g.steam_identity_metadata[0].display_name,'巫師 3：狂獵');
+});
+
+test('website identity rejects forged evidence shape, duplicate IDs and noncanonical or unsafe source URLs', () => {
+  const proof=websiteIdentity(),link=proof.website_links[0];
+  const urls=['http://store.steampowered.com/app/292030/','https://store.steampowered.com:443/app/292030/','https://user@store.steampowered.com/app/292030/','https://store.steampowered.com/app/292030/?','https://store.steampowered.com/app/292030/#','https://store.steampowered.com/app/292030/game/extra','https://store.steampowered.com/app/292030/%57itcher','https://store.steampowered.com/app/292030/../292031/','https://store.steampowered.com\\app\\292030\\',' https://store.steampowered.com/app/292030/','https://store.steampowered.com/app/292030/\n'];
+  const bad=[...urls.map(source_url=>({...proof,website_links:[{...link,source_url}]})),{...proof,steam_appid:292030},{...proof,extra_evidence:true},{...proof,website_links:[link,{...link}]},{...proof,website_links:[{...link,website_id:9421}]},{...proof,website_links:[{...link,unverified:true}]},{...proof,steam_identity_metadata:{...proof.steam_identity_metadata,checked_at:'2026-09-29T12:19:00Z'}},{...proof,steam_identity_metadata:{...proof.steam_identity_metadata,unverified:true}},{...proof,steam_identity_metadata:{...proof.steam_identity_metadata,content_descriptor_ids:[true]}}];
+  for(const related_steam_identity of bad){
+    const g=D.normalize(snapshot([witcher()],{steam_discovery_state:relatedState(relatedEntry({related_steam_identity}))})).games[0];
+    assert.deepEqual(g.steam_store_links,[],JSON.stringify(related_steam_identity));
+    assert.deepEqual(g.steam_identity_metadata,[]);
+  }
+  const future=relatedState();future.updated_at='2999-09-29T12:21:00Z';
+  assert.deepEqual(D.normalize(snapshot([witcher()],{steam_discovery_state:future})).games[0].steam_store_links,[]);
+});
+
+test('identity store date must be the exact parsed official literal and supports the backend TW and English formats', () => {
+  const raw=websiteIdentity().steam_identity_metadata;
+  for(const release_date_raw of ['2015-05-18',' 2015 年5月18日 ','18 May 2015','May 18, 2015','18 May., 2015','May. 18 2015']){
+    const metadata={...raw,release_date_raw,raw_release_date:{coming_soon:false,date:release_date_raw}};
+    const g=D.normalize(snapshot([witcher()],{steam_discovery_state:relatedState(relatedEntry({related_steam_identity:websiteIdentity({steam_identity_metadata:metadata})}))})).games[0];
+    assert.equal(g.game_name,'巫師 3：狂獵',release_date_raw);
+    assert.equal(g.steam_identity_metadata[0].release_store_date,'2015-05-18');
+  }
+  for(const [release_date_raw,release_store_date] of [['2015 年 5 月 18 日','2026-09-29'],['2015 年 5 月 18 日',null],['2015-02-30','2015-02-30'],['18 Sept. 2015','2015-09-17'],['0000-05-18','0000-05-18'],['2015 年 5 月 18 日',undefined]]){
+    const metadata={...raw,release_date_raw,release_store_date,raw_release_date:{coming_soon:false,date:release_date_raw}};
+    const g=D.normalize(snapshot([witcher()],{steam_discovery_state:relatedState(relatedEntry({related_steam_identity:websiteIdentity({steam_identity_metadata:metadata})}))})).games[0];
+    assert.deepEqual(g.steam_store_links,[],String(release_date_raw));
+  }
+  const metadata={...raw,content_descriptor_ids:[0,1,5],release_store_date:'2015-09-18',release_date_raw:'18 Sept. 2015',raw_release_date:{coming_soon:false,date:'18 Sept. 2015'}};
+  const g=D.normalize(snapshot([witcher()],{steam_discovery_state:relatedState(relatedEntry({related_steam_identity:websiteIdentity({steam_identity_metadata:metadata})}))})).games[0];
+  assert.equal(g.steam_identity_metadata[0].release_store_date,'2015-09-18');
+  assert.equal(g.is_steam_recent,false);
+});
+
+test('related identity-only names and store links respect canonical forward conflicts and newer negative decisions', () => {
+  const payload=snapshot([witcher()],{steam_discovery_state:relatedState()}),steam=steamGame({steam_appid:'292030',display_name:'Forward canonical name'});
+  for(const decision of [{status:'matched',twitch_game_id:'101'},{status:'matched',twitch_game_id:'1254042066',igdb_id:'1942'},{status:'ambiguous'},{status:'unmatched',checked_at:at},{status:'pending',checked_at:'2026-09-29T12:21:00Z'}]){
+    const g=D.normalize(payload,null,steamMap({'292030':{steam,...decision}})).games[0];
+    assert.deepEqual(g.steam_store_links,[],JSON.stringify(decision));
+    assert.deepEqual(g.steam_identity_metadata,[]);
+    assert.notEqual(g.game_name,'巫師 3：狂獵');
+    assert.equal(g.is_steam_recent,false);
+  }
+  const g=D.normalize(payload,null,steamMap({'292030':{status:'unmatched',checked_at:'2026-09-29T12:19:00Z',steam}})).games[0];
+  assert.equal(g.game_name,'巫師 3：狂獵');
+  assert.equal(g.steam_store_links.length,1);
+});
+
+test('a newer metadata-only identity refresh localizes the unchanged census without moving tracking or recent eligibility clocks', () => {
+  const refreshed='2026-09-29T12:25:00Z',proof=websiteIdentity();
+  proof.checked_at=refreshed;proof.steam_identity_metadata.checked_at=refreshed;
+  const state=relatedState(relatedEntry({checked_at:refreshed,updated_at:refreshed,related_steam_identity:proof}));state.updated_at=refreshed;
+  const tracked=entry('1254042066'),payload=snapshot([witcher({tracking:tracked,filtered_audience:filtered()})],{tracking_state:registry({'1254042066':tracked}),steam_discovery_state:state});
+  const before=D.normalize({...payload,steam_discovery_state:null}),after=D.normalize(payload),g=after.games[0];
+  assert.equal(g.game_name,'巫師 3：狂獵');
+  assert.equal(g.steam_store_links[0].checked_at,refreshed);
+  assert.equal(after.generated_at,before.generated_at);
+  assert.equal(after.tracking_registry.updated_at,before.tracking_registry.updated_at);
+  for(const key of ['viewer_count','streamer_count','filtered_audience','measurement_started_at','measurement_finished_at','tracking','active_tracking_sources','is_tracked','is_twitch_new','is_steam_recent','release_experiment'])assert.deepEqual(g[key],before.games[0][key],key);
+  assert.equal(g.is_steam_recent,false);
+});
