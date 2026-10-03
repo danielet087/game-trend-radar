@@ -4,14 +4,25 @@
     4694270
   ],
   "description_translation_pending_count": 2,
-  "generated_at": "2026-10-03T11:31:25Z",
-  "qualified_master": 113,
-  "attempted": 0,
-  "enriched": 0,
+  "generated_at": "2026-10-03T23:30:51Z",
+  "qualified_master": 121,
+  "attempted": 2,
+  "enriched": 2,
   "repaired_indexes": 0,
-  "pending_count": 0,
-  "pending_enrichment": {},
-  "failures": {},
-  "complete": true,
-  "public_count": 113
+  "pending_count": 1,
+  "pending_enrichment": {
+    "2712590": [
+      "release_date_diagnostics"
+    ]
+  },
+  "failures": {
+    "2712590": {
+      "signature": "2712590:8968:2026-09-25",
+      "reason": "release_date_diagnostics",
+      "attempted_at": "2026-10-03T23:30:46Z",
+      "retry_after": "2026-10-04T05:30:46Z"
+    }
+  },
+  "complete": false,
+  "public_count": 121
 }
