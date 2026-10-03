@@ -395,6 +395,68 @@ test("Twitch admission still requires verified Steam game, content, exact Taipei
   assert.ok(D.normalize(game())); // Date-only legacy rows remain supported.
 });
 
+const twitchStoreAuthority = (overrides = {}) => twitchImported({
+  appid:2638890, name:"Onimusha: Way of the Sword",
+  release_start:"2026-09-03", release_end:"2026-09-03", release_store_date:"2026-09-03",
+  release_time_utc:"2026-09-04T00:00:00Z", release_timestamp_taipei_date:"2026-09-04",
+  release_date_conflict:true, release_date_normalization:"steam_taiwan_store_date_authoritative",
+  release_display_provider:"Steam Store appdetails cc=TW l=tchinese",
+  release_date_verified_at:"2026-10-03T13:00:00Z",
+  twitch_admission:{...twitchImported().twitch_admission,appid:2638890,twitch_game_id:"327598602",igdb_id:"325602"},
+  ...overrides,
+});
+
+test("verified Twitch store-date authority keeps Sep 3 on the calendar and Sep 4 in the timestamp audit", () => {
+  const raw=twitchStoreAuthority(), before=JSON.stringify(raw);
+  assert.equal(D.hasTaiwanStoreDateAuthority(raw),true);
+  assert.equal(D.isTwitchQualified(raw),true);
+  assert.equal(D.exactReleaseDate(raw),true);
+  for(const recent of [false,true]){
+    const g=D.normalize(raw,recent);
+    assert.equal(g.date,"2026-09-03");
+    assert.equal(g.followers,812);
+    assert.equal(g.twitchAdmission.appid,2638890);
+  }
+  const data=D.datasets({version:2,games:[raw]},null);
+  assert.deepEqual(D.selectGames(data,"date","2026-10-03","2026-09-03").map(g=>g.appid),[2638890]);
+  assert.deepEqual(D.selectGames(data,"date","2026-10-03","2026-09-04"),[]);
+  assert.equal(JSON.stringify(raw),before);
+});
+
+test("Taiwan store-date authority rejects incomplete evidence and falsified timestamp diagnostics", () => {
+  const invalid=[{release_date_normalization:undefined},{release_display_provider:"Steam Store appdetails cc=US l=english"},
+    {release_date_verified_at:null},{release_date_verified_at:"2026-10-03T13:00:00"},
+    {release_store_date:null},{release_store_date:"2026-09-04"},{release_store_date:"2026-02-30"},
+    {release_start:"2026-09-04"},{release_end:"2026-09-04"},{release_precision:"month"},
+    {release_display_precision:"date_month"},{release_date_timezone:"UTC"},
+    {release_time_utc:null},{release_time_utc:"2026-09-04T00:00:00"},
+    {release_timestamp_taipei_date:null},{release_timestamp_taipei_date:"2026-09-03"},
+    {release_date_conflict:false},{release_date_conflict:null},{release_date_conflict:"true"},
+    {twitch_admission:null},{twitch_admission:{...twitchStoreAuthority().twitch_admission,appid:10}},
+    {steam_type:"dlc"},{sexual_content_screened:false},{followers:"812"},{followers:null},
+    {followers:-1},{follower_checked_at:null}];
+  for(const fields of invalid){
+    const raw=twitchStoreAuthority(fields);
+    assert.equal(D.isTwitchQualified(raw),false,JSON.stringify(fields));
+    assert.equal(D.exactReleaseDate(raw),false,JSON.stringify(fields));
+    assert.equal(D.normalize(raw),null,JSON.stringify(fields));
+    assert.equal(D.normalize(raw,true),null,JSON.stringify(fields));
+  }
+  // An otherwise high-Followers ordinary record cannot borrow the marker.
+  for(const fields of [{twitch_admission:null},{steam_type:"dlc"},{sexual_content_screened:false}])
+    assert.equal(D.normalize(twitchStoreAuthority({...fields,followers:6000})),null);
+});
+
+test("store authority accepts an honest no-conflict audit and retains ordinary exact-date rules", () => {
+  const valid=twitchStoreAuthority({release_time_utc:"2026-09-02T16:00:00Z",release_timestamp_taipei_date:"2026-09-03",release_date_conflict:false});
+  assert.equal(D.hasTaiwanStoreDateAuthority(valid),true);
+  assert.ok(D.normalize(valid));
+  assert.equal(D.hasTaiwanStoreDateAuthority({...valid,release_date_conflict:true}),false);
+  assert.equal(D.normalize({...valid,release_date_conflict:true}),null);
+  assert.ok(D.normalize(game()));
+  assert.equal(D.normalize(game({release_start:"2026-09-03",release_end:"2026-09-03",release_time_utc:"2026-09-04T00:00:00Z"})),null);
+});
+
 test("published Twitch admission survives duplicate stale preview entries and repeated normalization", () => {
   const official = { version: 2, games: [twitchImported()], generated_at: "2026-10-02T09:00:00Z" };
   const preview = { games: [], recent_games: [game({ followers: 9000,

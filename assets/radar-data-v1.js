@@ -50,6 +50,7 @@
   }
   function exactReleaseDate(raw) {
     if (!raw || typeof raw !== "object") return false;
+    if (hasTaiwanStoreDateAuthority(raw) && isTwitchQualified(raw)) return true;
     const date = raw.release_start || raw.release_date;
     if (!validDate(date) ||
       (raw.release_precision && raw.release_precision !== "day") ||
@@ -81,14 +82,34 @@
       Number.isSafeInteger(evidence.viewer_count) && evidence.viewer_count >= 7000 &&
       evidence.min_viewers === 7000 && evidence.qualification !== "unverified";
   }
+  function hasTaiwanStoreDateAuthority(raw) {
+    if (!hasTwitchAdmission(raw)) return false;
+    const instant = awareTime(raw.release_time_utc);
+    const day = raw.release_store_date;
+    if (instant === null || !validDate(day)) return false;
+    const timestampDay = todayInTaipei(new Date(instant));
+    return raw.release_date_normalization === "steam_taiwan_store_date_authoritative" &&
+      raw.release_display_provider === "Steam Store appdetails cc=TW l=tchinese" &&
+      awareTime(raw.release_date_verified_at) !== null &&
+      raw.release_start === day && raw.release_end === day &&
+      raw.release_precision === "day" && raw.release_display_precision === "date_full" &&
+      raw.release_date_timezone === "Asia/Taipei" &&
+      raw.release_timestamp_taipei_date === timestampDay &&
+      typeof raw.release_date_conflict === "boolean" &&
+      raw.release_date_conflict === (day !== timestampDay);
+  }
   function isTwitchQualified(raw) {
-    return hasTwitchAdmission(raw) && exactReleaseDate(raw) && validDate(raw.release_start) &&
+    if (!hasTwitchAdmission(raw)) return false;
+    const instant = awareTime(raw.release_time_utc);
+    const consistentTimestampDay = raw.release_date_conflict !== true && instant !== null &&
+      todayInTaipei(new Date(instant)) === raw.release_start &&
       (!Object.prototype.hasOwnProperty.call(raw, "release_timestamp_taipei_date") ||
-        raw.release_timestamp_taipei_date === raw.release_start) &&
+        raw.release_timestamp_taipei_date === raw.release_start);
+    return validDate(raw.release_start) &&
       raw.steam_type === "game" && raw.sexual_content_screened === true &&
       raw.release_precision === "day" && raw.release_display_precision === "date_full" &&
       raw.release_date_timezone === "Asia/Taipei" &&
-      awareTime(raw.release_time_utc) !== null && raw.release_end === raw.release_start &&
+      (consistentTimestampDay || hasTaiwanStoreDateAuthority(raw)) && raw.release_end === raw.release_start &&
       Number.isSafeInteger(raw.followers) && raw.followers >= 0 &&
       awareTime(raw.follower_checked_at) !== null;
   }
@@ -317,6 +338,7 @@
     imageURL,
     exactReleaseDate,
     hasTwitchAdmission,
+    hasTaiwanStoreDateAuthority,
     isTwitchQualified,
     normalize,
     unique,

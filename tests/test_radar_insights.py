@@ -32,7 +32,47 @@ def twitch_game(aid=2, **fields):
         **fields)
 
 
+def twitch_store_authority(**fields):
+    return {**twitch_game(2638890), "name": "Onimusha: Way of the Sword",
+        "release_start": "2026-09-03", "release_end": "2026-09-03",
+        "release_store_date": "2026-09-03", "release_time_utc": "2026-09-04T00:00:00Z",
+        "release_timestamp_taipei_date": "2026-09-04", "release_date_conflict": True,
+        "release_date_normalization": "steam_taiwan_store_date_authoritative",
+        "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
+        "release_date_verified_at": "2026-10-03T13:00:00Z", **fields}
+
+
 class InsightTests(unittest.TestCase):
+    def test_verified_store_authority_keeps_calendar_day_and_real_follower_history(self):
+        raw = twitch_store_authority()
+        before = deepcopy(raw)
+        self.assertEqual(list(M.accepted([raw])), ["2638890"])
+        baseline = M.update(None, catalog(game()), observed_at="2026-10-03T12:00:00Z")
+        changed = M.update(baseline, catalog(game(), raw), observed_at="2026-10-03T13:00:00Z")
+        activity, growth = M.projections(changed, date(2026, 10, 3))
+        self.assertEqual(activity["events"][0]["date"], "2026-09-03")
+        record = changed["records"]["2638890"]
+        self.assertEqual(record["release_date"], "2026-09-03")
+        self.assertEqual(record["history"][0]["followers"], 812)
+        self.assertEqual(next(g for g in growth["games"] if g["appid"] == 2638890)["release_date"], "2026-09-03")
+        self.assertEqual(raw, before)
+
+    def test_store_authority_cannot_be_forged_by_missing_proof_or_bad_date_audit(self):
+        for fields in [{"release_date_normalization": None}, {"release_display_provider": "Steam Store cc=US"},
+                {"release_date_verified_at": None}, {"release_date_verified_at": "2026-10-03T13:00:00"},
+                {"release_store_date": None}, {"release_store_date": "2026-09-04"},
+                {"release_store_date": "2026-02-30"}, {"release_end": "2026-09-04"},
+                {"release_display_precision": "date_month"}, {"release_date_timezone": "UTC"},
+                {"release_time_utc": None}, {"release_timestamp_taipei_date": "2026-09-03"},
+                {"release_timestamp_taipei_date": None}, {"release_date_conflict": False},
+                {"release_date_conflict": "true"}, {"twitch_admission": None},
+                {"steam_type": "dlc"}, {"sexual_content_screened": False}, {"followers": "812"},
+                {"follower_checked_at": None},
+                {"followers": 6000, "twitch_admission": None},
+                {"followers": 6000, "sexual_content_screened": False}]:
+            with self.subTest(fields=fields):
+                self.assertEqual(M.accepted([twitch_store_authority(**fields)]), {})
+
     def test_verified_twitch_import_records_addition_and_daily_real_followers_history(self):
         first = M.update(None, catalog(game()), observed_at="2026-09-27T00:00:00Z")
         changed = M.update(first, catalog(game(), twitch_game()), observed_at="2026-09-28T00:00:00Z")

@@ -127,6 +127,6 @@ test('threshold groups do not change explicit total-viewer or total-streamer sor
 
 test('HTML refreshes the data asset and describes both inclusive thresholds', () => {
   const html = fs.readFileSync(path.join(__dirname,'../twitch.html'),'utf8');
-  assert.match(html,/radar-twitch-data-v1\.js\?v=1\.4\.0/);
+  assert.match(html,/radar-twitch-data-v1\.js\?v=1\.4\.1/);
   assert.match(html,/總觀眾 ≥ 10,000 人優先，再總開台 ≥ 40 台優先/);
 });

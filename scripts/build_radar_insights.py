@@ -50,13 +50,14 @@ def accepted(rows):
         # Verify the complete admission and Steam row before taking that branch.
         instant = stamp(row.get("release_time_utc"))
         release = row.get("release_start")
-        if (row.get("release_date_conflict") is True
+        twitch_qualified = is_twitch_qualified(row)
+        if (not twitch_qualified and (row.get("release_date_conflict") is True
                 or (row.get("release_end") and row["release_end"] != release)
                 or (row.get("release_timestamp_taipei_date") and row["release_timestamp_taipei_date"] != release)
                 or (row.get("release_time_utc") is not None
-                    and (not instant or instant.astimezone(TAIPEI).date().isoformat() != release))):
+                    and (not instant or instant.astimezone(TAIPEI).date().isoformat() != release)))):
             continue
-        if (not is_twitch_qualified(row) and count < 5000
+        if (not twitch_qualified and count < 5000
                 and not (count > 3000 and row.get("recent_source") in {"direct_release", "tracked_release"})):
             continue
         result[str(aid)] = row
