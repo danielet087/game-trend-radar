@@ -49,7 +49,7 @@ Steam 新作關注度、發售月曆與個人收藏。純 HTML / CSS / JavaScrip
 - `data/twitch_history/YYYY-MM-DD.json`：台灣日期的逐時紀錄，只在展開歷史時讀取截止快照最近 24 小時涵蓋的日期檔。
 - `data/youtube_live.json`：既有 YouTube 直播資料。
 
-前端只讀取公開靜態 JSON。排程、抓取、API 串接與所有資料檔案仍由後端專案負責。收錄尚未完成時，網站會顯示「新作持續收錄中」與更新時間，詳細說明收在「關於資料」。
+前端只讀取公開靜態 JSON；API 收集由後端專案負責。`radar-insights.yml` 每小時第 17 分由同一 Cloudflare 控制器觸發，從已發布的 JSON 推導雷達動態與成長資料。收錄尚未完成時，網站會顯示「新作持續收錄中」與更新時間，詳細說明收在「關於資料」。
 
 Twitch「查看逐時紀錄」使用原生 SVG 互動折線圖（`assets/radar-twitch-chart-v1.js`）：切換總觀眾、開台數及篩選中位數，以及最近 6／24 小時。滑鼠滑過、手機點選或拖動下方時間軸可查看時段值；時間軸也支援方向鍵、Home／End。時段與實際快照產生時間分開顯示，統一使用台灣時間。有效資料點依時間相連：連續時段使用實線，跨缺測區間使用虛線呈現前後變化。缺測、該次未入列、舊版或未完整的篩選中位數仍無數值，不補零、不產生推估資料點；選到這些時段時照常顯示缺測原因。只有一筆時顯示單一資料點。圖表在展開後才建立，不載入外部圖表套件，重新讀取快照時釋放舊圖表監聽。
 
@@ -79,3 +79,7 @@ node --test tests/*.test.cjs
 既有網站使用 main 分支根目錄：<https://danielet087.github.io/game-trend-radar/>。
 
 若從新 repository 啟用，於 Settings → Pages 選 Deploy from a branch，指定 main 與 /(root)。
+
+## 資料分析排程
+
+`radar-insights.yml` 每小時第 17 分由既有 [Cloudflare 排程控制器](https://github.com/danielet087/game-trend-radar-twitch-backend/tree/main/scheduler/cloudflare) 透過 `workflow_dispatch` 觸發；原 GitHub `schedule` 已移除。`target_slot` 與 `trigger_source=cloudflare` 會出現在執行名稱，供核對來源與原定時段。必要的資料更新 push、手動入口與 concurrency 保留。
