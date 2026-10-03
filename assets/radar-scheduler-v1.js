@@ -109,8 +109,9 @@
       if (day(instant(run.created_at)) !== date && (start === null || day(start) !== date)) continue;
       const s = runState(run, snapshot, growth, freshness[job.repo] !== false);
       const active = ACTIVE.has(run.status);
+      const batchSlot = instant(run.slot), scheduleAt = batchSlot === null ? null : batchSlot + (job.id === "twitch" ? 5 * 60000 : 0);
       events.push({ id: "run-" + run.id, at: start || instant(run.created_at), job_id: job.id, state: s.state,
-        title: job.name + " · " + s.text, detail: `${run.slot ? "原定 " + clockLabel(instant(run.slot)) : "手動／其他入口"} → ${clockLabel(start || instant(run.created_at))} ${start ? "開始" : "建立／排隊"}${!active && end ? " → " + clockLabel(end) + " 結束" : ""}。${s.state === "success" ? "流程完成與實際資料成果分開核對。" : ""}`, url: run.url });
+        title: job.name + " · " + s.text, detail: `${scheduleAt !== null ? "原定 " + clockLabel(scheduleAt) : "手動／其他入口"} → ${clockLabel(start || instant(run.created_at))} ${start ? "開始" : "建立／排隊"}${!active && end ? " → " + clockLabel(end) + " 結束" : ""}。${s.state === "success" ? "流程完成與實際資料成果分開核對。" : ""}`, url: run.url });
     }
     for (const [index, e] of (snapshot?.events || []).entries()) {
       const at = instant(e.at); if (at === null || day(at) !== date) continue;

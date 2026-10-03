@@ -33,7 +33,7 @@ test('queued workflow has no actual start and large run IDs retain canonical lin
 });
 
 test('Twitch whole-hour batch maps to the :05 scheduled point, without inventing other successes', () => {
-  const observed = run('collect.yml', 'game-trend-radar-twitch-backend');
+  const observed = run('collect.yml', 'game-trend-radar-twitch-backend', { run_started_at: '2026-10-03T07:06:00Z' });
   const lanes = buildSlots('2026-10-03', [observed], queue(), null, now);
   assert.equal(lanes.flatMap(l => l.slots).length, 73);
   const twitch = lanes.find(l => l.job.id === 'twitch');
@@ -41,6 +41,7 @@ test('Twitch whole-hour batch maps to the :05 scheduled point, without inventing
   assert.equal(twitch.slots[15].at, Date.parse('2026-10-03T07:05:00Z'));
   assert.equal(twitch.slots[14].state, 'unknown');
   assert.equal(twitch.slots[16].state, 'planned');
+  assert.match(eventHistory(queue(), [observed], null, now)[0].detail, /原定 15:05 → 15:06 開始/);
 });
 
 test('successful Actions workflow is interrupted when its actual Steam attempt gets 429', () => {
