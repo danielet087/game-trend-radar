@@ -310,7 +310,7 @@
   }
   function savedCount() {
     let count = 0;
-    try { const value = JSON.parse(localStorage.getItem("game-trend-radar:saved:v1") || "[]"); if (Array.isArray(value)) count = new Set(value.filter(id => Number.isInteger(id) && id > 0)).size; } catch {}
+    try { const value = JSON.parse(localStorage.getItem("game-trend-radar:saved:v1") || "[]"); if (Array.isArray(value)) count = new Set(value.map(window.RadarData.savedID).filter(id => id !== null)).size; } catch {}
     document.querySelectorAll("[data-saved-count]").forEach(el => { el.textContent = count; });
   }
   document.querySelectorAll("[data-filter]").forEach(button => button.addEventListener("click",() => { clearTimeout(searchTimer); state.query = $("gameSearch").value; state.filter = button.dataset.filter; state.limit = 24; render(); syncURL(); }));

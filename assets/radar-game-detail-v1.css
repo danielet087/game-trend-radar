@@ -1356,3 +1356,12 @@ body.motion-on .art-dialog[open] {
   font-size: 11px;
   line-height: 1.6;
 }
+
+/* Native Nintendo editions remain separate from Steam Followers and languages. */
+.game-platform-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.game-platform-chip { padding: 6px 10px; border: 1px solid var(--game-edge); border-radius: 8px; background: var(--game-light); color: var(--game-accent); font-size: 12px; font-weight: 750; }
+.game-platform-label { color: var(--game-accent); font-size: 15px; line-height: 1.6; font-weight: 750; }
+.game-platform-note, .game-platform-dates, .game-release-note { color: var(--muted); font-size: 10px; line-height: 1.7; margin-top: 7px; overflow-wrap: anywhere; }
+.game-platform-dates { padding-left: 15px; }
+.game-platform-dates li + li { margin-top: 4px; }
+body[data-game-source="nintendo"] #gameLanguageContent:not([hidden]) { margin-top: 15px; }

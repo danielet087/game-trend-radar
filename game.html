@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#3652ed" />
     <meta
       name="description"
-      content="查看 Steam 新作的正式發售日、關注人數與官方商店資訊。"
+      content="查看 Steam、Nintendo Switch 與 Switch 2 新作的發售日、平台與社群關注資訊。"
     />
     <title>遊戲資訊｜Game Trend Radar</title>
     <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml" />
@@ -22,18 +22,18 @@
       crossorigin
     />
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
-    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.6.1" />
+    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.7.0" />
     <link rel="stylesheet" href="./assets/radar-insights-v1.css?v=1.2.0" />
-    <link rel="stylesheet" href="./assets/radar-game-detail-v1.css?v=3.4.0" />
-    <script src="./assets/radar-data-v1.js?v=3.2.1" defer></script>
-    <script src="./assets/radar-storage-v2.js?v=3.0.0" defer></script>
-    <script src="./assets/radar-discovery-v1.js?v=1.3.0" defer></script>
+    <link rel="stylesheet" href="./assets/radar-game-detail-v1.css?v=3.5.0" />
+    <script src="./assets/radar-data-v1.js?v=3.3.0" defer></script>
+    <script src="./assets/radar-storage-v2.js?v=3.1.0" defer></script>
+    <script src="./assets/radar-discovery-v1.js?v=1.3.1" defer></script>
     <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-navigation-v1.js?v=1.0.1" defer></script>
     <script src="./assets/radar-artwork-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-insights-v1.js?v=1.1.0" defer></script>
-    <script src="./assets/radar-enhancements-v1.js?v=1.1.0" defer></script>
-    <script src="./assets/radar-game-detail-v1.js?v=3.5.0" defer></script>
+    <script src="./assets/radar-enhancements-v1.js?v=1.1.1" defer></script>
+    <script src="./assets/radar-game-detail-v1.js?v=3.6.0" defer></script>
   </head>
   <body data-page="game">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -121,6 +121,7 @@
             </div>
             <h1 class="game-page-title" id="gameTitle"></h1>
             <p class="game-page-en" id="gameEnglish" hidden></p>
+            <div class="game-platform-badges" id="gamePlatforms" aria-label="遊戲原生平台與獨佔資訊" hidden></div>
             <div
               class="game-genres"
               id="gameGenres"
@@ -191,29 +192,38 @@
               ><small id="releaseYear"></small>
             </div>
             <div>
-              <p class="intel-label">預定發售・台灣</p>
+              <p class="intel-label" id="gameReleaseLabel">預定發售・台灣</p>
               <time id="gameDate"></time>
               <p class="game-countdown" id="gameCountdown"></p>
+              <p class="game-release-note" id="gameReleaseNote" hidden></p>
             </div>
           </div>
           <div class="followers-intel">
-            <p class="intel-label">已經有這麼多人關注</p>
+            <p class="intel-label" id="gameInterestLabel">已經有這麼多人關注</p>
             <p class="follower-number">
-              <strong id="gameFollowers"></strong><span>人</span>
+              <strong id="gameFollowers"></strong><span id="gameInterestUnit">人</span>
             </p>
-            <p class="intel-caption">Steam Followers · 非願望清單數</p>
+            <p class="intel-caption" id="gameInterestCaption">Steam Followers · 非願望清單數</p>
           </div>
           <div class="game-language-line" id="gameLanguageLine">
-            <p class="intel-label">用熟悉的語言，進入新世界</p>
-            <div
-              class="game-language-badges"
-              id="gameLanguageBadge"
-              aria-label="遊戲支援語言"
-            ></div>
-            <details class="language-details">
-              <summary>語言支援說明</summary>
-              <p id="gameLanguageDescription"></p>
-            </details>
+            <div id="gamePlatformSupport" hidden>
+              <p class="intel-label">原生平台・版本別發售</p>
+              <p class="game-platform-label" id="gamePlatformLabel"></p>
+              <p class="game-platform-note" id="gamePlatformNote"></p>
+              <ul class="game-platform-dates" id="gamePlatformDates"></ul>
+            </div>
+            <div id="gameLanguageContent">
+              <p class="intel-label">用熟悉的語言，進入新世界</p>
+              <div
+                class="game-language-badges"
+                id="gameLanguageBadge"
+                aria-label="遊戲支援語言"
+              ></div>
+              <details class="language-details">
+                <summary>語言支援說明</summary>
+                <p id="gameLanguageDescription"></p>
+              </details>
+            </div>
           </div>
         </section>
 
@@ -273,7 +283,7 @@
         <div class="game-footnotes">
           <p id="gameUpdated"></p>
           <p id="gameAppId"></p>
-          <p>
+          <p id="gameFootnote">
             發售日期可能調整，實際上市時間與語言支援請以 Steam 商店公告為準。
           </p>
         </div>
@@ -327,8 +337,8 @@
           >GAME TREND RADAR<span>◎</span></a
         >
         <p>
-          資料來源：Steam 商店與 Steam Community。<br />遊戲名稱與封面屬各自權利人所有；本站與
-          Valve / Steam 無官方隸屬關係。
+          資料來源：Steam 商店、Steam Community 與 IGDB。<br />遊戲名稱與封面屬各自權利人所有；本站與
+          Valve / Steam、Nintendo 無官方隸屬關係。
         </p>
       </div>
       <a href="#mainContent" class="back-top">回到頂端 ↑</a>

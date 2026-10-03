@@ -254,6 +254,7 @@
     const fallback = index(preview?.games);
     const recent = index(preview?.recent_games);
     const attach = (game) => {
+      if (game.source === "nintendo") return game;
       const source =
         primary.get(game.appid) ||
         (game.recent ? recent.get(game.appid) : fallback.get(game.appid));

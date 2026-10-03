@@ -65,10 +65,16 @@
       ? await readJSON("./data/steam_preview.json", validCatalog, options) : null;
     return { catalog, preview };
   }
+  async function loadNintendo(options = {}) {
+    return readJSON("./data/nintendo_upcoming.json", data => data?.schema_version === 1 &&
+      Array.isArray(data.games) && data.games.every(game =>
+        /^igdb:[1-9][0-9]*$/.test(game?.id || "") && String(game.igdb_id) === game.id.slice(5)) &&
+      new Set(data.games.map(game => game.id)).size === data.games.length, options);
+  }
   async function loadGame(appid, options = {}) {
     const id = Number(appid);
     if (!Number.isSafeInteger(id) || id <= 0) return null;
     return readJSON(`./data/games/${id}.json`, x => x && Number(x.appid) === id, options);
   }
-  root.RadarStorage = { readJSON, loadCatalog, loadSources, loadGame };
+  root.RadarStorage = { readJSON, loadCatalog, loadSources, loadNintendo, loadGame };
 })(typeof window !== "undefined" ? window : globalThis);

@@ -2541,3 +2541,56 @@ body[data-page="explore"] {
 @media (max-width: 640px) {
   .site-header { backdrop-filter: none; background: #fffdf8; }
 }
+
+/* Native Nintendo platforms use their own community indicator and badges. */
+.card-platforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 11px 0 14px;
+}
+.platform-badge {
+  display: inline-flex;
+  padding: 4px 7px;
+  border: 1px solid #f0b7bd;
+  border-radius: 6px;
+  color: #a8243b;
+  background: #fff0f2;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.platform-exclusive {
+  border-color: #bda8ed;
+  color: #683bac;
+  background: #f3edff;
+}
+.platform-release-note {
+  margin: -7px 0 11px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.day-game-nintendo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff0f2;
+  color: #a8243b;
+}
+.day-game-nintendo.second { background: #fff0f2; color: #a8243b; }
+.day-game-nintendo:hover { background: #ffe0e5; }
+.day-platform {
+  flex: 0 0 auto;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: #ae2941;
+  color: #fff;
+  font-size: 9px;
+  line-height: 1.7;
+}
+.day-game-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.game-card[data-source="nintendo"] .cover-link img { object-position: center 35%; }
+@media (max-width: 520px) {
+  .day-game-nintendo { gap: 2px; }
+  .day-platform { padding: 0 2px; font-size: 8px; }
+}

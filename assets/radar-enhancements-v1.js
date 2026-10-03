@@ -82,6 +82,7 @@
     return true;
   }
   function attachCompare(card, game) {
+    if (game.source === "nintendo") return;
     names.set(game.appid, game.name);
     if (card.querySelector("[data-compare]")) return;
     const button = make("button", "card-compare");

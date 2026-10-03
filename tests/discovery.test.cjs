@@ -225,13 +225,13 @@ test("catalog descriptions explain the verified Twitch admission without univers
   const { join } = require("node:path");
   for (const asset of ["radar-play-v2.js", "radar-ui-v1.js"]) {
     const script = readFileSync(join(__dirname, "..", "assets", asset), "utf8");
-    assert.match(script, /一般新作需至少 5,000 人關注；已驗證的 Twitch 新作可另行收錄/);
+    assert.match(script, /(?:一般新作需至少 5,000 人關注；已驗證的 Twitch 新作可另行收錄|Steam 新作需至少 5,000 人關注，已驗證 Twitch 新作可另行收錄)/);
     assert.doesNotMatch(script, /款具備明確日期、至少 5,000 人關注的遊戲|僅列出近 30 天內、已確認發售且關注人數嚴格超過 3,000/);
     assert.doesNotMatch(script, /(?:upcoming|released|date|explore): "[^"\n]*(?:至少 5,000|關注人數超過 3,000)/);
   }
   for (const page of ["index", "date", "explore", "upcoming", "released", "games", "saved"]) {
     const html = readFileSync(join(__dirname, "..", page + ".html"), "utf8");
-    assert.match(html, /清單包含符合關注門檻的 Steam 遊戲與已驗證的 Twitch 新作/);
-    assert.match(html, /radar-play-v2\.js\?v=3\.8\.1/);
+    assert.match(html, /清單包含 Steam、已驗證 Twitch 新作與 NS／NS2 遊戲/);
+    assert.match(html, /radar-play-v2\.js\?v=3\.9\.0/);
   }
 });

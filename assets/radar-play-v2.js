@@ -18,7 +18,7 @@
   try {
     const value = JSON.parse(localStorage.getItem(storageKey) || "[]");
     if (Array.isArray(value))
-      saved = new Set(value.filter((id) => Number.isInteger(id) && id > 0));
+      saved = new Set(value.map(D.savedID).filter(id => id !== null));
   } catch {
     /* Browsers with storage disabled still support this session's collection. */
   }
@@ -57,7 +57,7 @@
       el.textContent = saved.size;
     });
     document.querySelectorAll("button[data-save]").forEach((button) => {
-      const active = saved.has(Number(button.dataset.save));
+      const active = saved.has(D.savedID(button.dataset.save.startsWith("igdb:") ? button.dataset.save : Number(button.dataset.save)));
       button.setAttribute("aria-pressed", String(active));
       button.setAttribute(
         "aria-label",
@@ -105,7 +105,7 @@
   }
   document.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-save]");
-    if (button) toggleSave(Number(button.dataset.save), button.dataset.name);
+    if (button) toggleSave(D.savedID(button.dataset.save.startsWith("igdb:") ? button.dataset.save : Number(button.dataset.save)), button.dataset.name);
   });
   window.addEventListener("storage", (event) => {
     if (event.key !== storageKey && event.key !== null) return;
@@ -113,7 +113,7 @@
       const value = JSON.parse(event.newValue || "[]");
       saved = new Set(
         Array.isArray(value)
-          ? value.filter((id) => Number.isInteger(id) && id > 0)
+          ? value.map(D.savedID).filter(id => id !== null)
           : [],
       );
       updateSavedControls();
@@ -129,18 +129,20 @@
     a.href = game.link;
     a.target = "_blank";
     a.rel = "noopener noreferrer";
-    a.setAttribute("aria-label", `在 Steam 開啟 ${game.name}（另開分頁）`);
+    a.setAttribute("aria-label", `在 ${game.source === "nintendo" ? game.linkLabel : "Steam"} 開啟 ${game.name}（另開分頁）`);
     return a;
   }
   function detailLink(game, className = "") {
     const link = node("a", className);
-    link.href = `./game.html?appid=${game.appid}`;
+    link.href = game.source === "nintendo" ? D.detailURL(game) : `./game.html?appid=${game.appid}`;
     link.setAttribute("aria-label", `查看 ${game.name} 的遊戲資訊`);
     return link;
   }
   function makeCard(game, options = {}) {
     const card = node("article", "game-card");
     card.dataset.appid = game.appid;
+    card.dataset.gameKey = D.gameKey(game);
+    card.dataset.source = game.source || "steam";
     cardGames.set(card, game);
     const cover = node("div", "cover-link");
     const fallback = node("span", "cover-placeholder");
@@ -187,6 +189,18 @@
     body.append(title);
     if (game.nameEn && game.nameEn !== game.name)
       body.append(node("p", "card-english", game.nameEn));
+    if (game.source === "nintendo") {
+      const platforms = node("div", "card-platforms");
+      platforms.setAttribute("aria-label", "Nintendo 原生版本與獨佔狀態");
+      for (const badge of game.platformBadges) {
+        const platform = node("span", "platform-badge platform-" + badge.status, badge.label);
+        platform.title = badge.title;
+        platforms.append(platform);
+      }
+      body.append(platforms);
+      if (game.platforms.length !== game.releasePlatforms.length)
+        body.append(node("p", "platform-release-note", `本日發售：${game.releasePlatforms.join("／")}`));
+    }
     const languages = node("div", "card-languages");
     languages.setAttribute("aria-label", "Steam 遊戲支援語言");
     for (const badge of game.languageBadges) {
@@ -199,7 +213,7 @@
         "Steam 公布的遊戲語言支援；介面、字幕及配音的詳細項目請以商店為準";
       languages.append(language);
     }
-    body.append(languages);
+    if (game.languageBadges.length) body.append(languages);
     if (["explore", "all"].includes(mode) && game.tags?.length) {
       const tags = node("div", "explorer-card-tags");
       const ordered = [...game.tags].sort(
@@ -225,14 +239,16 @@
     const followers = node(
       "span",
       "card-followers",
-      number.format(game.followers),
+      number.format(game.source === "nintendo" ? game.hypes : game.followers),
     );
-    followers.append(node("small", "", "人關注"));
+    followers.append(node("small", "", game.source === "nintendo" ? "IGDB hypes" : "人關注"));
+    if (game.source === "nintendo") time.title = `Nintendo 平台發售日期；地區：${game.dateRegion || "依來源公告"}`;
     meta.append(time, followers);
     body.append(meta);
     const detail = detailLink(game, "card-detail-link");
     const steam = externalLink(game, "steam-store-link");
     steam.textContent = "Steam 商店";
+    if (game.source === "nintendo") steam.textContent = game.linkLabel;
     const arrow = node("span", "", "↗");
     arrow.setAttribute("aria-hidden", "true");
     steam.append(arrow);
@@ -276,7 +292,9 @@
     $("updateText").textContent =
       `${prefix} · ${formatUpdate(updated)}（台灣）`;
     const init = data.initialization;
-    let coverage = `目前收錄 ${number.format(data.games.length)} 款具備明確 Steam 上市日期的遊戲。一般新作需至少 5,000 人關注；已驗證的 Twitch 新作可另行收錄。${data.partial ? "清單尚在持續補齊，不代表全部符合條件的遊戲。" : ""}`;
+    const nintendoCount = new Set(data.games.filter(game => game.source === "nintendo").map(game => game.appid)).size;
+    const steamCount = data.games.filter(game => game.source !== "nintendo").length;
+    let coverage = `目前收錄 ${number.format(steamCount)} 款 Steam 遊戲、${number.format(nintendoCount)} 款 NS／NS2 遊戲。Steam 新作需至少 5,000 人關注，已驗證 Twitch 新作可另行收錄；Nintendo 試行門檻為 IGDB hypes ≥ 30。各平台以確切發售日收錄；僅有年、月或季度的遊戲持續觀察。${data.partial ? "清單尚在持續補齊，不代表全部符合條件的遊戲。" : ""}`;
     if (init?.candidate_count)
       coverage += ` 已取得 ${number.format(init.candidate_count)} 款候選新作，逐步核對關注人數。`;
     if (mode === "released")
@@ -286,16 +304,18 @@
       coverage = `目前可查詢 ${number.format(D.selectGames(data, "all", today).length)} 款已公開收錄的遊戲，包含待上市與既有上市紀錄，不限近期日期範圍。這是本站收錄清單，並非 Steam 全站遊戲。`;
     if (data.source === "preview")
       coverage += " 正式清單暫時無法讀取，目前使用已公開的預覽資料。";
+    if (!data.nintendoAvailable) coverage += " Nintendo 資料暫時無法讀取，Steam 清單仍可查看。";
+    else coverage += ` Nintendo 更新：${formatUpdate(data.nintendoUpdated)}（台灣）。NS 與 NS2 標籤代表原生版本；目前僅列單一平台不代表官方確認獨佔。`;
     $("coverageText").textContent = coverage;
   }
   function renderHome() {
     if (mode !== "home" || !model.data) return;
     const data = model.data;
     const upcoming = D.selectGames(data, "upcoming", today).sort(
-      (a, b) => a.date.localeCompare(b.date) || b.followers - a.followers,
+      (a, b) => a.date.localeCompare(b.date) || D.popularityCompare(a, b),
     );
     const recent = D.selectGames(data, "released", today).sort(
-      (a, b) => b.followers - a.followers || b.date.localeCompare(a.date),
+      (a, b) => b.date.localeCompare(a.date) || D.popularityCompare(a, b),
     );
     $("spotlightGames").replaceChildren(
       ...upcoming.slice(0, 4).map((game, index) =>
@@ -476,7 +496,7 @@
           `${game.name} ${game.nameEn} ${game.nameOriginalTw || ""} ${game.nameOriginalCn || ""} ${game.appid} ${mode === "all" ? (game.tags || []).map(tag => tag + " " + R.label(tag)).join(" ") : ""}`
             .toLocaleLowerCase()
             .includes(term)) &&
-        game.followers >= min &&
+        (min === 0 || (game.source !== "nintendo" && game.followers >= min)) &&
         (mode !== "explore" || R.matchesTags(game, model.tagFilters)) &&
         (!period || (period === "future" ? game.date >= today : game.date < today)) &&
         (!language || game.languages?.[language] === true) &&
@@ -485,12 +505,12 @@
     const order = $("sortSelect").value;
     items.sort((a, b) =>
       order === "followers"
-        ? b.followers - a.followers || a.date.localeCompare(b.date)
+        ? D.popularityCompare(a, b)
         : order === "name"
           ? a.name.localeCompare(b.name, "zh-TW")
           : order === "newest"
-            ? b.date.localeCompare(a.date) || b.followers - a.followers
-            : a.date.localeCompare(b.date) || b.followers - a.followers,
+            ? b.date.localeCompare(a.date) || D.popularityCompare(a, b)
+            : a.date.localeCompare(b.date) || D.popularityCompare(a, b),
     );
     return { source, items };
   }
@@ -506,7 +526,7 @@
       if (!byDate.has(game.date)) byDate.set(game.date, []);
       byDate.get(game.date).push(game);
     });
-    byDate.forEach((list) => list.sort((a, b) => b.followers - a.followers));
+    byDate.forEach((list) => list.sort(D.popularityCompare));
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < count; i++) {
       const day = new Date(first.getTime() + (i - dayOffset) * 86400000)
@@ -529,10 +549,17 @@
         link.append(node("b", "", "今天"));
       }
       cell.append(link);
-      dayGames.slice(0, 2).forEach((game, rank) => {
+      D.calendarFeatured(dayGames).forEach((game, rank) => {
         const tag = detailLink(game, "day-game" + (rank ? " second" : ""));
-        tag.textContent = game.name;
-        tag.title = `${game.name} · ${number.format(game.followers)} 人關注`;
+        if (game.source === "nintendo") {
+          tag.classList.add("day-game-nintendo");
+          const platform = node("span", "day-platform", game.platformShort);
+          tag.append(platform, node("span", "day-game-name", game.name));
+          tag.title = `${game.name} · ${game.platformLabel} · ${number.format(game.hypes)} IGDB hypes · ${game.platformBadges[0].title}`;
+        } else {
+          tag.textContent = game.name;
+          tag.title = `${game.name} · ${number.format(game.followers)} 人關注`;
+        }
         cell.append(tag);
       });
       if (dayGames.length > 2) {
@@ -599,8 +626,8 @@
     }
     const grid = $("gamesGrid");
     const retained = new Map([...grid.querySelectorAll(".game-card[data-appid]")]
-      .map(card => [Number(card.dataset.appid), card]));
-    grid.replaceChildren(...items.slice(0, model.limit).map(game => cardGames.get(retained.get(game.appid)) === game ? retained.get(game.appid) : makeCard(game)));
+      .map(card => [card.dataset.gameKey || card.dataset.appid, card]));
+    grid.replaceChildren(...items.slice(0, model.limit).map(game => cardGames.get(retained.get(String(D.gameKey(game)))) === game ? retained.get(String(D.gameKey(game))) : makeCard(game)));
     document.dispatchEvent(new CustomEvent("radar:content-ready", { detail: { limit: model.limit } }));
     $("loadMoreWrap").hidden =
       items.length <= model.limit ||
@@ -756,6 +783,7 @@
     });
   }
   restoreQueryFilters(query);
+  $("followersFilter").title = "數字門檻只篩選 Steam Followers；查看 Nintendo 請選全部關注度";
   $("searchInput").addEventListener("input", (event) => {
     clearTimeout(searchTimer);
     if (!event.isComposing) searchTimer = setTimeout(changeFilters, 120);
@@ -803,7 +831,7 @@
     }
   });
   if (mode === "home") {
-    $("searchInput").placeholder = "搜尋本月遊戲名稱或 AppID…";
+    $("searchInput").placeholder = "搜尋本月遊戲名稱或 ID…";
     function stepMonth(direction) {
       const [year, month] = model.month.split("-").map(Number);
       const next = new Date(Date.UTC(year, month - 1 + direction, 1));
@@ -835,11 +863,11 @@
     });
   } else {
     const notes = {
-      upcoming: "未來 45 天 · 明確 Steam 上市日期 · 含已驗證的 Twitch 新作",
-      released: "近 30 天 · 已確認發售 · 含已驗證的 Twitch 新作",
+      upcoming: "未來 45 天 · Steam／NS／NS2 平台別確切發售日",
+      released: "近 30 天 · Steam／NS／NS2 已收錄發售紀錄",
       saved: "收藏儲存在此瀏覽器；此處顯示仍在目前公開資料內的遊戲。",
-      date: "明確 Steam 上市日期 · 含已驗證的 Twitch 新作",
-      explore: "已收錄的 Steam 遊戲 · 含已驗證的 Twitch 新作 · TAG 依 Steam 資料",
+      date: "Steam／NS／NS2 平台別確切發售日 · 查看標籤確認原生版本",
+      explore: "已收錄的 Steam／NS／NS2 遊戲 · TAG 依各資料來源",
       all: "本站所有公開收錄 · 包含待上市與既有上市紀錄",
     };
     $("scopeNote").textContent = notes[mode] || "";
@@ -892,9 +920,11 @@
     $("updateText").textContent = "正在讀取遊戲資料…";
     $("resultCount").textContent = "正在讀取遊戲資料…";
     $("gamesGrid").setAttribute("aria-busy", "true");
-    const { catalog: official, preview } = await window.RadarStorage.loadSources();
+    const [{ catalog: official, preview }, nintendo] = await Promise.all([
+      window.RadarStorage.loadSources(), window.RadarStorage.loadNintendo(),
+    ]);
     try {
-      model.data = D.datasets(official, preview);
+      model.data = D.datasets(official, preview, nintendo);
       if (mode === "all" && model.data)
         model.data = R.enrich(model.data, official, preview);
       if (mode === "explore" && model.data) {

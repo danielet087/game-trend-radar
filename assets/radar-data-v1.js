@@ -254,6 +254,7 @@
     }
     return {
       appid,
+      source: "steam",
       name,
       nameEn,
       nameTw,
@@ -281,11 +282,105 @@
       link: `https://store.steampowered.com/app/${appid}/`,
     };
   }
+  const savedID = (value) => Number.isSafeInteger(value) && value > 0
+    ? value : typeof value === "string" && /^igdb:[1-9][0-9]*$/.test(value) ? value : null;
+  const saveID = (game) => savedID(game?.appid);
+  const gameKey = (game) => game?.key || game?.appid;
+  function nintendoURL(value, kind = "link") {
+    if (typeof value !== "string" || !value.trim()) return "";
+    try {
+      const url = new URL(value.startsWith("//") ? "https:" + value : value);
+      const allowed = /(^|\.)(igdb\.com|nintendo\.com|nintendo\.com\.hk|nintendo\.co\.jp)$/.test(url.hostname);
+      return url.protocol === "https:" && !url.username && !url.password && allowed ? url.href : "";
+    } catch { return ""; }
+  }
+  function nintendoGames(payload) {
+    if (!payload || payload.schema_version !== 1 || !Array.isArray(payload.games)) return [];
+    const games = [];
+    for (const raw of payload.games) {
+      const id = decimalID(raw?.igdb_id);
+      if (!id || !Number.isSafeInteger(Number(id)) || raw.id !== `igdb:${id}` || raw.sexual_content_screened !== true ||
+        !Number.isSafeInteger(raw.hypes) || raw.hypes < 30 || !Array.isArray(raw.platforms) ||
+        !Array.isArray(raw.releases)) continue;
+      const platforms = [...new Set(raw.platforms.filter(platform =>
+        ["NS", "NS2"].includes(platform?.code) &&
+        Number(platform.id) === (platform.code === "NS" ? 130 : 508)).map(platform => platform.code))];
+      if (!platforms.length) continue;
+      const nameEn = String(raw.name_en || raw.name || "").trim();
+      const nameTw = String(raw.name_zh_tw_traditional || raw.name_zh_tw || "").trim();
+      const nameCn = String(raw.name_zh_cn_traditional || "").trim();
+      const name = String(raw.display_name || nameTw || nameCn || raw.name_en_traditional || nameEn || `IGDB ${id}`).trim();
+      const grouped = new Map();
+      for (const release of raw.releases) {
+        if (release?.precision !== "day" || !validDate(release.date) || !platforms.includes(release.platform)) continue;
+        if (!grouped.has(release.date)) grouped.set(release.date, []);
+        const rows = grouped.get(release.date);
+        if (!rows.some(row => row.platform === release.platform && row.region === release.region)) rows.push(release);
+      }
+      for (const [date, releases] of grouped) {
+        const releasePlatforms = platforms.filter(code => releases.some(release => release.platform === code));
+        const exclusive = raw.exclusivity || {};
+        const knownPlatforms = Array.isArray(raw.known_platforms) ? raw.known_platforms : [];
+        const soleKnown = knownPlatforms.length === 1 &&
+          Number(knownPlatforms[0]?.id) === (platforms[0] === "NS" ? 130 : 508);
+        const otherPlatforms = knownPlatforms.some(platform => ![130, 508].includes(Number(platform?.id)));
+        const confirmed = exclusive.status === "confirmed" && platforms.length === 1 &&
+          soleKnown && raw.platform_data_complete === true && exclusive.platform === platforms[0] &&
+          !!nintendoURL(exclusive.url) && !new URL(nintendoURL(exclusive.url)).hostname.endsWith("igdb.com");
+        const listed = !confirmed && exclusive.status === "listed_only" && platforms.length === 1 &&
+          soleKnown && raw.platform_data_complete === true && exclusive.platform === platforms[0];
+        const platformShort = confirmed ? `${platforms[0]}獨佔` : releasePlatforms.join("／");
+        const platformLabel = confirmed ? `${platforms[0]} 獨佔` : listed
+          ? `${platforms[0]}（目前僅此平台）` : platforms.join("／") + (otherPlatforms ? "・多平台" : "");
+        const platformTitle = confirmed ? `官方確認 ${platforms[0]} 獨佔；原生版本平台`
+          : listed ? `IGDB 目前僅列 ${platforms[0]}；尚未視為官方獨佔確認`
+          : `原生版本平台：${platforms.join("／")}${otherPlatforms ? "；另有其他平台" : ""}；向下相容不視為另一平台版本`;
+        const art = nintendoURL(raw.cover_image, "image");
+        const nintendoLink = nintendoURL(raw.nintendo_url);
+        const igdbLink = nintendoURL(raw.url);
+        const link = nintendoLink || igdbLink || "https://www.igdb.com/";
+        games.push({
+          appid: `igdb:${id}`, key: `igdb:${id}@${date}`, igdbId: Number(id), source: "nintendo",
+          name, nameEn, nameTw, nameCn, nameOriginalTw: raw.name_zh_tw || "", nameOriginalCn: raw.name_zh_cn || "",
+          date, releases: raw.releases, dateReleases: releases, dateRegion: releases[0]?.region || "",
+          dateSource: releases[0]?.source || "IGDB", releasePlatforms, platforms,
+          platformShort, platformLabel, platformBadges: [{ label: platformLabel, status: confirmed ? "exclusive" : "nintendo", title: platformTitle }],
+          hypes: raw.hypes, followers: null, languages: raw.language_support || null,
+          languageBadges: [], languageBadge: "語言支援待確認", languageStatus: "unknown",
+          art, artSources: art ? [art] : [], art2x: "", artVariants: {}, hasVerifiedHeader: !!art,
+          recent: false, darkHorse: false, link, linkLabel: nintendoLink ? "Nintendo 官網" : igdbLink ? "IGDB 遊戲資料" : "IGDB 官網",
+          updated: raw.checked_at || payload.generated_at || null, exclusivity: exclusive,
+          tags: Array.isArray(raw.tags) ? raw.tags.filter(tag => typeof tag === "string") : [],
+          genres: Array.isArray(raw.genres) ? raw.genres.filter(genre => typeof genre === "string") : [],
+          description: raw.short_description_language === "zh-TW" && typeof raw.short_description === "string" ? raw.short_description : "",
+          descriptionSource: raw.short_description_source || "",
+        });
+      }
+    }
+    return unique(games);
+  }
+  function detailURL(game) {
+    return game.source === "nintendo"
+      ? `./game.html?igdb=${game.igdbId}&date=${game.date}` : `./game.html?appid=${game.appid}`;
+  }
+  function popularityCompare(a, b) {
+    // Counts belong to different communities; only compare within their source.
+    if ((a.source === "nintendo") !== (b.source === "nintendo")) return a.source === "nintendo" ? 1 : -1;
+    return (a.source === "nintendo" ? b.hypes - a.hypes : b.followers - a.followers) ||
+      a.date.localeCompare(b.date) || a.name.localeCompare(b.name, "zh-TW");
+  }
+  function calendarFeatured(games) {
+    const ranked = [...games].sort(popularityCompare);
+    const steam = ranked.filter(game => game.source !== "nintendo");
+    const nintendo = ranked.filter(game => game.source === "nintendo");
+    return steam.length && nintendo.length ? [steam[0], nintendo[0]] : ranked.slice(0, 2);
+  }
   const unique = (items) =>
-    Array.from(new Map(items.map((game) => [game.appid, game])).values());
-  function datasets(official, preview) {
+    Array.from(new Map(items.map((game) => [gameKey(game), game])).values());
+  function datasets(official, preview, nintendo = null) {
     const chosen = official || preview;
-    if (!chosen) return null;
+    const nintendoRows = nintendoGames(nintendo);
+    if (!chosen && !nintendo) return null;
     const translations = new Map(
       (preview?.games || [])
         .filter(Boolean)
@@ -293,28 +388,31 @@
     );
     return {
       games: unique(
-        chosen.games
+        [...(chosen?.games || [])
           .map((game) =>
             normalize(game, false, translations.get(Number(game?.appid))),
           )
-          .filter(Boolean),
+          .filter(Boolean), ...nintendoRows],
       ),
       recent: unique(
         [
           ...(preview?.recent_games || []).map((game) => normalize(game, true)),
-          ...(chosen.games || []).map((game) =>
+          ...(chosen?.games || []).map((game) =>
             normalize(game, true, translations.get(Number(game?.appid))),
           ),
+          ...nintendoRows,
         ].filter(Boolean),
       ),
-      updated: chosen.generated_at || chosen.updated_at || null,
-      recentUpdated: chosen.generated_at || preview?.generated_at || null,
+      updated: chosen?.generated_at || chosen?.updated_at || nintendo?.generated_at || null,
+      recentUpdated: chosen?.generated_at || preview?.generated_at || nintendo?.generated_at || null,
+      nintendoUpdated: nintendo?.generated_at || null,
+      nintendoAvailable: !!nintendo,
       partial:
-        !!chosen.is_partial_preview ||
-        chosen.initialization?.complete === false,
-      initialization: chosen.initialization || null,
-      recentAvailable: chosen.version >= 2 || (!!preview && Array.isArray(preview.recent_games)),
-      source: official ? "official" : "preview",
+        !!chosen?.is_partial_preview ||
+        chosen?.initialization?.complete === false || !chosen,
+      initialization: chosen?.initialization || null,
+      recentAvailable: chosen?.version >= 2 || (!!preview && Array.isArray(preview.recent_games)) || !!nintendo,
+      source: official ? "official" : preview ? "preview" : "nintendo",
     };
   }
   function selectGames(data, mode, today, date = null) {
@@ -341,6 +439,14 @@
     hasTaiwanStoreDateAuthority,
     isTwitchQualified,
     normalize,
+    savedID,
+    saveID,
+    gameKey,
+    nintendoURL,
+    nintendoGames,
+    detailURL,
+    popularityCompare,
+    calendarFeatured,
     unique,
     datasets,
     selectGames,
