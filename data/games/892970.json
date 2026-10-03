@@ -6,7 +6,6 @@
   "name_en": "Valheim",
   "name_zh_cn": "Valheim: 英灵神殿",
   "name_zh_cn_traditional": "Valheim: 英靈神殿",
-  "name_en_traditional": "Valheim",
   "language_support": {
     "tchinese": true,
     "schinese": true,
@@ -145,13 +144,14 @@
     "checked_at": "2026-10-03T10:10:30Z",
     "source_frontend_commit": "d1015875e1d2b1374ef412446b89ea18f25751af",
     "source_enrollment": {
-      "kind": "history_recovery",
-      "min_viewers": 7000,
-      "observed_at": "2026-09-29T14:28:32Z",
       "source": "igdb_first_release_date",
-      "viewer_count": 9675
+      "observed_at": "2026-09-29T14:28:32Z",
+      "viewer_count": 9675,
+      "min_viewers": 7000,
+      "kind": "history_recovery"
     }
   },
   "content_enrichment_signature": "892970:536496:2026-09-09",
-  "storage_version": 2
+  "storage_version": 2,
+  "community_url": "https://steamcommunity.com/app/892970/"
 }

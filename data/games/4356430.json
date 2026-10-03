@@ -4,7 +4,6 @@
   "display_name": "NBA 2K27",
   "display_name_source": "english",
   "name_en": "NBA 2K27",
-  "name_en_traditional": "NBA 2K27",
   "language_support": {
     "tchinese": true,
     "schinese": true,
@@ -138,13 +137,14 @@
     "checked_at": "2026-10-03T10:10:30Z",
     "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
     "source_enrollment": {
-      "kind": "history_recovery",
-      "min_viewers": 7000,
-      "observed_at": "2026-09-29T15:19:47Z",
       "source": "igdb_first_release_date",
-      "viewer_count": 7705
+      "observed_at": "2026-09-29T15:19:47Z",
+      "viewer_count": 7705,
+      "min_viewers": 7000,
+      "kind": "history_recovery"
     }
   },
   "content_enrichment_signature": "4356430:10451:2026-09-03",
-  "storage_version": 2
+  "storage_version": 2,
+  "community_url": "https://steamcommunity.com/app/4356430/"
 }
