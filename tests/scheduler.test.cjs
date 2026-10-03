@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { validateQueue, normalizeRun, runState, buildSlots, dashboardState, eventHistory } = require('../assets/radar-scheduler-v1.js');
+const { validateQueue, normalizeRun, runState, buildSlots, dashboardState, eventHistory, queueGameState, groupQueueCounts } = require('../assets/radar-scheduler-v1.js');
 
 const now = Date.parse('2026-10-03T07:30:00Z');
 function queue() {
@@ -80,4 +80,81 @@ test('stale API active state does not claim a live workflow', () => {
   assert.equal(runState(active, queue(), null, false).state, 'unknown');
   assert.equal(dashboardState(queue(), [active], { 'game-trend-radar-backend': false }, now).state, 'waiting');
   assert.equal(dashboardState(queue(), [active], { 'game-trend-radar-backend': true }, now).state, 'running');
+});
+
+test('unresolved groups expose their own API reason before a Followers cooldown', () => {
+  const q = queue(); q.cooldown = { until: '2026-10-03T08:30:00Z' };
+  const reasons = [
+    ['not_found', /本次未取得 GroupID/], ['missing_api_key', /缺少 API Key/],
+    ['api_rate_limited', /API 限流/], ['api_forbidden', /拒絕存取/],
+    ['network_error', /網路錯誤/], ['api_error', /API 錯誤/],
+    ['invalid_response', /回應無效/], [undefined, /等待群組 ID 解析/],
+  ];
+  for (const [status, label] of reasons) {
+    const row = { appid: 2, state: 'awaiting_group', group_id64: null,
+      group_resolution: { status, checked_at: '2026-10-03T07:10:00Z', source: 'steam_api' } };
+    const state = queueGameState(row, q, now);
+    assert.equal(state.awaitingGroup, true);
+    assert.match(state.label, label);
+    assert.doesNotMatch(state.detail, /Followers 冷卻結束後/);
+  }
+});
+
+test('this-attempt no-match keeps a parked game awaiting resolution without claiming no group exists', () => {
+  const q = queue(), game = { appid: 3, reason: 'official_xml_fallback_returned_html', group_id64: null,
+    group_resolution: { status: 'not_found', checked_at: '2026-10-03T07:10:00Z', retry_at: '2026-10-03T08:00:00Z', http: 200 } };
+  const state = queueGameState(game, q, now, true);
+  assert.equal(state.stage, 'awaiting_group');
+  assert.match(state.detail, /本次 API 回應未取得群組 ID/);
+  assert.match(state.detail, /不代表該遊戲沒有群組/);
+  assert.match(state.detail, /仍計入暫停項目/);
+  assert.equal(q.summary.parked, 1);
+  assert.ok(state.metadata.some(text => text.includes('解析 API HTTP 200')));
+});
+
+test('legacy snapshots do not turn absent or undefined group fields into unresolved IDs', () => {
+  const q = queue(); q.cooldown = { until: '2026-10-03T08:30:00Z' };
+  for (const game of [{ appid: 1 }, { appid: 1, group_id64: undefined }]) {
+    const state = queueGameState(game, q, now);
+    assert.equal(state.awaitingGroup, false);
+    assert.equal(state.stage, 'legacy');
+    assert.equal(state.label, null);
+  }
+  assert.equal(queueGameState({ appid: 1, state: 'awaiting_group' }, q, now).awaitingGroup, true);
+  for (const status of ['resolved', 'existing_id']) {
+    const resolved = queueGameState({ appid: 1, group_id64: '103582791429521412', group_resolution: { status } }, q, now);
+    assert.equal(resolved.stage, 'followers');
+    assert.equal(resolved.awaitingGroup, false);
+    assert.match(resolved.detail, /群組 ID 已備妥；Followers 冷卻/);
+    assert.ok(resolved.metadata.includes('GroupID 103582791429521412'));
+  }
+});
+
+test('overview separates GroupID API retry from Steam Community Followers cooldown', () => {
+  const q = queue(); q.queue[0].group_id64 = null; q.queue[0].state = 'awaiting_group';
+  q.cooldown = { until: '2026-10-03T08:30:00Z', next_eligible_slot: '2026-10-03T09:00:00Z' };
+  q.group_resolution_api_cooldown = { retry_at: '2026-10-03T08:00:00Z', status: 'api_rate_limited', http: 429 };
+  const paused = dashboardState(q, [], {}, now);
+  assert.match(paused.headline, /群組 ID 解析 API 正在冷卻/);
+  assert.match(paused.detail, /1 款尚未取得群組 ID/);
+  assert.match(paused.detail, /Followers 查詢另有 Steam Community 冷卻/);
+  delete q.group_resolution_api_cooldown;
+  assert.match(dashboardState(q, [], {}, now).headline, /仍有群組待解析/);
+  delete q.cooldown;
+  assert.match(dashboardState(q, [], {}, now).headline, /等待群組 ID 解析/);
+  q.summary.ready_pending = 0; q.queue = [];
+  assert.match(dashboardState(q, [], {}, now).headline, /可處理佇列已完成/);
+});
+
+test('optional group-stage counts keep legacy or null values unknown instead of inventing zero', () => {
+  const q = queue();
+  assert.equal(groupQueueCounts(q), null);
+  q.summary.followers_ready_pending = 1; q.summary.awaiting_group_pending = 1;
+  assert.deepEqual(groupQueueCounts(q), { followersReady: 1, awaitingGroup: 1 });
+  q.summary.followers_ready_pending = null;
+  assert.equal(groupQueueCounts(q), null);
+  q.summary.followers_ready_pending = 0; q.summary.awaiting_group_pending = 0;
+  assert.equal(groupQueueCounts(q), null);
+  q.summary.ready_pending = 0;
+  assert.deepEqual(groupQueueCounts(q), { followersReady: 0, awaitingGroup: 0 });
 });

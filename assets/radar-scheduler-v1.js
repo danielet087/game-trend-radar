@@ -21,6 +21,45 @@
   const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const runUrl = (job, id) => appid(id) || /^[1-9]\d{0,19}$/.test(String(id)) ? `https://github.com/${OWNER}/${job.repo}/actions/runs/${id}` : null;
   const steamUrl = id => `https://store.steampowered.com/app/${appid(id)}/`;
+  const UNRESOLVED_GROUP_STATUSES = new Set(["not_found", "missing_api_key", "api_rate_limited", "api_forbidden", "network_error", "api_error", "invalid_response"]);
+
+  function queueGameState(game, snapshot, now = Date.now(), parked = false) {
+    const hasGroupField = Object.prototype.hasOwnProperty.call(game, "group_id64");
+    const groupId = typeof game.group_id64 === "string" && /^[1-9]\d{0,19}$/.test(game.group_id64) ? game.group_id64 : null;
+    const resolution = game.group_resolution && typeof game.group_resolution === "object" ? game.group_resolution : null;
+    const awaitingGroup = game.state === "awaiting_group" || hasGroupField && game.group_id64 === null || !groupId && UNRESOLVED_GROUP_STATUSES.has(resolution?.status);
+    const metadata = [];
+    if (groupId) metadata.push("GroupID " + groupId);
+    if (instant(resolution?.checked_at) !== null) metadata.push("群組解析查核 " + dateLabel(instant(resolution.checked_at)));
+    if (typeof resolution?.source === "string" && resolution.source) metadata.push("群組來源 " + resolution.source);
+    if (Number.isInteger(resolution?.http) && resolution.http >= 100 && resolution.http <= 599) metadata.push("解析 API HTTP " + resolution.http);
+    if (instant(resolution?.retry_at) !== null) metadata.push("群組解析可重試時間 " + dateLabel(instant(resolution.retry_at)));
+    if (awaitingGroup) {
+      const states = {
+        not_found: ["本次未取得 GroupID", "本次 API 回應未取得群組 ID，保留候選等待後續解析；這不代表該遊戲沒有群組。", "waiting"],
+        missing_api_key: ["群組解析缺少 API Key", "群組 ID 尚未解析；缺少 Steam API Key，等待設定後解析。", "waiting"],
+        api_rate_limited: ["群組解析 API 限流", "群組 ID 解析 API 收到限流，等待可重試時間後再解析；尚未進入 Followers 查詢。", "interrupted"],
+        api_forbidden: ["群組解析 API 拒絕存取", "本次群組解析 API 拒絕存取，尚未取得群組 ID，保留候選等待處理。", "interrupted"],
+        network_error: ["群組解析網路錯誤", "本次群組解析網路連線失敗，尚未取得群組 ID，保留候選待重試。", "interrupted"],
+        api_error: ["群組解析 API 錯誤", "本次群組解析 API 查詢失敗，尚未取得群組 ID，等待後續重試。", "interrupted"],
+        invalid_response: ["群組解析回應無效", "本次群組解析 API 回應缺少有效資料，尚未取得群組 ID，等待後續解析。", "interrupted"],
+      };
+      const [label, detail, kind] = states[resolution?.status] || ["等待群組 ID 解析", "群組 ID 尚未解析；先取得 GroupID，再查詢官方 Followers。", "waiting"];
+      return { stage: "awaiting_group", awaitingGroup: true, label, detail: detail + (parked ? " 目前仍計入暫停項目。" : ""), kind, metadata };
+    }
+    const until = instant(snapshot?.cooldown?.until), cooling = until !== null && until > now;
+    const oldPausedReason = ({ official_xml_fallback_returned_html: "官方端點回傳 HTML，尚未取得有效群組 ID。", missing_official_group_id: "尚未取得有效官方群組 ID。" })[game.reason] || game.reason || "目前資料不足，暫停官方查詢。";
+    return { stage: groupId ? "followers" : "legacy", awaitingGroup: false,
+      label: groupId ? parked ? "群組 ID 已備妥，等待恢復" : cooling ? "Followers 冷卻中" : "等待 Followers 查詢" : null,
+      detail: parked ? groupId ? "已取得群組 ID；目前仍列暫停項目，等待後端恢復處理。" : oldPausedReason : groupId ? cooling ? "群組 ID 已備妥；Followers 冷卻結束後依序查詢。" : "群組 ID 已備妥；等待官方 Followers 查詢。" : cooling ? "冷卻結束後依序處理" : "等待官方查詢",
+      kind: "waiting", metadata };
+  }
+  function groupQueueCounts(snapshot) {
+    const summary = snapshot?.summary;
+    const ready = num(summary?.followers_ready_pending), awaiting = num(summary?.awaiting_group_pending);
+    if (ready === null || awaiting === null || ready + awaiting !== num(summary?.ready_pending)) return null;
+    return { followersReady: ready, awaitingGroup: awaiting };
+  }
 
   function validateQueue(data) {
     if (!data || data.schema_version !== 1 || !instant(data.generated_at) || !data.summary || !Array.isArray(data.queue) || !Array.isArray(data.parked)) throw new Error("queue_shape");
@@ -96,11 +135,14 @@
     if (!snapshot) return { headline: "佇列資料暫時無法讀取", detail: "保留已取得的執行紀錄；待查數量不填成 0。", state: "unknown" };
     const running = runs.find(r => r.job_id === "steam_catchup" && ACTIVE.has(r.status) && freshness["game-trend-radar-backend"]);
     const until = instant(snapshot.cooldown?.until), cooling = until !== null && until > now;
-    if (running) return { headline: running.status === "in_progress" ? "Followers 流程執行中" : "Followers 流程正在等待", detail: cooling ? `流程正在執行或排隊，Steam 查詢仍須等到 ${dateLabel(until)} 冷卻結束。` : "已觀測到執行中的工作；實際查詢進度以最新佇列快照為準。", state: "running" };
-    if (cooling) return { headline: "Steam 查詢正在冷卻", detail: `429 後保留佇列，冷卻至 ${dateLabel(until)}。下一次可嘗試的原定時段：${instant(snapshot.cooldown.next_eligible_slot) ? dateLabel(instant(snapshot.cooldown.next_eligible_slot)) : "尚未確認"}。`, state: "waiting" };
+    const awaiting = (snapshot.queue || []).filter(game => queueGameState(game, snapshot, now).awaitingGroup).length;
+    const apiRetry = instant(snapshot.group_resolution_api_cooldown?.retry_at), apiCooling = awaiting > 0 && apiRetry !== null && apiRetry > now;
+    if (running) return { headline: running.status === "in_progress" ? "官方佇列流程執行中" : "官方佇列流程正在等待", detail: `已觀測到執行或排隊中的工作；先解析群組 ID，再查 Followers。${awaiting ? "目前快照有 " + awaiting + " 款等待群組解析。" : ""}${cooling ? "Steam Community Followers 查詢仍須等到 " + dateLabel(until) + " 冷卻結束。" : "實際處理進度以最新佇列快照為準。"}`, state: "running" };
+    if (apiCooling) return { headline: "群組 ID 解析 API 正在冷卻", detail: `${awaiting} 款尚未取得群組 ID；解析 API 可重試時間為 ${dateLabel(apiRetry)}。${cooling ? "Followers 查詢另有 Steam Community 冷卻，至 " + dateLabel(until) + "。" : "取得群組 ID 後才會查詢 Followers。"}`, state: "waiting" };
+    if (cooling) return { headline: awaiting ? "Followers 冷卻中，仍有群組待解析" : "Followers 查詢正在冷卻", detail: `Steam Community 429 後保留佇列，Followers 冷卻至 ${dateLabel(until)}。${awaiting ? awaiting + " 款須先解析群組 ID；這與 Followers 冷卻分開處理。" : ""}下一次可嘗試的原定時段：${instant(snapshot.cooldown.next_eligible_slot) ? dateLabel(instant(snapshot.cooldown.next_eligible_slot)) : "尚未確認"}。`, state: "waiting" };
     if (snapshot.today_taipei !== day(now) || now - instant(snapshot.generated_at) > 2 * HOUR) return { headline: "目前顯示上次佇列快照", detail: "快照較舊，最新剩餘數與處理狀態待更新；原有清單仍保留供核對。", state: "unknown" };
-    if (snapshot.summary.ready_pending === 0) return { headline: snapshot.summary.parked ? "可查佇列已完成，仍有待處理問題" : "目前可查佇列已完成", detail: snapshot.summary.parked ? "暫停項目仍保留，取得有效資料後才能回到佇列。" : "目前快照沒有待查項目；後續新候選仍會加入既有流程。", state: "success" };
-    return { headline: "佇列保留中，等待下一輪", detail: `接下來依序處理 ${snapshot.summary.ready_pending} 款可查遊戲，Twitch 發現優先。原定時段可能因冷卻、其他執行中的工作或延遲而略過。`, state: "waiting" };
+    if (snapshot.summary.ready_pending === 0) return { headline: snapshot.summary.parked ? "可處理佇列已完成，仍有待處理問題" : "目前可處理佇列已完成", detail: snapshot.summary.parked ? "暫停項目仍保留，取得有效群組資料後由後端恢復處理。" : "目前快照沒有待查項目；後續新候選仍會加入既有流程。", state: "success" };
+    return { headline: awaiting ? "佇列等待群組 ID 解析" : "佇列保留中，等待下一輪", detail: `接下來依序處理 ${snapshot.summary.ready_pending} 款遊戲，Twitch 發現優先。${awaiting ? awaiting + " 款須先解析 GroupID，再查 Followers。" : "已取得群組 ID 的項目直接進入 Followers 流程。"}原定時段可能因冷卻、其他執行中的工作或延遲而略過。`, state: "waiting" };
   }
   function eventHistory(snapshot, runs, growth, now = Date.now(), freshness = {}) {
     const date = day(now), events = [];
@@ -129,7 +171,7 @@
     }
     return events.sort((a, b) => b.at - a.at);
   }
-  const api = { JOBS, validateQueue, normalizeRun, runState, buildSlots, dashboardState, eventHistory, day, instant };
+  const api = { JOBS, validateQueue, normalizeRun, runState, buildSlots, dashboardState, eventHistory, queueGameState, groupQueueCounts, day, instant };
   root.RadarScheduler = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (typeof document === "undefined") return;
@@ -186,17 +228,16 @@
   const badge = (text, kind = "waiting") => `<span class="queue-badge state-${kind}">${esc(text)}</span>`;
   function gameCard(game, index, parked = false) {
     const title = game.name || "Steam AppID " + game.appid, priority = game.priority === true;
-    const reason = parked ? "群組 ID／XML 尚未排除問題" : state.queue?.cooldown?.until && instant(state.queue.cooldown.until) > Date.now() ? "冷卻結束後依序處理" : "等待官方查詢";
-    const pausedReason = ({ official_xml_fallback_returned_html: "官方端點回傳 HTML，尚未取得有效群組 ID。", missing_official_group_id: "尚未取得有效官方群組 ID。" })[game.reason] || game.reason || "目前資料不足，暫停官方查詢。";
-    return `<article class="queue-card ${parked ? "is-paused" : priority ? "is-priority" : ""}"><div class="queue-card-head"><span class="queue-rank">${parked ? "暫停" : "#" + (game.position || index + 1)}</span><div class="queue-badges">${badge(priority ? "Twitch 優先" : "一般 Steam", priority ? "priority" : "ordinary")}${parked ? badge("暫停", "interrupted") : ""}</div></div><h3><a href="${steamUrl(game.appid)}" target="_blank" rel="noopener noreferrer">${esc(title)} <span aria-hidden="true">↗</span></a></h3><p class="queue-meta">AppID ${game.appid} · ${game.release_date ? "上市 " + esc(game.release_date) : "上市日期待確認"}</p><p class="queue-card-note">${esc(parked ? pausedReason : reason)}</p>${game.last_attempt_at && instant(game.last_attempt_at) ? `<p class="queue-meta">上次嘗試 ${dateLabel(instant(game.last_attempt_at))}${/rate_limit/.test(game.last_attempt_status || "") ? " · 429" : ""}</p>` : ""}</article>`;
+    const progress = queueGameState(game, state.queue, Date.now(), parked);
+    return `<article class="queue-card ${parked ? "is-paused" : priority ? "is-priority" : ""}"><div class="queue-card-head"><span class="queue-rank">${parked ? "暫停" : "#" + (game.position || index + 1)}</span><div class="queue-badges">${badge(priority ? "Twitch 優先" : "一般 Steam", priority ? "priority" : "ordinary")}${parked ? badge("暫停", "interrupted") : ""}${progress.label ? badge(progress.label, progress.kind) : ""}</div></div><h3><a href="${steamUrl(game.appid)}" target="_blank" rel="noopener noreferrer">${esc(title)} <span aria-hidden="true">↗</span></a></h3><p class="queue-meta">AppID ${game.appid} · ${game.release_date ? "上市 " + esc(game.release_date) : "上市日期待確認"}</p><p class="queue-card-note">${esc(progress.detail)}</p>${progress.metadata.length ? `<p class="queue-meta">${esc(progress.metadata.join(" · "))}</p>` : ""}${game.last_attempt_at && instant(game.last_attempt_at) ? `<p class="queue-meta">上次 Followers 嘗試 ${dateLabel(instant(game.last_attempt_at))}${/rate_limit/.test(game.last_attempt_status || "") ? " · 429" : ""}</p>` : ""}</article>`;
   }
   function renderQueue() {
     const q = state.queue, search = ($("queueSearch")?.value || "").trim().toLocaleLowerCase(), filter = $("queueFilter")?.value || "all";
     if (!q) { $("nextQueue").innerHTML = '<p class="empty-state">待查清單暫時無法取得。</p>'; $("pausedQueue").innerHTML = '<p class="empty-state">暫停清單尚未確認。</p>'; $("pendingQueue").innerHTML = '<p class="empty-state">保留未知狀態，沒有將待查數量當成 0。</p>'; return; }
-    $("nextQueue").innerHTML = q.queue.length ? q.queue.slice(0, 6).map((g, i) => gameCard(g, i)).join("") : '<p class="empty-state">目前沒有可查遊戲。</p>';
-    $("nextQueueNote").textContent = "依後端目前佇列順序顯示前 6 款；這是待處理順序，實際開始仍須通過冷卻與執行鎖。";
+    $("nextQueue").innerHTML = q.queue.length ? q.queue.slice(0, 6).map((g, i) => gameCard(g, i)).join("") : '<p class="empty-state">目前沒有可處理遊戲。</p>';
+    $("nextQueueNote").textContent = "依後端佇列順序顯示前 6 款；先解析群組 ID，再查 Followers。已取得 ID 的項目直接查 Followers，實際開始仍須通過各自的冷卻與執行鎖。";
     $("pausedQueue").innerHTML = q.parked.length ? q.parked.map((g, i) => gameCard(g, i, true)).join("") : '<p class="empty-state">目前沒有暫停項目。</p>';
-    $("pausedQueueNote").textContent = "暫停項目計入總待處理數，取得有效群組資料後才回到可查佇列。";
+    $("pausedQueueNote").textContent = "暫停項目計入總待處理數；尚未取得有效群組 ID 的項目等待解析，成功後由後端恢復至既有佇列。";
     const rows = [...q.queue.map(g => ({ ...g, parked: false })), ...q.parked.map(g => ({ ...g, parked: true }))].filter(g => (filter === "all" || filter === "paused" && g.parked || filter === "twitch" && !g.parked && g.priority || filter === "ordinary" && !g.parked && !g.priority) && (!search || String(g.name).toLocaleLowerCase().includes(search) || String(g.appid).includes(search)));
     $("queueCount").textContent = `顯示 ${rows.length} / ${q.summary.total_pending} 款`;
     $("pendingQueue").innerHTML = rows.length ? rows.map((g, i) => gameCard(g, i, g.parked)).join("") : '<p class="empty-state">沒有符合搜尋條件的遊戲。</p>';
@@ -226,16 +267,27 @@
     $("statusHeadline").textContent = hero.headline; $("statusDetail").textContent = hero.detail;
     $("statusHeadline").closest("section")?.setAttribute("data-status", hero.state);
     for (const [id, key] of [["totalRemaining", "total_pending"], ["ordinaryCount", "normal_pending"], ["twitchCount", "twitch_priority_pending"], ["pausedCount", "parked"]]) $(id).textContent = q ? Number(q.summary[key]).toLocaleString("zh-TW") : "—";
-    $("currentProgress").textContent = q ? `${q.today_taipei === day(Date.now()) ? "今日" : q.today_taipei + " 快照日"}官方佇列查詢 ${num(q.summary.today_attempts) ?? "—"} 次 · 成功 ${num(q.summary.today_successes) ?? "—"} 次 · 429 ${num(q.summary.today_429) ?? "—"} 次` : "今日查詢成果尚未確認";
+    $("currentProgress").textContent = q ? `${q.today_taipei === day(Date.now()) ? "今日" : q.today_taipei + " 快照日"}官方 Followers 查詢 ${num(q.summary.today_attempts) ?? "—"} 次 · 成功 ${num(q.summary.today_successes) ?? "—"} 次 · 429 ${num(q.summary.today_429) ?? "—"} 次` : "今日查詢成果尚未確認";
     const oldDay = q && q.today_taipei !== day(Date.now());
     const incompleteCandidates = q && q.source_status?.status !== "current_day_prefilter_complete";
-    $("queueOverviewNote").textContent = q ? `${q.summary.ready_pending} 款可查 + ${q.summary.parked} 款暫停。${oldDay ? "快照屬於前一個日期，今日數量尚待更新。" : incompleteCandidates ? "今日候選初篩尚未完成，保留既有佇列；待查可能再增加。" : "數量取自後端實際佇列，會隨處理與新增變動。"}` : "待查數量尚未取得。";
+    const awaitingGroups = q ? q.queue.filter(game => queueGameState(game, q).awaitingGroup).length : 0;
+    const groupCounts = groupQueueCounts(q);
+    const groupBreakdown = groupCounts ? `（${groupCounts.followersReady} 款已取得 ID／${groupCounts.awaitingGroup} 款等待解析）` : awaitingGroups ? `（${awaitingGroups} 款先解析群組 ID）` : "";
+    $("queueOverviewNote").textContent = q ? `${q.summary.ready_pending} 款可處理${groupBreakdown} + ${q.summary.parked} 款暫停。${oldDay ? "快照屬於前一個日期，今日數量尚待更新。" : incompleteCandidates ? "今日候選初篩尚未完成，保留既有佇列；待查可能再增加。" : "數量取自後端實際佇列，會隨處理與新增變動。"}` : "待查數量尚未取得。";
     $("sourceFreshness").textContent = q ? `${state.queueSource} · 產生於 ${dateLabel(instant(q.generated_at))}${Date.now() - instant(q.generated_at) > 2 * HOUR ? " · 快照較舊，請核對執行紀錄" : ""}` : "佇列來源尚未連上";
     const issues = Object.values(state.repoErrors);
     $("statusMessage").textContent = issues.length ? "部分執行狀態暫時無法更新；保留已取得紀錄並標示待確認。" : "佇列每分鐘更新；Actions 執行狀態每 5 分鐘更新。";
     const sources = [q ? `<p><strong>佇列快照</strong> ${esc(q.generated_at)} · ${esc(state.queueSource)}</p>` : "<p>佇列快照無法讀取。</p>", ...[...new Set(JOBS.map(j => j.repo))].map(repo => `<p><strong>${esc(repo)}</strong> · ${state.repoChecks[repo] ? "上次核對 " + dateLabel(state.repoChecks[repo]) : "尚未取得執行紀錄"}${state.repoErrors[repo] ? " · " + esc(state.repoErrors[repo]) : ""}</p>`), `<p>Cloudflare 沿用 <code>0,5,15,17,30 * * * *</code>。原定排程、Actions 執行結果與實際收集成果分開呈現。</p>`, `<p>內容對帳：${state.content ? state.content.complete ? "最近快照已完成對帳" : "仍有未完成內容" : "尚未取得"}${state.content?.description_translation_pending_count ? "；介紹翻譯待處理 " + state.content.description_translation_pending_count + " 款" : ""}。Twitch 最近完整發布：${instant(state.twitch?.completed_at) ? dateLabel(instant(state.twitch.completed_at)) : "尚未確認"}。</p>`];
-    if (q) sources.push(`<p><strong>來源資料時間</strong> 官方查詢紀錄 ${instant(q.source?.checkpoint_updated_at) ? dateLabel(instant(q.source.checkpoint_updated_at)) : "尚未確認"}；每日初篩 ${instant(q.source?.prefilter_updated_at) ? dateLabel(instant(q.source.prefilter_updated_at)) : "尚未確認"}；資格清單 ${instant(q.source?.eligible_screened_at) ? dateLabel(instant(q.source.eligible_screened_at)) : "尚未確認"}；Twitch 匯入 ${instant(q.source?.twitch_import_updated_at) ? dateLabel(instant(q.source.twitch_import_updated_at)) : "尚未確認"}。快照產生時間不代表上述來源剛剛更新。</p>`);
+    if (q) {
+      const groupUpdated = q.source && Object.prototype.hasOwnProperty.call(q.source, "group_resolution_updated_at") ? `；群組解析回報 ${instant(q.source.group_resolution_updated_at) !== null ? dateLabel(instant(q.source.group_resolution_updated_at)) : "尚未確認"}` : "";
+      sources.push(`<p><strong>來源資料時間</strong> 官方查詢紀錄 ${instant(q.source?.checkpoint_updated_at) ? dateLabel(instant(q.source.checkpoint_updated_at)) : "尚未確認"}；每日初篩 ${instant(q.source?.prefilter_updated_at) ? dateLabel(instant(q.source.prefilter_updated_at)) : "尚未確認"}；資格清單 ${instant(q.source?.eligible_screened_at) ? dateLabel(instant(q.source.eligible_screened_at)) : "尚未確認"}；Twitch 匯入 ${instant(q.source?.twitch_import_updated_at) ? dateLabel(instant(q.source.twitch_import_updated_at)) : "尚未確認"}${groupUpdated}。快照產生時間不代表上述來源剛剛更新。</p>`);
+    }
     if (q?.batch) sources.push(`<p><strong>最新批次回報</strong> ${instant(q.batch.last_updated_at) ? dateLabel(instant(q.batch.last_updated_at)) : "時間未確認"} · 本批查詢 ${num(q.batch.requests_this_run) ?? "未知"} 次 · 新取得官方值 ${num(q.batch.official_new_this_run) ?? "未知"} 款${q.batch.last_name ? "；最後回報嘗試 " + esc(q.batch.last_name) : ""}。這是已回報進度，當下執行狀態以 Actions 觀測為準。</p>`);
+    if (q?.group_resolution_api_cooldown) {
+      const apiCooldown = q.group_resolution_api_cooldown;
+      const observed = instant(apiCooldown.observed_at), retry = instant(apiCooldown.retry_at);
+      sources.push(`<p><strong>群組 ID 解析 API</strong> ${observed !== null ? "觀測於 " + dateLabel(observed) : "觀測時間未確認"}${apiCooldown.status ? " · " + esc(apiCooldown.status) : ""}${Number.isInteger(apiCooldown.http) ? " · HTTP " + apiCooldown.http : ""}${retry !== null ? " · 解析 API 可重試時間 " + dateLabel(retry) : ""}。這是群組解析 API 的狀態，與 Steam Community Followers 冷卻分開記錄。</p>`);
+    }
     sources.push("<p>每個儲存庫讀取最近最多 50 筆 Actions；較早或未涵蓋的時段保留待確認。官方查詢事件保留最近 100 筆，本頁呈現其中今日事件。</p>");
     $("sourcesDetails").innerHTML = sources.join("");
     renderQueue(); renderSchedule(); renderEvents();
