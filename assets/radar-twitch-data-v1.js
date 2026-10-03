@@ -1,9 +1,9 @@
 /* Static Twitch snapshots. Missing measurements never become zero or NEW. */
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module === "object" && module.exports ? require("./radar-data-v1.js") : root.RadarData);
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.RadarTwitch = api;
-})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+})(typeof globalThis !== "undefined" ? globalThis : this, function (SteamData) {
   "use strict";
   const SOURCES = ["twitch_original_release_date", "igdb_first_release_date"];
   const HOUR = 3600000;
@@ -114,12 +114,29 @@
     const valid = Object.entries(value.games).every(([appid, entry]) => /^\d+$/.test(appid) && entry && typeof entry === "object" && ["matched","ambiguous","unmatched","pending"].includes(entry.status) && entry.steam && typeof entry.steam === "object" && !Array.isArray(entry.steam) && String(entry.steam.steam_appid || appid) === appid && (entry.status !== "matched" || /^\d+$/.test(String(entry.twitch_game_id || ""))));
     return valid ? value : null;
   }
+  function publicCatalog(value) {
+    if (![2,3].includes(value?.version) || !timestamp(value.generated_at) || !Array.isArray(value.games) || !Number.isSafeInteger(value.count) || value.count !== value.games.length || typeof SteamData?.normalize !== "function") return null;
+    const ids = value.games.map(row => canonicalID(row?.appid));
+    return ids.every(id => id && Number.isSafeInteger(Number(id))) && new Set(ids).size === ids.length ? value : null;
+  }
+  function catalogSteam(raw, asOf) {
+    // Reuse the calendar's admission rules, including its verified TW date policy.
+    if (raw.steam_type != null && raw.steam_type !== "game" || Object.hasOwn(raw,"sexual_content_screened") && raw.sexual_content_screened !== true || raw.twitch_admission != null && !SteamData.isTwitchQualified(raw)) return null;
+    const accepted = SteamData.normalize(raw,true);
+    if (!accepted) return null;
+    const release = Date.parse(accepted.date + "T00:00:00+08:00"), expiry = release + 30 * 24 * HOUR;
+    return steam({ ...raw, steam_appid:accepted.appid, display_name:accepted.name, name_en:accepted.nameEn, followers:accepted.followers, store_url:accepted.link, release_date:accepted.date, release_at:new Date(release).toISOString(), expires_at:new Date(expiry).toISOString(), is_recent:release <= asOf && asOf < expiry });
+  }
   function steam(value, fallbackID) {
     if (!value || typeof value !== "object" || !/^\d+$/.test(String(value.steam_appid || fallbackID || ""))) return null;
     const id = String(value.steam_appid || fallbackID);
     const strings = values => Array.isArray(values) ? [...new Set(values.filter(v => typeof v === "string" && v.trim()).map(v => v.trim()))] : [];
     const labels = values => values && typeof values === "object" && !Array.isArray(values) ? Object.fromEntries(Object.entries(values).filter(([key,label]) => typeof key === "string" && typeof label === "string")) : {};
-    return { steam_appid:id, display_name:String(value.display_name || value.name || value.name_en || `Steam ${id}`), name:String(value.name || value.display_name || ""), name_en:String(value.name_en || ""), followers:count(value.followers), store_url:safeURL(value.store_url,"store.steampowered.com"), release_at:timestamp(value.release_at), release_date:typeof value.release_date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value.release_date) ? value.release_date : null, expires_at:timestamp(value.expires_at), is_recent:value.is_recent === true, tags:strings(value.tags), genres:strings(value.genres), tag_labels_zh_tw:labels(value.tag_labels_zh_tw), genre_labels_zh_tw:labels(value.genre_labels_zh_tw) };
+    return { steam_appid:id, display_name:String(value.display_name || value.name || value.name_en || `Steam ${id}`), name:String(value.name || value.display_name || ""), name_en:String(value.name_en || ""), followers:count(value.followers), store_url:safeURL(value.store_url,"store.steampowered.com"), release_at:timestamp(value.release_at), release_date:typeof value.release_date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value.release_date) ? value.release_date : null, expires_at:timestamp(value.expires_at), is_recent:value.is_recent === true, tags:strings(value.tags), genres:strings(value.genres), tag_labels_zh_tw:labels(value.tag_labels_zh_tw), genre_labels_zh_tw:labels(value.genre_labels_zh_tw),
+      ...(value.release_time_utc != null ? {release_time_utc:timestamp(value.release_time_utc)} : {}),
+      ...(value.release_timestamp_taipei_date != null ? {release_timestamp_taipei_date:value.release_timestamp_taipei_date} : {}),
+      ...(value.release_date_normalization != null ? {release_date_normalization:value.release_date_normalization} : {}),
+    };
   }
   function sourceActive(value, asOf, isSteam = false) {
     return value?.status === "active" && (!value.expires_at || Date.parse(value.expires_at) > asOf) && (!isSteam || value.release_at && value.expires_at && Date.parse(value.release_at) <= asOf);
@@ -127,7 +144,7 @@
   function activeSources(value, asOf) {
     return Object.fromEntries(Object.entries(value?.tracking_sources || {}).filter(([key, source]) => sourceActive(source,asOf,key.startsWith("steam:"))));
   }
-  function normalize(payload, supplementalRegistry = null, supplementalMapping = null) {
+  function normalize(payload, supplementalRegistry = null, supplementalMapping = null, supplementalCatalog = null) {
     if (!payload || typeof payload !== "object" || !timestamp(payload.generated_at)) throw new Error("INVALID_SNAPSHOT");
     const legacy = payload.schema_version == null && Array.isArray(payload.top_games);
     if (!legacy && (payload.schema_version !== 2 || !Array.isArray(payload.candidate_games))) throw new Error("UNSUPPORTED_SNAPSHOT");
@@ -138,8 +155,14 @@
     const suppliedMapping = mapping(supplementalMapping), embeddedMapping = mapping(payload.steam_mapping_state || payload.steam_mapping);
     const steamMapping = [suppliedMapping, embeddedMapping].filter(Boolean).sort((a,b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))[0] || null;
     const steamDiscovery = legacy ? null : discovery(payload.steam_discovery_state);
-    const trackedRows = !legacy && Array.isArray(payload.tracked_games) ? payload.tracked_games : [];
     const asOf = Math.max(Date.parse(payload.generated_at), Date.parse(trackingRegistry?.updated_at) || 0);
+    const steamCatalog = legacy ? null : publicCatalog(supplementalCatalog);
+    const catalogGames = new Map();
+    if (steamCatalog) steamCatalog.games.forEach(raw => {
+      const metadata = catalogSteam(raw,asOf);
+      if (metadata) catalogGames.set(metadata.steam_appid,{ raw, metadata });
+    });
+    const trackedRows = !legacy && Array.isArray(payload.tracked_games) ? payload.tracked_games : [];
     const active = value => value?.status !== "excluded" && (value?.tracking_sources ? Object.keys(activeSources(value,asOf)).length > 0 : sourceActive(value,asOf));
     const mappedGames = new Map();
     if (steamMapping) Object.entries(steamMapping.games).forEach(([appid, entry]) => {
@@ -163,6 +186,26 @@
       const steamRows = [...(Array.isArray(g.tracking?.steam_matches) ? g.tracking.steam_matches : []), ...(Array.isArray(value.steam_matches) ? value.steam_matches : []), ...(mappedGames.get(g.game_id) || [])];
       g.steam_matches = [...new Map(steamRows.map(value => steam(value)).filter(Boolean).map(value => [value.steam_appid,value])).values()];
       g.steam_store_links = verifiedSteamIdentity(g,steamDiscovery);
+      const knownIDs = new Set([...g.steam_store_links, ...(mappedGames.get(g.game_id) || [])].map(s => s.steam_appid));
+      const freshMetadata = [];
+      knownIDs.forEach(appid => {
+        const match = catalogGames.get(appid), proof = match?.raw.twitch_admission;
+        if (!match || proof && (canonicalID(proof.twitch_game_id) !== canonicalID(g.game_id) || g.igdb_id != null && canonicalID(proof.igdb_id) !== canonicalID(g.igdb_id))) return;
+        const forward = steamMapping?.games[appid], reverse = g.steam_store_links.find(s => s.steam_appid === appid);
+        if (forward?.status === "ambiguous" || forward?.status === "matched" && canonicalID(forward.twitch_game_id) !== canonicalID(g.game_id)) return;
+        const forwardIGDB = canonicalID(forward?.igdb_id), identityIGDB = reverse?.igdb_id || forwardIGDB || canonicalID(g.igdb_id);
+        if (forward?.status === "matched" && forwardIGDB && (reverse && forwardIGDB !== reverse.igdb_id || g.igdb_id != null && forwardIGDB !== canonicalID(g.igdb_id))) return;
+        if (proof && identityIGDB && canonicalID(proof.igdb_id) !== identityIGDB) return;
+        if (["unmatched","pending"].includes(forward?.status) && reverse) {
+          const decisionAt = timestamp(forward.checked_at) || timestamp(forward.updated_at) || steamMapping.updated_at;
+          if (Date.parse(decisionAt) >= Date.parse(reverse.checked_at)) return;
+        }
+        // Registry build time is not the date of its source catalog.
+        if (steamMapping?.source_catalog && timestamp(steamMapping.source_catalog.generated_at) && Date.parse(steamMapping.source_catalog.generated_at) > Date.parse(steamCatalog.generated_at) && g.steam_matches.some(s => s.steam_appid === appid)) return;
+        const existing = g.steam_matches.find(s => s.steam_appid === appid);
+        freshMetadata.push(existing ? { ...match.metadata, release_at:existing.release_at, release_date:existing.release_date, expires_at:existing.expires_at, is_recent:existing.is_recent } : match.metadata);
+      });
+      g.steam_matches = [...new Map([...g.steam_matches,...freshMetadata].map(s => [s.steam_appid,s])).values()];
       g.twitch_name = g.game_name;
       g.game_name = g.steam_matches[0]?.display_name || g.twitch_name;
       g.is_twitch_new = Boolean(g.active_tracking_sources.twitch_new) || !g.tracking?.tracking_sources && g.is_tracked;
@@ -200,6 +243,7 @@
     return { legacy, generated_at: payload.generated_at, threshold, games: legacy ? [] : games, legacy_sample_count: legacy ? games.length : 0, excluded:visibleExcluded, invalidRows,
       tracking_registry: trackingRegistry, tracking_registry_invalid: supplementalRegistry != null && !supplied,
       steam_mapping:steamMapping, steam_mapping_invalid:supplementalMapping != null && !suppliedMapping, pending_steam:pendingSteam,
+      public_catalog:steamCatalog, public_catalog_invalid:supplementalCatalog != null && !steamCatalog, public_catalog_revision:steamCatalog ? JSON.stringify(steamCatalog) : null,
       source_windows,
       coverage: payload.coverage || {},
       reference_checks: !legacy && Array.isArray(payload.newness_experiment?.reference_checks) ? payload.newness_experiment.reference_checks : [],

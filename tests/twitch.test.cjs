@@ -435,3 +435,112 @@ test('a missing or nonmatched discovery never reuses injected or older identity 
     assert.deepEqual(D.steamStoreLinks(g),[]);
   }
 });
+
+const publicOnimusha = (overrides = {}) => ({appid:2638890,name:'Onimusha: Way of the Sword',name_en:'Onimusha: Way of the Sword',display_name:'鬼武者 Way of the Sword',followers:812,follower_checked_at:at,steam_type:'game',sexual_content_screened:true,release_start:'2026-09-03',release_end:'2026-09-03',release_store_date:'2026-09-03',release_precision:'day',release_display_precision:'date_full',release_date_timezone:'Asia/Taipei',release_time_utc:'2026-09-04T04:02:14Z',release_timestamp_taipei_date:'2026-09-04',release_date_conflict:true,release_date_normalization:'steam_taiwan_store_date_authoritative',release_display_provider:'Steam Store appdetails cc=TW l=tchinese',release_date_verified_at:at,tags:['Action'],genres:['Action'],tag_labels_zh_tw:{Action:'動作'},twitch_admission:{schema_version:1,method:'twitch_igdb_external_steam_v1',appid:2638890,twitch_game_id:'327598602',igdb_id:'325602',checked_at:at,source_frontend_commit:'a'.repeat(40),source_enrollment:{source:'igdb_first_release_date',viewer_count:7200,min_viewers:7000,observed_at:'2026-09-25T00:00:00Z'}},...overrides});
+const publicCatalog = (rows = [publicOnimusha()], overrides = {}) => ({version:3,generated_at:at,count:rows.length,games:rows,...overrides});
+
+test('fresh public catalog enriches a verified reverse identity before forward mapping catches up, preserving every Twitch observation', () => {
+  const payload=snapshot([onimusha({box_art_url:'https://static-cdn.jtvnw.net/ttv-boxart/327598602-144x192.jpg',filtered_audience:filtered()})],{steam_discovery_state:discoveryState()});
+  const newerMapping=steamMap({},'2026-09-29T12:21:00Z');
+  newerMapping.source_catalog={generated_at:'2026-09-29T12:00:00Z'};
+  const before=D.normalize(payload,null,newerMapping),after=D.normalize(payload,null,newerMapping,publicCatalog());
+  const g=after.games[0];
+  assert.equal(g.game_name,'鬼武者 Way of the Sword');
+  assert.equal(g.twitch_name,'Onimusha: Way of the Sword');
+  assert.equal(g.steam_matches[0].followers,812);
+  assert.deepEqual(g.steam_matches[0].tags,['Action']);
+  assert.equal(g.steam_matches[0].tag_labels_zh_tw.Action,'動作');
+  assert.equal(g.is_steam_recent,false);
+  const originalFields=row=>Object.fromEntries(Object.entries(row).filter(([key])=>!['game_name','steam_matches'].includes(key)));
+  assert.deepEqual(originalFields(g),originalFields(before.games[0]));
+  for(const query of ['鬼武者','Onimusha: Way of the Sword','2638890','Action'])assert.equal(D.select(after.games,{query}).length,1,query);
+  assert.deepEqual(D.select(after.games,{filter:'steam_recent'}),[]);
+  assert.equal(after.games.length,before.games.length);
+});
+
+test('released catalog metadata still localizes retained Twitch observations after the Steam 30-day window, without enrolling a source', () => {
+  const tracked=entry('327598602',{last_observation:onimusha({viewer_count:1636})});
+  const payload=snapshot([],{generated_at:'2026-10-03T13:00:00Z',tracking_state:registry({'327598602':tracked}),steam_discovery_state:discoveryState()});
+  const before=D.normalize(payload),after=D.normalize(payload,null,null,publicCatalog());
+  assert.equal(after.games[0].game_name,'鬼武者 Way of the Sword');
+  assert.equal(after.games[0].observation_status,'retained');
+  assert.deepEqual(after.games[0].tracking,before.games[0].tracking);
+  assert.deepEqual(after.games[0].active_tracking_sources,before.games[0].active_tracking_sources);
+  assert.equal(after.games[0].is_steam_recent,false);
+});
+
+test('catalog joins only confirmed reverse IDs or a matched forward AppID, without name guessing or overriding newer catalog metadata', () => {
+  const payload=snapshot([onimusha()]);
+  assert.equal(D.normalize(payload,null,null,publicCatalog()).games[0].game_name,'Onimusha: Way of the Sword');
+  const known=steamMap({'2638890':{status:'matched',twitch_game_id:'327598602',steam:steamGame({steam_appid:'2638890',display_name:'Older title'})}});
+  assert.equal(D.normalize(payload,null,known,publicCatalog()).games[0].game_name,'鬼武者 Way of the Sword');
+  known.source_catalog={generated_at:'2026-09-29T13:00:00Z'};
+  assert.equal(D.normalize(payload,null,known,publicCatalog()).games[0].game_name,'Older title');
+  const ambiguous=steamMap({'2638890':{status:'ambiguous',twitch_game_id:'327598602',steam:steamGame({steam_appid:'2638890'})}});
+  assert.equal(D.normalize(payload,null,ambiguous,publicCatalog()).games[0].game_name,'Onimusha: Way of the Sword');
+  const changedIGDB=onimusha({igdb_id:'325603'});
+  assert.equal(D.normalize(snapshot([changedIGDB],{steam_discovery_state:discoveryState()}),null,null,publicCatalog()).games[0].game_name,'Onimusha: Way of the Sword');
+});
+
+test('malformed complete catalogs fail softly and cannot supply identity or localized names', () => {
+  const payload=snapshot([onimusha()],{steam_discovery_state:discoveryState()});
+  const bad=[publicCatalog(undefined,{version:1}),publicCatalog(undefined,{generated_at:'2026-09-29T12:20:00'}),publicCatalog(undefined,{count:2}),publicCatalog([publicOnimusha(),publicOnimusha()]),publicCatalog([publicOnimusha({appid:'02638890'})]),publicCatalog([publicOnimusha({appid:true})]),publicCatalog([publicOnimusha({appid:'9999999999999999'})])];
+  for(const catalog of bad){
+    const d=D.normalize(payload,null,null,catalog);
+    assert.equal(d.public_catalog_invalid,true);
+    assert.equal(d.games[0].game_name,'Onimusha: Way of the Sword');
+    assert.deepEqual(d.games[0].steam_matches,[]);
+    assert.equal(d.games[0].steam_store_links.length,1);
+  }
+});
+
+test('catalog rows require the shared exact-date admission and reject bad type, adult screening and forged proof', () => {
+  const payload=snapshot([onimusha()],{steam_discovery_state:discoveryState()});
+  const raw=publicOnimusha();
+  const bad=[{steam_type:'dlc'},{sexual_content_screened:false},{sexual_content_screened:'true'},{twitch_admission:null},{twitch_admission:{...raw.twitch_admission,appid:10}},{twitch_admission:{...raw.twitch_admission,twitch_game_id:'101'}},{twitch_admission:{...raw.twitch_admission,igdb_id:'325603'}},{release_date_conflict:false},{release_timestamp_taipei_date:'2026-09-03'},{release_display_provider:'Steam Store cc=US'},{follower_checked_at:null}];
+  for(const fields of bad){
+    const d=D.normalize(payload,null,null,publicCatalog([publicOnimusha(fields)]));
+    assert.equal(d.games[0].game_name,'Onimusha: Way of the Sword',JSON.stringify(fields));
+    assert.deepEqual(d.games[0].steam_matches,[],JSON.stringify(fields));
+  }
+});
+
+test('catalog revision notices a metadata-only update with the same source generation date', () => {
+  const payload=snapshot([onimusha()],{steam_discovery_state:discoveryState()});
+  const before=D.normalize(payload,null,null,publicCatalog());
+  const after=D.normalize(payload,null,null,publicCatalog([publicOnimusha({display_name:'鬼武者・劍之道'})]));
+  assert.equal(before.public_catalog.generated_at,after.public_catalog.generated_at);
+  assert.notEqual(before.public_catalog_revision,after.public_catalog_revision);
+  assert.equal(after.games[0].game_name,'鬼武者・劍之道');
+});
+
+test('catalog name enrichment preserves a verified forward release window and keeps actual UTC diagnostic separate from the TW day', () => {
+  const known=steamMap({'2638890':{status:'matched',twitch_game_id:'327598602',steam:steamGame({steam_appid:'2638890',display_name:'Older title',release_at:'2026-09-02T16:00:00Z',release_date:'2026-09-03',expires_at:'2026-10-02T16:00:00Z',is_recent:true})}});
+  const payload=snapshot([onimusha()],{steam_discovery_state:discoveryState()});
+  const before=D.normalize(payload,null,known),after=D.normalize(payload,null,known,publicCatalog());
+  for(const key of ['release_at','release_date','expires_at','is_recent'])assert.equal(after.games[0].steam_matches[0][key],before.games[0].steam_matches[0][key],key);
+  assert.equal(after.games[0].steam_matches[0].release_time_utc,'2026-09-04T04:02:14Z');
+  assert.equal(after.games[0].steam_matches[0].release_timestamp_taipei_date,'2026-09-04');
+  const first=D.normalize(payload,null,null,publicCatalog()).games[0];
+  assert.equal(first.steam_matches[0].release_at,'2026-09-02T16:00:00.000Z');
+  assert.equal(first.steam_matches[0].expires_at,'2026-10-02T16:00:00.000Z');
+  assert.equal(first.steam_matches[0].release_date,'2026-09-03');
+  assert.equal(first.steam_matches[0].release_time_utc,'2026-09-04T04:02:14Z');
+  assert.equal(first.is_steam_recent,false);
+});
+
+test('newer canonical forward decisions cannot be overwritten by an older reverse identity or catalog proof', () => {
+  const payload=snapshot([onimusha()],{steam_discovery_state:discoveryState()});
+  const metadata=steamGame({steam_appid:'2638890'});
+  const decisions=[{status:'matched',twitch_game_id:'101'}, {status:'matched',twitch_game_id:'327598602',igdb_id:'325603'}, {status:'ambiguous'}, {status:'unmatched',checked_at:'2026-09-29T12:21:00Z'}, {status:'pending',checked_at:at}];
+  for(const decision of decisions){
+    const known=steamMap({'2638890':{steam:metadata,...decision}});
+    const g=D.normalize(payload,null,known,publicCatalog()).games[0];
+    assert.notEqual(g.game_name,'鬼武者 Way of the Sword',JSON.stringify(decision));
+  }
+  const olderNegative=steamMap({'2638890':{status:'unmatched',checked_at:'2026-09-29T12:00:00Z',steam:metadata}});
+  assert.equal(D.normalize(payload,null,olderNegative,publicCatalog()).games[0].game_name,'鬼武者 Way of the Sword');
+  const noCurrentIGDB=snapshot([onimusha({igdb_id:undefined})]);
+  const otherIdentity=steamMap({'2638890':{status:'matched',twitch_game_id:'327598602',igdb_id:'325603',steam:metadata}});
+  assert.notEqual(D.normalize(noCurrentIGDB,null,otherIdentity,publicCatalog()).games[0].game_name,'鬼武者 Way of the Sword');
+});
