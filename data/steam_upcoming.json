@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated_at": "2026-10-03T14:42:30Z",
+  "generated_at": "2026-10-03T15:01:19Z",
   "count": 121,
   "games": [
     {
@@ -2023,7 +2023,7 @@
       "community_url": "https://steamcommunity.com/app/4019220/",
       "name_en": "Dressmaker",
       "release_date_timezone": "Asia/Taipei",
-      "release_date_basis": "steam_released_taiwan_store_date_verified",
+      "release_date_basis": "steam_store_browse_verified_full_date",
       "release_time_utc": "2026-09-21T11:31:50Z",
       "release_time_source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
       "discovered_by": "IStoreQueryService/Query",
@@ -2047,7 +2047,7 @@
       "sexual_content_screened": true,
       "header_image_2x": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4019220/f1cd08127872e60e4c47a4bc3e40d682d94741bf/header_2x.jpg?t=1790947386",
       "main_capsule_image_2x": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4019220/dde8e789013d3ff938c10dffa3689e6977b0672c/capsule_616x353_2x.jpg?t=1790947386",
-      "artwork_checked_at": "2026-10-03T14:42:30Z",
+      "artwork_checked_at": "2026-10-03T15:01:18Z",
       "small_capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4019220/7f07d1dd7a97e00694481ee7747940989dc5820c/capsule_231x87.jpg?t=1790947386",
       "short_description": "當個裁縫師吧!在這款溫馨的裁縫工藝遊戲中，選擇布料、裁剪紙型，將它們縫製成各類服裝，來取悅（或搞砸！）挑剔的鄉民們。這款遊戲的靈感來自真實的服裝製作過程。",
       "genres": [
@@ -2077,15 +2077,15 @@
         "Historical"
       ],
       "tags_fetch_status": "ok",
-      "tags_checked_at": "2026-10-03T14:42:30Z",
-      "content_enriched_at": "2026-10-03T14:42:30Z",
+      "tags_checked_at": "2026-10-03T15:01:18Z",
+      "content_enriched_at": "2026-10-03T15:01:18Z",
       "content_enrichment_source": "Steam Store Browse + appdetails + Taiwan Traditional Chinese Store tags and genres",
       "content_enrichment_version": 4,
       "content_enrichment_signature": "4019220:12629:2026-09-21",
       "short_description_en": "Become a dressmaker! Choose fabric, cut out patterns, and sew them all together to satisfy (or sabotage!) townsfolk in this cozy crafting game inspired by real dressmaking.",
       "short_description_language": "zh-TW",
       "short_description_source": "steam_tchinese",
-      "description_checked_at": "2026-10-03T14:42:30Z",
+      "description_checked_at": "2026-10-03T15:01:18Z",
       "tag_ids": {
         "Crafting": 1702,
         "Design & Illustration": 84,
@@ -2139,15 +2139,30 @@
       "genre_labels_language": "zh-TW",
       "genres_fetch_status": "ok",
       "genres_source": "https://store.steampowered.com/app/4019220/?cc=TW&l=tchinese",
-      "genres_checked_at": "2026-10-03T14:42:30Z",
+      "genres_checked_at": "2026-10-03T15:01:18Z",
       "tag_labels_source": "https://store.steampowered.com/app/4019220/?cc=TW&l=tchinese",
       "name_en_traditional": "Dressmaker",
-      "release_date_verified_at": "2026-10-03T14:42:30Z",
+      "release_date_verified_at": "2026-10-03T15:01:18Z",
       "steam_type": "game",
       "release_store_date": "2026-09-21",
       "release_date_normalization": "steam_store_date_matches_taipei",
       "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
-      "content_descriptorids": []
+      "content_descriptorids": [],
+      "twitch_admission": {
+        "schema_version": 1,
+        "method": "twitch_igdb_external_steam_v1",
+        "appid": 4019220,
+        "twitch_game_id": "1288749557",
+        "igdb_id": "365465",
+        "checked_at": "2026-10-03T14:57:28Z",
+        "source_frontend_commit": "624543cadf23595069614dece31bf25aa8594e4c",
+        "source_enrollment": {
+          "min_viewers": 7000,
+          "observed_at": "2026-09-30T18:14:34Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 7220
+        }
+      }
     },
     {
       "appid": 4705510,
