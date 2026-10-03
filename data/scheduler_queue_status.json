@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-03T19:01:02.939625Z",
+  "generated_at": "2026-10-03T20:01:04.930556Z",
   "today_taipei": "2026-10-04",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-10-03T19:00:55.040593Z",
+    "checkpoint_updated_at": "2026-10-03T20:00:56.977650Z",
     "group_resolution_updated_at": "2026-10-03T11:02:40.289475Z",
     "candidate_state_updated_at": "2026-10-03T17:02:31.844260Z",
     "prefilter_updated_at": "2026-10-03T17:02:31.825708Z",
@@ -36,9 +36,9 @@
     "followers_ready_pending": 57,
     "awaiting_group_pending": 0,
     "total_pending": 58,
-    "today_attempts": 1,
+    "today_attempts": 2,
     "today_successes": 0,
-    "today_429": 1
+    "today_429": 2
   },
   "group_resolution_api_cooldown": {
     "status": "available",
@@ -49,17 +49,17 @@
   },
   "cooldown": {
     "active": true,
-    "until": "2026-10-03T19:15:53.424517Z",
+    "until": "2026-10-03T20:30:54.992367Z",
     "reason": "steam_http_429",
-    "next_eligible_slot": "2026-10-03T20:00:00Z",
+    "next_eligible_slot": "2026-10-03T21:00:00Z",
     "schedule_taipei": "03:00–23:00 hourly"
   },
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-10-04T03:00:53.135521+08:00",
-    "last_updated_at": "2026-10-04T03:00:55.040593+08:00",
-    "finished_at": "2026-10-04T03:00:55.040593+08:00",
+    "started_at": "2026-10-04T04:00:54.757834+08:00",
+    "last_updated_at": "2026-10-04T04:00:56.977650+08:00",
+    "finished_at": "2026-10-04T04:00:56.977650+08:00",
     "stop_reason": "first_http_429",
     "last_appid": 5235040,
     "last_name": "LUGANO BAY TYCOON",
@@ -68,8 +68,8 @@
     "http_429_this_run": 1,
     "manual_cooldown_override": false,
     "request_limit": 250,
-    "run_id": "37146323777",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37146323777"
+    "run_id": "37149955621",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37149955621"
   },
   "queue": [
     {
@@ -83,7 +83,7 @@
       "state": "cooldown",
       "group_id64": "103582791475832904",
       "group_resolution": null,
-      "last_attempt_at": "2026-10-03T19:00:53.202323Z",
+      "last_attempt_at": "2026-10-03T20:00:54.849708Z",
       "last_attempt_status": "rate_limited"
     },
     {
@@ -897,17 +897,6 @@
     }
   ],
   "events": [
-    {
-      "at": "2026-10-02T02:12:28.791398Z",
-      "kind": "official_attempt",
-      "appid": 4854590,
-      "name": "Stick Wars: The Laneborn",
-      "status": "ok",
-      "http": 200,
-      "source": "fresh_daily_prefilter_unresolved",
-      "official_followers": 11,
-      "retry_at": null
-    },
     {
       "at": "2026-10-02T02:12:36.791534Z",
       "kind": "official_attempt",
@@ -2164,6 +2153,19 @@
       "retry_at": "2026-10-03T19:15:53.424517Z",
       "run_id": "37146323777",
       "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37146323777"
+    },
+    {
+      "at": "2026-10-03T20:00:54.849708Z",
+      "kind": "official_attempt",
+      "appid": 5235040,
+      "name": "LUGANO BAY TYCOON",
+      "status": "rate_limited",
+      "http": 429,
+      "source": "fresh_daily_prefilter_unresolved",
+      "official_followers": null,
+      "retry_at": "2026-10-03T20:30:54.992367Z",
+      "run_id": "37149955621",
+      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37149955621"
     }
   ],
   "events_limit": 100
