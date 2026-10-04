@@ -1323,9 +1323,10 @@ body.motion-on .art-dialog[open] {
   line-height: 1.6;
 }
 
-/* Native Nintendo editions remain separate from Steam Followers and languages. */
+/* Native console editions retain their own dates, languages and store links. */
 .game-platform-badges { display: flex; flex-wrap: wrap; gap: 8px; }
-.game-platform-store-actions { display: flex; margin-top: 16px; }
+.game-platform-store-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+#gameNativeStoreLinks { display: flex; flex-wrap: wrap; gap: 8px; }
 .game-platform-store-actions .button.primary { max-width: 100%; padding: 11px 13px; gap: 10px; text-align: left; font-size: 11px; }
 .game-platform-chip { padding: 6px 10px; border: 1px solid var(--game-edge); border-radius: 8px; background: var(--game-light); color: var(--game-accent); font-size: 12px; font-weight: 750; }
 .game-platform-label { color: var(--game-accent); font-size: 15px; line-height: 1.6; font-weight: 750; }

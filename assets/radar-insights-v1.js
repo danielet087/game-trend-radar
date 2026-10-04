@@ -24,6 +24,7 @@
     return Number.isFinite(time) ? time : null;
   }
   const activityId = value => Number.isSafeInteger(value) && value > 0 && /^[1-9]\d{0,9}$/.test(String(value));
+  const IGDB_ACTIVITY_PLATFORMS = ["NS", "NS2", "PS5"];
   function activityEvent(value) {
     if (!value || typeof value !== "object" || Array.isArray(value) ||
         typeof value.name !== "string" || !value.name.trim() || !day(value.date) || activityTime(value.at) === null) return null;
@@ -34,10 +35,10 @@
     if (value.type === "release_date") event.previous_date = value.previous_date;
     if (source === "nintendo") {
       if (!activityId(value.igdb_id) || value.game_id !== "igdb:" + value.igdb_id || value.appid !== undefined ||
-          !Array.isArray(value.platforms) || !value.platforms.length || value.platforms.some(platform => !["NS", "NS2"].includes(platform))) return null;
+          !Array.isArray(value.platforms) || !value.platforms.length || value.platforms.some(platform => !IGDB_ACTIVITY_PLATFORMS.includes(platform))) return null;
       event.igdb_id = value.igdb_id;
       event.game_id = value.game_id;
-      event.platforms = ["NS", "NS2"].filter(platform => value.platforms.includes(platform));
+      event.platforms = IGDB_ACTIVITY_PLATFORMS.filter(platform => value.platforms.includes(platform));
     } else {
       if (!activityId(value.appid) || value.igdb_id !== undefined || value.game_id !== undefined || value.type === "platform_added") return null;
       event.appid = value.appid;

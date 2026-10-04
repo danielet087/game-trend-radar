@@ -11,6 +11,7 @@ from datetime import date, datetime, timedelta, timezone
 import hashlib
 import json
 from pathlib import Path
+import re
 from urllib.parse import urlsplit
 
 try:
@@ -21,9 +22,11 @@ except ModuleNotFoundError:
 TAIPEI = timezone(timedelta(hours=8))
 POST_RELEASE_DAYS = 30
 NINTENDO_PLATFORMS = {"NS": 130, "NS2": 508}
+IGDB_PLATFORMS = {**NINTENDO_PLATFORMS, "PS5": 167}
 NINTENDO_GAME_TYPES = {"main_game", "standalone_expansion", "remake", "remaster", "expanded_game", "port"}
 NINTENDO_OFFICIAL_DATE_DOMAINS = {"nintendo.com", "nintendo.com.hk", "nintendo.co.jp",
                                   "sega.com", "konami.com", "playtombraider.com"}
+PS5_PRODUCT_ID = r"[A-Z]{2}[0-9]{4}-[A-Z0-9]{9}_[A-Z0-9]{2}-[A-Z0-9]{16}"
 
 
 def stamp(value):
@@ -90,16 +93,40 @@ def merge_measurement(record, observation, now):
     record["history"] = sorted(by_day.values(), key=lambda item: stamp(item["at"]))[-400:]
 
 
-def official_nintendo_date_url(value):
+def official_nintendo_date_url(value, platform=None):
     if not isinstance(value, str):
         return False
     try:
         url = urlsplit(value)
+        if platform == "PS5":
+            return bool(ps5_taiwan_official_url(value))
+        domains = NINTENDO_OFFICIAL_DATE_DOMAINS
         return (url.scheme == "https" and not url.username and not url.password and url.port is None
                 and bool(url.hostname) and any(url.hostname == host or url.hostname.endswith("." + host)
-                                              for host in NINTENDO_OFFICIAL_DATE_DOMAINS))
+                                              for host in domains))
     except ValueError:
         return False
+
+
+def ps5_taiwan_official_url(value):
+    """Return a Taiwan Sony product identity; generic or other-region pages are not proof."""
+    if not isinstance(value, str) or not 0 < len(value) <= 2000:
+        return None
+    try:
+        url = urlsplit(value)
+        if (url.scheme != "https" or url.username or url.password or url.port is not None
+                or url.query or url.fragment):
+            return None
+        if url.hostname == "store.playstation.com":
+            match = re.fullmatch(r"/(?:zh-hant-tw|en-tw)/(?:product/(" + PS5_PRODUCT_ID
+                                 + r")|concept/([1-9][0-9]{0,11}))/?", url.path)
+            return {"product_id": match[1] or match[2]} if match else None
+        if url.hostname == "www.playstation.com" and re.fullmatch(
+                r"/(?:zh-hant-tw|en-tw)/games/[a-z0-9-]+/?", url.path):
+            return {"product_id": None}
+        return None
+    except ValueError:
+        return None
 
 
 def accepted_nintendo_release_source(release):
@@ -108,7 +135,8 @@ def accepted_nintendo_release_source(release):
     if status is None:
         # Previously published IGDB calendar-day rows have no audit metadata.
         # An explicit Taiwan claim or partial audit cannot use that compatibility path.
-        return (source == "IGDB" and release.get("date_basis") in {None, "regional_calendar_day"}
+        return (release.get("platform") in NINTENDO_PLATFORMS
+                and source == "IGDB" and release.get("date_basis") in {None, "regional_calendar_day"}
                 and release.get("region") != "taiwan" and release.get("taiwan_release_confirmed") is not True
                 and not any(key in release for key in ("timezone_status", "time_zone", "source_date",
                                                        "source_timestamp", "timestamp_taipei_date")))
@@ -132,11 +160,16 @@ def accepted_nintendo_release_source(release):
             return False
     if source == "official_registry":
         name = release.get("official_source_name")
+        if release.get("platform") == "PS5":
+            proof = ps5_taiwan_official_url(release.get("official_source_url"))
+            if (not proof or not stamp(release.get("official_verified_at"))
+                    or proof["product_id"] and release.get("official_product_id") != proof["product_id"]):
+                return False
         return (status == "taiwan_official_date" and release.get("region") == "taiwan"
                 and release.get("date_basis") == "taiwan_official_calendar_day"
                 and release.get("taiwan_release_confirmed") is True
                 and isinstance(name, str) and bool(name.strip())
-                and official_nintendo_date_url(release.get("official_source_url")))
+                and official_nintendo_date_url(release.get("official_source_url"), release.get("platform")))
     return (source == "IGDB" and status in {"same_calendar_day", "date_only"}
             and release.get("region") != "taiwan" and release.get("source_region") != "taiwan"
             and release.get("date_basis") == "regional_calendar_day"
@@ -147,13 +180,14 @@ def accepted_nintendo_release_source(release):
 
 
 def accepted_nintendo(catalog, now):
-    """Validate public qualifications before changing optional Nintendo state.
+    """Validate public qualifications before changing optional native IGDB state.
 
     A broken or partial catalog must not deactivate previously accepted games.
     Content screening is performed by the publisher; this consumer checks its
     explicit result rather than inventing a second adult-keyword policy.
     """
     source = catalog.get("source") if isinstance(catalog, dict) else None
+    verified_platforms = source.get("platform_ids_verified") if isinstance(source, dict) else None
     instant = stamp(catalog.get("generated_at")) if isinstance(catalog, dict) else None
     window = catalog.get("window") if isinstance(catalog, dict) else None
     rows = catalog.get("games") if isinstance(catalog, dict) else None
@@ -161,8 +195,10 @@ def accepted_nintendo(catalog, now):
             or catalog.get("schema_version") != 1
             or not isinstance(source, dict) or source.get("provider") != "IGDB"
             or source.get("complete") is not True or type(source.get("hypes_threshold")) is not int
-            or source.get("hypes_threshold") != 30 or source.get("platform_ids_verified") != [130, 508]
-            or any(type(value) is not int for value in source["platform_ids_verified"])
+            or source.get("hypes_threshold") != 30 or not isinstance(verified_platforms, list)
+            or any(type(value) is not int for value in verified_platforms)
+            or len(verified_platforms) != len(set(verified_platforms))
+            or set(verified_platforms) not in ({130, 508}, {130, 508, 167})
             or not instant or instant > now
             or not isinstance(window, dict) or window.get("end_inclusive") is not False
             or window.get("time_zone") != "Asia/Taipei"
@@ -170,12 +206,12 @@ def accepted_nintendo(catalog, now):
             or day(window["end"]) - day(window["start"]) != timedelta(days=365)
             or day(window["start"]) != instant.astimezone(TAIPEI).date()
             or not isinstance(rows, list)):
-        raise ValueError("Complete Nintendo catalog with a valid source timestamp required")
+        raise ValueError("Complete IGDB catalog with a valid source timestamp required")
     start, end = day(window["start"]), day(window["end"])
     result = {}
     for row in rows:
         if not isinstance(row, dict):
-            raise ValueError("Qualified Nintendo public rows required")
+            raise ValueError("Qualified IGDB public rows required")
         igdb_id, hypes = row.get("igdb_id"), row.get("hypes")
         key = f"igdb:{igdb_id}"
         if (not isinstance(igdb_id, int) or isinstance(igdb_id, bool) or igdb_id <= 0
@@ -186,14 +222,15 @@ def accepted_nintendo(catalog, now):
                 or row.get("game_type") not in NINTENDO_GAME_TYPES
                 or not isinstance(row.get("platforms"), list) or not row["platforms"]
                 or not isinstance(row.get("releases"), list) or not row["releases"]):
-            raise ValueError("Qualified, uniquely identified Nintendo public rows required")
+            raise ValueError("Qualified, uniquely identified IGDB public rows required")
         platforms = set()
         for platform in row["platforms"]:
-            if (not isinstance(platform, dict) or platform.get("code") not in NINTENDO_PLATFORMS
+            if (not isinstance(platform, dict) or platform.get("code") not in IGDB_PLATFORMS
                     or type(platform.get("id")) is not int
-                    or platform.get("id") != NINTENDO_PLATFORMS[platform["code"]]
+                    or platform.get("id") != IGDB_PLATFORMS[platform["code"]]
+                    or platform["id"] not in verified_platforms
                     or isinstance(platform.get("id"), bool) or platform["code"] in platforms):
-                raise ValueError("Native Nintendo platform identities required")
+                raise ValueError("Verified native IGDB platform identities required")
             platforms.add(platform["code"])
         releases = {}
         for release in row["releases"]:
@@ -201,11 +238,11 @@ def accepted_nintendo(catalog, now):
                     or release.get("platform") in releases or release.get("precision") != "day"
                     or not day(release.get("date")) or not accepted_nintendo_release_source(release)
                     or not start <= day(release["date"]) < end):
-                raise ValueError("Exact, unique Nintendo platform release dates in the source window required")
+                raise ValueError("Exact, unique IGDB platform release dates in the source window required")
             releases[release["platform"]] = release["date"]
         name = row.get("display_name") or row.get("name_zh_tw") or row.get("name_en")
         if not isinstance(name, str) or not name.strip():
-            raise ValueError("Nintendo display name required")
+            raise ValueError("IGDB display name required")
         result[key] = {"igdb_id": igdb_id, "name": name, "releases": releases}
     return instant, result
 
@@ -230,7 +267,7 @@ def merge_nintendo(state, catalog, now, receipt=None):
         return  # A lagging checkout must not roll back the accepted state.
     digest = hashlib.sha256(json.dumps(current, sort_keys=True).encode()).hexdigest()
     if previous_time and instant == previous_time and state.get("nintendo_source_digest") not in {None, digest}:
-        raise ValueError("Conflicting Nintendo catalogs share a source timestamp")
+        raise ValueError("Conflicting IGDB catalogs share a source timestamp")
     at = nintendo_event_time(instant, receipt, now).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
     records = state.setdefault("nintendo_records", {})
     for record in records.values():
@@ -254,7 +291,7 @@ def merge_nintendo(state, catalog, now, receipt=None):
         prior["release_dates"].update(row["releases"])
         for (kind, release, old), platforms in changes.items():
             event = {"source": "nintendo", "igdb_id": row["igdb_id"], "game_id": key,
-                     "platforms": sorted(platforms, key=lambda item: NINTENDO_PLATFORMS[item]),
+                     "platforms": sorted(platforms, key=lambda item: list(IGDB_PLATFORMS).index(item)),
                      "type": kind, "name": row["name"], "date": release, "at": at}
             if kind == "release_date":
                 event["previous_date"] = old

@@ -352,3 +352,33 @@ test('month calendar reserves named Nintendo tags for verified exclusivity and k
     assert.equal(links[0].href, './game.html?igdb=314449&date=2026-12-01');
   }
 });
+
+
+test('PS5 calendar event retains its release date, own shop and unknown language beside the merged Steam game', () => {
+  const ps5Store = 'https://store.playstation.com/zh-hant-tw/concept/10009999';
+  const native = nintendo({ platforms: [{ id: 167, code: 'PS5' }],
+    known_platforms: [{ id: 6, name: 'PC' }, { id: 167, code: 'PS5', name: 'PlayStation 5' }],
+    playstation_url: ps5Store,
+    releases: [{ date: '2027-01-15', platform: 'PS5', precision: 'day', region: 'taiwan',
+      source: 'official_registry', date_basis: 'taiwan_official_calendar_day', time_zone: 'Asia/Taipei',
+      timezone_status: 'taiwan_official_date', taiwan_release_confirmed: true,
+      official_source_url: ps5Store, official_source_name: 'PlayStation 台灣', official_product_id: '10009999',
+      official_verified_at: '2026-10-04T13:00:00Z' }],
+  });
+  const data = D.datasets({ games: [steam()] }, null, native);
+  const summary = renderer().card(D.cardGames(data.games)[0]);
+  assert.equal(summary.querySelector('time').textContent, '2026/12/01');
+  assert.match(summary.querySelector('.card-languages').textContent, /支援繁中/);
+  assert.equal(summary.querySelector('.steam-store-link').href, 'https://store.steampowered.com/app/3167930/');
+  const event = data.games.find(game => game.date === '2027-01-15');
+  const card = renderer([], 'date').card(event);
+  assert.equal(card.querySelector('time').textContent, '2027/01/15');
+  assert.equal(card.querySelector('.card-release-platform').textContent, 'PS5');
+  assert.match(card.querySelector('.card-languages').textContent, /語言支援待確認/);
+  assert.doesNotMatch(card.querySelector('.card-languages').textContent, /支援繁中|支援簡中/);
+  assert.equal(card.querySelector('.steam-store-link').href, ps5Store);
+  assert.match(card.querySelector('.steam-store-link').textContent, /PlayStation 商店/);
+  assert.equal(card.querySelector('.card-names').href, './game.html?appid=3167930&date=2027-01-15');
+  assert.deepEqual(card.querySelectorAll('.platform-badge').map(tag => tag.textContent), ['PC＋主機']);
+  assert.match(card.querySelector('.platform-badge').title, /PS5/);
+});

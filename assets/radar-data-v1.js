@@ -1,4 +1,4 @@
-/* Shared, presentation-only adapter for the existing public Steam JSON contract. */
+/* Shared presentation adapter for the public Steam and IGDB JSON contracts. */
 (function (root) {
   "use strict";
   const DAY = 86400000;
@@ -297,6 +297,8 @@
     ? value : typeof value === "string" && /^igdb:[1-9][0-9]*$/.test(value) ? value : null;
   const saveID = (game) => savedID(game?.appid);
   const gameKey = (game) => game?.key || game?.appid;
+  const nativePlatformIDs = Object.freeze({ NS: 130, NS2: 508, PS5: 167 });
+  const nativePlatformOrder = Object.freeze(Object.keys(nativePlatformIDs));
   const cardPlatformNames = {
     6: { label: "PC（Windows）", type: "pc" }, 14: { label: "Mac", type: "pc" }, 3: { label: "Linux", type: "pc" },
     130: { label: "NS", type: "console" }, 508: { label: "NS2", type: "console" },
@@ -310,7 +312,8 @@
       if (!row || !Number.isSafeInteger(row.id) || row.id <= 0 || records.has(row.id)) continue;
       records.set(row.id, { id: row.id,
         name: typeof row.name === "string" && row.name.trim() ? row.name.trim().slice(0, 120) : cardPlatformNames[row.id]?.label || "",
-        ...(row.id === 130 ? { code: "NS" } : row.id === 508 ? { code: "NS2" } : {}) });
+        ...(Object.entries(nativePlatformIDs).some(([, id]) => id === row.id)
+          ? { code: Object.keys(nativePlatformIDs).find(code => nativePlatformIDs[code] === row.id) } : {}) });
     }
     return [...records.values()].sort((a, b) => a.id - b.id);
   }
@@ -320,16 +323,16 @@
       normalizeKnownPlatforms(raw.known_platforms).length !== raw.known_platforms.length) return null;
     if (raw.platform_data_complete === true && Array.isArray(raw.platforms)) {
       const known = new Set(raw.known_platforms.map(row => row.id));
-      if (raw.platforms.some(row => [130, 508].includes(row?.id) && !known.has(row.id))) return null;
+      if (raw.platforms.some(row => Object.values(nativePlatformIDs).includes(row?.id) && !known.has(row.id))) return null;
     }
     return raw.platform_data_complete;
   }
   function cardPlatformBadge(game) {
-    const native = (game?.platforms || []).filter(platform => ["NS", "NS2"].includes(platform));
+    const native = (game?.platforms || []).filter(platform => Object.hasOwn(nativePlatformIDs, platform));
     const known = normalizeKnownPlatforms(game?.knownPlatforms);
     const ids = new Set(known.map(row => row.id));
-    const nativeListed = native.every(platform => ids.has(platform === "NS" ? 130 : 508));
-    for (const platform of native) ids.add(platform === "NS" ? 130 : 508);
+    const nativeListed = native.every(platform => ids.has(nativePlatformIDs[platform]));
+    for (const platform of native) ids.add(nativePlatformIDs[platform]);
     let steam = game?.source === "steam" && Number.isSafeInteger(game.appid) && game.appid > 0;
     if (!steam && Number.isSafeInteger(game?.steamAppid) && game.steamAppid > 0) {
       try {
@@ -359,8 +362,9 @@
     if (!pc && consoles.length === 1 && !other && native.length === 1 &&
       (complete || game?.multiPlatform !== true)) {
       const exclusive = complete && (game.platformBadges || []).some(badge =>
-        badge.status === "exclusive" && badge.label === `${native[0]} 獨佔`);
-      return { label: exclusive ? `${native[0]} 獨佔` : "主機", status: exclusive ? "exclusive" : "nintendo",
+        ["exclusive", "playstation-exclusive"].includes(badge.status) && badge.label === `${native[0]} 獨佔`);
+      return { label: exclusive ? `${native[0]} 獨佔` : "主機",
+        status: exclusive ? native[0] === "PS5" ? "playstation-exclusive" : "exclusive" : "nintendo",
         title: exclusive ? title : title + "尚未確認獨佔。" };
     }
     if (steam && !consoles.length && !other) return { label: "Steam", status: "steam", title };
@@ -370,7 +374,7 @@
     return !!saved && [saveID(game), ...(game?.savedAliases || [])]
       .some(id => savedID(id) !== null && saved.has(id));
   }
-  // The public Nintendo entry must link to an exact Steam product. Names,
+  // The public IGDB entry must link to an exact Steam product. Names,
   // search pages and a bare, self-declared AppID are not identity evidence.
   function nintendoSteamIdentity(raw) {
     const ids = new Set();
@@ -398,6 +402,41 @@
       return url.protocol === "https:" && !url.username && !url.password && allowed ? url.href : "";
     } catch { return ""; }
   }
+  const playstationProductID = /^[A-Z]{2}[0-9]{4}-[A-Z0-9]{9}_[A-Z0-9]{2}-[A-Z0-9]{16}$/;
+  const playstationRegionLocales = {
+    taiwan: ["zh-hant-tw", "en-tw"], hong_kong: ["zh-hant-hk", "en-hk"],
+    north_america: ["en-us"], japan: ["ja-jp"], united_kingdom: ["en-gb"],
+    europe: ["en-gb"], australia: ["en-au"], asia: ["en-sg"],
+  };
+  function playstationProduct(value, region = null) {
+    if (typeof value !== "string") return null;
+    try {
+      const url = new URL(value);
+      if (url.protocol !== "https:" || url.hostname !== "store.playstation.com" ||
+        url.username || url.password || url.port || url.hash || url.search) return null;
+      const match = /^\/([a-z]{2}(?:-[a-z]+)?-[a-z]{2})\/(product|concept)\/([^/]+)\/?$/.exec(url.pathname);
+      if (!match || (region && !(playstationRegionLocales[region] || []).includes(match[1])) ||
+        !(match[2] === "product" ? playstationProductID.test(match[3]) : /^[1-9][0-9]*$/.test(match[3]))) return null;
+      return { url: url.href, kind: match[2], id: match[3], locale: match[1] };
+    } catch { return null; }
+  }
+  // Official platform URLs retain their storefront region. A PS4 product's
+  // compatibility text never establishes a native PS5 release or language row.
+  function platformURL(value, platform, region = null) {
+    if (platform !== "PS5") return ["NS", "NS2"].includes(platform)
+      ? region ? nintendoLanguageURL(value, region) : nintendoURL(value) : "";
+    const product = playstationProduct(value, region);
+    if (product) return product.url;
+    if (typeof value !== "string") return "";
+    try {
+      const url = new URL(value);
+      if (url.protocol !== "https:" || url.hostname !== "www.playstation.com" ||
+        url.username || url.password || url.port || url.hash || url.search) return "";
+      const match = /^\/([a-z]{2}(?:-[a-z]+)?-[a-z]{2})\/games\/[a-z0-9-]+\/?$/.exec(url.pathname);
+      if (!match || (region && !(playstationRegionLocales[region] || []).includes(match[1]))) return "";
+      return url.href;
+    } catch { return ""; }
+  }
   const languageRegionNames = { taiwan: "台灣", north_america: "北美", japan: "日本", hong_kong: "香港", asia: "亞洲", worldwide: "全球公告",
     united_kingdom: "英國", europe: "歐洲", australia: "澳洲" };
   const officialLanguageHosts = new Set(["www.nintendo.com", "www.nintendo.co.jp", "www.nintendo.com.hk",
@@ -420,18 +459,22 @@
       return url.href;
     } catch { return ""; }
   }
-  function nintendoLanguageSupport(raw) {
+  function platformLanguageSupport(raw, platform = "NS") {
     const unknown = { status: "unknown", region: null,
       languages: { tchinese: null, schinese: null, english: null, chinese: null },
       supported_languages: [], complete: false, source: null, source_url: null, checked_at: null,
       evidence_type: null, languageBadges: [{ label: "語言支援待確認", status: "unknown" }] };
     if (!raw || !["confirmed", "partial"].includes(raw.status) ||
-      !Object.hasOwn(languageRegionNames, raw.region) || !nintendoLanguageURL(raw.source_url, raw.region) ||
+      !Object.hasOwn(languageRegionNames, raw.region) ||
+      !(platform === "PS5" ? playstationProduct(raw.source_url, raw.region) : nintendoLanguageURL(raw.source_url, raw.region)) ||
       typeof raw.source !== "string" || !raw.source.trim() || awareTime(raw.checked_at) === null ||
       !["official_product_languages", "official_chinese_unspecified"].includes(raw.evidence_type) ||
       typeof raw.complete !== "boolean" || !raw.languages || !Array.isArray(raw.supported_languages) ||
       !raw.supported_languages.length || raw.supported_languages.length > 32) return unknown;
-    const sourceURL = nintendoLanguageURL(raw.source_url);
+    if (!Object.hasOwn(nativePlatformIDs, platform)) return unknown;
+    const product = platform === "PS5" ? playstationProduct(raw.source_url, raw.region) : null;
+    if (product && raw.product_id !== product.id) return unknown;
+    const sourceURL = product?.url || nintendoLanguageURL(raw.source_url);
     const rows = [], codes = new Set();
     for (const row of raw.supported_languages) {
       if (!row || typeof row.code !== "string" || !/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(row.code) ||
@@ -463,8 +506,10 @@
     if (!badges.length && rows.length) badges.push({ label: `支援${rows[0].name}`, status: "other" });
     return { status: raw.status, region: raw.region, languages: expected, supported_languages: rows, complete,
       source: raw.source.trim().slice(0, 120), source_url: sourceURL, checked_at: raw.checked_at,
-      evidence_type: raw.evidence_type, languageBadges: badges.length ? badges : unknown.languageBadges };
+      evidence_type: raw.evidence_type, ...(product ? { product_id: product.id } : {}),
+      languageBadges: badges.length ? badges : unknown.languageBadges };
   }
+  function nintendoLanguageSupport(raw) { return platformLanguageSupport(raw, "NS"); }
   function nintendoCardLanguages(platformLanguages = {}, platforms = []) {
     const selected = platforms.map(platform => ({ platform, support: platformLanguages[platform] || nintendoLanguageSupport() }));
     const badges = selected.flatMap(({ platform, support }) => support.languageBadges.map(badge => ({
@@ -494,11 +539,22 @@
     return { type: raw.type, label: raw.label.trim(), title: raw.title.trim(), product_id: raw.product_id,
       region: raw.region, source_url: sourceURL, checked_at: raw.checked_at };
   }
+  function platformEdition(raw, platform) {
+    if (["NS", "NS2"].includes(platform)) return nintendoEdition(raw);
+    if (platform !== "PS5" || !raw || !["base_plus_expansion", "deluxe", "base_plus_dlc"].includes(raw.type) ||
+      typeof raw.label !== "string" || !raw.label.trim() || raw.label.trim().length > 120 ||
+      typeof raw.title !== "string" || !raw.title.trim() || raw.title.trim().length > 240 ||
+      !Object.hasOwn(languageRegionNames, raw.region) || awareTime(raw.checked_at) === null) return null;
+    const product = playstationProduct(raw.source_url, raw.region);
+    if (!product || product.kind !== "product" || raw.product_id !== product.id) return null;
+    return { type: raw.type, label: raw.label.trim(), title: raw.title.trim(), product_id: product.id,
+      region: raw.region, source_url: product.url, checked_at: raw.checked_at };
+  }
   function releaseEditionBadges(game, platforms = game?.releasePlatforms || []) {
     return [...new Set(Array.isArray(platforms) ? platforms : [])]
-      .filter(platform => ["NS", "NS2"].includes(platform) && game?.platforms?.includes(platform))
+      .filter(platform => Object.hasOwn(nativePlatformIDs, platform) && game?.platforms?.includes(platform))
       .flatMap(platform => {
-        const edition = nintendoEdition(game?.platformEditions?.[platform]);
+        const edition = platformEdition(game?.platformEditions?.[platform], platform);
         return edition ? [{ platform, ...edition }] : [];
       });
   }
@@ -526,7 +582,7 @@
     let base = original.name.trim();
     while (base) {
       const suffix = /[（(]([^（）()]*)[）)]$/.exec(base);
-      if (!suffix || !labels.has(normalize(suffix[1].replace(/^(?:(?:NS2?|Steam)[／\s：:]*)+/, "")))) break;
+      if (!suffix || !labels.has(normalize(suffix[1].replace(/^(?:(?:NS2?|PS5|Steam)[／\s：:]*)+/, "")))) break;
       base = base.slice(0, suffix.index).trim();
     }
     for (const version of versions) {
@@ -547,14 +603,13 @@
       if (!id || !Number.isSafeInteger(Number(id)) || raw.id !== `igdb:${id}` || raw.sexual_content_screened !== true ||
         !Number.isSafeInteger(raw.hypes) || raw.hypes < 30 || !Array.isArray(raw.platforms) ||
         !Array.isArray(raw.releases)) continue;
-      const platforms = [...new Set(raw.platforms.filter(platform =>
-        ["NS", "NS2"].includes(platform?.code) &&
-        Number(platform.id) === (platform.code === "NS" ? 130 : 508)).map(platform => platform.code))];
+      const platforms = nativePlatformOrder.filter(code => raw.platforms.some(platform =>
+        platform?.code === code && Number(platform.id) === nativePlatformIDs[code]));
       if (!platforms.length) continue;
       const platformLanguages = Object.fromEntries(platforms.map(code =>
-        [code, nintendoLanguageSupport(raw.platform_language_support?.[code])]));
+        [code, platformLanguageSupport(raw.platform_language_support?.[code], code)]));
       const platformEditions = Object.fromEntries(platforms.flatMap(code => {
-        const edition = nintendoEdition(raw.platform_editions?.[code]);
+        const edition = platformEdition(raw.platform_editions?.[code], code);
         return edition ? [[code, edition]] : [];
       }));
       const nameEn = String(raw.name_en || raw.name || "").trim();
@@ -575,11 +630,13 @@
         const exclusive = raw.exclusivity || {};
         const knownPlatforms = normalizeKnownPlatforms(raw.known_platforms);
         const soleKnown = knownPlatforms.length === 1 &&
-          Number(knownPlatforms[0]?.id) === (platforms[0] === "NS" ? 130 : 508);
-        const otherPlatforms = knownPlatforms.some(platform => ![130, 508].includes(Number(platform?.id)));
+          Number(knownPlatforms[0]?.id) === nativePlatformIDs[platforms[0]];
+        const otherPlatforms = knownPlatforms.some(platform => !platforms.some(code =>
+          nativePlatformIDs[code] === Number(platform?.id)));
+        const exclusiveURL = platformURL(exclusive.url, platforms[0]);
         const confirmed = !steamAppid && exclusive.status === "confirmed" && platforms.length === 1 &&
           soleKnown && raw.platform_data_complete === true && exclusive.platform === platforms[0] &&
-          !!nintendoURL(exclusive.url) && !new URL(nintendoURL(exclusive.url)).hostname.endsWith("igdb.com");
+          !!exclusiveURL && !new URL(exclusiveURL).hostname.endsWith("igdb.com");
         const listed = !steamAppid && !confirmed && exclusive.status === "listed_only" && platforms.length === 1 &&
           soleKnown && raw.platform_data_complete === true && exclusive.platform === platforms[0];
         const platformShort = confirmed ? `${platforms[0]}獨佔` : releasePlatforms.join("／");
@@ -590,28 +647,39 @@
           : listed ? `IGDB 目前僅列 ${platforms[0]}；尚未視為官方獨佔確認`
           : `原生版本平台：${platforms.join("／")}${steamAppid ? "；另有已對應的 Steam 版本" : otherPlatforms ? "；另有其他平台" : ""}；向下相容不視為另一平台版本`;
         const art = nintendoURL(raw.cover_image, "image");
-        const nintendoLink = nintendoURL(raw.nintendo_url);
+        const platformLinks = Object.fromEntries(platforms.flatMap(code => {
+          const url = platformURL(raw.platform_urls?.[code] ||
+            (code === "PS5" ? raw.playstation_url : raw.nintendo_url), code);
+          return url ? [[code, { url, label: code === "PS5"
+            ? new URL(url).hostname === "store.playstation.com" ? "PlayStation 商店" : "PlayStation 官網"
+            : "Nintendo 官網" }]] : [];
+        }));
         const igdbLink = nintendoURL(raw.url);
-        const link = nintendoLink || igdbLink || "https://www.igdb.com/";
+        const eventLink = releasePlatforms.map(code => platformLinks[code]).find(Boolean);
+        const link = eventLink?.url || igdbLink || "https://www.igdb.com/";
         games.push({
           appid: `igdb:${id}`, key: `igdb:${id}@${date}`, igdbId: Number(id), source: "nintendo",
           igdbIds: [Number(id)], identityKey: steamAppid ? `steam:${steamAppid}` : `igdb:${id}`,
           savedAliases: [`igdb:${id}`, ...(steamAppid ? [steamAppid] : [])],
           steamAppid, steamLink: steamAppid ? `https://store.steampowered.com/app/${steamAppid}/` : "",
-          hasNintendo: true, multiPlatform, knownPlatforms, platformDataComplete: knownPlatformCompleteness(raw),
+          hasNintendo: true, hasNativePlatforms: true, hasPlayStation: platforms.includes("PS5"),
+          sourceProvider: "IGDB", platformLinks,
+          multiPlatform, knownPlatforms, platformDataComplete: knownPlatformCompleteness(raw),
           name, nameEn, nameTw, nameCn, nameOriginalTw: raw.name_zh_tw || "", nameOriginalCn: raw.name_zh_cn || "",
           nameSearchAliases: [...new Set(Object.values(platformEditions).flatMap(edition => [edition.title, edition.label]))],
           date, releases: [...grouped.values()].flat(), dateReleases: releases, dateRegion: releases[0]?.region || "",
           dateSource: releases[0]?.source || "IGDB", releasePlatforms, platforms,
           platformShort, platformLabel, platformBadges: [
             ...platforms.map(code => ({ label: confirmed ? `${code} 獨佔` : code,
-              status: confirmed ? "exclusive" : "nintendo", title: platformTitle })),
+              status: confirmed ? code === "PS5" ? "playstation-exclusive" : "exclusive"
+                : code === "PS5" ? "playstation" : "nintendo", title: platformTitle })),
             ...(multiPlatform ? [{ label: "多平台", status: "multi", title: platformTitle }] : []),
           ],
           hypes: raw.hypes, followers: null, platformLanguages, platformEditions,
           ...nintendoCardLanguages(platformLanguages, releasePlatforms),
           art, artSources: art ? [art] : [], art2x: "", artVariants: {}, hasVerifiedHeader: !!art,
-          recent: false, darkHorse: false, link, linkLabel: nintendoLink ? "Nintendo 官網" : igdbLink ? "IGDB 遊戲資料" : "IGDB 官網",
+          recent: false, darkHorse: false, link,
+          linkLabel: eventLink?.label || (igdbLink ? "IGDB 遊戲資料" : "IGDB 官網"),
           updated: raw.checked_at || payload.generated_at || null, exclusivity: exclusive,
           tags: Array.isArray(raw.tags) ? raw.tags.filter(tag => typeof tag === "string") : [],
           genres: Array.isArray(raw.genres) ? raw.genres.filter(genre => typeof genre === "string") : [],
@@ -625,14 +693,21 @@
   function nintendoReleaseAudited(release) {
     // Old public bundles remain readable during the publisher transition. New
     // audited records must not turn an ambiguous timestamp into a calendar day.
-    if (release.timezone_status == null) return true;
+    if (release.timezone_status == null) return release.platform !== "PS5";
     if (release.time_zone !== "Asia/Taipei" ||
       !["same_calendar_day", "date_only", "taiwan_official_date"].includes(release.timezone_status)) return false;
     if (release.source_date != null && !validDate(release.source_date)) return false;
     if (release.timestamp_taipei_date != null && !validDate(release.timestamp_taipei_date)) return false;
     if (release.timezone_status === "taiwan_official_date") {
-      return release.source === "official_registry" && release.region === "taiwan" &&
-        release.date_basis === "taiwan_official_calendar_day" && release.taiwan_release_confirmed === true;
+      if (!(release.source === "official_registry" && release.region === "taiwan" &&
+        release.date_basis === "taiwan_official_calendar_day" && release.taiwan_release_confirmed === true)) return false;
+      if (release.platform !== "PS5") return true;
+      if (awareTime(release.official_verified_at) === null ||
+        typeof release.official_source_name !== "string" || !release.official_source_name.trim()) return false;
+      const url = platformURL(release.official_source_url, "PS5", "taiwan");
+      if (!url) return false;
+      const product = playstationProduct(url, "taiwan");
+      return !product || release.official_product_id === product.id;
     }
     return release.taiwan_release_confirmed !== true && release.source !== "official_registry" &&
       (release.source_date == null || release.source_date === release.date) &&
@@ -661,12 +736,12 @@
     const result = new Map();
     for (const release of releases) {
       if (!release || !validDate(release.date) || release.precision !== "day" ||
-        !["Steam", "NS", "NS2"].includes(release.platform)) continue;
+        !["Steam", ...nativePlatformOrder].includes(release.platform)) continue;
       const key = `${release.platform}:${release.date}:${release.region || ""}`;
       if (!result.has(key)) result.set(key, release);
     }
     return [...result.values()].sort((a, b) => a.date.localeCompare(b.date) ||
-      ["Steam", "NS", "NS2"].indexOf(a.platform) - ["Steam", "NS", "NS2"].indexOf(b.platform));
+      ["Steam", ...nativePlatformOrder].indexOf(a.platform) - ["Steam", ...nativePlatformOrder].indexOf(b.platform));
   }
   function mergePlatformGames(steamRows, nintendoRows, steamReference = steamRows) {
     const steamByID = new Map(steamReference.map(game => [game.appid, game]));
@@ -685,7 +760,7 @@
       const steam = steamByID.get(appid);
       const nintendo = rows[0];
       const igdbIds = [...new Set(rows.map(game => game.igdbId))];
-      const platforms = ["Steam", ...["NS", "NS2"].filter(code => rows.some(game => game.platforms.includes(code)))];
+      const platforms = ["Steam", ...nativePlatformOrder.filter(code => rows.some(game => game.platforms.includes(code)))];
       const releases = uniqueReleases([...steam.releases, ...rows.flatMap(game => game.releases)]);
       // An event belongs to this dataset only if that date was admitted here.
       // The complete release list may also retain an older Steam version.
@@ -706,15 +781,20 @@
           game.name, game.nameEn, game.nameTw, game.nameCn, game.nameOriginalTw, game.nameOriginalCn,
           ...(Array.isArray(game.nameSearchAliases) ? game.nameSearchAliases : []),
         ]).filter(Boolean))],
-        igdbId: igdbIds[0], igdbIds, hasNintendo: true, multiPlatform: true,
+        igdbId: igdbIds[0], igdbIds, hasNintendo: true, hasNativePlatforms: true,
+        hasPlayStation: platforms.includes("PS5"), sourceProvider: "Steam／IGDB", multiPlatform: true,
         identityKey: `steam:${appid}`, steamAppid: appid, steamLink: steam.link,
         savedAliases: [appid, ...igdbIds.map(id => `igdb:${id}`)],
         nintendoLink: nintendo.link, nintendoLinkLabel: nintendo.linkLabel,
+        platformLinks: Object.fromEntries(nativePlatformOrder.flatMap(code => {
+          const links = rows.map(row => row.platformLinks?.[code]).filter(Boolean);
+          return links.length && links.every(link => link.url === links[0].url) ? [[code, links[0]]] : [];
+        })),
         hypes: nintendo.hypes, platforms, releases,
         platformLanguages: Object.fromEntries(platforms.filter(code => code !== "Steam").map(code => {
           const sources = rows.map(row => row.platformLanguages?.[code]).filter(Boolean);
           return [code, sources.length && sources.every(source => JSON.stringify(source) === JSON.stringify(sources[0]))
-            ? sources[0] : nintendoLanguageSupport()];
+            ? sources[0] : platformLanguageSupport(null, code)];
         })),
         platformEditions: Object.fromEntries(platforms.filter(code => code !== "Steam").flatMap(code => {
           const versions = rows.filter(row => row.platforms.includes(code));
@@ -724,9 +804,10 @@
         })),
         platformLabel: platforms.join("／") + "・多平台",
         platformBadges: [
-          ...platforms.map(code => ({ label: code, status: code === "Steam" ? "steam" : "nintendo",
+          ...platforms.map(code => ({ label: code,
+            status: code === "Steam" ? "steam" : code === "PS5" ? "playstation" : "nintendo",
             title: `已確認的原生版本平台：${platforms.join("／")}` })),
-          { label: "多平台", status: "multi", title: `同一款遊戲的 Steam／Nintendo 版本；各平台保留自己的發售日` },
+          { label: "多平台", status: "multi", title: `同一款遊戲的 ${platforms.join("／")} 原生版本；各平台保留自己的發售日` },
         ],
         exclusivity: { status: "multi_platform" },
         knownPlatforms: normalizeKnownPlatforms([...(steam.knownPlatforms || []), ...rows.flatMap(row => row.knownPlatforms || [])]),
@@ -825,9 +906,16 @@
     saveID,
     isSaved,
     gameKey,
+    nativePlatformIDs,
+    nativePlatformOrder,
     cardPlatformBadge,
     nintendoSteamIdentity,
     nintendoURL,
+    platformURL,
+    platformLanguageSupport,
+    platformEdition,
+    nativeCardLanguages: nintendoCardLanguages,
+    nativeReleaseAudited: nintendoReleaseAudited,
     nintendoLanguageURL,
     nintendoLanguageSupport,
     nintendoCardLanguages,

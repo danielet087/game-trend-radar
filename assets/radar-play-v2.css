@@ -2587,6 +2587,7 @@ body[data-page="explore"] {
   background: #fff0f2;
 }
 .platform-steam { border-color: #cbd6ed; color: #3b5391; background: #edf1fb; }
+.platform-playstation-exclusive { border-color: #cbd6ed; color: #3b5391; background: #edf1fb; }
 .platform-multi { border-color: #d8d6ce; color: #6c685c; background: #f7f5ee; }
 .platform-release-note {
   margin: -7px 0 11px;
@@ -2604,6 +2605,9 @@ body[data-page="explore"] {
 }
 .day-game-exclusive.second { background: #fff0f2; color: #a8243b; }
 .day-game-exclusive:hover { background: #ffe0e5; }
+.day-game-playstation-exclusive,
+.day-game-playstation-exclusive.second { background: #edf1fb; color: #3b5391; }
+.day-game-playstation-exclusive:hover { background: #e1e8f7; }
 .day-game-multi,
 .day-game-nintendo,
 .day-game-unknown,
@@ -2624,6 +2628,7 @@ body[data-page="explore"] {
 }
 .day-game-steam .day-platform { background: #526bac; }
 .day-game-exclusive .day-platform { background: #ae2941; }
+.day-game-playstation-exclusive .day-platform { background: #526bac; }
 .day-game-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .game-card[data-source="nintendo"] .cover-link img { object-position: center 35%; }
 @media (max-width: 520px) {

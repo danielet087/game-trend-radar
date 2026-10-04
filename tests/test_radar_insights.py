@@ -46,13 +46,14 @@ def nintendo_game(igdb_id=1, releases=None, **fields):
     releases = releases or {"NS2": "2026-11-05"}
     codes = [row["platform"] for row in releases] if isinstance(releases, list) else list(releases)
     rows = releases if isinstance(releases, list) else [
-        {"platform": code, "date": release, "precision": "day", "source": "IGDB"}
+        (audited_nintendo_release(release, platform=code) if code == "PS5" else
+         {"platform": code, "date": release, "precision": "day", "source": "IGDB"})
         for code, release in releases.items()]
     return {"id": f"igdb:{igdb_id}", "igdb_id": igdb_id, "display_name": "Nintendo game",
             "hypes": 45, "hypes_status": "available", "popularity_status": "qualified",
             "calendar_eligible": True, "sexual_content_screened": True,
             "game_type": "main_game", "platform_data_complete": True,
-            "platforms": [{"code": code, "id": M.NINTENDO_PLATFORMS[code]} for code in codes],
+            "platforms": [{"code": code, "id": M.IGDB_PLATFORMS[code]} for code in codes],
             "releases": rows, **fields}
 
 
@@ -63,6 +64,12 @@ def nintendo_catalog(*rows, at="2026-10-03T16:40:12Z"):
                        "end_inclusive": False, "time_zone": "Asia/Taipei"},
             "source": {"provider": "IGDB", "complete": True, "hypes_threshold": 30,
                        "platform_ids_verified": [130, 508]}, "games": list(rows)}
+
+
+def igdb_catalog(*rows, **fields):
+    document = nintendo_catalog(*rows, **fields)
+    document["source"]["platform_ids_verified"] = [130, 167, 508]
+    return document
 
 
 def audited_nintendo_release(release="2026-10-08", **fields):
@@ -463,6 +470,78 @@ class NintendoInsightTests(unittest.TestCase):
         merged = self.update(state)
         self.assertEqual(len(merged["events"]), 250)
         self.assertEqual(len(M.projections(merged, date(2026, 10, 4))[0]["events"]), 40)
+
+    def test_ps5_addition_preserves_nintendo_first_seen_history_and_does_not_repeat_old_events(self):
+        original = nintendo_game(381222, releases={"NS2": "2026-11-05"}, display_name="跨平台遊戲")
+        first = self.update(document=nintendo_catalog(original))
+        updated = nintendo_game(381222, releases={"NS2": "2026-11-05", "PS5": "2026-12-12"},
+                                display_name="跨平台遊戲")
+        document = igdb_catalog(updated, nintendo_game(42, releases={"PS5": "2026-12-01"}),
+                                at="2026-10-04T03:00:00Z")
+        receipt = {"schema_version": 1, "complete": True, "status": "published",
+                   "generated_at": document["generated_at"], "published_at": "2026-10-04T03:01:00Z"}
+        state = self.update(first, document, nintendo_receipt=receipt)
+        self.assertEqual(state["events"][:1], first["events"])
+        self.assertEqual([(event["game_id"], event["type"], event["platforms"])
+                          for event in state["events"][1:]],
+                         [("igdb:381222", "platform_added", ["PS5"]), ("igdb:42", "added", ["PS5"])])
+        self.assertEqual(state["nintendo_records"]["igdb:381222"]["first_seen_at"],
+                         first["nintendo_records"]["igdb:381222"]["first_seen_at"])
+        self.assertTrue(state["nintendo_records"]["igdb:381222"]["active"])
+        self.assertEqual(state["events"][-1]["at"], receipt["published_at"])
+        self.assertEqual(state, self.update(state, document, nintendo_receipt=receipt))
+        activity, growth = M.projections(state, date(2026, 10, 4))
+        self.assertEqual(len(activity["events"]), 3)
+        self.assertEqual(growth["games"], M.projections(first, date(2026, 10, 4))[1]["games"])
+
+    def test_ps5_native_platform_requires_verified_source_identity_and_existing_qualification_rules(self):
+        ps5 = nintendo_game(42, releases={"PS5": "2026-12-01"})
+        with self.assertRaises(ValueError):
+            self.update(document=nintendo_catalog(ps5))
+        self.assertEqual(self.update(document=igdb_catalog(ps5))["events"][0]["platforms"], ["PS5"])
+        for values in [[167, 130, 508], [130, 508, 167]]:
+            document = igdb_catalog(ps5)
+            document["source"]["platform_ids_verified"] = values
+            self.assertEqual(self.update(document=document)["events"][0]["platforms"], ["PS5"])
+        for values in [[130, 167, 167], [130, 508, "167"], [130, 508, 167.0], [130, 508, 169]]:
+            document = igdb_catalog(ps5)
+            document["source"]["platform_ids_verified"] = values
+            with self.subTest(values=values), self.assertRaises(ValueError):
+                self.update(document=document)
+        for changes in [{"hypes": 29}, {"sexual_content_screened": False},
+                        {"calendar_eligible": False}, {"game_type": "dlc"},
+                        {"platforms": [{"code": "PS5", "id": 130}]},
+                        {"platforms": [{"code": "PS5", "id": 167.0}]},
+                        {"releases": [{**ps5["releases"][0], "date": "2027-10-04"}]},
+                        {"releases": [{**ps5["releases"][0], "precision": "month"}]}]:
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                self.update(document=igdb_catalog({**ps5, **changes}))
+
+    def test_ps5_taiwan_official_date_proof_is_platform_scoped_and_malformed_urls_are_rejected(self):
+        release = {**official_nintendo_release(), "platform": "PS5", "official_source_name": "PlayStation 台灣",
+                   "official_source_url": "https://store.playstation.com/zh-hant-tw/concept/1001",
+                   "official_product_id": "1001", "official_verified_at": "2026-10-04T02:00:00Z"}
+        for url in [release["official_source_url"], "https://www.playstation.com/zh-hant-tw/games/game/"]:
+            self.update(document=igdb_catalog(nintendo_game(releases=[{**release, "official_source_url": url}])))
+        for url in ["https://www.nintendo.com/tw/schedule/", "https://playstation.com.evil.example/",
+                    "https://user:password@store.playstation.com/zh-hant-tw/",
+                    "https://store.playstation.com:8443/zh-hant-tw/", "https://store.playstation.com:bad/",
+                    "https://store.playstation.com/zh-hant-hk/concept/1001",
+                    "https://www.playstation.com/en-us/games/game/", "https://blog.playstation.com/2026/10/04/game/",
+                    "https://www.playstation.com/zh-hant-tw/", "https://store.playstation.com/zh-hant-tw/concept/1001?x=1",
+                    "javascript:alert(1)", "http://www.playstation.com/zh-hant-tw/"]:
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                self.update(document=igdb_catalog(nintendo_game(releases=[{**release, "official_source_url": url}])))
+        with self.assertRaises(ValueError):
+            self.update(document=igdb_catalog(nintendo_game(releases=[{**release, "platform": "NS2"}])))
+        for changes in [{"official_product_id": "1002"}, {"official_product_id": None},
+                        {"official_verified_at": None}, {"official_verified_at": "2026-10-04T02:00:00"},
+                        {"official_source_name": ""}]:
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                self.update(document=igdb_catalog(nintendo_game(releases=[{**release, **changes}])))
+        with self.assertRaises(ValueError):
+            self.update(document=igdb_catalog(nintendo_game(releases=[{
+                "platform": "PS5", "date": "2026-12-01", "precision": "day", "source": "IGDB"}])))
 
 
 if __name__ == "__main__":

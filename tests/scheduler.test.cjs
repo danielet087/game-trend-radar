@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { validateQueue, normalizeRun, runState, buildSlots, dashboardState, eventHistory, queueGameState, groupQueueCounts } = require('../assets/radar-scheduler-v1.js');
+const { validateQueue, normalizeRun, runState, buildSlots, dashboardState, eventHistory, queueGameState, groupQueueCounts, igdbReceiptSummary } = require('../assets/radar-scheduler-v1.js');
 
 const now = Date.parse('2026-10-03T07:30:00Z');
 function queue() {
@@ -35,13 +35,54 @@ test('queued workflow has no actual start and large run IDs retain canonical lin
 test('Twitch whole-hour batch maps to the :05 scheduled point, without inventing other successes', () => {
   const observed = run('collect.yml', 'game-trend-radar-twitch-backend', { run_started_at: '2026-10-03T07:06:00Z' });
   const lanes = buildSlots('2026-10-03', [observed], queue(), null, now);
-  assert.equal(lanes.flatMap(l => l.slots).length, 73);
+  assert.equal(lanes.flatMap(l => l.slots).length, 74);
   const twitch = lanes.find(l => l.job.id === 'twitch');
   assert.equal(twitch.slots[15].state, 'success');
   assert.equal(twitch.slots[15].at, Date.parse('2026-10-03T07:05:00Z'));
   assert.equal(twitch.slots[14].state, 'unknown');
   assert.equal(twitch.slots[16].state, 'planned');
   assert.match(eventHistory(queue(), [observed], null, now)[0].detail, /原定 15:05 → 15:06 開始/);
+});
+
+test('IGDB uses its existing daily 08:30 workflow and keeps Steam queue results separate', () => {
+  const q = queue();
+  const observed = run('collect-nintendo.yml', 'game-trend-radar-twitch-backend', {
+    display_title: 'IGDB catalog | slot=2026-10-03T00:30:00Z | cloudflare',
+    created_at: '2026-10-03T00:30:20Z', run_started_at: '2026-10-03T00:31:00Z',
+    updated_at: '2026-10-03T00:34:00Z',
+  });
+  assert.equal(observed.job_id, 'nintendo_daily');
+  const lane = buildSlots('2026-10-03', [observed], q, null, now).find(row => row.job.id === 'nintendo_daily');
+  assert.match(lane.job.name, /IGDB/);
+  assert.match(lane.job.note, /NS／NS2／PS5/);
+  assert.equal(lane.slots.length, 1);
+  assert.equal(lane.slots[0].at, Date.parse('2026-10-03T08:30:00+08:00'));
+  assert.equal(lane.slots[0].state, 'success');
+  assert.equal(dashboardState(q, [observed], { 'game-trend-radar-twitch-backend': true }, now).state, 'waiting');
+  assert.equal(validateQueue(q).summary.total_pending, 3);
+});
+
+test('IGDB publication counts come from valid receipts and missing or partial results stay unconfirmed', () => {
+  const receipt = { schema_version: 1, generated_at: '2026-10-03T00:31:00Z', published_at: '2026-10-03T00:34:00Z',
+    complete: true, status: 'published', candidate_count: 6000, public_count: 23, pending_count: 0,
+    source: { provider: 'IGDB', complete: true, platform_ids_verified: [130, 167, 508] } };
+  const result = igdbReceiptSummary(receipt);
+  assert.equal(result.platforms, 'NS／NS2／PS5');
+  assert.equal(result.published, true);
+  assert.equal(result.candidateCount, 6000);
+  assert.equal(result.publicCount, 23);
+  assert.equal(result.pendingCount, 0);
+  assert.equal(igdbReceiptSummary({ ...receipt, source: { ...receipt.source, platform_ids_verified: [167, 130, 508] } }).published, true);
+  assert.equal(igdbReceiptSummary({ ...receipt, source: { ...receipt.source, platform_ids_verified: [130, 508] } }).platforms, 'NS／NS2');
+  for (const fields of [{ complete: false }, { status: 'prepared' }, { published_at: null },
+    { published_at: '2026-10-03T00:30:00Z' }, { source: { ...receipt.source, complete: false } }]) {
+    assert.equal(igdbReceiptSummary({ ...receipt, ...fields }).published, false);
+  }
+  for (const fields of [{ generated_at: null }, { candidate_count: null }, { public_count: '23' },
+    { pending_count: -1 }, { source: { ...receipt.source, platform_ids_verified: [130, 508, 169] } }]) {
+    assert.equal(igdbReceiptSummary({ ...receipt, ...fields }), null);
+  }
+  assert.equal(igdbReceiptSummary(null), null);
 });
 
 test('successful Actions workflow is interrupted when its actual Steam attempt gets 429', () => {

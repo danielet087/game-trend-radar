@@ -493,3 +493,115 @@ test('detail recommendations show the candidate release edition in its title and
   assert.equal(names.children[1].textContent, 'Resident Evil 2: Deluxe Edition');
   assert.equal(names.children[1].title, 'Resident Evil 2: Deluxe Edition');
 });
+
+
+const ps5StoreURL = 'https://store.playstation.com/zh-hant-tw/concept/10009999';
+const ps5Sample = (overrides = {}) => sample({
+  name_en: 'PS5 Future Game', name_zh_tw: 'PS5 未來遊戲', nintendo_url: null,
+  platforms: [{ id: 167, name: 'PlayStation 5', code: 'PS5' }],
+  known_platforms: [{ id: 167, name: 'PlayStation 5', code: 'PS5' }],
+  exclusivity: { status: 'listed_only', platform: 'PS5' },
+  playstation_url: ps5StoreURL,
+  releases: [officialRelease({ platform: 'PS5', official_source_url: ps5StoreURL,
+    official_source_name: 'PlayStation 台灣', official_product_id: '10009999', official_verified_at: '2026-10-04T13:00:00Z' })],
+  ...overrides,
+});
+const ps5LanguageSupport = (overrides = {}) => languageSupport({
+  source: 'PlayStation 台灣', source_url: ps5StoreURL, product_id: '10009999', ...overrides,
+});
+
+test('PS5 native detail uses its PlayStation shop and confirmed Taiwan release without Nintendo wording', async () => {
+  const { elements: e, document, storage } = await display('?igdb=366896&date=2027-01-16', ps5Sample());
+  assert.equal(e.get('detailPage').hidden, false);
+  assert.deepEqual(e.get('gameReleaseDates').children.map(row => [row.dataset.platform, row.dataset.date]), [['PS5', '2027-01-16']]);
+  assert.match(e.get('gameReleaseNote').textContent, /PlayStation 台灣.*已確認台灣上市日/);
+  assert.equal(e.get('gameSteam').href, ps5StoreURL);
+  assert.equal(e.get('gameSteam').textContent, '前往 PlayStation 商店↗');
+  assert.equal(e.get('gameSteamMobile').textContent, 'PlayStation 商店 ↗');
+  assert.match(e.get('gameSteam').attributes['aria-label'], /PlayStation 商店/);
+  assert.equal(e.get('steamLanguageSection').hidden, true);
+  assert.match(e.get('nintendoLanguageSections').textContent, /PS5 版本.*語言支援待確認/);
+  assert.doesNotMatch(e.get('gameFootnote').textContent, /任天堂/);
+  assert.equal(e.get('gameNativeStoreLinks').hidden, true);
+  assert.equal(document.body.dataset.gameSource, 'nintendo');
+  e.get('gameSave').listeners.click({ currentTarget: e.get('gameSave') });
+  assert.deepEqual(JSON.parse(storage.get('game-trend-radar:saved:v1')), ['igdb:366896']);
+});
+
+test('merged Steam and PS5 detail keeps both date tickets and official shops with independent language support', async () => {
+  const catalog = steamCatalog();
+  catalog.games[0].language_support = { tchinese: true, schinese: true };
+  const payload = ps5Sample({
+    websites: [{ url: 'https://store.steampowered.com/app/632950/' }],
+    known_platforms: [{ id: 6, name: 'PC' }, { id: 167, name: 'PlayStation 5', code: 'PS5' }],
+    exclusivity: { status: 'multi_platform' },
+    platform_language_support: { PS5: ps5LanguageSupport() },
+  });
+  for (const search of ['?appid=632950', '?appid=632950&date=2027-01-16', '?igdb=366896&date=2027-01-16']) {
+    const { elements: e } = await display(search, payload, catalog);
+    const expected = search.includes('date=') ? [['PS5', '2027-01-16'], ['Steam', '2027-01-15']]
+      : [['Steam', '2027-01-15'], ['PS5', '2027-01-16']];
+    assert.deepEqual(e.get('gameReleaseDates').children.map(row => [row.dataset.platform, row.dataset.date]), expected);
+    assert.equal(e.get('gameSteam').href, 'https://store.steampowered.com/app/632950/');
+    const stores = e.get('gameNativeStoreLinks').children;
+    assert.equal(stores.length, 1);
+    assert.equal(stores[0].dataset.platform, 'PS5');
+    assert.equal(stores[0].href, ps5StoreURL);
+    assert.equal(stores[0].rel, 'noopener noreferrer');
+    assert.match(e.get('gameLanguageBadge').textContent, /支援繁中/);
+    const ps5 = e.get('nintendoLanguageSections').children[0];
+    assert.equal(ps5.dataset.platform, 'PS5');
+    assert.match(ps5.textContent, /PS5 版本.*簡體中文、英文.*PlayStation 台灣.*未列繁體中文/);
+    assert.doesNotMatch(ps5.textContent, /支援繁中|Nintendo/);
+  }
+});
+
+test('unconfirmed PS5 language stays unknown even when Steam supports Chinese', async () => {
+  const catalog = steamCatalog();
+  catalog.games[0].language_support = { tchinese: true, schinese: true };
+  const payload = ps5Sample({ websites: [{ url: 'https://store.steampowered.com/app/632950/' }] });
+  const { elements: e } = await display('?appid=632950', payload, catalog);
+  assert.match(e.get('gameLanguageBadge').textContent, /支援繁中/);
+  assert.match(e.get('nintendoLanguageSections').textContent, /PS5 版本.*語言支援待確認/);
+  assert.doesNotMatch(e.get('nintendoLanguageSections').textContent, /支援繁中|支援簡中/);
+});
+
+test('PS5 evidence rejects lookalike hosts, foreign Taiwan claims and mismatched language product identity', async () => {
+  for (const source_url of ['https://store.playstation.com.evil.test/zh-hant-tw/concept/10009999',
+    'https://store.playstation.com/en-us/concept/10009999', 'javascript:alert(1)']) {
+    const payload = ps5Sample({
+      playstation_url: source_url,
+      releases: [officialRelease({ platform: 'PS5', official_source_url: source_url,
+        official_source_name: 'PlayStation 台灣', official_product_id: '10009999', official_verified_at: '2026-10-04T13:00:00Z' })],
+      platform_language_support: { PS5: ps5LanguageSupport({ source_url }) },
+    });
+    const { elements: e } = await display('?igdb=366896', payload);
+    assert.doesNotMatch(e.get('gameReleaseNote').textContent, /已確認台灣上市日/);
+    assert.equal(e.get('detailPage').hidden, true);
+    assert.equal(e.get('gameTitle').textContent, '');
+    assert.equal(e.get('gameSteam').href, undefined);
+    assert.match(e.get('detailStatusTitle').textContent, /不在公開清單/);
+  }
+  const { elements: e } = await display('?igdb=366896', ps5Sample({
+    platform_language_support: { PS5: ps5LanguageSupport({ product_id: '10008888' }) },
+  }));
+  assert.match(e.get('nintendoLanguageSections').textContent, /語言支援待確認/);
+});
+
+test('PS5 Deluxe edition title and product evidence stay distinct from the Steam base version', async () => {
+  const product_id = 'JP0005-PPSA23593_00-APPLICATION00000';
+  const source_url = `https://store.playstation.com/zh-hant-tw/product/${product_id}`;
+  const payload = ps5Sample({
+    websites: [{ url: 'https://store.steampowered.com/app/632950/' }],
+    platform_editions: { PS5: { type: 'deluxe', label: 'Deluxe 版', title: 'PS5 Future Game Deluxe Edition',
+      product_id, region: 'taiwan', source_url, checked_at: '2026-10-04T05:00:00Z' } },
+  });
+  const { elements: ps5 } = await display('?appid=632950&date=2027-01-16', payload, steamCatalog());
+  assert.match(ps5.get('gameTitle').textContent, /Deluxe 版/);
+  assert.match(ps5.get('gamePlatformDates').textContent, /PS5 Deluxe 版.*PS5 Future Game Deluxe Edition.*PlayStation 官方商品頁/);
+  assert.doesNotMatch(ps5.get('nintendoLanguageSections').textContent, /Deluxe|DLC/);
+  const { elements: steam } = await display('?appid=632950', payload, steamCatalog());
+  assert.equal(steam.get('gameTitle').textContent, 'PS5 未來遊戲');
+  assert.doesNotMatch(steam.get('gameTitle').textContent, /Deluxe/);
+  assert.match(steam.get('gamePlatformDates').textContent, /PS5 Deluxe 版/);
+});

@@ -12,7 +12,7 @@ const profileStyles = from("assets/radar-game-detail-v1.css");
 
 test("card surface opens detail; separate visible Steam link opens externally; save remains independent", () => {
   assert.match(browse, /detailLink\(game, "card-detail-link"(?:,|\))/);
-  assert.match(browse, /steam = externalLink\(game, "steam-store-link"(?:,|\))/);
+  assert.match(browse, /steam = externalLink\(storeGame, "steam-store-link"(?:,|\))/);
   assert.match(browse, /steam\.textContent = "Steam 商店"/);
   assert.match(browse, /a\.target = "_blank"/);
   assert.match(browse, /a\.rel = "noopener noreferrer"/);

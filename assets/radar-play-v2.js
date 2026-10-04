@@ -6,6 +6,7 @@
   const mode = document.body.dataset.page;
   const today = D.todayInTaipei();
   const number = new Intl.NumberFormat("zh-TW");
+  const nativePlatformCodes = ["NS", "NS2", "PS5"];
   const storageKey = "game-trend-radar:saved:v1";
   const PAGE_SIZE = 36;
   const cardGames = new WeakMap();
@@ -152,7 +153,7 @@
   function cardDate(game, event = false) {
     if (event) return game.date;
     const dates = (Array.isArray(game.releases) ? game.releases : [])
-      .filter(release => release?.precision === "day" && D.validDate(release.date) && ["Steam", "NS", "NS2"].includes(release.platform))
+      .filter(release => release?.precision === "day" && D.validDate(release.date) && ["Steam", ...nativePlatformCodes].includes(release.platform))
       .map(release => release.date);
     return dates.sort()[0] || game.date;
   }
@@ -224,22 +225,24 @@
     names.append(english);
     body.append(names);
     const languages = node("div", "card-languages");
-    const nativePlatforms = (game.releasePlatforms || []).filter(platform => ["NS", "NS2"].includes(platform));
+    const nativePlatforms = (game.releasePlatforms || []).filter(platform => nativePlatformCodes.includes(platform));
     const nativeEvent = event && nativePlatforms.length > 0 && !game.releasePlatforms.includes("Steam");
     const nativeLanguages = nativeEvent || game.source === "nintendo";
     const support = nativeEvent
-      ? D.nintendoCardLanguages?.(game.platformLanguages || {}, nativePlatforms) ||
-        { languageBadges: [{ label: "語言支援待確認", status: "unknown", title: "Nintendo 此版本語言支援待確認" }] }
+      ? (D.nativeCardLanguages || D.nintendoCardLanguages)?.(game.platformLanguages || {}, nativePlatforms) ||
+        { languageBadges: [{ label: "語言支援待確認", status: "unknown", title: "此主機版本語言支援待確認" }] }
       : game;
-    languages.setAttribute("aria-label", nativeLanguages ? "Nintendo 版本遊戲支援語言" : "Steam 版本遊戲支援語言");
-    if (!nativeLanguages && game.hasNintendo) languages.title = "此處標籤為 Steam 版本語言支援；Nintendo 各版本請進入遊戲頁查看";
+    const nativeLanguageLabel = nativePlatforms.includes("PS5")
+      ? nativePlatforms.length === 1 ? "PS5" : "主機" : "Nintendo";
+    languages.setAttribute("aria-label", nativeLanguages ? `${nativeLanguageLabel} 版本遊戲支援語言` : "Steam 版本遊戲支援語言");
+    if (!nativeLanguages && (game.hasNativePlatforms || game.hasNintendo)) languages.title = "此處標籤為 Steam 版本語言支援；主機各版本請進入遊戲頁查看";
     for (const badge of support.languageBadges || []) {
       const language = node(
         "span",
         `card-language language-${badge.status}`,
         badge.label,
       );
-      language.title = nativeLanguages ? badge.title || "Nintendo 此版本語言支援待確認" :
+      language.title = nativeLanguages ? badge.title || "此主機版本語言支援待確認" :
         "Steam 版本公布的遊戲語言支援；介面、字幕及配音的詳細項目請以商店為準";
       languages.append(language);
     }
@@ -287,9 +290,12 @@
     body.append(meta);
     const detail = detailLink(game, "card-detail-link", display.name);
     detail.tabIndex = -1;
-    const steam = externalLink(game, "steam-store-link", game.source === "nintendo" ? display.name : game.name);
+    const merchant = nativeEvent && nativePlatforms.length === 1 ? game.platformLinks?.[nativePlatforms[0]] : null;
+    const merchantURL = merchant && D.platformURL?.(merchant.url, nativePlatforms[0]);
+    const storeGame = merchantURL ? { ...game, source: "nintendo", link: merchantURL, linkLabel: merchant.label } : game;
+    const steam = externalLink(storeGame, "steam-store-link", game.source === "nintendo" ? display.name : game.name);
     steam.textContent = "Steam 商店";
-    if (game.source === "nintendo") steam.textContent = game.linkLabel;
+    if (storeGame.source === "nintendo") steam.textContent = storeGame.linkLabel;
     const arrow = node("span", "", "↗");
     arrow.setAttribute("aria-hidden", "true");
     steam.append(arrow);
@@ -343,9 +349,12 @@
     $("updateText").textContent =
       `${prefix} · ${formatUpdate(updated)}（台灣）`;
     const init = data.initialization;
-    const nintendoCount = new Set(data.games.flatMap(game => game.igdbIds || (game.igdbId ? [game.igdbId] : []))).size;
+    const consoleCount = codes => new Set(data.games.filter(game => game.platforms?.some(code => codes.includes(code)))
+      .flatMap(game => game.igdbIds || (game.igdbId ? [game.igdbId] : []))).size;
+    const nintendoCount = consoleCount(["NS", "NS2"]);
+    const ps5Count = consoleCount(["PS5"]);
     const steamCount = new Set(data.games.filter(game => game.source !== "nintendo").map(game => game.appid)).size;
-    let coverage = `目前收錄 ${number.format(steamCount)} 款 Steam 遊戲、${number.format(nintendoCount)} 款 NS／NS2 遊戲。Steam 新作需至少 5,000 人關注，已驗證 Twitch 新作可另行收錄；Nintendo 試行門檻為 IGDB hypes ≥ 30。各平台以確切發售日收錄；僅有年、月或季度的遊戲持續觀察。${data.partial ? "清單尚在持續補齊，不代表全部符合條件的遊戲。" : ""}`;
+    let coverage = `目前收錄 ${number.format(steamCount)} 款 Steam 遊戲、${number.format(nintendoCount)} 款 NS／NS2 遊戲、${number.format(ps5Count)} 款 PS5 遊戲。Steam 新作需至少 5,000 人關注，已驗證 Twitch 新作可另行收錄；IGDB 主機新作試行門檻為 hypes ≥ 30。各平台以確切發售日收錄；僅有年、月或季度的遊戲持續觀察。${data.partial ? "清單尚在持續補齊，不代表全部符合條件的遊戲。" : ""}`;
     if (init?.candidate_count)
       coverage += ` 已取得 ${number.format(init.candidate_count)} 款候選新作，逐步核對關注人數。`;
     if (mode === "released")
@@ -356,8 +365,8 @@
     if (data.source === "preview")
       coverage += " 正式清單暫時無法讀取，目前使用已公開的預覽資料。";
     if (data.steamUpdated) coverage += ` Steam 更新：${formatUpdate(data.steamUpdated)}（台灣）。`;
-    if (!data.nintendoAvailable) coverage += " Nintendo 資料暫時無法讀取，Steam 清單仍可查看。";
-    else coverage += ` Nintendo 更新：${formatUpdate(data.nintendoUpdated)}（台灣）。TAG 顯示整款遊戲的平台類別；移上標籤查看已確認平台，月曆標籤另提供本次發售資訊。NS／NS2 僅在官方確認獨佔時作為標籤。`;
+    if (!data.nintendoAvailable) coverage += " IGDB 主機資料暫時無法讀取，Steam 清單仍可查看。";
+    else coverage += ` IGDB 主機更新：${formatUpdate(data.nintendoUpdated)}（台灣）。TAG 顯示整款遊戲的平台類別；移上標籤查看已確認平台，月曆標籤另提供本次發售資訊。NS／NS2／PS5 僅在官方確認獨佔時作為獨佔標籤。`;
     $("coverageText").textContent = coverage;
   }
   function renderHome() {
@@ -838,7 +847,7 @@
     });
   }
   restoreQueryFilters(query);
-  $("followersFilter").title = "數字門檻只篩選 Steam Followers；查看 Nintendo 請選全部關注度";
+  $("followersFilter").title = "數字門檻只篩選 Steam Followers；查看 IGDB 主機遊戲請選全部關注度";
   $("searchInput").addEventListener("input", (event) => {
     clearTimeout(searchTimer);
     if (!event.isComposing) searchTimer = setTimeout(changeFilters, 120);
@@ -918,11 +927,11 @@
     });
   } else {
     const notes = {
-      upcoming: "未來 45 天 · Steam／NS／NS2 平台別確切發售日",
-      released: "近 30 天 · Steam／NS／NS2 已收錄發售紀錄",
+      upcoming: "未來 45 天 · Steam／NS／NS2／PS5 平台別確切發售日",
+      released: "近 30 天 · Steam／NS／NS2／PS5 已收錄發售紀錄",
       saved: "收藏儲存在此瀏覽器；此處顯示仍在目前公開資料內的遊戲。",
-      date: "Steam／NS／NS2 平台別確切發售日 · 平台類別 TAG 可移上查看完整平台",
-      explore: "已收錄的 Steam／NS／NS2 遊戲 · TAG 依各資料來源",
+      date: "Steam／NS／NS2／PS5 平台別確切發售日 · 平台類別 TAG 可移上查看完整平台",
+      explore: "已收錄的 Steam／NS／NS2／PS5 遊戲 · TAG 依各資料來源",
       all: "本站所有公開收錄 · 包含待上市與既有上市紀錄",
     };
     $("scopeNote").textContent = notes[mode] || "";

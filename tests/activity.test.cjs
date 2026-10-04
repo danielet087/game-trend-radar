@@ -26,6 +26,17 @@ test('Nintendo native platform labels use only the platforms involved in an even
   assert.equal(I.activityEvent(steam({ type: 'platform_added' })), null);
 });
 
+test('PS5 activity shares stable IGDB identity while distinguishing native platform additions', () => {
+  const original = nintendo();
+  const port = nintendo({ platforms: ['PS5'], type: 'platform_added', date: '2026-12-01', at: '2026-10-04T03:00:00Z' });
+  const events = I.activityEvents([original, port, { ...port, id: 'duplicate-receipt' }]);
+  assert.equal(events.length, 2);
+  assert.deepEqual(events.map(I.activityPlatform), ['PS5', 'NS2']);
+  assert.equal(I.activityURL(events[0]), './game.html?igdb=42&date=2026-12-01');
+  assert.equal(I.activityPlatform(nintendo({ platforms: ['PS5', 'NS2', 'NS', 'PS5'] })), 'NS／NS2／PS5');
+  assert.equal(I.activityEvent(nintendo({ platforms: ['PS4'] })), null);
+});
+
 test('ambiguous, forged or unsupported source identities never become navigable game links', () => {
   const bad = [
     steam({ source: 'other' }), steam({ source: null }), steam({ source: 'nintendo' }),
@@ -138,17 +149,21 @@ test('actual ticker and history render safe mixed-source names with Taipei date 
 });
 
 test('platform additions identify the newly available native platform in ticker and dialog', async () => {
-  const { elements: e } = await display([nintendo({ type: 'platform_added', platforms: ['NS'], name: 'Native port' })]);
-  const link = e.get('activityTrack').children[0];
-  assert.match(link.textContent, /新增平台NSNative port2026\/11\/05 上市/);
-  assert.doesNotMatch(link.textContent, /NS2/);
-  e.get('activityMore').listeners.click();
-  assert.equal(e.get('activityDialog').open, true);
-  assert.equal(e.get('activityList').children[0].children[0].textContent, link.textContent);
+  for (const platform of ['NS', 'PS5']) {
+    const { elements: e } = await display([nintendo({ type: 'platform_added', platforms: [platform], name: 'Native port' })]);
+    const link = e.get('activityTrack').children[0];
+    assert.ok(link.textContent.includes('新增平台' + platform + 'Native port2026/11/05 上市'));
+    assert.equal(link.children[0].textContent, '2026/10/04');
+    assert.doesNotMatch(link.textContent, /NS2/);
+    e.get('activityMore').listeners.click();
+    assert.equal(e.get('activityDialog').open, true);
+    assert.equal(e.get('activityList').children[0].children[0].textContent, link.textContent);
+  }
 });
 
 test('vertical ticker still flips upward through only the latest eight valid mixed events', async () => {
   const events = Array.from({ length: 10 }, (_, index) => (index % 2 ? steam : nintendo)({
+    ...(index % 2 ? {} : { platforms: index % 4 ? ['NS2'] : ['PS5'] }),
     name: 'Game ' + index, at: new Date(Date.UTC(2026, 9, 4, 2, index)).toISOString() }));
   const { elements: e, frames, timeouts } = await display(events, true);
   assert.equal(e.get('activityList').children.length, 10);

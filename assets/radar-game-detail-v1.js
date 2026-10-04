@@ -1,4 +1,4 @@
-/* A static game spotlight and tag discovery over published Steam and Nintendo JSON. */
+/* A static game spotlight and tag discovery over published Steam and IGDB console JSON. */
 (() => {
   "use strict";
   const D = window.RadarData;
@@ -14,7 +14,9 @@
   const nintendoRoute = query.has("igdb");
   const requestedDate = query.get("date");
   const today = D.todayInTaipei();
-  const isNintendo = (game) => game?.source === "nintendo";
+  const isNativeConsole = (game) => game?.source === "nintendo";
+  const nativePlatforms = ["NS", "NS2", "PS5"];
+  const releasePlatformOrder = ["Steam", ...nativePlatforms];
   const regionNames = {
     worldwide: "全球", asia: "亞洲", taiwan: "台灣", japan: "日本",
     north_america: "北美", europe: "歐洲", australia: "澳洲",
@@ -23,12 +25,14 @@
   const regionLabel = (region) => regionNames[region] || "來源地區未確認";
   function detailURL(game) {
     if (D.detailURL) return D.detailURL(game);
-    return isNintendo(game)
+    return isNativeConsole(game)
       ? `./game.html?igdb=${game.igdbId}&date=${game.date}`
       : `./game.html?appid=${game.appid}`;
   }
   function publicSourceURL(value) {
     try {
+      const consoleURL = D.platformURL?.(value, "PS5");
+      if (consoleURL) return consoleURL;
       const url = new URL(value);
       return url.protocol === "https:" && !url.username && !url.password && !url.port && /(^|\.)(igdb\.com|nintendo\.com|nintendo\.com\.hk|nintendo\.co\.jp|sega\.com|konami\.com|playtombraider\.com|layton\.jp)$/.test(url.hostname)
         ? url.href : "";
@@ -37,7 +41,8 @@
   const taiwanOfficialRelease = (row) => row?.taiwan_release_confirmed === true &&
     row.source === "official_registry" && row.region === "taiwan" &&
     row.date_basis === "taiwan_official_calendar_day" && row.timezone_status === "taiwan_official_date" &&
-    !!publicSourceURL(row.official_source_url);
+    !!publicSourceURL(row.official_source_url) &&
+    (row.platform !== "PS5" || !!D.platformURL?.(row.official_source_url, "PS5", "taiwan"));
   function releaseSourceName(row) {
     if (taiwanOfficialRelease(row)) return String(row.official_source_name || "台灣官方發售資料").slice(0, 120);
     const sourceURL = publicSourceURL(row?.source);
@@ -58,13 +63,13 @@
   function detailReleaseRows(game) {
     const records = new Map();
     for (const row of Array.isArray(game.releases) ? game.releases : []) {
-      if (!row || !["Steam", "NS", "NS2"].includes(row.platform) ||
+      if (!row || !releasePlatformOrder.includes(row.platform) ||
         !game.platforms?.includes(row.platform) || row.precision !== "day" || !D.validDate(row.date)) continue;
       const key = `${row.platform}|${row.date}|${row.region || ""}`;
       if (!records.has(key) || taiwanOfficialRelease(row)) records.set(key, row);
     }
     const rows = [...records.values()].sort((a, b) => a.date.localeCompare(b.date) ||
-      ["Steam", "NS", "NS2"].indexOf(a.platform) - ["Steam", "NS", "NS2"].indexOf(b.platform));
+      releasePlatformOrder.indexOf(a.platform) - releasePlatformOrder.indexOf(b.platform));
     const preferred = rows.filter(row => row.platform === "Steam" || taiwanOfficialRelease(row) ||
       !rows.some(other => other.platform === row.platform && taiwanOfficialRelease(other)));
     const selected = preferred.find(row => row.date === game.date) || rows.find(row => row.date === game.date);
@@ -72,8 +77,8 @@
     // is preferred for the platform's other release rows.
     if (selected) return [selected, ...preferred.filter(row => row !== selected)];
     if (preferred.length) return preferred;
-    const platform = isNintendo(game)
-      ? (game.releasePlatforms || game.platforms || []).find(code => ["NS", "NS2"].includes(code))
+    const platform = isNativeConsole(game)
+      ? (game.releasePlatforms || game.platforms || []).find(code => nativePlatforms.includes(code))
       : "Steam";
     return platform ? [{ platform, date: game.date, precision: "day", region: game.dateRegion,
       source: game.dateSource || (platform === "Steam" ? "Steam" : "IGDB") }] : [];
@@ -124,7 +129,7 @@
     });
     $("gameReleaseDates").replaceChildren(...tickets);
   }
-  const interestText = (game) => isNintendo(game)
+  const interestText = (game) => isNativeConsole(game)
     ? Number.isSafeInteger(game.hypes) ? `IGDB hypes ${number.format(game.hypes)}` : "IGDB hypes 未知"
     : `${number.format(game.followers)} 人關注`;
   let currentGame = null,
@@ -281,7 +286,7 @@
       () => {
         fallback.remove();
         art.disabled = false;
-        hint.textContent = `${isNintendo(game) ? "IGDB" : "STEAM"} 遊戲封面 · 點一下看大圖`;
+        hint.textContent = `${isNativeConsole(game) ? "IGDB" : "STEAM"} 遊戲封面 · 點一下看大圖`;
       },
       () => {
         img.remove();
@@ -453,7 +458,7 @@
   function render(game, data, pending = false) {
     const unchangedArt = currentGame?.art === game.art && currentGame?.art2x === game.art2x;
     currentGame = game;
-    const nintendo = isNintendo(game);
+    const nintendo = isNativeConsole(game);
     const displayNames = D.releaseDisplayNames(game);
     document.body.dataset.gameSource = game.source || "steam";
     renderPlatforms(game);
@@ -512,14 +517,17 @@
         "（台灣）"
       : nintendo ? "資料更新時間未提供" : "日期以台灣時間為準";
     const sourceURL = nintendo ? publicSourceURL(game.link) || `https://www.igdb.com/search?type=1&q=${encodeURIComponent(game.nameEn || game.name)}` : game.link;
-    const sourceName = nintendo && /(?:^|\.)nintendo\./.test(new URL(sourceURL).hostname) ? "Nintendo 官網" : nintendo ? new URL(sourceURL).pathname === "/search" ? "IGDB 搜尋" : "IGDB 遊戲頁" : "Steam 商店";
+    const sourceName = !nintendo ? "Steam 商店" : new URL(sourceURL).hostname === "store.playstation.com"
+      ? "PlayStation 商店" : /(?:^|\.)playstation\.com$/.test(new URL(sourceURL).hostname)
+        ? "PlayStation 官網" : /(?:^|\.)nintendo\./.test(new URL(sourceURL).hostname)
+          ? "Nintendo 官網" : new URL(sourceURL).pathname === "/search" ? "IGDB 搜尋" : "IGDB 遊戲頁";
     if (nintendo) game = { ...game, link: sourceURL };
     $("gameSteam").href = game.link;
     $("gameSteam").replaceChildren(node("span", "", `前往 ${sourceName}`), node("span", "", "↗"));
     $("gameSteamMobile").textContent = `${sourceName} ↗`;
     $("gameFootnote").textContent = nintendo
-      ? "發售日期可能依平台、地區調整；平台與語言支援請以任天堂及發行商最新公告為準。IGDB hypes 屬遊戲整體的發售前關注數，並非單一平台玩家人數。"
-      : game.hasNintendo === true
+      ? "發售日期可能依平台、地區調整；平台與語言支援請以各平台官方及發行商最新公告為準。IGDB hypes 屬遊戲整體的發售前關注數，並非單一平台玩家人數。"
+      : game.hasNativePlatforms === true || game.hasNintendo === true
         ? "各平台發售日期可能不同；實際上市時間與語言支援請以各平台官方公告為準。各版本語言依各自官方來源顯示；卡片主要語言標籤為 Steam 版本。IGDB hypes 與 Steam Followers 分別呈現，不合併計算。"
       : "發售日期可能調整，實際上市時間與語言支援請以 Steam 商店公告為準。";
     document.querySelectorAll("[data-game-steam]").forEach((link) => {
@@ -543,7 +551,7 @@
     $("detailPage").hidden = false;
   }
   function renderLanguages(game) {
-    const nintendo = isNintendo(game);
+    const nintendo = isNativeConsole(game);
     $("gameLanguageContent").hidden = false;
     $("steamLanguageSection").hidden = nintendo;
     $("gameLanguageBadge").replaceChildren(
@@ -571,11 +579,11 @@
             : game.languageStatus === "other"
               ? "Steam 商店未標示支援繁中、簡中或英文，請至商店查看其他支援語言。"
               : "Steam 尚未提供足以確認的語言資訊，請以官方商店語言表為準。";
-    const platforms = (game.platforms || []).filter(code => ["NS", "NS2"].includes(code));
+    const platforms = (game.platforms || []).filter(code => nativePlatforms.includes(code));
     $("nintendoLanguageSections").hidden = !platforms.length;
     $("gameLanguagePolicy").hidden = !platforms.length;
     $("nintendoLanguageSections").replaceChildren(...platforms.map(code => {
-      const support = game.platformLanguages?.[code] || D.nintendoLanguageSupport();
+      const support = game.platformLanguages?.[code] || D.platformLanguageSupport?.(null, code) || D.nintendoLanguageSupport();
       const section = node("section", "game-language-version");
       section.dataset.platform = code;
       section.setAttribute("aria-label", `${code} 版本遊戲支援語言`);
@@ -608,7 +616,7 @@
     }));
   }
   function renderPlatforms(game) {
-    const nintendo = isNintendo(game);
+    const nintendo = isNativeConsole(game);
     $("gamePlatforms").hidden = false;
     $("gamePlatforms").replaceChildren(
       ...(game.platformBadges || []).map((badge) => {
@@ -617,7 +625,7 @@
         return chip;
       }),
     );
-    const editions = (game.platforms || []).filter(code => ["NS", "NS2"].includes(code))
+    const editions = (game.platforms || []).filter(code => nativePlatforms.includes(code))
       .map(code => ({ code, edition: game.platformEditions?.[code] }))
       .filter(({ edition }) => edition?.label && edition.title && publicSourceURL(edition.source_url));
     $("gamePlatformSupport").hidden = false;
@@ -628,7 +636,7 @@
     const rows = Array.isArray(game.releases) ? game.releases : [];
     const seen = new Set();
     const dates = rows.filter((row) => {
-      if (!row || !["NS", "NS2", "Steam"].includes(row.platform) || row.precision !== "day" || !D.validDate(row.date)) return false;
+      if (!row || !releasePlatformOrder.includes(row.platform) || row.precision !== "day" || !D.validDate(row.date)) return false;
       const key = `${row.platform}|${row.date}|${row.region || ""}`;
       if (seen.has(key)) return false;
       seen.add(key);
@@ -658,7 +666,7 @@
         version.append(node("strong", "game-release-edition-label", `${row.platform} ${edition.label}`));
         version.append(node("p", "game-release-edition-title", `官方商品名稱：${edition.title}`));
         const origin = node("p", "game-release-edition-source");
-        const link = node("a", "", "Nintendo 官方商品頁 ↗");
+        const link = node("a", "", `${row.platform === "PS5" ? "PlayStation" : "Nintendo"} 官方商品頁 ↗`);
         link.href = publicSourceURL(edition.source_url);
         link.target = "_blank";
         link.rel = "noopener noreferrer";
@@ -673,8 +681,24 @@
       return item;
     }));
     $("gamePlatformDates").hidden = !dates.length;
+    $("gameNativeStoreLinks").replaceChildren(...nativePlatforms.flatMap(code => {
+      if (!game.platforms?.includes(code)) return [];
+      const merchant = game.platformLinks?.[code];
+      const url = merchant && D.platformURL?.(merchant.url, code);
+      if (!url || url === publicSourceURL(game.link)) return [];
+      const label = code === "PS5" ? new URL(url).hostname === "store.playstation.com"
+        ? "PlayStation 商店" : "PlayStation 官網" : "Nintendo 官網";
+      const link = node("a", "button secondary", `${code} ${label} ↗`);
+      link.dataset.platform = code;
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.setAttribute("aria-label", `在 ${code} ${label}開啟 ${game.name}（另開分頁）`);
+      return [link];
+    }));
+    $("gameNativeStoreLinks").hidden = !$("gameNativeStoreLinks").children.length;
   }
-  async function loadNintendoDetail(force) {
+  async function loadConsoleDetail(force) {
     let catalog = null, preview = null, nintendo = null, sourcesDone = false, shown = false;
     function present() {
       if (!nintendo) return;
@@ -697,11 +721,11 @@
           catalog = result.catalog; preview = result.preview; sourcesDone = true; present();
         }),
       ]);
-      if (!shown) setStatus(nintendo ? "這款遊戲目前不在公開清單中" : "Nintendo 遊戲資料暫時無法讀取",
+      if (!shown) setStatus(nintendo ? "這款遊戲目前不在公開清單中" : "IGDB 主機遊戲資料暫時無法讀取",
         nintendo ? "可能已調整平台、發售日期或未達收錄條件；請返回月曆看看其他遊戲。" : "請稍後再試，或返回遊戲清單。", !nintendo);
     } catch (error) {
-      console.error("Unable to display Nintendo profile", error);
-      if (!shown) setStatus("Nintendo 遊戲資訊暫時無法呈現", "請稍後再試，或返回遊戲清單。", true);
+      console.error("Unable to display IGDB console profile", error);
+      if (!shown) setStatus("IGDB 主機遊戲資訊暫時無法呈現", "請稍後再試，或返回遊戲清單。", true);
     }
   }
   async function main(force = false) {
@@ -712,7 +736,7 @@
         setStatus("找不到這款遊戲", "連結沒有有效的 IGDB ID 或發售日期，請返回遊戲清單重新選擇。");
         return;
       }
-      await loadNintendoDetail(force);
+      await loadConsoleDetail(force);
       return;
     }
     if (!appid || (requestedDate !== null && !D.validDate(requestedDate))) {

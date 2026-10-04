@@ -10,6 +10,7 @@
     { id: "twitch", name: "Twitch 新作觀測", repo: "game-trend-radar-twitch-backend", workflow: "collect.yml", hours: Array.from({ length: 24 }, (_, i) => i), minute: 5, note: "每小時 :05" },
     { id: "frontend_insights", name: "前端動態與成長榜", repo: "game-trend-radar", workflow: "radar-insights.yml", hours: Array.from({ length: 24 }, (_, i) => i), minute: 17, note: "每小時 :17" },
     { id: "steam_content", name: "內容對帳與發布", repo: "game-trend-radar-content-backend", workflow: "steam-catalog-reconcile.yml", hours: [7, 19], minute: 30, note: "每日 07:30、19:30" },
+    { id: "nintendo_daily", name: "IGDB 主機新作", repo: "game-trend-radar-twitch-backend", workflow: "collect-nintendo.yml", hours: [8], minute: 30, note: "每日 08:30 · NS／NS2／PS5" },
   ]);
   const ACTIVE = new Set(["queued", "in_progress", "waiting", "pending", "requested"]);
   const num = v => typeof v === "number" && Number.isSafeInteger(v) && v >= 0 ? v : null;
@@ -59,6 +60,19 @@
     const ready = num(summary?.followers_ready_pending), awaiting = num(summary?.awaiting_group_pending);
     if (ready === null || awaiting === null || ready + awaiting !== num(summary?.ready_pending)) return null;
     return { followersReady: ready, awaitingGroup: awaiting };
+  }
+  function igdbReceiptSummary(receipt) {
+    const platforms = receipt?.source?.platform_ids_verified;
+    if (receipt?.schema_version !== 1 || receipt.source?.provider !== "IGDB" ||
+        !Array.isArray(platforms) || ![[130, 508], [130, 508, 167]].some(ids =>
+          ids.length === platforms.length && ids.every(id => platforms.includes(id))) ||
+        instant(receipt.generated_at) === null || num(receipt.candidate_count) === null ||
+        num(receipt.public_count) === null || num(receipt.pending_count) === null) return null;
+    const published = receipt.complete === true && receipt.status === "published" && receipt.source.complete === true &&
+      instant(receipt.published_at) !== null && instant(receipt.published_at) >= instant(receipt.generated_at);
+    return { platforms: platforms.includes(167) ? "NS／NS2／PS5" : "NS／NS2", published,
+      generatedAt: instant(receipt.generated_at), publishedAt: published ? instant(receipt.published_at) : null,
+      candidateCount: receipt.candidate_count, publicCount: receipt.public_count, pendingCount: receipt.pending_count };
   }
 
   function validateQueue(data) {
@@ -171,13 +185,13 @@
     }
     return events.sort((a, b) => b.at - a.at);
   }
-  const api = { JOBS, validateQueue, normalizeRun, runState, buildSlots, dashboardState, eventHistory, queueGameState, groupQueueCounts, day, instant };
+  const api = { JOBS, validateQueue, normalizeRun, runState, buildSlots, dashboardState, eventHistory, queueGameState, groupQueueCounts, igdbReceiptSummary, day, instant };
   root.RadarScheduler = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (typeof document === "undefined") return;
 
   const $ = id => document.getElementById(id);
-  const state = { queue: null, queueSource: "", queueFetched: 0, runs: [], repoChecks: {}, repoErrors: {}, growth: null, content: null, twitch: null, busy: false };
+  const state = { queue: null, queueSource: "", queueFetched: 0, runs: [], repoChecks: {}, repoErrors: {}, growth: null, content: null, twitch: null, igdb: null, busy: false };
   const storageRead = key => { try { return JSON.parse(sessionStorage.getItem(key)); } catch { return null; } };
   const storageWrite = (key, value) => { try { sessionStorage.setItem(key, JSON.stringify(value)); } catch {} };
   let ratePauseUntil = Number(storageRead("radarSchedulerRatePause")) || 0;
@@ -202,7 +216,7 @@
     return null;
   }
   async function readRuns(repo) {
-    const key = "radarSchedulerRunsV1:" + repo, now = Date.now(), cached = storageRead(key);
+    const key = "radarSchedulerRunsV2:" + repo, now = Date.now(), cached = storageRead(key);
     if (cached && Array.isArray(cached.runs)) { state.repoChecks[repo] = Number(cached.at) || 0; returnCached(cached.runs, repo); }
     if (cached && now - cached.at < ACTION_REFRESH) return;
     if (now < ratePauseUntil) { state.repoErrors[repo] = "GitHub API 限流，暫停更新至 " + clockLabel(ratePauseUntil); return; }
@@ -278,6 +292,8 @@
     const issues = Object.values(state.repoErrors);
     $("statusMessage").textContent = issues.length ? "部分執行狀態暫時無法更新；保留已取得紀錄並標示待確認。" : "佇列每分鐘更新；Actions 執行狀態每 5 分鐘更新。";
     const sources = [q ? `<p><strong>佇列快照</strong> ${esc(q.generated_at)} · ${esc(state.queueSource)}</p>` : "<p>佇列快照無法讀取。</p>", ...[...new Set(JOBS.map(j => j.repo))].map(repo => `<p><strong>${esc(repo)}</strong> · ${state.repoChecks[repo] ? "上次核對 " + dateLabel(state.repoChecks[repo]) : "尚未取得執行紀錄"}${state.repoErrors[repo] ? " · " + esc(state.repoErrors[repo]) : ""}</p>`), `<p>Cloudflare 沿用 <code>0,5,15,17,30 * * * *</code>。原定排程、Actions 執行結果與實際收集成果分開呈現。</p>`, `<p>內容對帳：${state.content ? state.content.complete ? "最近快照已完成對帳" : "仍有未完成內容" : "尚未取得"}${state.content?.description_translation_pending_count ? "；介紹翻譯待處理 " + state.content.description_translation_pending_count + " 款" : ""}。Twitch 最近完整發布：${instant(state.twitch?.completed_at) ? dateLabel(instant(state.twitch.completed_at)) : "尚未確認"}。</p>`];
+    const igdb = igdbReceiptSummary(state.igdb);
+    sources.push(igdb ? `<p><strong>IGDB 主機收集（${igdb.platforms}）</strong> ${igdb.published ? "完整發布於 " + dateLabel(igdb.publishedAt) : "最近回報尚未確認完整發布"}；收集時間 ${dateLabel(igdb.generatedAt)}；候選 ${igdb.candidateCount.toLocaleString("zh-TW")} 款、公開 ${igdb.publicCount.toLocaleString("zh-TW")} 款、待處理 ${igdb.pendingCount.toLocaleString("zh-TW")} 款。每日 08:30 沿用既有 IGDB 流程，這些數量不計入上方 Steam Followers 待查佇列。</p>` : "<p><strong>IGDB 主機收集（NS／NS2／PS5）</strong> 最近收集與發布回條尚未取得；待處理數量保留未知。每日 08:30 沿用既有 IGDB 流程，與 Steam Followers 待查佇列分開。</p>");
     if (q) {
       const groupUpdated = q.source && Object.prototype.hasOwnProperty.call(q.source, "group_resolution_updated_at") ? `；群組解析回報 ${instant(q.source.group_resolution_updated_at) !== null ? dateLabel(instant(q.source.group_resolution_updated_at)) : "尚未確認"}` : "";
       sources.push(`<p><strong>來源資料時間</strong> 官方查詢紀錄 ${instant(q.source?.checkpoint_updated_at) ? dateLabel(instant(q.source.checkpoint_updated_at)) : "尚未確認"}；每日初篩 ${instant(q.source?.prefilter_updated_at) ? dateLabel(instant(q.source.prefilter_updated_at)) : "尚未確認"}；資格清單 ${instant(q.source?.eligible_screened_at) ? dateLabel(instant(q.source.eligible_screened_at)) : "尚未確認"}；Twitch 匯入 ${instant(q.source?.twitch_import_updated_at) ? dateLabel(instant(q.source.twitch_import_updated_at)) : "尚未確認"}${groupUpdated}。快照產生時間不代表上述來源剛剛更新。</p>`);
@@ -296,8 +312,8 @@
     if (state.busy) return; state.busy = true; $("refreshButton").disabled = true; $("errorMessage").hidden = true;
     try { await snapshotLoad(); } catch { $("errorMessage").hidden = false; $("errorMessage").textContent = state.queue ? "佇列更新失敗，目前保留上次快照。" : "佇列暫時無法讀取；待查數量保留未知，稍後可再更新。"; }
     render();
-    const results = await Promise.allSettled([readReceipt("growth.json"), readReceipt("content_refresh_status.json"), readReceipt("twitch_collection_status.json"), ...[...new Set(JOBS.map(j => j.repo))].map(readRuns)]);
-    for (const [i, key] of ["growth", "content", "twitch"].entries()) if (results[i].status === "fulfilled" && results[i].value) state[key] = results[i].value;
+    const results = await Promise.allSettled([readReceipt("growth.json"), readReceipt("content_refresh_status.json"), readReceipt("twitch_collection_status.json"), readReceipt("nintendo_refresh_status.json"), ...[...new Set(JOBS.map(j => j.repo))].map(readRuns)]);
+    for (const [i, key] of ["growth", "content", "twitch", "igdb"].entries()) if (results[i].status === "fulfilled" && results[i].value) state[key] = results[i].value;
     render(); state.busy = false; $("refreshButton").disabled = false;
   }
   $("refreshButton").addEventListener("click", refresh);
