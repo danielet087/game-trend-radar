@@ -170,13 +170,16 @@
   const dateLabel = value => String(value || "").replaceAll("-", "/");
   function eventLink(event, clone = false) {
     const a = make("a", "activity-item");
-    a.href = `./game.html?appid=${event.appid}`;
+    a.href = I.activityURL(event);
     const addedDay = I.taipeiDay(event.at);
     const added = make("time", "activity-added-at", addedDay ? dateLabel(addedDay) : "日期未提供");
     if (addedDay) added.dateTime = addedDay;
     added.title = "這則動態的新增日期（台灣時間）";
-    const type = make("span", "activity-kind " + (event.type === "added" ? "is-new" : "is-date"), event.type === "added" ? "新收錄" : "日期更新");
-    a.append(added, type, make("span", "activity-name", event.name));
+    const type = make("span", "activity-kind " + (event.type === "added" ? "is-new" : "is-date"),
+      event.type === "added" ? "新收錄" : event.type === "platform_added" ? "新增平台" : "日期更新");
+    a.append(added, type);
+    if (event.source === "nintendo") a.append(make("span", "activity-kind", I.activityPlatform(event)));
+    a.append(make("span", "activity-name", event.name));
     if (event.type === "release_date") a.append(make("span", "activity-change", `${dateLabel(event.previous_date)} → ${dateLabel(event.date)}`));
     else a.append(make("span", "activity-change", dateLabel(event.date) + " 上市"));
     a.title = [...a.children].map(child => child.textContent).join(" · ");
@@ -240,10 +243,9 @@
   dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
   async function loadActivity() {
     const data = await window.RadarStorage.readJSON("./data/activity.json", value => value?.version === 1 && Array.isArray(value.events));
-    events = (data?.events || []).filter(event => Number.isSafeInteger(event.appid) && event.appid > 0 &&
-      ["added", "release_date"].includes(event.type) && typeof event.name === "string" && I.day(event.date));
+    events = I.activityEvents(data?.events);
     if (!events.length) {
-      track.replaceChildren(make("span", "activity-empty", data ? "近期沒有新收錄或發售日期異動。" : "更新動態暫時無法讀取。"));
+      track.replaceChildren(make("span", "activity-empty", data ? "近期沒有新收錄、發售日期或平台異動。" : "更新動態暫時無法讀取。"));
       open.hidden = true; pause.hidden = true; motion(); return;
     }
     featured = events.slice(0, 8);

@@ -1,7 +1,7 @@
 import importlib.util
 from copy import deepcopy
 from pathlib import Path
-from datetime import date
+from datetime import date, timedelta
 import unittest
 
 spec = importlib.util.spec_from_file_location("insights", Path(__file__).parents[1] / "scripts/build_radar_insights.py")
@@ -40,6 +40,26 @@ def twitch_store_authority(**fields):
         "release_date_normalization": "steam_taiwan_store_date_authoritative",
         "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
         "release_date_verified_at": "2026-10-03T13:00:00Z", **fields}
+
+
+def nintendo_game(igdb_id=1, releases=None, **fields):
+    releases = releases or {"NS2": "2026-11-05"}
+    return {"id": f"igdb:{igdb_id}", "igdb_id": igdb_id, "display_name": "Nintendo game",
+            "hypes": 45, "hypes_status": "available", "popularity_status": "qualified",
+            "calendar_eligible": True, "sexual_content_screened": True,
+            "game_type": "main_game", "platform_data_complete": True,
+            "platforms": [{"code": code, "id": M.NINTENDO_PLATFORMS[code]} for code in releases],
+            "releases": [{"platform": code, "date": release, "precision": "day", "source": "IGDB"}
+                         for code, release in releases.items()], **fields}
+
+
+def nintendo_catalog(*rows, at="2026-10-03T16:40:12Z"):
+    start = M.stamp(at).astimezone(M.TAIPEI).date()
+    return {"schema_version": 1, "generated_at": at,
+            "window": {"start": start.isoformat(), "end": (start + timedelta(days=365)).isoformat(),
+                       "end_inclusive": False, "time_zone": "Asia/Taipei"},
+            "source": {"provider": "IGDB", "complete": True, "hypes_threshold": 30,
+                       "platform_ids_verified": [130, 508]}, "games": list(rows)}
 
 
 class InsightTests(unittest.TestCase):
@@ -155,6 +175,180 @@ class InsightTests(unittest.TestCase):
         self.assertEqual(first["records"]["1"]["history"], [])
         with self.assertRaises(ValueError):
             M.update(first, {"count": 2, "games": [game()]}, observed_at="2026-09-28T00:00:00Z")
+
+
+class NintendoInsightTests(unittest.TestCase):
+    NOW = "2026-10-04T04:00:00Z"
+
+    def update(self, previous=None, document=None, **kwargs):
+        return M.update(previous, catalog(game()), observed_at=self.NOW,
+                        nintendo_catalog=document, **kwargs)
+
+    def test_first_public_snapshot_uses_source_time_and_namespaced_identity_without_steam_growth(self):
+        first = self.update(document=nintendo_catalog(nintendo_game()))
+        event = first["events"][0]
+        self.assertEqual((event["source"], event["igdb_id"], event["game_id"]), ("nintendo", 1, "igdb:1"))
+        self.assertEqual((event["type"], event["platforms"], event["date"]), ("added", ["NS2"], "2026-11-05"))
+        self.assertEqual(event["at"], "2026-10-03T16:40:12Z")
+        self.assertEqual(first["nintendo_records"]["igdb:1"]["first_seen_at"], event["at"])
+        self.assertNotIn("appid", event)
+        activity, growth = M.projections(first, date(2026, 10, 4))
+        self.assertEqual(activity["events"], [event])
+        self.assertEqual([row["appid"] for row in growth["games"]], [1])
+        self.assertNotIn("history", first["nintendo_records"]["igdb:1"])
+
+    def test_incomplete_other_platform_metadata_does_not_override_public_native_qualification(self):
+        state = self.update(document=nintendo_catalog(nintendo_game(platform_data_complete=False)))
+        self.assertEqual(state["events"][0]["platforms"], ["NS2"])
+
+    def test_published_receipt_is_used_for_actual_addition_day_across_midnight(self):
+        source = nintendo_catalog(nintendo_game(), at="2026-10-03T15:59:59Z")
+        receipt = {"schema_version": 1, "complete": True, "status": "published",
+                   "generated_at": source["generated_at"], "published_at": "2026-10-03T16:00:03Z"}
+        first = self.update(document=source, nintendo_receipt=receipt)
+        self.assertEqual(first["events"][0]["at"], receipt["published_at"])
+        self.assertEqual(first["nintendo_source_at"], source["generated_at"])
+        self.assertEqual(M.stamp(first["events"][0]["at"]).astimezone(M.TAIPEI).date(), date(2026, 10, 4))
+
+    def test_invalid_or_mismatched_receipts_never_override_source_time(self):
+        source = nintendo_catalog(nintendo_game())
+        good = {"schema_version": 1, "complete": True, "status": "published",
+                "generated_at": source["generated_at"], "published_at": "2026-10-03T16:40:19Z"}
+        for fields in [{"schema_version": True}, {"schema_version": 2}, {"complete": False},
+                       {"status": "complete"}, {"generated_at": "2026-10-03T16:40:13Z"},
+                       {"published_at": "2026-10-03T16:40:11Z"}, {"published_at": "2026-10-04T05:00:00Z"},
+                       {"published_at": "2026-10-04T04:00:00"}, {"published_at": None}]:
+            with self.subTest(fields=fields):
+                state = self.update(document=source, nintendo_receipt={**good, **fields})
+                self.assertEqual(state["events"][0]["at"], source["generated_at"])
+
+    def test_dual_platform_same_date_is_one_event_and_distinct_dates_are_separate(self):
+        first = self.update(document=nintendo_catalog(nintendo_game(releases={"NS2": "2026-11-05", "NS": "2026-11-05"})))
+        self.assertEqual(len(first["events"]), 1)
+        self.assertEqual(first["events"][0]["platforms"], ["NS", "NS2"])
+        split = self.update(document=nintendo_catalog(nintendo_game(releases={"NS": "2026-11-05", "NS2": "2026-11-06"})))
+        self.assertEqual([(row["date"], row["platforms"]) for row in split["events"]],
+                         [("2026-11-05", ["NS"]), ("2026-11-06", ["NS2"])])
+
+    def test_real_platform_addition_and_existing_platform_date_change_are_separate(self):
+        first = self.update(document=nintendo_catalog(nintendo_game(releases={"NS": "2026-11-05"})))
+        second = self.update(first, nintendo_catalog(nintendo_game(releases={"NS": "2026-11-06", "NS2": "2026-11-07"}),
+                                                   at="2026-10-04T02:21:00Z"))
+        changes = second["events"][1:]
+        self.assertEqual([(row["type"], row["platforms"]) for row in changes],
+                         [("release_date", ["NS"]), ("platform_added", ["NS2"])])
+        self.assertEqual(changes[0]["previous_date"], "2026-11-05")
+        self.assertNotIn("previous_date", changes[1])
+        self.assertTrue(all(row["at"] == "2026-10-04T02:21:00Z" for row in changes))
+        self.assertEqual(second, self.update(second, nintendo_catalog(nintendo_game(releases={"NS": "2026-11-06", "NS2": "2026-11-07"}),
+                                                                      at="2026-10-04T02:21:00Z")))
+
+    def test_same_date_changes_group_only_when_previous_dates_also_match(self):
+        first = self.update(document=nintendo_catalog(nintendo_game(releases={"NS": "2026-11-05", "NS2": "2026-11-05"})))
+        changed = self.update(first, nintendo_catalog(nintendo_game(releases={"NS": "2026-11-07", "NS2": "2026-11-07"}),
+                                                    at="2026-10-04T02:00:00Z"))
+        self.assertEqual(len(changed["events"]), 2)
+        self.assertEqual(changed["events"][-1]["platforms"], ["NS", "NS2"])
+        self.assertEqual(changed["events"][-1]["previous_date"], "2026-11-05")
+        separate = self.update(document=nintendo_catalog(nintendo_game(releases={"NS": "2026-11-05", "NS2": "2026-11-06"})))
+        changed = self.update(separate, nintendo_catalog(nintendo_game(releases={"NS": "2026-11-07", "NS2": "2026-11-07"}),
+                                                       at="2026-10-04T02:00:00Z"))
+        self.assertEqual([row["previous_date"] for row in changed["events"][-2:]], ["2026-11-05", "2026-11-06"])
+
+    def test_missing_optional_catalog_preserves_state_and_repoll_never_invents_events(self):
+        document = nintendo_catalog(nintendo_game())
+        first = self.update(document=document)
+        self.assertEqual(first, self.update(first, document))
+        self.assertEqual(first, self.update(first))
+        later = self.update(first, nintendo_catalog(nintendo_game(), at="2026-10-04T03:00:00Z"))
+        self.assertEqual(later["events"], first["events"])
+
+    def test_removed_and_requalified_games_do_not_repeat_addition(self):
+        first = self.update(document=nintendo_catalog(nintendo_game()))
+        absent = self.update(first, nintendo_catalog(at="2026-10-04T02:00:00Z"))
+        self.assertFalse(absent["nintendo_records"]["igdb:1"]["active"])
+        self.assertEqual(M.projections(absent, date(2026, 10, 4))[0]["events"], [])
+        returned = self.update(absent, nintendo_catalog(nintendo_game(), at="2026-10-04T03:00:00Z"))
+        self.assertEqual(returned["events"], first["events"])
+        self.assertEqual(returned["nintendo_records"]["igdb:1"]["first_seen_at"], first["events"][0]["at"])
+
+    def test_removed_and_restored_platform_is_not_a_second_platform_addition(self):
+        first = self.update(document=nintendo_catalog(nintendo_game(releases={"NS": "2026-11-05", "NS2": "2026-11-05"})))
+        one = self.update(first, nintendo_catalog(nintendo_game(releases={"NS": "2026-11-05"}), at="2026-10-04T02:00:00Z"))
+        restored = self.update(one, nintendo_catalog(nintendo_game(releases={"NS": "2026-11-05", "NS2": "2026-11-05"}),
+                                                   at="2026-10-04T03:00:00Z"))
+        self.assertEqual(restored["events"], first["events"])
+
+    def test_stale_source_does_not_undo_additions_and_conflicting_same_timestamp_is_rejected(self):
+        old = nintendo_catalog(nintendo_game())
+        latest = nintendo_catalog(nintendo_game(), nintendo_game(2), at="2026-10-04T03:00:00Z")
+        first = self.update(document=latest)
+        self.assertEqual(first, self.update(first, old))
+        with self.assertRaises(ValueError):
+            self.update(first, nintendo_catalog(nintendo_game(), at="2026-10-04T03:00:00Z"))
+
+    def test_invalid_envelope_or_source_timestamp_does_not_mutate_previous(self):
+        source = nintendo_catalog(nintendo_game())
+        first = self.update(document=source)
+        bad = [{"schema_version": True}, {"schema_version": 2}, {"games": None},
+               {"generated_at": None}, {"generated_at": "2026-10-03T16:40:12"},
+               {"generated_at": "2026-10-04T05:00:00Z"},
+               {"source": {**source["source"], "complete": False}},
+               {"source": {**source["source"], "provider": "manual"}},
+               {"source": {**source["source"], "hypes_threshold": 20}},
+               {"source": {**source["source"], "hypes_threshold": 30.0}},
+               {"source": {**source["source"], "platform_ids_verified": [84, 508]}},
+               {"window": {**source["window"], "end_inclusive": True}},
+               {"window": {**source["window"], "time_zone": "UTC"}},
+               {"window": {**source["window"], "start": "2026-10-05"}}]
+        for fields in bad:
+            with self.subTest(fields=fields):
+                before = deepcopy(first)
+                with self.assertRaises(ValueError):
+                    self.update(first, {**source, **fields})
+                self.assertEqual(first, before)
+
+    def test_unqualified_rows_dates_and_duplicate_or_colliding_identities_are_rejected(self):
+        valid = nintendo_game()
+        fields = [{"igdb_id": True}, {"igdb_id": 0}, {"igdb_id": "1"}, {"id": "1"},
+                  {"hypes": True}, {"hypes": 29}, {"hypes": "45"}, {"hypes": None},
+                  {"hypes_status": "unknown"}, {"popularity_status": "observe"},
+                  {"calendar_eligible": False}, {"sexual_content_screened": False},
+                  {"game_type": "dlc"}, {"platforms": []},
+                  {"platforms": [{"code": "NS2", "id": 130}]},
+                  {"platforms": [{"code": "NS2", "id": 508.0}]},
+                  {"platforms": [{"code": "PC", "id": 6}]}, {"releases": []}]
+        for changes in fields:
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                self.update(document=nintendo_catalog({**valid, **changes}))
+        for changes in [{"date": "2026-02-30"}, {"date": "2026-10-03"}, {"date": "2027-10-04"},
+                        {"date": "2026-11"}, {"precision": "month"}, {"source": "manual"}, {"platform": "NS"}]:
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                self.update(document=nintendo_catalog({**valid, "releases": [{**valid["releases"][0], **changes}]}))
+        for document in [nintendo_catalog(valid, valid), nintendo_catalog({**valid, "platforms": valid["platforms"] * 2}),
+                         nintendo_catalog({**valid, "releases": valid["releases"] * 2})]:
+            with self.assertRaises(ValueError):
+                self.update(document=document)
+
+    def test_bounded_history_and_projection_age_use_real_instants_not_string_sorting(self):
+        state = self.update(document=nintendo_catalog(nintendo_game()))
+        steam = {"id": "steam-later", "appid": 1, "type": "added", "name": "Test", "date": "2026-11-05", "at": "2026-10-04T02:00:00Z"}
+        nintendo = {**state["events"][0], "id": "nintendo-earlier", "at": "2026-10-04T09:00:00+08:00"}
+        state["events"] = [steam, nintendo]
+        self.assertEqual([row["id"] for row in M.projections(state, date(2026, 10, 4))[0]["events"]],
+                         ["steam-later", "nintendo-earlier"])
+        merged = self.update(state)
+        self.assertEqual([row["id"] for row in merged["events"]], ["nintendo-earlier", "steam-later"])
+        activity, _ = M.projections(merged, date(2026, 10, 4))
+        self.assertEqual([row["id"] for row in activity["events"]], ["steam-later", "nintendo-earlier"])
+        self.assertEqual(merged["events"][0]["at"], "2026-10-04T09:00:00+08:00")
+        self.assertEqual(M.projections(merged, date(2026, 10, 3))[0]["events"], [])
+        self.assertEqual(len(M.projections(merged, date(2026, 10, 18))[0]["events"]), 2)
+        self.assertEqual(M.projections(merged, date(2026, 10, 19))[0]["events"], [])
+        state["events"] = [{**steam, "id": str(index)} for index in range(251)]
+        merged = self.update(state)
+        self.assertEqual(len(merged["events"]), 250)
+        self.assertEqual(len(M.projections(merged, date(2026, 10, 4))[0]["events"]), 40)
 
 
 if __name__ == "__main__":

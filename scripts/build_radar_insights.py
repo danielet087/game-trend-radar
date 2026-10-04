@@ -19,6 +19,8 @@ except ModuleNotFoundError:
 
 TAIPEI = timezone(timedelta(hours=8))
 POST_RELEASE_DAYS = 30
+NINTENDO_PLATFORMS = {"NS": 130, "NS2": 508}
+NINTENDO_GAME_TYPES = {"main_game", "standalone_expansion", "remake", "remaster", "expanded_game", "port"}
 
 
 def stamp(value):
@@ -85,7 +87,125 @@ def merge_measurement(record, observation, now):
     record["history"] = sorted(by_day.values(), key=lambda item: stamp(item["at"]))[-400:]
 
 
-def update(previous, catalog, *, observed_at, measurements=None):
+def accepted_nintendo(catalog, now):
+    """Validate public qualifications before changing optional Nintendo state.
+
+    A broken or partial catalog must not deactivate previously accepted games.
+    Content screening is performed by the publisher; this consumer checks its
+    explicit result rather than inventing a second adult-keyword policy.
+    """
+    source = catalog.get("source") if isinstance(catalog, dict) else None
+    instant = stamp(catalog.get("generated_at")) if isinstance(catalog, dict) else None
+    window = catalog.get("window") if isinstance(catalog, dict) else None
+    rows = catalog.get("games") if isinstance(catalog, dict) else None
+    if (not isinstance(catalog, dict) or type(catalog.get("schema_version")) is not int
+            or catalog.get("schema_version") != 1
+            or not isinstance(source, dict) or source.get("provider") != "IGDB"
+            or source.get("complete") is not True or type(source.get("hypes_threshold")) is not int
+            or source.get("hypes_threshold") != 30 or source.get("platform_ids_verified") != [130, 508]
+            or any(type(value) is not int for value in source["platform_ids_verified"])
+            or not instant or instant > now
+            or not isinstance(window, dict) or window.get("end_inclusive") is not False
+            or window.get("time_zone") != "Asia/Taipei"
+            or not day(window.get("start")) or not day(window.get("end"))
+            or day(window["end"]) - day(window["start"]) != timedelta(days=365)
+            or day(window["start"]) != instant.astimezone(TAIPEI).date()
+            or not isinstance(rows, list)):
+        raise ValueError("Complete Nintendo catalog with a valid source timestamp required")
+    start, end = day(window["start"]), day(window["end"])
+    result = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError("Qualified Nintendo public rows required")
+        igdb_id, hypes = row.get("igdb_id"), row.get("hypes")
+        key = f"igdb:{igdb_id}"
+        if (not isinstance(igdb_id, int) or isinstance(igdb_id, bool) or igdb_id <= 0
+                or row.get("id") != key or key in result
+                or not isinstance(hypes, int) or isinstance(hypes, bool) or hypes < 30
+                or row.get("hypes_status") != "available" or row.get("popularity_status") != "qualified"
+                or row.get("calendar_eligible") is not True or row.get("sexual_content_screened") is not True
+                or row.get("game_type") not in NINTENDO_GAME_TYPES
+                or not isinstance(row.get("platforms"), list) or not row["platforms"]
+                or not isinstance(row.get("releases"), list) or not row["releases"]):
+            raise ValueError("Qualified, uniquely identified Nintendo public rows required")
+        platforms = set()
+        for platform in row["platforms"]:
+            if (not isinstance(platform, dict) or platform.get("code") not in NINTENDO_PLATFORMS
+                    or type(platform.get("id")) is not int
+                    or platform.get("id") != NINTENDO_PLATFORMS[platform["code"]]
+                    or isinstance(platform.get("id"), bool) or platform["code"] in platforms):
+                raise ValueError("Native Nintendo platform identities required")
+            platforms.add(platform["code"])
+        releases = {}
+        for release in row["releases"]:
+            if (not isinstance(release, dict) or release.get("platform") not in platforms
+                    or release.get("platform") in releases or release.get("precision") != "day"
+                    or release.get("source") != "IGDB" or not day(release.get("date"))
+                    or not start <= day(release["date"]) < end):
+                raise ValueError("Exact, unique Nintendo platform release dates in the source window required")
+            releases[release["platform"]] = release["date"]
+        name = row.get("display_name") or row.get("name_zh_tw") or row.get("name_en")
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("Nintendo display name required")
+        result[key] = {"igdb_id": igdb_id, "name": name, "releases": releases}
+    return instant, result
+
+
+def nintendo_event_time(instant, receipt, now):
+    if (isinstance(receipt, dict) and type(receipt.get("schema_version")) is int
+            and receipt.get("schema_version") == 1 and receipt.get("complete") is True
+            and receipt.get("status") == "published"
+            and stamp(receipt.get("generated_at")) == instant):
+        published = stamp(receipt.get("published_at"))
+        if published and instant <= published <= now:
+            return published
+    return instant
+
+
+def merge_nintendo(state, catalog, now, receipt=None):
+    if catalog is None:
+        return
+    instant, current = accepted_nintendo(catalog, now)
+    previous_time = stamp(state.get("nintendo_source_at"))
+    if previous_time and instant < previous_time:
+        return  # A lagging checkout must not roll back the accepted state.
+    digest = hashlib.sha256(json.dumps(current, sort_keys=True).encode()).hexdigest()
+    if previous_time and instant == previous_time and state.get("nintendo_source_digest") not in {None, digest}:
+        raise ValueError("Conflicting Nintendo catalogs share a source timestamp")
+    at = nintendo_event_time(instant, receipt, now).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    records = state.setdefault("nintendo_records", {})
+    for record in records.values():
+        record["active"] = False
+    for key, row in current.items():
+        prior = records.get(key)
+        first = prior is None
+        if first:
+            prior = {"igdb_id": row["igdb_id"], "game_id": key, "first_seen_at": at,
+                     "first_seen_basis": "source_catalog", "release_dates": {}}
+            records[key] = prior
+        # Remember previously seen dates while the game/platform is outside the
+        # public window; returning qualifications are not new games.
+        changes = {}
+        for platform, release in row["releases"].items():
+            old = prior["release_dates"].get(platform)
+            kind = "added" if first else "platform_added" if old is None else "release_date" if old != release else None
+            if kind:
+                changes.setdefault((kind, release, old), []).append(platform)
+        prior.update(name=row["name"], active=True, current_releases=row["releases"])
+        prior["release_dates"].update(row["releases"])
+        for (kind, release, old), platforms in changes.items():
+            event = {"source": "nintendo", "igdb_id": row["igdb_id"], "game_id": key,
+                     "platforms": sorted(platforms, key=lambda item: NINTENDO_PLATFORMS[item]),
+                     "type": kind, "name": row["name"], "date": release, "at": at}
+            if kind == "release_date":
+                event["previous_date"] = old
+            event["id"] = hashlib.sha256(json.dumps(event, sort_keys=True).encode()).hexdigest()[:20]
+            state["events"].append(event)
+    state["nintendo_source_at"] = instant.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    state["nintendo_source_digest"] = digest
+
+
+def update(previous, catalog, *, observed_at, measurements=None, nintendo_catalog=None, nintendo_receipt=None):
     now = stamp(observed_at)
     if not now:
         raise ValueError("Timezone-aware observation time required")
@@ -123,8 +243,10 @@ def update(previous, catalog, *, observed_at, measurements=None):
         aid = str(observation.get("appid"))
         if aid in current and observation.get("source") == "steam_community":
             merge_measurement(state["records"][aid], observation, now)
-    state["events"] = sorted({event["id"]: event for event in state["events"]}.values(),
-                             key=lambda event: event["at"])[-250:]
+    merge_nintendo(state, nintendo_catalog, now, nintendo_receipt)
+    state["events"] = sorted({event["id"]: event for event in state["events"]
+                              if stamp(event.get("at"))}.values(),
+                             key=lambda event: stamp(event["at"]))[-250:]
     # Do not rewrite files merely because an identical catalog was polled again.
     if state != previous:
         state["updated_at"] = observed_at
@@ -133,13 +255,18 @@ def update(previous, catalog, *, observed_at, measurements=None):
 
 def projections(state, today):
     records = state["records"]
-    events = [event for event in state["events"]
-              if records.get(str(event["appid"]), {}).get("active")
-              and (today - stamp(event["at"]).astimezone(TAIPEI).date()).days <= 14]
+    nintendo = state.get("nintendo_records", {})
+    events = []
+    for event in state["events"]:
+        instant = stamp(event.get("at"))
+        record = (nintendo.get(event.get("game_id"), {}) if event.get("source") == "nintendo"
+                  else records.get(str(event.get("appid")), {}))
+        if (record.get("active") and instant
+                and 0 <= (today - instant.astimezone(TAIPEI).date()).days <= 14):
+            events.append({**event, "name": record["name"]})
+    events.sort(key=lambda event: stamp(event["at"]))
     activity = {"version": 1, "generated_at": state.get("updated_at"),
-                "started_at": state["started_at"], "events": [
-                    {**event, "name": records[str(event["appid"])]["name"]}
-                    for event in list(reversed(events))[:40]]}
+                "started_at": state["started_at"], "events": list(reversed(events))[:40]}
     games = []
     for aid, row in records.items():
         if not row.get("active"):
@@ -177,7 +304,9 @@ def main():
     run = load(args.measurements, {}) if args.measurements else {}
     measurements = run.get("measurements", [])
     state = update(load(path), load(args.data_dir / "catalog.json"),
-                   observed_at=observed, measurements=measurements)
+                   observed_at=observed, measurements=measurements,
+                   nintendo_catalog=load(args.data_dir / "nintendo_upcoming.json"),
+                   nintendo_receipt=load(args.data_dir / "nintendo_refresh_status.json"))
     if args.measurements:
         state["collection"] = {"at": run.get("generated_at", observed),
                                "status": run.get("reason", "interrupted"),

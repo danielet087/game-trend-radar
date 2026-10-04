@@ -18,7 +18,9 @@ on:
     branches: [main]
     paths:
       - 'data/catalog.json'
+      - 'data/nintendo_upcoming.json'
       - 'scripts/build_radar_insights.py'
+      - 'tests/test_radar_insights.py'
       - 'scripts/sync_scheduler_queue_status.py'
       - 'tests/test_scheduler_queue_sync.py'
       - '.github/workflows/radar-insights.yml'

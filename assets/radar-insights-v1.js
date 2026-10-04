@@ -13,6 +13,58 @@
     const time = Date.parse(value);
     return Number.isFinite(time) ? new Date(time + 8 * 3600000).toISOString().slice(0, 10) : null;
   }
+  /* Activity identities stay in their source namespace. A missing source is
+     supported only for the existing Steam event format. */
+  function activityTime(value) {
+    if (typeof value !== "string") return null;
+    const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?(Z|[+-](\d{2}):(\d{2}))$/.exec(value);
+    if (!match || !day(match[1]) || Number(match[2]) > 23 || Number(match[3]) > 59 ||
+        Number(match[4]) > 59 || Number(match[6] || 0) > 23 || Number(match[7] || 0) > 59) return null;
+    const time = Date.parse(value);
+    return Number.isFinite(time) ? time : null;
+  }
+  const activityId = value => Number.isSafeInteger(value) && value > 0 && /^[1-9]\d{0,9}$/.test(String(value));
+  function activityEvent(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value) ||
+        typeof value.name !== "string" || !value.name.trim() || !day(value.date) || activityTime(value.at) === null) return null;
+    const source = value.source === undefined ? "steam" : value.source;
+    if (!["steam", "nintendo"].includes(source) || !["added", "release_date", "platform_added"].includes(value.type)) return null;
+    if (value.type === "release_date" && (!day(value.previous_date) || value.previous_date === value.date)) return null;
+    const event = { source, type: value.type, name: value.name.trim(), date: value.date, at: value.at };
+    if (value.type === "release_date") event.previous_date = value.previous_date;
+    if (source === "nintendo") {
+      if (!activityId(value.igdb_id) || value.game_id !== "igdb:" + value.igdb_id || value.appid !== undefined ||
+          !Array.isArray(value.platforms) || !value.platforms.length || value.platforms.some(platform => !["NS", "NS2"].includes(platform))) return null;
+      event.igdb_id = value.igdb_id;
+      event.game_id = value.game_id;
+      event.platforms = ["NS", "NS2"].filter(platform => value.platforms.includes(platform));
+    } else {
+      if (!activityId(value.appid) || value.igdb_id !== undefined || value.game_id !== undefined || value.type === "platform_added") return null;
+      event.appid = value.appid;
+    }
+    return event;
+  }
+  function activityEvents(values) {
+    const events = (Array.isArray(values) ? values : []).map(activityEvent).filter(Boolean);
+    events.sort((a, b) => activityTime(b.at) - activityTime(a.at));
+    const seen = new Set();
+    return events.filter(event => {
+      const key = JSON.stringify([event.source, event.appid ?? event.game_id, event.type, event.date,
+        event.previous_date ?? null, event.platforms ?? null, activityTime(event.at)]);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 400);
+  }
+  function activityURL(value) {
+    const event = activityEvent(value);
+    return !event ? null : event.source === "nintendo"
+      ? `./game.html?igdb=${event.igdb_id}&date=${event.date}` : `./game.html?appid=${event.appid}`;
+  }
+  function activityPlatform(value) {
+    const event = activityEvent(value);
+    return !event ? null : event.source === "nintendo" ? event.platforms.join("／") : "Steam";
+  }
   function points(history, today) {
     const days = new Map();
     for (const point of Array.isArray(history) ? history : []) {
@@ -82,7 +134,8 @@
     });
     return { start, end, days, span, series };
   }
-  const api = { day, offset, taipeiDay, points, metric, tracking, comparisonIds, comparisonWindow };
+  const api = { day, offset, taipeiDay, activityEvent, activityEvents, activityURL, activityPlatform,
+    points, metric, tracking, comparisonIds, comparisonWindow };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.RadarInsights = api;
 })(typeof window !== "undefined" ? window : globalThis);
