@@ -30,9 +30,30 @@
   function publicSourceURL(value) {
     try {
       const url = new URL(value);
-      return url.protocol === "https:" && !url.username && !url.password && /(^|\.)(igdb\.com|nintendo\.com|nintendo\.com\.hk|nintendo\.co\.jp)$/.test(url.hostname)
+      return url.protocol === "https:" && !url.username && !url.password && !url.port && /(^|\.)(igdb\.com|nintendo\.com|nintendo\.com\.hk|nintendo\.co\.jp|sega\.com|konami\.com|playtombraider\.com)$/.test(url.hostname)
         ? url.href : "";
     } catch { return ""; }
+  }
+  const taiwanOfficialRelease = (row) => row?.taiwan_release_confirmed === true &&
+    row.source === "official_registry" && row.region === "taiwan" &&
+    row.date_basis === "taiwan_official_calendar_day" && row.timezone_status === "taiwan_official_date" &&
+    !!publicSourceURL(row.official_source_url);
+  function releaseSourceName(row) {
+    if (taiwanOfficialRelease(row)) return String(row.official_source_name || "台灣官方發售資料").slice(0, 120);
+    const sourceURL = publicSourceURL(row?.source);
+    if (sourceURL) return new URL(sourceURL).hostname.endsWith("igdb.com") ? "IGDB 平台發售資料" : "官方平台發售資料";
+    if (row?.source === "official_registry") return "官方日期來源待確認";
+    return row?.source ? String(row.source).slice(0, 120) : "IGDB 平台發售資料";
+  }
+  function releaseDateNote(row) {
+    if (taiwanOfficialRelease(row)) {
+      const original = D.validDate(row.source_date) && row.source_date !== row.date
+        ? `原始 IGDB 日期為 ${row.source_date.replaceAll("-", "/")}，已依台灣官方日期修正。` : "";
+      return `已確認台灣上市日（Asia/Taipei）；日期依台灣官方公告。${original}`;
+    }
+    const audit = row?.time_zone === "Asia/Taipei"
+      ? "日期已核對台灣時區（Asia/Taipei），不代表確切解鎖時間。" : "";
+    return `依 ${regionLabel(row?.region)}發售資料顯示；此日期尚未另行確認台灣上市日。${audit}實際上市時間請以台灣官方公告為準。`;
   }
   const interestText = (game) => isNintendo(game)
     ? Number.isSafeInteger(game.hypes) ? `IGDB hypes ${number.format(game.hypes)}` : "IGDB hypes 未知"
@@ -466,9 +487,9 @@
       ? `預定發售・${regionLabel(dateRegion)}`
       : "預定發售・台灣";
     $("gameReleaseNote").hidden = !nativeDate;
-    const dateSource = nativeRelease?.source || game.dateSource || "IGDB";
+    const releaseEvidence = nativeRelease || { source: game.dateSource || "IGDB", region: dateRegion };
     $("gameReleaseNote").textContent = nativeDate
-      ? `來源：${publicSourceURL(dateSource) ? "IGDB 平台發售資料" : String(dateSource).slice(0, 120)}。依 ${regionLabel(dateRegion)}發售資料顯示；實際上市時間請以該地區官方公告為準。${dateRegion === "taiwan" ? "" : "此日期尚未另行確認台灣上市日。"}`
+      ? `來源：${releaseSourceName(releaseEvidence)}。${releaseDateNote(releaseEvidence)}`
       : "";
     $("gameCountdown").textContent =
       days > 0
@@ -554,9 +575,21 @@
       seen.add(key);
       return true;
     }).sort((a, b) => a.date.localeCompare(b.date) || a.platform.localeCompare(b.platform));
-    $("gamePlatformDates").replaceChildren(...dates.map(row =>
-      node("li", "", `${row.platform} · ${row.date.replaceAll("-", "/")} · ${row.platform === "Steam" ? "台灣" : regionLabel(row.region)}`),
-    ));
+    $("gamePlatformDates").replaceChildren(...dates.map(row => {
+      const item = node("li", "", `${row.platform} · ${row.date.replaceAll("-", "/")} · ${row.platform === "Steam" ? "台灣" : regionLabel(row.region)}`);
+      if (row.platform === "Steam") return item;
+      const evidence = node("div", "game-release-source");
+      const sourceURL = taiwanOfficialRelease(row) ? publicSourceURL(row.official_source_url) : publicSourceURL(row.source);
+      const source = node(sourceURL ? "a" : "span", "", releaseSourceName(row));
+      if (sourceURL) {
+        source.href = sourceURL;
+        source.target = "_blank";
+        source.rel = "noopener noreferrer";
+      }
+      evidence.append(node("span", "", "來源："), source, node("span", "", `。${releaseDateNote(row)}`));
+      item.append(evidence);
+      return item;
+    }));
     $("gamePlatformDates").hidden = !dates.length;
   }
   async function loadNintendoDetail(force) {

@@ -230,3 +230,67 @@ test('invalid merged Steam event dates stop before any source request', async ()
   assert.equal(e.get('detailPage').hidden, true);
   assert.match(e.get('detailStatusMessage').textContent, /有效的 Steam AppID 或發售日期/);
 });
+
+const officialRelease = (overrides = {}) => ({
+  date: '2027-01-16', platform: 'NS2', precision: 'day', region: 'taiwan',
+  source: 'official_registry', date_basis: 'taiwan_official_calendar_day',
+  source_date: '2027-01-15', source_timestamp: 1800057600, source_region: 'worldwide',
+  time_zone: 'Asia/Taipei', timestamp_taipei_date: '2027-01-15', timezone_status: 'taiwan_official_date',
+  taiwan_release_confirmed: true,
+  official_source_url: 'https://www.nintendo.com/tw/schedule/', official_source_name: 'Nintendo 台灣',
+  ...overrides,
+});
+
+test('official Taiwan dates show their official source and regional correction in the detail page', async () => {
+  const { elements: e } = await display('?igdb=366896&date=2027-01-16', sample({ releases: [officialRelease()] }));
+  assert.equal(e.get('gameDate').textContent, '2027/01/16');
+  assert.equal(e.get('gameReleaseLabel').textContent, '預定發售・台灣');
+  assert.match(e.get('gameReleaseNote').textContent, /來源：Nintendo 台灣。已確認台灣上市日/);
+  assert.match(e.get('gameReleaseNote').textContent, /原始 IGDB 日期為 2027\/01\/15，已依台灣官方日期修正/);
+  assert.doesNotMatch(e.get('gameReleaseNote').textContent, /尚未另行確認|08:00|IGDB 平台發售資料/);
+  const date = e.get('gamePlatformDates').children[0];
+  assert.match(date.textContent, /NS2 · 2027\/01\/16 · 台灣/);
+  const source = date.children[0].children[1];
+  assert.equal(source.tagName, 'a');
+  assert.equal(source.textContent, 'Nintendo 台灣');
+  assert.equal(source.href, 'https://www.nintendo.com/tw/schedule/');
+  assert.equal(source.rel, 'noopener noreferrer');
+});
+
+test('audited IGDB dates show unconfirmed Taiwan provenance without inventing an unlock time', async () => {
+  const release = { date: '2027-01-15', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB',
+    source_date: '2027-01-15', source_timestamp: 1800057600, source_region: 'worldwide',
+    time_zone: 'Asia/Taipei', timestamp_taipei_date: '2027-01-15', timezone_status: 'same_calendar_day', taiwan_release_confirmed: false };
+  const { elements: e } = await display('?igdb=366896', sample({ releases: [release] }));
+  assert.match(e.get('gameReleaseNote').textContent, /尚未另行確認台灣上市日.*Asia\/Taipei.*不代表確切解鎖時間/);
+  assert.match(e.get('gamePlatformDates').textContent, /NS2 · 2027\/01\/15 · 全球.*尚未另行確認台灣上市日/);
+  assert.doesNotMatch(e.get('gamePlatformDates').textContent, /08:00|已確認台灣上市日/);
+});
+
+test('official release evidence sanitizes its source link before claiming Taiwan confirmation', async () => {
+  const { elements: e } = await display('?igdb=366896', sample({
+    releases: [officialRelease({ official_source_url: 'javascript:alert(1)' })],
+  }));
+  assert.match(e.get('gameReleaseNote').textContent, /尚未另行確認台灣上市日/);
+  assert.doesNotMatch(e.get('gameReleaseNote').textContent, /已確認台灣上市日/);
+  assert.equal(e.get('gamePlatformDates').children[0].children[0].children[1].tagName, 'span');
+});
+
+test('Konami official Nintendo release evidence keeps its confirmed Taiwan source', async () => {
+  const sourceURL = 'https://www.konami.com/games/castlevania/belmonts_curse/tc/';
+  const { elements: e } = await display('?igdb=366896', sample({ releases: [officialRelease({
+    official_source_url: sourceURL, official_source_name: 'KONAMI 亞洲',
+  })] }));
+  assert.match(e.get('gameReleaseNote').textContent, /來源：KONAMI 亞洲。已確認台灣上市日/);
+  assert.doesNotMatch(e.get('gameReleaseNote').textContent, /尚未另行確認|IGDB 平台發售資料/);
+  assert.equal(e.get('gamePlatformDates').children[0].children[0].children[1].href, sourceURL);
+});
+
+test('merged profiles retain official Nintendo dates and source separately from the Steam date', async () => {
+  const nintendo = crossPlatformSample();
+  nintendo.games[0].releases = [officialRelease()];
+  const { elements: e } = await display('?appid=632950', nintendo, steamCatalog());
+  assert.equal(e.get('gameDate').textContent, '2027/01/15');
+  assert.match(e.get('gamePlatformDates').textContent, /Steam · 2027\/01\/15 · 台灣.*NS2 · 2027\/01\/16 · 台灣.*Nintendo 台灣.*已確認台灣上市日/);
+  assert.equal(e.get('gamePlatformDates').children.length, 2);
+});

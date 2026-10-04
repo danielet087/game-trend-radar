@@ -1401,6 +1401,13 @@ h1 {
   justify-content: flex-end;
   margin: 0;
 }
+.card-body > .card-languages {
+  align-self: stretch;
+  margin-top: 12px;
+}
+.card-body > .card-languages + .card-meta {
+  margin-top: 10px;
+}
 .card-language,
 .game-language-chip,
 .game-language-kicker {
@@ -1443,10 +1450,8 @@ h1 {
   border-top: 1px solid #ecedf2;
   font-variant-numeric: tabular-nums;
 }
-.card-release-dates { display: grid; gap: 5px; min-width: 0; }
-.card-release-date { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 5px; }
-.card-release-platform { color: var(--muted); font-size: 9px; line-height: 1.6; }
-.card-release-date.current-release time { color: var(--ink); font-weight: 700; }
+.card-release-dates { min-width: 0; }
+.card-release-date { display: flex; align-items: baseline; }
 .card-interest { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; margin-left: auto; }
 .card-meta time {
   color: #737e92;
@@ -2538,7 +2543,7 @@ body[data-page="explore"] {
   .site-header { backdrop-filter: none; background: #fffdf8; }
 }
 
-/* Platform tags and language support share the card's lower edge. */
+/* The footer keeps one platform-status tag beside the store link. */
 .card-footer {
   position: relative;
   z-index: 2;

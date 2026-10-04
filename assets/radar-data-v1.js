@@ -346,7 +346,8 @@
       const steamAppid = nintendoSteamIdentity(raw);
       const grouped = new Map();
       for (const release of raw.releases) {
-        if (release?.precision !== "day" || !validDate(release.date) || !platforms.includes(release.platform)) continue;
+        if (release?.precision !== "day" || !validDate(release.date) ||
+          !platforms.includes(release.platform) || !nintendoReleaseAudited(release)) continue;
         if (!grouped.has(release.date)) grouped.set(release.date, []);
         const rows = grouped.get(release.date);
         if (!rows.some(row => row.platform === release.platform && row.region === release.region)) rows.push(release);
@@ -401,6 +402,22 @@
       }
     }
     return unique(games);
+  }
+  function nintendoReleaseAudited(release) {
+    // Old public bundles remain readable during the publisher transition. New
+    // audited records must not turn an ambiguous timestamp into a calendar day.
+    if (release.timezone_status == null) return true;
+    if (release.time_zone !== "Asia/Taipei" ||
+      !["same_calendar_day", "date_only", "taiwan_official_date"].includes(release.timezone_status)) return false;
+    if (release.source_date != null && !validDate(release.source_date)) return false;
+    if (release.timestamp_taipei_date != null && !validDate(release.timestamp_taipei_date)) return false;
+    if (release.timezone_status === "taiwan_official_date") {
+      return release.source === "official_registry" && release.region === "taiwan" &&
+        release.date_basis === "taiwan_official_calendar_day" && release.taiwan_release_confirmed === true;
+    }
+    return release.taiwan_release_confirmed !== true && release.source !== "official_registry" &&
+      (release.source_date == null || release.source_date === release.date) &&
+      (release.timestamp_taipei_date == null || release.timestamp_taipei_date === release.date);
   }
   function detailURL(game) {
     return game.source === "nintendo"

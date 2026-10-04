@@ -149,6 +149,12 @@
     link.setAttribute("aria-label", `查看 ${game.name} 的遊戲資訊`);
     return link;
   }
+  function cardDate(game) {
+    const dates = (Array.isArray(game.releases) ? game.releases : [])
+      .filter(release => release?.precision === "day" && D.validDate(release.date) && ["Steam", "NS", "NS2"].includes(release.platform))
+      .map(release => release.date);
+    return dates.sort()[0] || game.date;
+  }
   function makeCard(game, options = {}) {
     const card = node("article", "game-card");
     card.dataset.appid = game.appid;
@@ -173,8 +179,9 @@
       });
       cover.append(img);
     }
+    const earliestDate = cardDate(game);
     const days = Math.round(
-      (Date.parse(game.date + "T12:00:00Z") -
+      (Date.parse(earliestDate + "T12:00:00Z") -
         Date.parse(today + "T12:00:00Z")) /
         86400000,
     );
@@ -237,26 +244,15 @@
       badge.title = "直接上市，並於發售首週內確認超過 3,000 人關注";
       body.append(badge);
     }
+    if (languages.children.length) body.append(languages);
     const meta = node("div", "card-meta");
     const dates = node("div", "card-release-dates");
-    const releases = Array.isArray(game.releases) ? game.releases : [];
-    const byDate = new Map();
-    for (const release of releases) {
-      if (!D.validDate(release.date) || !["Steam", "NS", "NS2"].includes(release.platform)) continue;
-      if (!byDate.has(release.date)) byDate.set(release.date, new Set());
-      byDate.get(release.date).add(release.platform);
-    }
-    if (!byDate.size) byDate.set(game.date, new Set(game.source === "nintendo" ? game.releasePlatforms : []));
-    for (const [date, platforms] of [...byDate].sort(([a], [b]) => a.localeCompare(b))) {
-      const line = node("div", "card-release-date" + (date === game.date ? " current-release" : ""));
-      if (platforms.size && (game.source === "nintendo" || game.igdbId))
-        line.append(node("span", "card-release-platform", [...platforms].join("／")));
-      const time = node("time", "", date.replaceAll("-", "/"));
-      time.dateTime = date;
-      time.title = `${[...platforms].join("／") || "Steam"} 發售日期`;
-      line.append(time);
-      dates.append(line);
-    }
+    const line = node("div", "card-release-date");
+    const time = node("time", "", earliestDate.replaceAll("-", "/"));
+    time.dateTime = earliestDate;
+    time.title = "最早發售日期；各平台日期可於遊戲資訊查看";
+    line.append(time);
+    dates.append(line);
     const metrics = node("div", "card-interest");
     for (const [value, label] of [[game.followers, "人關注"], [game.hypes, "IGDB hypes"]]) {
       if (!Number.isFinite(value)) continue;
@@ -277,14 +273,18 @@
     const footer = node("div", "card-footer");
     const platforms = node("div", "card-platforms");
     platforms.setAttribute("aria-label", "遊戲平台與獨佔狀態");
-    for (const badge of game.platformBadges || [{ label: "Steam", status: "steam", title: "Steam 版本" }]) {
+    const badges = game.platformBadges || [{ label: "Steam", status: "steam", title: "Steam 版本" }];
+    const multiple = game.multiPlatform || game.platforms?.length > 1 || badges.some(badge => badge.status === "multi");
+    const cardBadges = multiple
+      ? [{ label: "多平台", status: "multi", title: "支援多個平台；各平台資訊可於遊戲資訊查看" }]
+      : badges;
+    for (const badge of cardBadges) {
       const platform = node("span", "platform-badge platform-" + badge.status, badge.label);
       platform.title = badge.title;
       platforms.append(platform);
     }
     const right = node("div", "card-footer-right");
     right.append(steam);
-    if (languages.children.length) right.append(languages);
     footer.append(platforms, right);
     body.append(footer);
     card.append(cover, body, detail, save);
@@ -347,10 +347,10 @@
     if (mode !== "home" || !model.data) return;
     const data = model.data;
     const upcoming = D.cardGames(D.selectGames(data, "upcoming", today)).sort(
-      (a, b) => a.date.localeCompare(b.date) || D.popularityCompare(a, b),
+      (a, b) => cardDate(a).localeCompare(cardDate(b)) || D.popularityCompare(a, b),
     );
     const recent = D.cardGames(D.selectGames(data, "released", today), "latest").sort(
-      (a, b) => b.date.localeCompare(a.date) || D.popularityCompare(a, b),
+      (a, b) => cardDate(b).localeCompare(cardDate(a)) || D.popularityCompare(a, b),
     );
     $("spotlightGames").replaceChildren(
       ...upcoming.slice(0, 4).map((game, index) =>
@@ -545,8 +545,8 @@
         : order === "name"
           ? a.name.localeCompare(b.name, "zh-TW")
           : order === "newest"
-            ? b.date.localeCompare(a.date) || D.popularityCompare(a, b)
-            : a.date.localeCompare(b.date) || D.popularityCompare(a, b),
+            ? cardDate(b).localeCompare(cardDate(a)) || D.popularityCompare(a, b)
+            : cardDate(a).localeCompare(cardDate(b)) || D.popularityCompare(a, b),
     );
     return { source: D.cardGames(source), items, events };
   }
