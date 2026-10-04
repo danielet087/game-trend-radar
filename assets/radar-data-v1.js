@@ -360,7 +360,8 @@
       (complete || game?.multiPlatform !== true)) {
       const exclusive = complete && (game.platformBadges || []).some(badge =>
         badge.status === "exclusive" && badge.label === `${native[0]} 獨佔`);
-      return { label: exclusive ? `${native[0]} 獨佔` : native[0], status: exclusive ? "exclusive" : "nintendo", title };
+      return { label: exclusive ? `${native[0]} 獨佔` : "主機", status: exclusive ? "exclusive" : "nintendo",
+        title: exclusive ? title : title + "尚未確認獨佔。" };
     }
     if (steam && !consoles.length && !other) return { label: "Steam", status: "steam", title };
     return { label: "平台待確認", status: "unknown", title };

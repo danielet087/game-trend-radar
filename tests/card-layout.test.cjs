@@ -166,7 +166,7 @@ test('Steam card keeps support languages directly above the dates-and-interest s
 
 test('ordinary NS2 listing and official sole-platform proof produce different card tags', () => {
   const listed = nintendo({ websites: [], known_platforms: [{ id: 508, code: 'NS2' }], exclusivity: { status: 'listed_only' } });
-  assert.deepEqual(renderer().card(D.nintendoGames(listed)[0]).querySelectorAll('.platform-badge').map(tag => tag.textContent), ['NS2']);
+  assert.deepEqual(renderer().card(D.nintendoGames(listed)[0]).querySelectorAll('.platform-badge').map(tag => tag.textContent), ['主機']);
   const confirmed = nintendo({ websites: [], known_platforms: [{ id: 508, code: 'NS2' }],
     exclusivity: { status: 'confirmed', platform: 'NS2', url: 'https://www.nintendo.com/us/store/products/hela-switch-2/' } });
   assert.deepEqual(renderer().card(D.nintendoGames(confirmed)[0]).querySelectorAll('.platform-badge').map(tag => tag.textContent), ['NS2 獨佔']);
@@ -282,7 +282,11 @@ test('October calendar list writes the Nintendo edition into its title while the
   assert.deepEqual(cards[1].querySelectorAll('.card-language').map(chip => chip.textContent), ['支援繁中', '支援簡中']);
   assert.deepEqual(cards.map(card => card.querySelectorAll('.platform-badge').map(tag => tag.textContent)), [['PC＋主機'], ['PC＋主機']]);
   const calendarLinks = app.calendar.querySelectorAll('.day-game');
-  assert.deepEqual(calendarLinks.map(link => link.querySelector('.day-platform').textContent), ['NS2', 'Steam']);
+  assert.deepEqual(calendarLinks.map(link => link.querySelector('.day-platform').textContent), ['PC＋主機', 'PC＋主機']);
+  assert.match(calendarLinks[0].querySelector('.day-platform').title, /PC|Steam/);
+  assert.match(calendarLinks[0].querySelector('.day-platform').title, /Nintendo Switch 2|NS2/);
+  assert.match(calendarLinks[0].querySelector('.day-platform').title, /本日發售：NS2/);
+  assert.match(calendarLinks[1].querySelector('.day-platform').title, /本日發售：Steam/);
   assert.match(calendarLinks[0].querySelector('.day-game-name').textContent, /Deluxe版/);
   assert.match(calendarLinks[0].title, /Hela: Of Mice & Magic Deluxe Edition/);
   assert.equal(calendarLinks[0].href, './game.html?appid=3167930&date=2026-10-08');
@@ -323,4 +327,28 @@ test('same-day Steam and Nintendo versions produce one monthly release card show
   assert.equal(cards[0].querySelector('.card-release-platform').textContent, 'Steam／NS2');
   assert.equal(cards[0].querySelector('time').dateTime, '2026-10-08');
   assert.equal(cards[0].querySelector('.card-editions'), null);
+});
+
+test('month calendar reserves named Nintendo tags for verified exclusivity and keeps actual native platforms on hover', () => {
+  const cases = [
+    { expected: '主機', changes: { exclusivity: { status: 'listed_only' } } },
+    { expected: '主機', changes: { platform_data_complete: false, exclusivity: { status: 'unknown' } } },
+    { expected: 'NS2 獨佔', changes: { exclusivity: { status: 'confirmed', platform: 'NS2',
+      url: 'https://www.nintendo.com/us/store/products/hela-switch-2/' } } },
+    { expected: '平台待確認', changes: { known_platforms: [{ id: 508, code: 'NS2' }, { id: 999999, name: 'Unclassified platform' }] } },
+  ];
+  for (const { expected, changes } of cases) {
+    const data = D.datasets({ games: [] }, null, nintendo({ websites: [],
+      known_platforms: [{ id: 508, code: 'NS2' }], ...changes }));
+    const app = renderer([], 'home', '?month=2026-12&view=list');
+    app.setData(data);
+    const card = app.render()[0], links = app.calendar.querySelectorAll('.day-game');
+    assert.equal(links.length, 1);
+    const tags = links[0].querySelectorAll('.day-platform');
+    assert.deepEqual(tags.map(tag => tag.textContent), [expected]);
+    assert.equal(card.querySelector('.platform-badge').textContent, expected);
+    assert.match(tags[0].title, /Nintendo Switch 2|NS2/);
+    assert.match(tags[0].title, /本日發售：NS2/);
+    assert.equal(links[0].href, './game.html?igdb=314449&date=2026-12-01');
+  }
 });

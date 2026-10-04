@@ -357,7 +357,7 @@
       coverage += " 正式清單暫時無法讀取，目前使用已公開的預覽資料。";
     if (data.steamUpdated) coverage += ` Steam 更新：${formatUpdate(data.steamUpdated)}（台灣）。`;
     if (!data.nintendoAvailable) coverage += " Nintendo 資料暫時無法讀取，Steam 清單仍可查看。";
-    else coverage += ` Nintendo 更新：${formatUpdate(data.nintendoUpdated)}（台灣）。NS 與 NS2 標籤代表原生版本；目前僅列單一平台不代表官方確認獨佔。`;
+    else coverage += ` Nintendo 更新：${formatUpdate(data.nintendoUpdated)}（台灣）。TAG 顯示整款遊戲的平台類別；移上標籤查看已確認平台，月曆標籤另提供本次發售資訊。NS／NS2 僅在官方確認獨佔時作為標籤。`;
     $("coverageText").textContent = coverage;
   }
   function renderHome() {
@@ -608,11 +608,14 @@
         const display = D.releaseDisplayNames?.(game, releasePlatforms) || { name: game.name, nameEn: game.nameEn };
         const tag = detailLink(game, "day-game" + (rank ? " second" : ""), display.name);
         const nativePlatforms = (game.releasePlatforms || []).filter(platform => ["NS", "NS2"].includes(platform));
+        const badge = D.cardPlatformBadge(game);
         tag.classList.add("day-game-platform");
         if (nativePlatforms.length) tag.classList.add("day-game-nintendo");
-        tag.append(node("span", "day-platform", releasePlatforms.join("／")),
+        const platform = node("span", "day-platform", badge.label);
+        platform.title = `${badge.title} 本日發售：${releasePlatforms.join("／")}。`;
+        tag.append(platform,
           node("span", "day-game-name", display.name));
-        tag.title = `${display.name}${display.nameEn && display.nameEn !== display.name ? ` · ${display.nameEn}` : ""} · 本日發售：${releasePlatforms.join("／")}${Number.isFinite(game.hypes) ? ` · ${number.format(game.hypes)} IGDB hypes` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;
+        tag.title = `${display.name}${display.nameEn && display.nameEn !== display.name ? ` · ${display.nameEn}` : ""} · ${platform.title}${Number.isFinite(game.hypes) ? ` · ${number.format(game.hypes)} IGDB hypes` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;
         cell.append(tag);
       });
       if (dayGames.length > 2) {
@@ -920,7 +923,7 @@
       upcoming: "未來 45 天 · Steam／NS／NS2 平台別確切發售日",
       released: "近 30 天 · Steam／NS／NS2 已收錄發售紀錄",
       saved: "收藏儲存在此瀏覽器；此處顯示仍在目前公開資料內的遊戲。",
-      date: "Steam／NS／NS2 平台別確切發售日 · 查看標籤確認原生版本",
+      date: "Steam／NS／NS2 平台別確切發售日 · 平台類別 TAG 可移上查看完整平台",
       explore: "已收錄的 Steam／NS／NS2 遊戲 · TAG 依各資料來源",
       all: "本站所有公開收錄 · 包含待上市與既有上市紀錄",
     };

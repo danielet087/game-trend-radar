@@ -2614,9 +2614,10 @@ body[data-page="explore"] {
   line-height: 1.7;
 }
 .day-game-platform:not(.day-game-nintendo) .day-platform { background: #526bac; }
-.day-game-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.day-game-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .game-card[data-source="nintendo"] .cover-link img { object-position: center 35%; }
 @media (max-width: 520px) {
-  .day-game-platform { gap: 2px; }
-  .day-platform { padding: 0 2px; font-size: 8px; }
+  .day-game-platform { display: block; }
+  .day-platform { display: inline-block; max-width: 100%; padding: 0 2px; white-space: normal; overflow-wrap: anywhere; vertical-align: top; font-size: 8px; }
+  .day-game-name { display: block; }
 }

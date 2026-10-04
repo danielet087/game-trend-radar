@@ -19,7 +19,32 @@ test('verified PC evidence does not depend on the Steam admission threshold or c
   assert.equal(D.cardPlatformBadge(game).label, 'PC＋主機');
   assert.match(D.cardPlatformBadge(game).title, /PC（Steam）.*NS2/);
   const unverified = native({ steam_appid: 10, websites: [] });
-  assert.equal(D.cardPlatformBadge(unverified).label, 'NS2');
+  assert.equal(D.cardPlatformBadge(unverified).label, '主機');
+  assert.match(D.cardPlatformBadge(unverified).title, /已確認平台：NS2。.*尚未確認獨佔/);
+});
+
+test('a sole Nintendo platform uses a neutral tag until official exclusivity evidence is verified', () => {
+  for (const [code, id] of [['NS', 130], ['NS2', 508]]) {
+    const changes = { platforms: [platform(id)], known_platforms: [platform(id)],
+      releases: [{ platform: code, date: '2026-11-01', precision: 'day', source: 'IGDB' }] };
+    for (const exclusivity of [undefined,
+      { status: 'listed_only', platform: code },
+      { status: 'confirmed', platform: code },
+      { status: 'confirmed', platform: code, url: 'https://www.igdb.com/games/example' },
+      { status: 'confirmed', platform: code, url: 'https://example.com/exclusive' }]) {
+      const badge = D.cardPlatformBadge(native({ ...changes, exclusivity }));
+      assert.equal(badge.label, '主機');
+      assert.equal(badge.status, 'nintendo');
+      assert.match(badge.title, new RegExp(`已確認平台：${code}。.*尚未確認獨佔`));
+    }
+    const verified = { ...changes,
+      exclusivity: { status: 'confirmed', platform: code, url: 'https://www.nintendo.com/tw/games/example/' } };
+    assert.equal(D.cardPlatformBadge(native(verified)).label, `${code} 獨佔`);
+    assert.equal(D.cardPlatformBadge(native(verified)).status, 'exclusive');
+    const incomplete = D.cardPlatformBadge(native({ ...verified, platform_data_complete: false }));
+    assert.equal(incomplete.label, '主機');
+    assert.match(incomplete.title, /平台清單或類型仍待確認。.*尚未確認獨佔/);
+  }
 });
 
 test('Windows, Mac and Linux establish PC while hover keeps all confirmed platforms', () => {
@@ -87,7 +112,7 @@ test('merged known platform sets are a union and conflicting completeness is pre
 test('later native platform additions update the whole-game badge without shifting event identity', () => {
   const before = native({ platforms: [platform(130)], known_platforms: [platform(130)],
     releases: [{ platform: 'NS', date: '2026-11-01', precision: 'day', source: 'IGDB' }] });
-  assert.equal(D.cardPlatformBadge(before).label, 'NS');
+  assert.equal(D.cardPlatformBadge(before).label, '主機');
   const after = native({ platforms: [platform(130), platform(508)], known_platforms: [platform(130), platform(508)],
     releases: [{ platform: 'NS', date: '2026-11-01', precision: 'day', source: 'IGDB' },
       { platform: 'NS2', date: '2027-01-01', precision: 'day', source: 'IGDB' }] });
