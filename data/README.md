@@ -24,3 +24,5 @@
 `generated_at` 是資料檔產生時間；`follower_checked_at` 才是 Followers 查詢時間。補圖片或 TAG 不能把 Followers 標成剛查詢。`complete: true` 僅表示本次對帳的已接受主清單內容完整，不代表所有 Steam 候選都已完成官方查核。
 
 IGDB 原生主機資料由 `game-trend-radar-igdb-backend` 統一收集並發布，為相容既有前端、回條與歷史狀態，繼續使用 `nintendo_*.json` 和活動的 `source: "nintendo"`；此內部名稱不限制只有任天堂平台。各版本依 `platforms`／`releases`／`platform_language_support` 的 NS、NS2、PS5 分開辨識，公開台灣日期須有該原生平台的官方證據，未知語言保留 `null`，不同平台語言不能互相代填。Steam AppID 與 IGDB ID 使用不同命名空間；已核實的 Steam 商品對應才合併，同款不同日期仍是同一遊戲的不同發售事件。
+
+IGDB 完整候選量大時，`nintendo_master.json` 使用含 SHA-256 與解壓大小的 `gzip-base64` 封裝，完整保留候選、原始資料、更新歷史與續查狀態。後端自動校驗及解碼，舊未壓縮資料亦可載入。前端只讀公開 `nintendo_upcoming.json` 與刷新回條，不解壓主資料。
