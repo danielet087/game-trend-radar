@@ -73,7 +73,7 @@ body[data-game-theme="twilight"] {
 .game-hero {
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-  grid-template-areas: "toolbar toolbar" "title art" "copy art" "platforms platforms";
+  grid-template-areas: "toolbar toolbar" "title art" "copy art" "platforms art";
   grid-template-rows: auto auto 1fr auto;
   gap: 18px 38px;
   align-content: start;
@@ -186,7 +186,7 @@ body[data-game-theme="twilight"] {
   grid-area: art;
   position: relative;
   align-self: center;
-  padding: 13px 0 26px;
+  padding: 13px 0 8px;
   min-width: 0;
   isolation: isolate;
 }
@@ -259,7 +259,7 @@ body[data-game-theme="twilight"] {
   align-items: center;
   justify-content: flex-end;
   gap: 11px;
-  margin: 22px 6px 0;
+  margin: 14px 6px 0;
   color: var(--game-accent);
   font:
     800 9px/1.4 Arial,
@@ -1046,7 +1046,7 @@ body.motion-on .art-dialog[open] {
   .game-hero {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "toolbar" "title" "art" "copy" "platforms";
-    grid-template-rows: auto auto auto 1fr auto;
+    grid-template-rows: auto auto auto auto auto;
     padding: 29px;
     gap: 17px;
     border-radius: 23px;
