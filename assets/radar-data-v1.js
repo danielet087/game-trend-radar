@@ -431,6 +431,43 @@
         return edition ? [{ platform, ...edition }] : [];
       });
   }
+  function releaseDisplayNames(game, platforms = game?.releasePlatforms || []) {
+    const original = { name: String(game?.name || ""), nameEn: String(game?.nameEn || "") };
+    const selected = [...new Set(Array.isArray(platforms) ? platforms : [])]
+      .filter(platform => game?.platforms?.includes(platform));
+    const editions = releaseEditionBadges(game, selected);
+    if (!editions.length) return original;
+    const groups = new Map();
+    for (const edition of editions) {
+      const key = JSON.stringify([edition.type, edition.label, edition.title]);
+      if (!groups.has(key)) groups.set(key, { label: edition.label, title: edition.title, platforms: [] });
+      groups.get(key).platforms.push(edition.platform);
+    }
+    const versions = [...groups.values()];
+    const scoped = versions.length > 1 || selected.some(platform => !editions.some(edition => edition.platform === platform));
+    const platformPrefix = (version) => scoped ? version.platforms.join("／") + " " : "";
+    const nameEn = versions.map(version => platformPrefix(version) + version.title).join("／");
+    if (!/[\u3400-\u9fff]/.test(original.name)) return { name: nameEn, nameEn };
+    // Canonical names stay intact. Repeated suffixes in a localized display
+    // name are replaced by one version suffix with the current event's scope.
+    const normalize = value => value.replace(/[\s：:]/g, "").toLocaleLowerCase("en-US");
+    const labels = new Set(versions.map(version => normalize(version.label)));
+    let base = original.name.trim();
+    while (base) {
+      const suffix = /[（(]([^（）()]*)[）)]$/.exec(base);
+      if (!suffix || !labels.has(normalize(suffix[1].replace(/^(?:(?:NS2?|Steam)[／\s：:]*)+/, "")))) break;
+      base = base.slice(0, suffix.index).trim();
+    }
+    for (const version of versions) {
+      if (normalize(base).endsWith(normalize(version.label))) {
+        const words = version.label.trim().split(/\s+/).map(word => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+        const suffix = new RegExp(words.join("\\s*") + "\\s*$", "i");
+        base = base.replace(suffix, "").replace(/[\s：:·・＋+／/—-]+$/, "").trim();
+      }
+    }
+    const label = versions.map(version => platformPrefix(version) + version.label).join("；");
+    return { name: `${base || original.name}（${label}）`, nameEn };
+  }
   function nintendoGames(payload) {
     if (!payload || payload.schema_version !== 1 || !Array.isArray(payload.games)) return [];
     const games = [];
@@ -492,6 +529,7 @@
           steamAppid, steamLink: steamAppid ? `https://store.steampowered.com/app/${steamAppid}/` : "",
           hasNintendo: true, multiPlatform, knownPlatforms,
           name, nameEn, nameTw, nameCn, nameOriginalTw: raw.name_zh_tw || "", nameOriginalCn: raw.name_zh_cn || "",
+          nameSearchAliases: [...new Set(Object.values(platformEditions).flatMap(edition => [edition.title, edition.label]))],
           date, releases: [...grouped.values()].flat(), dateReleases: releases, dateRegion: releases[0]?.region || "",
           dateSource: releases[0]?.source || "IGDB", releasePlatforms, platforms,
           platformShort, platformLabel, platformBadges: [
@@ -590,6 +628,7 @@
         nameOriginalCn: steam.nameOriginalCn || nintendo.nameOriginalCn,
         nameSearchAliases: [...new Set([steam, ...rows].flatMap(game => [
           game.name, game.nameEn, game.nameTw, game.nameCn, game.nameOriginalTw, game.nameOriginalCn,
+          ...(Array.isArray(game.nameSearchAliases) ? game.nameSearchAliases : []),
         ]).filter(Boolean))],
         igdbId: igdbIds[0], igdbIds, hasNintendo: true, multiPlatform: true,
         identityKey: `steam:${appid}`, steamAppid: appid, steamLink: steam.link,
@@ -716,6 +755,7 @@
     nintendoCardLanguages,
     nintendoEdition,
     releaseEditionBadges,
+    releaseDisplayNames,
     nintendoGames,
     detailURL,
     popularityCompare,

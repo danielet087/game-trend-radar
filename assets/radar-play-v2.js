@@ -135,18 +135,18 @@
   });
   const heart =
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.6 5.6 0 0 0-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"/></svg>';
-  function externalLink(game, className) {
+  function externalLink(game, className, name = game.name) {
     const a = node("a", className);
     a.href = game.link;
     a.target = "_blank";
     a.rel = "noopener noreferrer";
-    a.setAttribute("aria-label", `在 ${game.source === "nintendo" ? game.linkLabel : "Steam"} 開啟 ${game.name}（另開分頁）`);
+    a.setAttribute("aria-label", `在 ${game.source === "nintendo" ? game.linkLabel : "Steam"} 開啟 ${name}（另開分頁）`);
     return a;
   }
-  function detailLink(game, className = "") {
+  function detailLink(game, className = "", name = game.name) {
     const link = node("a", className);
     link.href = D.detailURL(game);
-    link.setAttribute("aria-label", `查看 ${game.name} 的遊戲資訊`);
+    link.setAttribute("aria-label", `查看 ${name} 的遊戲資訊`);
     return link;
   }
   function cardDate(game, event = false) {
@@ -165,6 +165,7 @@
     return [...events.values()];
   }
   function makeCard(game, options = {}) {
+    const display = D.releaseDisplayNames?.(game, game.releasePlatforms) || { name: game.name, nameEn: game.nameEn };
     const card = node("article", "game-card");
     card.dataset.appid = game.appid;
     card.dataset.gameKey = D.gameKey(game);
@@ -204,35 +205,24 @@
     const save = node("button", "save-button");
     save.type = "button";
     save.dataset.save = game.appid;
-    save.dataset.name = game.name;
+    save.dataset.name = display.name;
     save.innerHTML = heart;
     save.setAttribute(
       "aria-label",
-      `${D.isSaved(game, saved) ? "取消收藏" : "收藏"} ${game.name}`,
+      `${D.isSaved(game, saved) ? "取消收藏" : "收藏"} ${display.name}`,
     );
     save.setAttribute("aria-pressed", String(D.isSaved(game, saved)));
     const body = node("div", "card-body");
-    const names = detailLink(game, "card-names");
-    const title = node("h3", "card-title", game.name);
-    title.title = game.name;
+    const names = detailLink(game, "card-names", display.name);
+    const title = node("h3", "card-title", display.name);
+    title.title = display.name;
     names.append(title);
-    const originalName = game.nameEn && game.nameEn !== game.name ? game.nameEn : "";
+    const originalName = display.nameEn && display.nameEn !== display.name ? display.nameEn : "";
     const english = node("p", "card-english", originalName);
     if (originalName) english.title = originalName;
     else english.setAttribute("aria-hidden", "true");
     names.append(english);
     body.append(names);
-    const editions = D.releaseEditionBadges?.(game, event ? game.releasePlatforms : game.platforms) || [];
-    if (editions.length) {
-      const versions = node("div", "card-editions");
-      versions.setAttribute("aria-label", "各平台收錄版本");
-      for (const edition of editions) {
-        const version = node("span", "card-edition", `${edition.platform}・${edition.label}`);
-        version.title = edition.title;
-        versions.append(version);
-      }
-      body.append(versions);
-    }
     const languages = node("div", "card-languages");
     const nativePlatforms = (game.releasePlatforms || []).filter(platform => ["NS", "NS2"].includes(platform));
     const nativeEvent = event && nativePlatforms.length > 0 && !game.releasePlatforms.includes("Steam");
@@ -295,9 +285,9 @@
     }
     meta.append(dates, metrics);
     body.append(meta);
-    const detail = detailLink(game, "card-detail-link");
+    const detail = detailLink(game, "card-detail-link", display.name);
     detail.tabIndex = -1;
-    const steam = externalLink(game, "steam-store-link");
+    const steam = externalLink(game, "steam-store-link", game.source === "nintendo" ? display.name : game.name);
     steam.textContent = "Steam 商店";
     if (game.source === "nintendo") steam.textContent = game.linkLabel;
     const arrow = node("span", "", "↗");
@@ -620,16 +610,15 @@
       }
       cell.append(link);
       D.calendarFeatured(dayGames).forEach((game, rank) => {
-        const tag = detailLink(game, "day-game" + (rank ? " second" : ""));
         const releasePlatforms = game.releasePlatforms || [game.source === "nintendo" ? game.platformShort : "Steam"];
+        const display = D.releaseDisplayNames?.(game, releasePlatforms) || { name: game.name, nameEn: game.nameEn };
+        const tag = detailLink(game, "day-game" + (rank ? " second" : ""), display.name);
         const nativePlatforms = (game.releasePlatforms || []).filter(platform => ["NS", "NS2"].includes(platform));
         tag.classList.add("day-game-platform");
         if (nativePlatforms.length) tag.classList.add("day-game-nintendo");
-        const editions = D.releaseEditionBadges?.(game, releasePlatforms) || [];
-        const versionText = editions.map(edition => edition.label).join("／");
         tag.append(node("span", "day-platform", releasePlatforms.join("／")),
-          node("span", "day-game-name", game.name + (versionText ? ` · ${versionText}` : "")));
-        tag.title = `${game.name} · 本日發售：${releasePlatforms.join("／")}${editions.map(edition => ` · ${edition.platform}：${edition.title}`).join("")}${Number.isFinite(game.hypes) ? ` · ${number.format(game.hypes)} IGDB hypes` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;
+          node("span", "day-game-name", display.name));
+        tag.title = `${display.name}${display.nameEn && display.nameEn !== display.name ? ` · ${display.nameEn}` : ""} · 本日發售：${releasePlatforms.join("／")}${Number.isFinite(game.hypes) ? ` · ${number.format(game.hypes)} IGDB hypes` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;
         cell.append(tag);
       });
       if (dayGames.length > 2) {

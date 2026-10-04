@@ -92,4 +92,4 @@ node --test tests/*.test.cjs
 
 `scripts/sync_scheduler_queue_status.py` 隨既有 `radar-insights.yml` 更新本站佇列備份，只讀取 Steam 後端已發布的 `data/scheduler_queue_status.json`，驗證動態總數、實際名單、Twitch 優先數與時間。來源無法取得或格式不符時保留有效備份及其原始時間；較舊來源不覆蓋較新備份。發布衝突後重新讀取遠端版本再同步，不增加 Cron，也不查詢 Steam。
 
-已核對的 Nintendo 本體加 DLC、擴充合輯及 Deluxe 版本另由 `platform_editions` 提供實際商品名稱、內容版本、來源地區與官方網址。卡片與月曆標示該次發售的版本，詳情頁按平台列出商品內容與日期；未確認的商品不預設為純本體版本。Nintendo 單獨發售事件使用該平台的語言證據，仍不沿用 Steam 語言。
+已核對的 Nintendo 本體加 DLC、擴充合輯及 Deluxe 版本另由 `platform_editions` 提供實際商品名稱、內容版本、來源地區與官方網址。卡片、月曆與詳情頁直接在遊戲標題中顯示該次發售的版本，英文原名採用完整商品名稱，不另加版本標籤；Steam 原版日期保留原版名稱。同日包含原版與其他平台的不同版本時，標題註明版本所屬平台。詳情頁按平台列出商品內容與日期；未確認的商品不預設為純本體版本。Nintendo 單獨發售事件使用該平台的語言證據，仍不沿用 Steam 語言。

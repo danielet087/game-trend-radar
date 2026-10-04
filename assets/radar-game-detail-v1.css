@@ -753,14 +753,15 @@ body[data-page="game"] .button.primary:hover {
   gap: 13px;
 }
 .game-related-copy strong {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  display: block;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 14px;
   line-height: 1.65;
   font-weight: 800;
 }
+.related-names { min-width: 0; }
 .match-tags {
   display: flex;
   flex-wrap: wrap;
@@ -1360,7 +1361,6 @@ body.motion-on .art-dialog[open] {
 /* Native Nintendo editions remain separate from Steam Followers and languages. */
 .game-platform-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .game-platform-chip { padding: 6px 10px; border: 1px solid var(--game-edge); border-radius: 8px; background: var(--game-light); color: var(--game-accent); font-size: 12px; font-weight: 750; }
-.game-edition-chip { border-color: #c7b0e5; background: #f1eafa; color: #5c378b; }
 .game-platform-label { color: var(--game-accent); font-size: 15px; line-height: 1.6; font-weight: 750; }
 .game-platform-note, .game-platform-dates, .game-release-note { color: var(--muted); font-size: 10px; line-height: 1.7; margin-top: 7px; overflow-wrap: anywhere; }
 .game-platform-dates { padding-left: 15px; }
@@ -1386,3 +1386,4 @@ body[data-game-source="nintendo"] #gameLanguageContent:not([hidden]) { margin-to
 .game-language-list, .game-language-source, .game-language-description, .game-language-policy { color: var(--muted); font-size: 10px; line-height: 1.8; margin-top: 7px; overflow-wrap: anywhere; }
 .game-language-source a { color: var(--game-accent); text-decoration: underline; }
 .game-language-chip.language-chinese { background: #fcf0d9; border-color: #e8d8b9; color: #886734; }
+.related-english { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font: 11px/1.6 Arial, "Noto Sans TC", sans-serif; margin-top: 1px; }

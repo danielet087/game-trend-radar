@@ -240,9 +240,10 @@
     document.documentElement.style.overflow = previousOverflow;
   });
   function relatedCard(game, basis) {
+    const displayNames = D.releaseDisplayNames(game);
     const a = node("a", "game-related-link");
     a.href = detailURL(game);
-    a.setAttribute("aria-label", `查看 ${game.name} 遊戲資訊`);
+    a.setAttribute("aria-label", `查看 ${displayNames.name} 遊戲資訊`);
     const cover = node("div", "related-cover");
     const fallback = node("span", "cover-placeholder");
     fallback.setAttribute("aria-hidden", "true");
@@ -261,8 +262,14 @@
       );
     }
     const copy = node("div", "game-related-copy");
-    const title = node("strong", "", game.name);
-    title.title = game.name;
+    const title = node("strong", "", displayNames.name);
+    title.title = displayNames.name;
+    const english = displayNames.nameEn && displayNames.nameEn !== displayNames.name
+      ? node("p", "related-english", displayNames.nameEn) : null;
+    if (english) english.title = displayNames.nameEn;
+    const names = node("div", "related-names");
+    names.append(title);
+    if (english) names.append(english);
     const tags = node("div", "match-tags");
     const shared = selectedTag
       ? [selectedTag, ...game.sharedTags.filter((tag) => R.key(tag) !== R.key(selectedTag))]
@@ -282,7 +289,7 @@
     const arrow = node("span", "", "↗");
     arrow.setAttribute("aria-hidden", "true");
     action.append(arrow);
-    copy.append(title, tags, meta, action);
+    copy.append(names, tags, meta, action);
     a.append(cover, copy);
     return a;
   }
@@ -398,6 +405,7 @@
     currentGame = game;
     const comparison = $("gameCompare");
     const nintendo = isNintendo(game);
+    const displayNames = D.releaseDisplayNames(game);
     const nativeRelease = (game.dateReleases || game.releases || []).find((row) =>
       ["NS", "NS2"].includes(row.platform) && row.date === game.date,
     );
@@ -430,9 +438,9 @@
         86400000,
     );
     document.body.dataset.gameTheme = R.theme(game);
-    $("gameTitle").textContent = game.name;
-    $("gameEnglish").hidden = !game.nameEn || game.nameEn === game.name;
-    $("gameEnglish").textContent = game.nameEn === game.name ? "" : game.nameEn;
+    $("gameTitle").textContent = displayNames.name;
+    $("gameEnglish").hidden = !displayNames.nameEn || displayNames.nameEn === displayNames.name;
+    $("gameEnglish").textContent = displayNames.nameEn === displayNames.name ? "" : displayNames.nameEn;
     $("gameDescription").textContent = game.description || "繁體中文遊戲介紹整理中。";
     $("gameDescription").hidden = false;
     $("gameDescription").lang = "zh-Hant";
@@ -511,7 +519,7 @@
         `在 ${sourceName}開啟 ${game.name}（另開分頁）`,
       );
     });
-    document.title = `${game.name}｜遊戲資訊・Game Trend Radar`;
+    document.title = `${displayNames.name}｜遊戲資訊・Game Trend Radar`;
     if (!unchangedArt) showArtwork(game);
     updateSaveControls();
     setupTags(game);
@@ -603,11 +611,6 @@
     const editions = (game.platforms || []).filter(code => ["NS", "NS2"].includes(code))
       .map(code => ({ code, edition: game.platformEditions?.[code] }))
       .filter(({ edition }) => edition?.label && edition.title && publicSourceURL(edition.source_url));
-    for (const { code, edition } of editions) {
-      const chip = node("span", "game-platform-chip game-edition-chip", `${code} ${edition.label}`);
-      chip.title = `${edition.title} · ${regionLabel(edition.region)}版本`;
-      $("gamePlatforms").append(chip);
-    }
     $("gamePlatformSupport").hidden = !supported;
     if (!supported) return;
     $("gamePlatformLabel").textContent = game.platformLabel || "平台資訊待確認";

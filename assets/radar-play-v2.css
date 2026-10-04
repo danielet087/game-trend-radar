@@ -1394,26 +1394,6 @@ h1 {
     sans-serif;
   color: var(--muted);
 }
-.card-editions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 7px;
-  min-width: 0;
-}
-.card-edition {
-  max-width: 100%;
-  padding: 3px 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  border: 1px solid #ddcda9;
-  border-radius: 5px;
-  background: #fff9e9;
-  color: #816134;
-  font-size: 10px;
-  line-height: 1.5;
-}
 .card-languages {
   display: flex;
   flex-wrap: wrap;

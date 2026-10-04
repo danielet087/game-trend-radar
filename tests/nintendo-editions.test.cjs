@@ -92,3 +92,75 @@ test('a Nintendo edition and bare Steam link cannot redirect to an unadmitted St
   assert.deepEqual(game.platformEditions, { NS2: edition() });
   assert.deepEqual(game.releases.map(row => row.platform), ['NS2']);
 });
+
+test('Chinese release titles append the verified edition while retaining canonical names and identity', () => {
+  const [game] = D.nintendoGames(payload(nintendo({ name_zh_tw: '王國之心 III' })));
+  const before = JSON.stringify(game);
+  assert.deepEqual(D.releaseDisplayNames(game), {
+    name: '王國之心 III（本體＋Re Mind DLC）', nameEn: 'KINGDOM HEARTS III + Re Mind',
+  });
+  assert.equal(JSON.stringify(game), before);
+  assert.equal(game.name, '王國之心 III');
+  assert.equal(game.identityKey, 'steam:2552450');
+});
+
+test('English release titles use the complete official edition title once', () => {
+  for (const name of ['Kingdom Hearts III', 'KINGDOM HEARTS III + Re Mind']) {
+    const [game] = D.nintendoGames(payload(nintendo({ display_name: name })));
+    assert.deepEqual(D.releaseDisplayNames(game), {
+      name: 'KINGDOM HEARTS III + Re Mind', nameEn: 'KINGDOM HEARTS III + Re Mind',
+    });
+  }
+});
+
+test('different Steam and Nintendo event scopes select their own titles without losing the canonical game', () => {
+  const result = D.datasets({ games: [steam({ name_zh_tw: '王國之心 III' })] }, null, payload(nintendo()));
+  const [pc, ns] = result.games;
+  assert.deepEqual(D.releaseDisplayNames(pc), { name: pc.name, nameEn: pc.nameEn });
+  assert.deepEqual(D.releaseDisplayNames(ns), {
+    name: '王國之心 III（本體＋Re Mind DLC）', nameEn: 'KINGDOM HEARTS III + Re Mind',
+  });
+  assert.equal(pc.name, ns.name);
+  assert.equal(pc.identityKey, ns.identityKey);
+  assert.deepEqual(D.releaseDisplayNames(ns, ['Steam']), { name: ns.name, nameEn: ns.nameEn });
+});
+
+test('same-day mixed Steam and Nintendo versions scope both localized and English display titles', () => {
+  const result = D.datasets({ games: [steam({ name_zh_tw: '王國之心 III', release_start: '2026-10-09' })] },
+    null, payload(nintendo()));
+  assert.deepEqual(D.releaseDisplayNames(result.games[0]), {
+    name: '王國之心 III（NS2 本體＋Re Mind DLC）', nameEn: 'NS2 KINGDOM HEARTS III + Re Mind',
+  });
+});
+
+test('distinct native editions remain distinguishable and repeated version suffixes are normalized', () => {
+  const deluxe = edition({ type: 'deluxe', label: 'Deluxe 版', title: 'Kingdom Hearts III Deluxe Edition',
+    product_id: '70010000117243', source_url: 'https://ec.nintendo.com/HK/zh/titles/70010000117243' });
+  const [game] = D.nintendoGames(payload(nintendo({ name_zh_tw: '王國之心 III',
+    platforms: [{ id: 130, code: 'NS' }, { id: 508, code: 'NS2' }],
+    releases: [{ platform: 'NS', date: '2026-10-09', precision: 'day', source: 'IGDB' },
+      { platform: 'NS2', date: '2026-10-09', precision: 'day', source: 'IGDB' }],
+    platform_editions: { NS: deluxe, NS2: edition() } })));
+  assert.deepEqual(D.releaseDisplayNames(game), {
+    name: '王國之心 III（NS Deluxe 版；NS2 本體＋Re Mind DLC）',
+    nameEn: 'NS Kingdom Hearts III Deluxe Edition／NS2 KINGDOM HEARTS III + Re Mind',
+  });
+  for (const name of ['王國之心 III（Deluxe 版）', '王國之心 III（NS2 Deluxe 版）', '王國之心 III Deluxe版']) {
+    const [repeat] = D.nintendoGames(payload(nintendo({ display_name: name, platform_editions: { NS2: deluxe } })));
+    assert.deepEqual(D.releaseDisplayNames(repeat), {
+      name: '王國之心 III（Deluxe 版）', nameEn: 'Kingdom Hearts III Deluxe Edition',
+    });
+  }
+});
+
+test('official edition titles and labels remain searchable on native and merged records', () => {
+  const [native] = D.nintendoGames(payload(nintendo()));
+  const merged = D.datasets({ games: [steam()] }, null, payload(nintendo())).games[0];
+  for (const game of [native, merged]) {
+    assert.ok(game.nameSearchAliases.includes('KINGDOM HEARTS III + Re Mind'));
+    assert.ok(game.nameSearchAliases.includes('本體＋Re Mind DLC'));
+  }
+  const [unreviewed] = D.nintendoGames(payload(nintendo({ platform_editions: {} })));
+  assert.deepEqual(unreviewed.nameSearchAliases, []);
+  assert.deepEqual(D.releaseDisplayNames(unreviewed), { name: unreviewed.name, nameEn: unreviewed.nameEn });
+});

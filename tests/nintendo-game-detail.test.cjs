@@ -363,12 +363,22 @@ function edition(fields = {}) {
 test('every merged game entry point retains the complete platform edition, official title and regional source', async () => {
   const payload = crossPlatformSample();
   payload.games[0].platform_editions = { NS2: edition() };
+  const catalog = steamCatalog();
+  catalog.games[0].name = 'KINGDOM HEARTS III';
+  catalog.games[0].display_name = '王國之心 III';
   for (const search of ['?appid=632950&date=2027-01-15', '?appid=632950&date=2027-03-19',
     '?igdb=366896&date=2027-01-15', '?igdb=366896&date=2027-03-19']) {
-    const { elements: e } = await display(search, payload, steamCatalog());
+    const { elements: e, document } = await display(search, payload, catalog);
     assert.equal(e.get('detailPage').hidden, false);
-    assert.equal(e.get('gameDate').textContent, search.includes('2027-03-19') ? '2027/03/19' : '2027/01/15');
-    assert.match(e.get('gamePlatforms').textContent, /NS2 本體＋Re Mind DLC/);
+    const native = search.includes('2027-03-19');
+    assert.equal(e.get('gameDate').textContent, native ? '2027/03/19' : '2027/01/15');
+    const title = native ? '王國之心 III（本體＋Re Mind DLC）' : '王國之心 III';
+    assert.equal(e.get('gameTitle').textContent, title);
+    assert.equal(e.get('gameEnglish').textContent, native ? 'KINGDOM HEARTS III + Re Mind' : 'KINGDOM HEARTS III');
+    assert.equal(e.get('gameEnglish').hidden, false);
+    assert.equal(document.title, `${title}｜遊戲資訊・Game Trend Radar`);
+    assert.doesNotMatch(e.get('gamePlatforms').textContent, /本體|Re Mind|DLC/);
+    assert.ok(e.get('gamePlatforms').children.every(row => row.className === 'game-platform-chip'));
     const dates = e.get('gamePlatformDates').children;
     assert.equal(dates.length, 2);
     assert.match(dates[0].textContent, /Steam · 2027\/01\/15 · 台灣.*Steam 版本/);
@@ -390,9 +400,13 @@ test('Nintendo-only expansion and Deluxe releases keep their own confirmed editi
       region: 'australia', source_url: 'https://ec.nintendo.com/AU/en/titles/70010000114443' }),
   ];
   for (const version of variants) {
-    const { elements: e } = await display('?igdb=366896&date=2027-01-15', sample({ platform_editions: { NS2: version } }));
+    const { elements: e, document } = await display('?igdb=366896&date=2027-01-15', sample({ platform_editions: { NS2: version } }));
     assert.equal(e.get('detailPage').hidden, false);
-    assert.match(e.get('gamePlatforms').textContent, new RegExp('NS2 ' + version.label));
+    assert.equal(e.get('gameTitle').textContent, version.title);
+    assert.equal(e.get('gameEnglish').hidden, true);
+    assert.equal(e.get('gameEnglish').textContent, '');
+    assert.equal(document.title, `${version.title}｜遊戲資訊・Game Trend Radar`);
+    assert.doesNotMatch(e.get('gamePlatforms').textContent, /本體|Dark Arisen|Deluxe/);
     const row = e.get('gamePlatformDates').children[0];
     assert.match(row.textContent, /NS2 · 2027\/01\/15 · 全球/);
     assert.ok(row.textContent.includes(version.title));
@@ -410,6 +424,7 @@ test('a NS2 content bundle does not become a label on an ordinary NS release or 
     platform_editions: { NS2: edition() } });
   const { elements: e } = await display('?igdb=366896&date=2027-01-15', payload);
   assert.equal(e.get('gameDate').textContent, '2027/01/15');
+  assert.equal(e.get('gameTitle').textContent, "Fire Emblem: Fortune's Weave");
   const rows = e.get('gamePlatformDates').children;
   assert.doesNotMatch(rows[0].textContent, /本體|Re Mind|DLC/);
   assert.match(rows[1].textContent, /NS2 本體＋Re Mind DLC/);
@@ -422,5 +437,23 @@ test('missing or unverified edition records never produce an edition or base-ver
     const { elements: e } = await display('?igdb=366896', sample({ platform_editions: { NS2: entry } }));
     assert.doesNotMatch(e.get('gamePlatforms').textContent, /本體|Re Mind|原版|重製/);
     assert.doesNotMatch(e.get('gamePlatformDates').textContent, /官方商品名稱|本體|Re Mind|原版|重製/);
+    assert.equal(e.get('gameTitle').textContent, "Fire Emblem: Fortune's Weave");
   }
+});
+
+test('detail recommendations show the candidate release edition in its title and original English subtitle', async () => {
+  const payload = sample({ name_en: 'Resident Evil 2', name_zh_tw: '惡靈古堡 2', tags: ['Action'],
+    platform_editions: { NS2: edition({ type: 'deluxe', label: 'Deluxe 版', title: 'Resident Evil 2: Deluxe Edition',
+      product_id: '70010000114443', region: 'australia', source_url: 'https://ec.nintendo.com/AU/en/titles/70010000114443' }) } });
+  const catalog = steamCatalog(); catalog.games[0].tags = ['Action'];
+  const { elements: e } = await display('?appid=632950', payload, catalog);
+  assert.equal(e.get('gameRelatedGrid').children.length, 1);
+  const card = e.get('gameRelatedGrid').children[0];
+  assert.equal(card.href, './game.html?igdb=366896&date=2027-01-15');
+  const names = card.children[1].children[0];
+  assert.equal(names.className, 'related-names');
+  assert.equal(names.children[0].textContent, '惡靈古堡 2（Deluxe 版）');
+  assert.equal(names.children[0].title, '惡靈古堡 2（Deluxe 版）');
+  assert.equal(names.children[1].textContent, 'Resident Evil 2: Deluxe Edition');
+  assert.equal(names.children[1].title, 'Resident Evil 2: Deluxe Edition');
 });
