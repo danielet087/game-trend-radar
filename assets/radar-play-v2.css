@@ -2573,18 +2573,18 @@ body[data-page="explore"] {
 .platform-badge {
   display: inline-flex;
   padding: 4px 7px;
-  border: 1px solid #f0b7bd;
+  border: 1px solid #d8d6ce;
   border-radius: 6px;
-  color: #a8243b;
-  background: #fff0f2;
+  color: #6c685c;
+  background: #f7f5ee;
   font-size: 10px;
   font-weight: 700;
   line-height: 1.45;
 }
 .platform-exclusive {
-  border-color: #bda8ed;
-  color: #683bac;
-  background: #f3edff;
+  border-color: #f0b7bd;
+  color: #a8243b;
+  background: #fff0f2;
 }
 .platform-steam { border-color: #cbd6ed; color: #3b5391; background: #edf1fb; }
 .platform-multi { border-color: #d8d6ce; color: #6c685c; background: #f7f5ee; }
@@ -2598,22 +2598,32 @@ body[data-page="explore"] {
   align-items: center;
   gap: 4px;
 }
-.day-game-nintendo {
+.day-game-exclusive {
   background: #fff0f2;
   color: #a8243b;
 }
-.day-game-nintendo.second { background: #fff0f2; color: #a8243b; }
-.day-game-nintendo:hover { background: #ffe0e5; }
+.day-game-exclusive.second { background: #fff0f2; color: #a8243b; }
+.day-game-exclusive:hover { background: #ffe0e5; }
+.day-game-multi,
+.day-game-nintendo,
+.day-game-unknown,
+.day-game-multi.second,
+.day-game-nintendo.second,
+.day-game-unknown.second { background: #f7f5ee; color: #6c685c; }
+.day-game-multi:hover,
+.day-game-nintendo:hover,
+.day-game-unknown:hover { background: #eeece4; }
 .day-platform {
   flex: 0 0 auto;
   padding: 1px 4px;
   border-radius: 4px;
-  background: #ae2941;
+  background: #746f62;
   color: #fff;
   font-size: 9px;
   line-height: 1.7;
 }
-.day-game-platform:not(.day-game-nintendo) .day-platform { background: #526bac; }
+.day-game-steam .day-platform { background: #526bac; }
+.day-game-exclusive .day-platform { background: #ae2941; }
 .day-game-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .game-card[data-source="nintendo"] .cover-link img { object-position: center 35%; }
 @media (max-width: 520px) {

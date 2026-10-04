@@ -607,10 +607,8 @@
         const releasePlatforms = game.releasePlatforms || [game.source === "nintendo" ? game.platformShort : "Steam"];
         const display = D.releaseDisplayNames?.(game, releasePlatforms) || { name: game.name, nameEn: game.nameEn };
         const tag = detailLink(game, "day-game" + (rank ? " second" : ""), display.name);
-        const nativePlatforms = (game.releasePlatforms || []).filter(platform => ["NS", "NS2"].includes(platform));
         const badge = D.cardPlatformBadge(game);
-        tag.classList.add("day-game-platform");
-        if (nativePlatforms.length) tag.classList.add("day-game-nintendo");
+        tag.classList.add("day-game-platform", "day-game-" + badge.status);
         const platform = node("span", "day-platform", badge.label);
         platform.title = `${badge.title} 本日發售：${releasePlatforms.join("／")}。`;
         tag.append(platform,
