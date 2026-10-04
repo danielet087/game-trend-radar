@@ -408,9 +408,29 @@ body[data-page="game"] .button.primary:hover {
   border-left: 1px dashed #d5cfbf;
 }
 .release-intel {
-  display: flex;
-  align-items: center;
+  display: grid;
+  align-content: start;
   gap: 18px;
+}
+.release-ticket {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  min-width: 0;
+}
+.release-ticket + .release-ticket {
+  border-top: 1px dashed #d5cfbf;
+  padding-top: 18px;
+}
+.release-ticket-copy {
+  min-width: 0;
+}
+.release-platform-label {
+  color: var(--game-ink);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.7;
+  margin-bottom: 4px;
 }
 .release-stamp {
   width: 65px;
@@ -455,7 +475,7 @@ body[data-page="game"] .button.primary:hover {
   line-height: 1.7;
   margin-bottom: 9px;
 }
-#gameDate {
+.release-ticket-date {
   display: block;
   font:
     800 clamp(16px, 1.6vw, 21px) / 1.5 Arial,
@@ -982,7 +1002,7 @@ body.motion-on .art-dialog[open] {
   .game-intel > div {
     padding: 0 20px;
   }
-  .release-intel {
+  .release-ticket {
     gap: 12px;
   }
   .release-stamp {
@@ -1189,7 +1209,7 @@ body.motion-on .art-dialog[open] {
   .game-intel > div {
     padding: 0 16px;
   }
-  .release-intel {
+  .release-ticket {
     flex-wrap: wrap;
     gap: 10px;
     align-content: start;
@@ -1207,14 +1227,14 @@ body.motion-on .art-dialog[open] {
   .release-stamp small {
     font-size: 8px;
   }
-  .release-intel > div:last-child {
+  .release-ticket-copy {
     flex-basis: 100%;
   }
   .intel-label {
     font-size: 10px;
     margin-bottom: 6px;
   }
-  #gameDate {
+  .release-ticket-date {
     font-size: 18px;
   }
   .followers-intel {

@@ -78,6 +78,7 @@ async function display(search, nintendo = sample(), catalog = null, stored = [],
 
 test('Nintendo detail uses its own public source, hypes and verified native exclusive label', async () => {
   const { elements: e, document, calls } = await display('?igdb=366896&date=2027-01-15');
+  assert.deepEqual(e.get('gameReleaseDates').children.map(row => [row.dataset.platform, row.dataset.date]), [['NS2', '2027-01-15']]);
   assert.equal(calls.steam, 0);
   assert.equal(calls.nintendo, 1);
   assert.equal(e.get('detailPage').hidden, false);
@@ -156,6 +157,10 @@ const crossPlatformSample = () => sample({
 
 test('merged Steam detail preserves its Steam date, separate hypes and Nintendo dates, and existing IGDB saves', async () => {
   const { elements: e, storage, savedCount } = await display('?appid=632950', crossPlatformSample(), steamCatalog(), ['igdb:366896', 632950, 632951]);
+  const tickets = e.get('gameReleaseDates').children;
+  assert.deepEqual(tickets.map(row => [row.dataset.platform, row.dataset.date]), [['Steam', '2027-01-15'], ['NS2', '2027-03-19']]);
+  assert.match(tickets[0].textContent, /Steam 版本.*2027\/01\/15.*還有 103 天/);
+  assert.match(tickets[1].textContent, /NS2 版本.*日本.*2027\/03\/19.*還有 166 天.*尚未另行確認台灣上市日/);
   assert.equal(e.get('gameDate').textContent, '2027/01/15');
   assert.equal(e.get('gameReleaseLabel').textContent, '預定發售・台灣');
   assert.equal(e.get('gameFollowers').textContent, '6,000');
@@ -193,6 +198,7 @@ test('tag recommendation counts treat separate platform release dates as one gam
 test('both merged Steam event links and existing IGDB event links retain the requested Nintendo release context', async () => {
   for (const search of ['?appid=632950&date=2027-03-19', '?igdb=366896&date=2027-03-19']) {
     const { elements: e } = await display(search, crossPlatformSample(), steamCatalog());
+    assert.deepEqual(e.get('gameReleaseDates').children.map(row => [row.dataset.platform, row.dataset.date]), [['NS2', '2027-03-19'], ['Steam', '2027-01-15']]);
     assert.equal(e.get('detailPage').hidden, false);
     assert.equal(e.get('gameDate').textContent, '2027/03/19');
     assert.equal(e.get('gameReleaseLabel').textContent, '預定發售・日本');
@@ -219,11 +225,13 @@ test('Steam first paint does not wait for Nintendo and later enrichment keeps th
   assert.equal(e.get('detailPage').hidden, false);
   assert.equal(e.get('gameDate').textContent, '2027/01/15');
   assert.equal(e.get('gamePlatforms').hidden, true);
+  assert.equal(e.get('gameReleaseDates').children.length, 1);
   finishNintendo(crossPlatformSample());
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(e.get('gamePlatforms').hidden, false);
   assert.equal(e.get('gameDate').textContent, '2027/01/15');
   assert.match(e.get('gamePlatformDates').textContent, /NS2 · 2027\/03\/19/);
+  assert.deepEqual(e.get('gameReleaseDates').children.map(row => [row.dataset.platform, row.dataset.date]), [['Steam', '2027-01-15'], ['NS2', '2027-03-19']]);
 });
 
 test('invalid merged Steam event dates stop before any source request', async () => {
@@ -295,6 +303,17 @@ test('merged profiles retain official Nintendo dates and source separately from 
   assert.equal(e.get('gameDate').textContent, '2027/01/15');
   assert.match(e.get('gamePlatformDates').textContent, /Steam · 2027\/01\/15 · 台灣.*NS2 · 2027\/01\/16 · 台灣.*Nintendo 台灣.*已確認台灣上市日/);
   assert.equal(e.get('gamePlatformDates').children.length, 2);
+  assert.deepEqual(e.get('gameReleaseDates').children.map(row => [row.dataset.platform, row.dataset.date]), [['Steam', '2027-01-15'], ['NS2', '2027-01-16']]);
+  nintendo.games[0].releases = [
+    { date: '2027-01-15', platform: 'NS2', precision: 'day', region: 'japan', source: 'IGDB' },
+    officialRelease({ date: '2027-01-15' }),
+  ];
+  const { elements: same } = await display('?appid=632950', nintendo, steamCatalog());
+  assert.deepEqual(same.get('gameReleaseDates').children.map(row => [row.dataset.platform, row.dataset.date]), [['Steam', '2027-01-15'], ['NS2', '2027-01-15']]);
+  assert.match(same.get('gameReleaseDates').children[1].textContent, /NS2 版本.*台灣.*2027\/01\/15.*已確認台灣上市日/);
+  const { elements: native } = await display('?igdb=366896', nintendo);
+  assert.equal(native.get('gameReleaseDates').children.length, 1);
+  assert.match(native.get('gameReleaseLabel').textContent, /台灣/);
 });
 
 function languageSupport(fields = {}) {

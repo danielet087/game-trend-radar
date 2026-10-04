@@ -55,6 +55,75 @@
       ? "日期已核對台灣時區（Asia/Taipei），不代表確切解鎖時間。" : "";
     return `依 ${regionLabel(row?.region)}發售資料顯示；此日期尚未另行確認台灣上市日。${audit}實際上市時間請以台灣官方公告為準。`;
   }
+  function detailReleaseRows(game) {
+    const records = new Map();
+    for (const row of Array.isArray(game.releases) ? game.releases : []) {
+      if (!row || !["Steam", "NS", "NS2"].includes(row.platform) ||
+        !game.platforms?.includes(row.platform) || row.precision !== "day" || !D.validDate(row.date)) continue;
+      const key = `${row.platform}|${row.date}|${row.region || ""}`;
+      if (!records.has(key) || taiwanOfficialRelease(row)) records.set(key, row);
+    }
+    const rows = [...records.values()].sort((a, b) => a.date.localeCompare(b.date) ||
+      ["Steam", "NS", "NS2"].indexOf(a.platform) - ["Steam", "NS", "NS2"].indexOf(b.platform));
+    const preferred = rows.filter(row => row.platform === "Steam" || taiwanOfficialRelease(row) ||
+      !rows.some(other => other.platform === row.platform && taiwanOfficialRelease(other)));
+    const selected = preferred.find(row => row.date === game.date) || rows.find(row => row.date === game.date);
+    // Keep the requested calendar event visible even if a newer Taiwan source
+    // is preferred for the platform's other release rows.
+    if (selected) return [selected, ...preferred.filter(row => row !== selected)];
+    if (preferred.length) return preferred;
+    const platform = isNintendo(game)
+      ? (game.releasePlatforms || game.platforms || []).find(code => ["NS", "NS2"].includes(code))
+      : "Steam";
+    return platform ? [{ platform, date: game.date, precision: "day", region: game.dateRegion,
+      source: game.dateSource || (platform === "Steam" ? "Steam" : "IGDB") }] : [];
+  }
+  const releaseDays = (date) => Math.round((Date.parse(date + "T12:00:00Z") -
+    Date.parse(today + "T12:00:00Z")) / 86400000);
+  const releaseCountdown = (date) => {
+    const days = releaseDays(date);
+    return days > 0 ? `還有 ${days} 天，準備好出發。` : days === 0
+      ? "預定今天上市" : "原定日期已過，請以商店為準";
+  };
+  function renderReleaseDates(game) {
+    const rows = detailReleaseRows(game);
+    const primary = $("gameReleasePrimary");
+    const tickets = rows.map((row, index) => {
+      const native = row.platform !== "Steam";
+      const region = native ? regionLabel(row.region) : "台灣";
+      const ticket = index === 0 ? primary : node("div", "release-ticket");
+      ticket.dataset.platform = row.platform;
+      ticket.dataset.date = row.date;
+      ticket.setAttribute("role", "listitem");
+      ticket.setAttribute("aria-label", `${row.platform} 版本・${row.date.replaceAll("-", "/")}・${region}`);
+      const month = index === 0 ? $("releaseMonth") : node("span");
+      const day = index === 0 ? $("releaseDay") : node("strong");
+      const year = index === 0 ? $("releaseYear") : node("small");
+      month.textContent = `${Number(row.date.slice(5, 7))} 月`;
+      day.textContent = row.date.slice(8);
+      year.textContent = row.date.slice(0, 4);
+      const platform = index === 0 ? $("gameReleasePlatform") : node("p", "release-platform-label");
+      const label = index === 0 ? $("gameReleaseLabel") : node("p", "intel-label");
+      const date = index === 0 ? $("gameDate") : node("time", "release-ticket-date");
+      const countdown = index === 0 ? $("gameCountdown") : node("p", "game-countdown");
+      const note = index === 0 ? $("gameReleaseNote") : node("p", "game-release-note");
+      platform.textContent = `${row.platform} 版本`;
+      label.textContent = `預定發售・${region}`;
+      date.textContent = row.date.replaceAll("-", "/");
+      date.dateTime = row.date;
+      countdown.textContent = releaseCountdown(row.date);
+      note.hidden = !native;
+      note.textContent = native ? `來源：${releaseSourceName(row)}。${releaseDateNote(row)}` : "";
+      const stamp = node("div", "release-stamp");
+      stamp.setAttribute("aria-hidden", "true");
+      stamp.append(month, day, year);
+      const copy = node("div", "release-ticket-copy");
+      copy.append(platform, label, date, countdown, note);
+      ticket.replaceChildren(stamp, copy);
+      return ticket;
+    });
+    $("gameReleaseDates").replaceChildren(...tickets);
+  }
   const interestText = (game) => isNintendo(game)
     ? Number.isSafeInteger(game.hypes) ? `IGDB hypes ${number.format(game.hypes)}` : "IGDB hypes 未知"
     : `${number.format(game.followers)} 人關注`;
@@ -406,12 +475,6 @@
     const comparison = $("gameCompare");
     const nintendo = isNintendo(game);
     const displayNames = D.releaseDisplayNames(game);
-    const nativeRelease = (game.dateReleases || game.releases || []).find((row) =>
-      ["NS", "NS2"].includes(row.platform) && row.date === game.date,
-    );
-    const nativeDate = nintendo || (game.hasNintendo === true && !!nativeRelease &&
-      !(game.releases || []).some((row) => row.platform === "Steam" && row.date === game.date));
-    const dateRegion = nativeRelease?.region || game.dateRegion;
     document.body.dataset.gameSource = game.source || "steam";
     comparison.hidden = nintendo;
     if (nintendo) {
@@ -432,11 +495,7 @@
       ...data.games.filter((row) => row.date >= today),
       ...D.selectGames(data, "released", today),
     ]);
-    const days = Math.round(
-      (Date.parse(game.date + "T12:00:00Z") -
-        Date.parse(today + "T12:00:00Z")) /
-        86400000,
-    );
+    const days = releaseDays(game.date);
     document.body.dataset.gameTheme = R.theme(game);
     $("gameTitle").textContent = displayNames.name;
     $("gameEnglish").hidden = !displayNames.nameEn || displayNames.nameEn === displayNames.name;
@@ -453,11 +512,7 @@
     );
     $("gameGenres").hidden = !game.genres.length;
     renderLanguages(game);
-    $("gameDate").textContent = game.date.replaceAll("-", "/");
-    $("gameDate").dateTime = game.date;
-    $("releaseMonth").textContent = `${Number(game.date.slice(5, 7))} 月`;
-    $("releaseDay").textContent = game.date.slice(8);
-    $("releaseYear").textContent = game.date.slice(0, 4);
+    renderReleaseDates(game);
     $("gameInterestLabel").textContent = nintendo ? "發售前的社群關注" : "已經有這麼多人關注";
     $("gameFollowers").textContent = nintendo
       ? Number.isSafeInteger(game.hypes) ? number.format(game.hypes) : "未知"
@@ -466,20 +521,6 @@
     $("gameInterestCaption").textContent = nintendo
       ? "IGDB hypes · 發售前關注數"
       : "Steam Followers · 非願望清單數";
-    $("gameReleaseLabel").textContent = nativeDate
-      ? `預定發售・${regionLabel(dateRegion)}`
-      : "預定發售・台灣";
-    $("gameReleaseNote").hidden = !nativeDate;
-    const releaseEvidence = nativeRelease || { source: game.dateSource || "IGDB", region: dateRegion };
-    $("gameReleaseNote").textContent = nativeDate
-      ? `來源：${releaseSourceName(releaseEvidence)}。${releaseDateNote(releaseEvidence)}`
-      : "";
-    $("gameCountdown").textContent =
-      days > 0
-        ? `還有 ${days} 天，準備好出發。`
-        : days === 0
-          ? "預定今天上市"
-          : "原定日期已過，請以商店為準";
     $("gameState").textContent =
       days > 0
         ? "值得期待的新作"
