@@ -679,8 +679,9 @@
       return;
     }
     const filtered = activeFilters();
+    const resultUnit = mode === "home" ? "筆發售" : "款";
     $("resultCount").textContent = model.data
-      ? `${mode === "home" ? "本月" : "共"} ${items.length} 款${filtered ? ` / ${source.length} 款` : ""}${mode === "home" && !items.length ? " · 尚無符合條件的遊戲" : ""}`
+      ? `${mode === "home" ? "本月" : "共"} ${items.length} ${resultUnit}${filtered ? ` / ${source.length} ${resultUnit}` : ""}${mode === "home" && !items.length ? " · 尚無符合條件的遊戲" : ""}`
       : "資料暫時無法讀取";
     if (mode === "home") renderCalendar(events);
     $("gamesGrid").setAttribute("aria-busy", "false");
