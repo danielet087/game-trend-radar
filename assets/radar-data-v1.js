@@ -327,6 +327,84 @@
       return url.protocol === "https:" && !url.username && !url.password && allowed ? url.href : "";
     } catch { return ""; }
   }
+  const languageRegionNames = { taiwan: "台灣", north_america: "北美", japan: "日本", hong_kong: "香港", asia: "亞洲", worldwide: "全球公告",
+    united_kingdom: "英國", europe: "歐洲" };
+  const officialLanguageHosts = new Set(["www.nintendo.com", "www.nintendo.co.jp", "www.nintendo.com.hk",
+    "ec.nintendo.com", "asia.sega.com", "www.konami.com", "www.playtombraider.com", "www.layton.jp"]);
+  function nintendoLanguageURL(value, region = null) {
+    if (typeof value !== "string") return "";
+    try {
+      const url = new URL(value);
+      if (url.protocol !== "https:" || url.username || url.password || url.port || url.hash ||
+        !officialLanguageHosts.has(url.hostname)) return "";
+      if (region) {
+        if (url.hostname === "www.nintendo.com" && !url.pathname.startsWith(
+          { taiwan: "/tw/", north_america: "/us/", united_kingdom: "/en-gb/", europe: "/en-gb/" }[region] || "\0")) return "";
+        if (url.hostname === "www.nintendo.co.jp" && region !== "japan") return "";
+        if (url.hostname === "www.nintendo.com.hk" && region !== "hong_kong") return "";
+        if (url.hostname === "ec.nintendo.com" && !url.pathname.startsWith(
+          { taiwan: "/TW/", hong_kong: "/HK/", japan: "/JP/" }[region] || "\0")) return "";
+      }
+      return url.href;
+    } catch { return ""; }
+  }
+  function nintendoLanguageSupport(raw) {
+    const unknown = { status: "unknown", region: null,
+      languages: { tchinese: null, schinese: null, english: null, chinese: null },
+      supported_languages: [], complete: false, source: null, source_url: null, checked_at: null,
+      evidence_type: null, languageBadges: [{ label: "語言支援待確認", status: "unknown" }] };
+    if (!raw || !["confirmed", "partial"].includes(raw.status) ||
+      !Object.hasOwn(languageRegionNames, raw.region) || !nintendoLanguageURL(raw.source_url, raw.region) ||
+      typeof raw.source !== "string" || !raw.source.trim() || awareTime(raw.checked_at) === null ||
+      !["official_product_languages", "official_chinese_unspecified"].includes(raw.evidence_type) ||
+      typeof raw.complete !== "boolean" || !raw.languages || !Array.isArray(raw.supported_languages) ||
+      !raw.supported_languages.length || raw.supported_languages.length > 32) return unknown;
+    const sourceURL = nintendoLanguageURL(raw.source_url);
+    const rows = [], codes = new Set();
+    for (const row of raw.supported_languages) {
+      if (!row || typeof row.code !== "string" || !/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(row.code) ||
+        typeof row.name !== "string" || !row.name.trim() || codes.has(row.code.toLowerCase())) return unknown;
+      codes.add(row.code.toLowerCase());
+      rows.push({ code: row.code, name: row.name.trim().slice(0, 80) });
+    }
+    const genericChinese = codes.has("zh");
+    const traditional = [...codes].some(code => /^zh-(?:hant(?:-|$)|tw$|hk$|mo$)/.test(code));
+    const simplified = [...codes].some(code => /^zh-(?:hans(?:-|$)|cn$|sg$)/.test(code));
+    const english = [...codes].some(code => /^en(?:-|$)/.test(code));
+    const complete = raw.complete === true;
+    const expected = {
+      tchinese: traditional ? true : genericChinese ? null : complete ? false : null,
+      schinese: simplified ? true : genericChinese ? null : complete ? false : null,
+      english: english ? true : complete ? false : null,
+      chinese: genericChinese || traditional || simplified ? true : complete ? false : null,
+    };
+    if (Object.keys(expected).some(key => raw.languages[key] !== expected[key]) ||
+      (raw.status === "confirmed" && (!complete || raw.evidence_type !== "official_product_languages")) ||
+      (raw.status === "partial" && complete) ||
+      (raw.evidence_type === "official_chinese_unspecified" &&
+        (raw.status !== "partial" || codes.size !== 1 || !genericChinese))) return unknown;
+    const badges = [];
+    if (expected.tchinese === true) badges.push({ label: "支援繁中", status: "traditional" });
+    if (expected.schinese === true) badges.push({ label: "支援簡中", status: "simplified" });
+    if (expected.chinese === true && !badges.length) badges.push({ label: "中文（字體待確認）", status: "chinese" });
+    if (!badges.length && expected.english === true) badges.push({ label: "支援英文", status: "english" });
+    if (!badges.length && rows.length) badges.push({ label: `支援${rows[0].name}`, status: "other" });
+    return { status: raw.status, region: raw.region, languages: expected, supported_languages: rows, complete,
+      source: raw.source.trim().slice(0, 120), source_url: sourceURL, checked_at: raw.checked_at,
+      evidence_type: raw.evidence_type, languageBadges: badges.length ? badges : unknown.languageBadges };
+  }
+  function nintendoCardLanguages(platformLanguages, platforms) {
+    const selected = platforms.map(platform => ({ platform, support: platformLanguages[platform] || nintendoLanguageSupport() }));
+    const badges = selected.flatMap(({ platform, support }) => support.languageBadges.map(badge => ({
+      ...badge, label: `${selected.length > 1 ? platform + " " : ""}${badge.label}`,
+      title: support.status === "unknown" ? `${platform} 版本語言支援待確認`
+        : `${platform} 版本 · ${languageRegionNames[support.region]}來源；${support.source}。介面、字幕與配音請以該版本官方語言表為準。${support.region !== "taiwan" ? "尚未確認台灣販售版本是否相同。" : ""}`,
+    })));
+    const languages = Object.fromEntries(["tchinese", "schinese", "english", "chinese"].map(key =>
+      [key, selected.length && selected.every(({ support }) => support.languages[key] === true) ? true : null]));
+    return { languages, languageBadges: badges, languageBadge: badges.map(badge => badge.label).join("・"),
+      languageStatus: badges[0]?.status || "unknown" };
+  }
   function nintendoGames(payload) {
     if (!payload || payload.schema_version !== 1 || !Array.isArray(payload.games)) return [];
     const games = [];
@@ -339,6 +417,8 @@
         ["NS", "NS2"].includes(platform?.code) &&
         Number(platform.id) === (platform.code === "NS" ? 130 : 508)).map(platform => platform.code))];
       if (!platforms.length) continue;
+      const platformLanguages = Object.fromEntries(platforms.map(code =>
+        [code, nintendoLanguageSupport(raw.platform_language_support?.[code])]));
       const nameEn = String(raw.name_en || raw.name || "").trim();
       const nameTw = String(raw.name_zh_tw_traditional || raw.name_zh_tw || "").trim();
       const nameCn = String(raw.name_zh_cn_traditional || "").trim();
@@ -389,8 +469,8 @@
               status: confirmed ? "exclusive" : "nintendo", title: platformTitle })),
             ...(multiPlatform ? [{ label: "多平台", status: "multi", title: platformTitle }] : []),
           ],
-          hypes: raw.hypes, followers: null, languages: raw.language_support || null,
-          languageBadges: [], languageBadge: "語言支援待確認", languageStatus: "unknown",
+          hypes: raw.hypes, followers: null, platformLanguages,
+          ...nintendoCardLanguages(platformLanguages, releasePlatforms),
           art, artSources: art ? [art] : [], art2x: "", artVariants: {}, hasVerifiedHeader: !!art,
           recent: false, darkHorse: false, link, linkLabel: nintendoLink ? "Nintendo 官網" : igdbLink ? "IGDB 遊戲資料" : "IGDB 官網",
           updated: raw.checked_at || payload.generated_at || null, exclusivity: exclusive,
@@ -486,6 +566,11 @@
         savedAliases: [appid, ...igdbIds.map(id => `igdb:${id}`)],
         nintendoLink: nintendo.link, nintendoLinkLabel: nintendo.linkLabel,
         hypes: nintendo.hypes, platforms, releases,
+        platformLanguages: Object.fromEntries(platforms.filter(code => code !== "Steam").map(code => {
+          const sources = rows.map(row => row.platformLanguages?.[code]).filter(Boolean);
+          return [code, sources.length && sources.every(source => JSON.stringify(source) === JSON.stringify(sources[0]))
+            ? sources[0] : nintendoLanguageSupport()];
+        })),
         platformLabel: platforms.join("／") + "・多平台",
         platformBadges: [
           ...platforms.map(code => ({ label: code, status: code === "Steam" ? "steam" : "nintendo",
@@ -590,6 +675,8 @@
     gameKey,
     nintendoSteamIdentity,
     nintendoURL,
+    nintendoLanguageURL,
+    nintendoLanguageSupport,
     nintendoGames,
     detailURL,
     popularityCompare,

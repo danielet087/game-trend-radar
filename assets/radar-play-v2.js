@@ -206,23 +206,23 @@
     const title = node("h3", "card-title", game.name);
     title.title = game.name;
     names.append(title);
-    if (game.nameEn && game.nameEn !== game.name) {
-      const english = node("p", "card-english", game.nameEn);
-      english.title = game.nameEn;
-      names.append(english);
-    }
+    const originalName = game.nameEn && game.nameEn !== game.name ? game.nameEn : "";
+    const english = node("p", "card-english", originalName);
+    if (originalName) english.title = originalName;
+    else english.setAttribute("aria-hidden", "true");
+    names.append(english);
     body.append(names);
     const languages = node("div", "card-languages");
-    languages.setAttribute("aria-label", "Steam 遊戲支援語言");
-    if (game.hasNintendo) languages.title = "語言支援依 Steam 版本資料；Nintendo 版本請以官方公告為準";
+    languages.setAttribute("aria-label", game.source === "nintendo" ? "Nintendo 版本遊戲支援語言" : "Steam 版本遊戲支援語言");
+    if (game.source !== "nintendo" && game.hasNintendo) languages.title = "此處標籤為 Steam 版本語言支援；Nintendo 各版本請進入遊戲頁查看";
     for (const badge of game.languageBadges || []) {
       const language = node(
         "span",
         `card-language language-${badge.status}`,
         badge.label,
       );
-      language.title =
-        "Steam 公布的遊戲語言支援；介面、字幕及配音的詳細項目請以商店為準";
+      language.title = game.source === "nintendo" ? badge.title || "Nintendo 此版本語言支援待確認" :
+        "Steam 版本公布的遊戲語言支援；介面、字幕及配音的詳細項目請以商店為準";
       languages.append(language);
     }
     if (["explore", "all"].includes(mode) && game.tags?.length) {

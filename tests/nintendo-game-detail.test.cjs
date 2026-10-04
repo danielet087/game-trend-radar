@@ -85,7 +85,9 @@ test('Nintendo detail uses its own public source, hypes and verified native excl
   assert.equal(e.get('gameInterestCaption').textContent, 'IGDB hypes · 發售前關注數');
   assert.equal(e.get('gameAppId').textContent, 'IGDB ID：366896');
   assert.equal(e.get('gameCompare').hidden, true);
-  assert.equal(e.get('gameLanguageContent').hidden, true);
+  assert.equal(e.get('gameLanguageContent').hidden, false);
+  assert.equal(e.get('steamLanguageSection').hidden, true);
+  assert.match(e.get('nintendoLanguageSections').textContent, /NS2 版本.*語言支援待確認/);
   assert.equal(e.get('gamePlatformLabel').textContent, 'NS2 獨佔');
   assert.match(e.get('gamePlatformDates').textContent, /NS2 · 2027\/01\/15 · 全球/);
   assert.match(e.get('gameReleaseNote').textContent, /IGDB.*尚未另行確認台灣上市日/);
@@ -293,4 +295,60 @@ test('merged profiles retain official Nintendo dates and source separately from 
   assert.equal(e.get('gameDate').textContent, '2027/01/15');
   assert.match(e.get('gamePlatformDates').textContent, /Steam · 2027\/01\/15 · 台灣.*NS2 · 2027\/01\/16 · 台灣.*Nintendo 台灣.*已確認台灣上市日/);
   assert.equal(e.get('gamePlatformDates').children.length, 2);
+});
+
+function languageSupport(fields = {}) {
+  return { status: 'confirmed', region: 'taiwan', complete: true,
+    languages: { tchinese: false, schinese: true, english: true, chinese: true },
+    supported_languages: [{ code: 'zh-Hans', name: '簡體中文' }, { code: 'en', name: '英文' }],
+    source: 'Nintendo 台灣', source_url: 'https://www.nintendo.com/tw/games/switch2/example/',
+    checked_at: '2026-10-04T05:00:00Z', evidence_type: 'official_product_languages', ...fields };
+}
+
+test('merged language detail shows Steam and NS2 support separately, including confirmed absence of Traditional Chinese', async () => {
+  const catalog = steamCatalog();
+  catalog.games[0].language_support = { tchinese: true, schinese: true };
+  const payload = crossPlatformSample();
+  payload.games[0].platform_language_support = { NS2: languageSupport() };
+  const { elements: e } = await display('?appid=632950', payload, catalog);
+  assert.equal(e.get('steamLanguageSection').hidden, false);
+  assert.deepEqual(e.get('gameLanguageBadge').children.map(row => row.textContent), ['支援繁中', '支援簡中']);
+  const ns2 = e.get('nintendoLanguageSections').children[0];
+  assert.equal(ns2.dataset.platform, 'NS2');
+  assert.deepEqual(ns2.children[1].children.map(row => row.textContent), ['支援簡中']);
+  assert.match(ns2.textContent, /NS2 版本.*簡體中文、英文.*台灣版本.*Nintendo 台灣.*未列繁體中文/);
+  assert.doesNotMatch(ns2.children[1].textContent, /繁中/);
+  assert.match(e.get('gameFootnote').textContent, /各版本語言依各自官方來源/);
+});
+
+test('partial generic Chinese never invents a script or unsupported language claim', async () => {
+  const row = languageSupport({ status: 'partial', complete: false,
+    languages: { tchinese: null, schinese: null, english: null, chinese: true },
+    supported_languages: [{ code: 'zh', name: '中文' }], evidence_type: 'official_chinese_unspecified' });
+  const { elements: e } = await display('?igdb=366896', sample({ platform_language_support: { NS2: row } }));
+  assert.equal(e.get('steamLanguageSection').hidden, true);
+  assert.match(e.get('nintendoLanguageSections').textContent, /中文（字體待確認）.*尚未區分繁體／簡體字體/);
+  assert.doesNotMatch(e.get('nintendoLanguageSections').textContent, /支援繁中|支援簡中|未列繁體|未列簡體/);
+});
+
+test('separate NS and NS2 detail sections retain platform-specific official language sources', async () => {
+  const payload = sample({ platforms: [{ id: 130, code: 'NS' }, { id: 508, code: 'NS2' }],
+    releases: [{ platform: 'NS', date: '2027-01-15', precision: 'day', source: 'IGDB' },
+      { platform: 'NS2', date: '2027-01-15', precision: 'day', source: 'IGDB' }],
+    platform_language_support: { NS: languageSupport({ region: 'north_america', source: 'Nintendo 北美',
+      source_url: 'https://www.nintendo.com/us/store/products/example/' }), NS2: languageSupport() } });
+  const { elements: e } = await display('?igdb=366896', payload);
+  const versions = e.get('nintendoLanguageSections').children;
+  assert.deepEqual(versions.map(row => row.dataset.platform), ['NS', 'NS2']);
+  assert.match(versions[0].textContent, /北美版本.*Nintendo 北美.*台灣販售版本.*待確認/);
+  assert.match(versions[1].textContent, /台灣版本.*Nintendo 台灣/);
+  assert.doesNotMatch(versions[1].textContent, /台灣販售版本.*待確認/);
+});
+
+test('pure Steam detail keeps only the Steam language section', async () => {
+  const { elements: e } = await display('?appid=632950', null, steamCatalog());
+  assert.equal(e.get('steamLanguageSection').hidden, false);
+  assert.equal(e.get('nintendoLanguageSections').hidden, true);
+  assert.equal(e.get('nintendoLanguageSections').children.length, 0);
+  assert.equal(e.get('gameLanguagePolicy').hidden, true);
 });

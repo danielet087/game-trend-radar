@@ -108,6 +108,21 @@ test('merged card keeps both independent interest counts with one multi-platform
   assert.equal(card.querySelectorAll('.card-compare').length, 0);
 });
 
+test('cards reserve an empty subtitle row without repeating an identical original name or exposing blank accessible text', () => {
+  for (const nameEn of ['', 'Warhammer 40,000: Boltgun 2']) {
+    const game = { ...D.normalize(steam()), name: 'Warhammer 40,000: Boltgun 2', nameEn };
+    const card = renderer().card(game), names = card.querySelector('.card-names');
+    const english = card.querySelector('.card-english');
+    assert.deepEqual(names.children.map(node => node.className), ['card-title', 'card-english']);
+    assert.equal(english.textContent, '');
+    assert.equal(english.attributes['aria-hidden'], 'true');
+    assert.equal(english.title, undefined);
+    assert.equal(names.textContent, game.name);
+    assert.equal(names.attributes['aria-label'], `查看 ${game.name} 的遊戲資訊`);
+    assert.equal(card.querySelectorAll('time').length, 1);
+  }
+});
+
 test('a later native-port event shows only the earliest verified date and uses it for countdown, preserving its detail context', () => {
   const data = D.datasets({ games: [steam({ release_start: '2026-11-01' })] }, null, nintendo());
   const event = D.selectGames(data, 'date', '2026-10-04', '2026-12-01')[0];

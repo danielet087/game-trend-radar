@@ -18,7 +18,7 @@
   const regionNames = {
     worldwide: "全球", asia: "亞洲", taiwan: "台灣", japan: "日本",
     north_america: "北美", europe: "歐洲", australia: "澳洲",
-    brazil: "巴西", south_korea: "韓國", china: "中國",
+    brazil: "巴西", south_korea: "韓國", china: "中國", united_kingdom: "英國", hong_kong: "香港",
   };
   const regionLabel = (region) => regionNames[region] || "來源地區未確認";
   function detailURL(game) {
@@ -30,7 +30,7 @@
   function publicSourceURL(value) {
     try {
       const url = new URL(value);
-      return url.protocol === "https:" && !url.username && !url.password && !url.port && /(^|\.)(igdb\.com|nintendo\.com|nintendo\.com\.hk|nintendo\.co\.jp|sega\.com|konami\.com|playtombraider\.com)$/.test(url.hostname)
+      return url.protocol === "https:" && !url.username && !url.password && !url.port && /(^|\.)(igdb\.com|nintendo\.com|nintendo\.com\.hk|nintendo\.co\.jp|sega\.com|konami\.com|playtombraider\.com|layton\.jp)$/.test(url.hostname)
         ? url.href : "";
     } catch { return ""; }
   }
@@ -444,32 +444,7 @@
         .map((genre) => node("span", "", R.genreLabel(genre))),
     );
     $("gameGenres").hidden = !game.genres.length;
-    $("gameLanguageContent").hidden = nintendo && !game.languageBadges?.length;
-    $("gameLanguageBadge").replaceChildren(
-      ...(game.languageBadges || []).map((badge) =>
-        node(
-          "span",
-          `game-language-chip language-${badge.status}`,
-          badge.label,
-        ),
-      ),
-    );
-    $("gameLanguageLine").dataset.language = game.languageStatus;
-    const bothChinese =
-      game.languages?.tchinese === true && game.languages?.schinese === true;
-    $("gameLanguageDescription").textContent = nintendo
-      ? "此遊戲的語言支援請以任天堂官方商店標示為準。"
-      : bothChinese
-      ? "Steam 商店標示同時支援繁中與簡中；各語言的介面、字幕與配音項目請以商店為準。"
-      : game.languageStatus === "traditional"
-        ? "Steam 商店標示支援繁中；各語言的介面、字幕與配音項目請以商店為準。"
-        : game.languageStatus === "simplified"
-          ? "Steam 商店標示支援簡中；尚未標示繁中支援。"
-          : game.languageStatus === "english"
-            ? "Steam 商店未標示支援繁中或簡中，但有支援英文。"
-            : game.languageStatus === "other"
-              ? "Steam 商店未標示支援繁中、簡中或英文，請至商店查看其他支援語言。"
-              : "Steam 尚未提供足以確認的語言資訊，請以官方商店語言表為準。";
+    renderLanguages(game);
     $("gameDate").textContent = game.date.replaceAll("-", "/");
     $("gameDate").dateTime = game.date;
     $("releaseMonth").textContent = `${Number(game.date.slice(5, 7))} 月`;
@@ -527,7 +502,7 @@
     $("gameFootnote").textContent = nintendo
       ? "發售日期可能依平台、地區調整；平台與語言支援請以任天堂及發行商最新公告為準。IGDB hypes 屬遊戲整體的發售前關注數，並非單一平台玩家人數。"
       : game.hasNintendo === true
-        ? "各平台發售日期可能不同；實際上市時間與語言支援請以各平台官方公告為準。語言標籤依 Steam 商店資料顯示。IGDB hypes 與 Steam Followers 分別呈現，不合併計算。"
+        ? "各平台發售日期可能不同；實際上市時間與語言支援請以各平台官方公告為準。各版本語言依各自官方來源顯示；卡片主要語言標籤為 Steam 版本。IGDB hypes 與 Steam Followers 分別呈現，不合併計算。"
       : "發售日期可能調整，實際上市時間與語言支援請以 Steam 商店公告為準。";
     document.querySelectorAll("[data-game-steam]").forEach((link) => {
       link.href = game.link;
@@ -548,6 +523,71 @@
     }
     $("detailStatus").hidden = true;
     $("detailPage").hidden = false;
+  }
+  function renderLanguages(game) {
+    const nintendo = isNintendo(game);
+    $("gameLanguageContent").hidden = false;
+    $("steamLanguageSection").hidden = nintendo;
+    $("gameLanguageBadge").replaceChildren(
+      ...(!nintendo ? game.languageBadges || [] : []).map((badge) =>
+        node(
+          "span",
+          `game-language-chip language-${badge.status}`,
+          badge.label,
+        ),
+      ),
+    );
+    $("gameLanguageLine").dataset.language = game.languageStatus;
+    const bothChinese =
+      game.languages?.tchinese === true && game.languages?.schinese === true;
+    $("gameLanguageDescription").textContent = nintendo
+      ? ""
+      : bothChinese
+      ? "Steam 商店標示同時支援繁中與簡中；各語言的介面、字幕與配音項目請以商店為準。"
+      : game.languageStatus === "traditional"
+        ? "Steam 商店標示支援繁中；各語言的介面、字幕與配音項目請以商店為準。"
+        : game.languageStatus === "simplified"
+          ? "Steam 商店標示支援簡中；尚未標示繁中支援。"
+          : game.languageStatus === "english"
+            ? "Steam 商店未標示支援繁中或簡中，但有支援英文。"
+            : game.languageStatus === "other"
+              ? "Steam 商店未標示支援繁中、簡中或英文，請至商店查看其他支援語言。"
+              : "Steam 尚未提供足以確認的語言資訊，請以官方商店語言表為準。";
+    const platforms = (game.platforms || []).filter(code => ["NS", "NS2"].includes(code));
+    $("nintendoLanguageSections").hidden = !platforms.length;
+    $("gameLanguagePolicy").hidden = !platforms.length;
+    $("nintendoLanguageSections").replaceChildren(...platforms.map(code => {
+      const support = game.platformLanguages?.[code] || D.nintendoLanguageSupport();
+      const section = node("section", "game-language-version");
+      section.dataset.platform = code;
+      section.setAttribute("aria-label", `${code} 版本遊戲支援語言`);
+      section.append(node("p", "game-language-version-title", `${code} 版本`));
+      const badges = node("div", "game-language-badges");
+      badges.append(...support.languageBadges.map(badge => node("span", `game-language-chip language-${badge.status}`, badge.label)));
+      section.append(badges);
+      if (support.status === "unknown") {
+        section.append(node("p", "game-language-source", "尚無可確認的此平台版本官方語言資料。"));
+        return section;
+      }
+      section.append(node("p", "game-language-list", `已公布語言：${support.supported_languages.map(row => row.name).join("、")}`));
+      const source = node("p", "game-language-source");
+      const link = node("a", "", support.source);
+      link.href = support.source_url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      const region = support.region === "worldwide" ? "全球公告" : `${regionLabel(support.region)}版本`;
+      source.append(node("span", "", `來源：${region} · `), link);
+      section.append(source);
+      const notes = [];
+      if (support.languages.chinese === true && support.languages.tchinese === null && support.languages.schinese === null)
+        notes.push("官方僅標示中文，尚未區分繁體／簡體字體。");
+      if (support.complete && support.languages.tchinese === false) notes.push("官方完整語言列表未列繁體中文。");
+      if (support.complete && support.languages.schinese === false) notes.push("官方完整語言列表未列簡體中文。");
+      if (support.region !== "taiwan") notes.push("台灣販售版本的語言是否相同仍待確認。");
+      notes.push("介面、字幕與配音的細項請以此版本官方語言表為準。");
+      section.append(node("p", "game-language-description", notes.join("")));
+      return section;
+    }));
   }
   function renderPlatforms(game) {
     const nintendo = isNintendo(game);

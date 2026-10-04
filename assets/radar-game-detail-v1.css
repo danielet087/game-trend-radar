@@ -1365,3 +1365,10 @@ body.motion-on .art-dialog[open] {
 .game-platform-dates { padding-left: 15px; }
 .game-platform-dates li + li { margin-top: 4px; }
 body[data-game-source="nintendo"] #gameLanguageContent:not([hidden]) { margin-top: 15px; }
+.game-language-version { margin-top: 12px; min-width: 0; }
+.game-language-version + .game-language-version,
+#nintendoLanguageSections:not([hidden]) > .game-language-version { padding-top: 12px; border-top: 1px dashed var(--game-edge); }
+.game-language-version-title { color: var(--game-accent); font-size: 12px; font-weight: 750; margin-bottom: 7px; }
+.game-language-list, .game-language-source, .game-language-description, .game-language-policy { color: var(--muted); font-size: 10px; line-height: 1.8; margin-top: 7px; overflow-wrap: anywhere; }
+.game-language-source a { color: var(--game-accent); text-decoration: underline; }
+.game-language-chip.language-chinese { background: #fcf0d9; border-color: #e8d8b9; color: #886734; }
