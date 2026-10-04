@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-04T19:01:08.136450Z",
+  "generated_at": "2026-10-04T20:01:13.718358Z",
   "today_taipei": "2026-10-05",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-10-04T19:00:59.278571Z",
+    "checkpoint_updated_at": "2026-10-04T20:01:04.895940Z",
     "group_resolution_updated_at": "2026-10-04T19:00:54.787670Z",
     "candidate_state_updated_at": "2026-10-04T16:59:33.365456Z",
     "prefilter_updated_at": "2026-10-04T16:59:33.349892Z",
     "eligible_screened_at": "2026-10-04T16:59:33.880595Z",
-    "twitch_import_updated_at": "2026-10-04T19:01:03.336665Z",
+    "twitch_import_updated_at": "2026-10-04T20:01:09.177179Z",
     "last_official_success_at": "2026-10-04T03:00:50.744981Z",
     "queue_projection": "official_collector_make_queue"
   },
@@ -36,9 +36,9 @@
     "followers_ready_pending": 53,
     "awaiting_group_pending": 0,
     "total_pending": 54,
-    "today_attempts": 1,
+    "today_attempts": 2,
     "today_successes": 0,
-    "today_429": 1
+    "today_429": 2
   },
   "group_resolution_api_cooldown": {
     "status": "available",
@@ -49,17 +49,17 @@
   },
   "cooldown": {
     "active": true,
-    "until": "2026-10-04T19:15:57.439405Z",
+    "until": "2026-10-04T20:31:02.616224Z",
     "reason": "steam_http_429",
-    "next_eligible_slot": "2026-10-04T20:00:00Z",
+    "next_eligible_slot": "2026-10-04T21:00:00Z",
     "schedule_taipei": "03:00–23:00 hourly"
   },
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-10-05T03:00:57.160165+08:00",
-    "last_updated_at": "2026-10-05T03:00:59.278571+08:00",
-    "finished_at": "2026-10-05T03:00:59.278571+08:00",
+    "started_at": "2026-10-05T04:01:02.369548+08:00",
+    "last_updated_at": "2026-10-05T04:01:04.895940+08:00",
+    "finished_at": "2026-10-05T04:01:04.895940+08:00",
     "stop_reason": "first_http_429",
     "last_appid": 3195440,
     "last_name": "Welcome to Elderfield",
@@ -68,8 +68,8 @@
     "http_429_this_run": 1,
     "manual_cooldown_override": false,
     "request_limit": 250,
-    "run_id": "37226598815",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37226598815"
+    "run_id": "37230424805",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37230424805"
   },
   "queue": [
     {
@@ -90,7 +90,7 @@
         "http": 200,
         "api_result": 1
       },
-      "last_attempt_at": "2026-10-04T19:00:57.251901Z",
+      "last_attempt_at": "2026-10-04T20:01:02.423437Z",
       "last_attempt_status": "rate_limited"
     },
     {
@@ -848,19 +848,6 @@
     }
   ],
   "events": [
-    {
-      "at": "2026-10-03T12:07:44.307961Z",
-      "kind": "official_attempt",
-      "appid": 5324770,
-      "name": "Mortal Path: Mighty Senior Brother",
-      "status": "ok",
-      "http": 200,
-      "source": "fresh_daily_prefilter_unresolved",
-      "official_followers": 4,
-      "retry_at": null,
-      "run_id": "37121514609",
-      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37121514609"
-    },
     {
       "at": "2026-10-03T12:07:52.308039Z",
       "kind": "official_attempt",
@@ -2146,6 +2133,19 @@
       "retry_at": "2026-10-04T19:15:57.439405Z",
       "run_id": "37226598815",
       "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37226598815"
+    },
+    {
+      "at": "2026-10-04T20:01:02.423437Z",
+      "kind": "official_attempt",
+      "appid": 3195440,
+      "name": "Welcome to Elderfield",
+      "status": "rate_limited",
+      "http": 429,
+      "source": "twitch_steam_discovery",
+      "official_followers": null,
+      "retry_at": "2026-10-04T20:31:02.616224Z",
+      "run_id": "37230424805",
+      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37230424805"
     }
   ],
   "events_limit": 100
