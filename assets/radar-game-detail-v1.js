@@ -43,8 +43,13 @@
     row.date_basis === "taiwan_official_calendar_day" && row.timezone_status === "taiwan_official_date" &&
     !!publicSourceURL(row.official_source_url) &&
     (row.platform !== "PS5" || D.nativeReleaseAudited?.(row) === true);
+  const hongKongOfficialRelease = (row) => ["NS", "NS2"].includes(row?.platform) &&
+    row?.source === "official_registry" && row.region === "hong_kong" &&
+    row.timezone_status === "hong_kong_official_date" && D.nativeReleaseAudited?.(row) === true;
+  const nativeOfficialRelease = (row) => taiwanOfficialRelease(row) || hongKongOfficialRelease(row);
+  const officialReleasePriority = (row) => taiwanOfficialRelease(row) ? 2 : hongKongOfficialRelease(row) ? 1 : 0;
   function officialReleaseClock(row) {
-    if (!taiwanOfficialRelease(row)) return null;
+    if (!nativeOfficialRelease(row)) return null;
     const instant = D.officialTaiwanReleaseTime?.(row);
     if (instant == null) return null;
     const time = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Taipei", hour: "2-digit",
@@ -53,13 +58,22 @@
     return { time, utc };
   }
   function releaseSourceName(row) {
-    if (taiwanOfficialRelease(row)) return String(row.official_source_name || "台灣官方發售資料").slice(0, 120);
+    if (nativeOfficialRelease(row)) return String(row.official_source_name ||
+      (hongKongOfficialRelease(row) ? "Nintendo 香港" : "台灣官方發售資料")).slice(0, 120);
     const sourceURL = publicSourceURL(row?.source);
     if (sourceURL) return new URL(sourceURL).hostname.endsWith("igdb.com") ? "IGDB 平台發售資料" : "官方平台發售資料";
     if (row?.source === "official_registry") return "官方日期來源待確認";
     return row?.source ? String(row.source).slice(0, 120) : "IGDB 平台發售資料";
   }
   function releaseDateNote(row) {
+    if (hongKongOfficialRelease(row)) {
+      const original = D.validDate(row.source_date) && row.source_date !== row.date
+        ? `原始 IGDB 日期為 ${row.source_date.replaceAll("-", "/")}，已依香港官方日期修正。` : "";
+      const clock = officialReleaseClock(row);
+      return `已確認香港官方發售日（UTC+8，與台灣同時區）。${clock
+        ? `台灣時間 ${row.date.replaceAll("-", "/")} ${clock.time}（UTC+8），依官方發售時間換算。官方原始時間：${clock.utc.slice(0, 16).replace("T", " ")} UTC。`
+        : "官方僅提供日期，未另行推算解鎖時間。"}${original}`;
+    }
     if (taiwanOfficialRelease(row)) {
       const original = D.validDate(row.source_date) && row.source_date !== row.date
         ? `原始 IGDB 日期為 ${row.source_date.replaceAll("-", "/")}，已依台灣官方日期修正。` : "";
@@ -75,12 +89,13 @@
       if (!row || !releasePlatformOrder.includes(row.platform) ||
         !game.platforms?.includes(row.platform) || row.precision !== "day" || !D.validDate(row.date)) continue;
       const key = `${row.platform}|${row.date}|${row.region || ""}`;
-      if (!records.has(key) || taiwanOfficialRelease(row)) records.set(key, row);
+      if (!records.has(key) || nativeOfficialRelease(row)) records.set(key, row);
     }
     const rows = [...records.values()].sort((a, b) => a.date.localeCompare(b.date) ||
       releasePlatformOrder.indexOf(a.platform) - releasePlatformOrder.indexOf(b.platform));
-    const preferred = rows.filter(row => row.platform === "Steam" || taiwanOfficialRelease(row) ||
-      !rows.some(other => other.platform === row.platform && taiwanOfficialRelease(other)));
+    const preferred = rows.filter(row => row.platform === "Steam" ||
+      !rows.some(other => other.platform === row.platform &&
+        officialReleasePriority(other) > officialReleasePriority(row)));
     const selected = preferred.find(row => row.date === game.date) || rows.find(row => row.date === game.date);
     // Keep the requested calendar event visible even if a newer Taiwan source
     // is preferred for the platform's other release rows.
@@ -123,8 +138,9 @@
       const note = index === 0 ? $("gameReleaseNote") : node("p", "game-release-note");
       const clock = native ? officialReleaseClock(row) : null;
       platform.textContent = `${row.platform} 版本`;
-      label.textContent = native && !taiwanOfficialRelease(row) ? `預定發售・${region}日期（台灣待確認）`
-        : `預定發售・${region}${clock ? "時間" : ""}`;
+      label.textContent = hongKongOfficialRelease(row) ? "預定發售・香港官方"
+        : native && !taiwanOfficialRelease(row) ? `預定發售・${region}日期（台灣待確認）`
+          : `預定發售・${region}${clock ? "時間" : ""}`;
       date.textContent = `${row.date.replaceAll("-", "/")}${clock ? ` ${clock.time}（台灣時間）` : ""}`;
       date.dateTime = clock?.utc || row.date;
       countdown.textContent = releaseCountdown(row.date);
@@ -662,7 +678,7 @@
         return item;
       }
       const evidence = node("div", "game-release-source");
-      const sourceURL = taiwanOfficialRelease(row) ? publicSourceURL(row.official_source_url) : publicSourceURL(row.source);
+      const sourceURL = nativeOfficialRelease(row) ? publicSourceURL(row.official_source_url) : publicSourceURL(row.source);
       const source = node(sourceURL ? "a" : "span", "", releaseSourceName(row));
       if (sourceURL) {
         source.href = sourceURL;

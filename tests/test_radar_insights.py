@@ -278,6 +278,45 @@ class NintendoInsightTests(unittest.TestCase):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 self.update(document=nintendo_catalog(nintendo_game(releases=[{**release, **changes}])))
 
+    def test_hong_kong_nintendo_official_date_keeps_the_calendar_day_and_activity_identity(self):
+        release = {**official_nintendo_release(), "region": "hong_kong", "taiwan_release_confirmed": False,
+                   "date_basis": "hong_kong_official_calendar_day", "timezone_status": "hong_kong_official_date",
+                   "official_source_name": "Nintendo 香港", "official_source_url": "https://www.nintendo.com/hk/schedule",
+                   "official_verified_at": "2026-10-04T15:00:00Z"}
+        first = self.update(document=nintendo_catalog(nintendo_game(releases=[release])))
+        self.assertEqual(first["nintendo_records"]["igdb:1"]["release_dates"], {"NS2": "2026-10-09"})
+        self.assertEqual(first["events"][0]["date"], "2026-10-09")
+        self.assertEqual(first["events"][0]["game_id"], "igdb:1")
+        for platform in ["NS", "NS2"]:
+            for official_source_url in ["https://www.nintendo.com.hk/schedule/", "https://nintendo.com.hk/software/test/",
+                                        "https://store.nintendo.com.hk/70010000000001", "https://www.nintendo.com/hk/schedule"]:
+                self.assertTrue(M.accepted_nintendo_release_source({**release, "platform": platform,
+                                                                   "official_source_url": official_source_url}))
+        valid_time = {**release, "official_release_time_utc": "2026-10-08T18:00:00Z"}
+        self.assertTrue(M.accepted_nintendo_release_source(valid_time))
+        mutations = [{"platform": "PS5"}, {"region": "taiwan"}, {"region": "worldwide"},
+                     {"taiwan_release_confirmed": True}, {"taiwan_release_confirmed": None},
+                     {"official_source_name": ""}, {"official_verified_at": None},
+                     {"official_verified_at": "2026-10-04T15:00:00"}, {"time_zone": "UTC"},
+                     {"date_basis": "regional_calendar_day"}, {"source": "IGDB"},
+                     {"official_release_time_utc": "2026-10-08T10:00:00Z"},
+                     {"official_release_time_utc": "2026-10-08T18:00:00"},
+                     {"source_timestamp": True}, {"source_timestamp": 1791493200}]
+        invalid_urls = ["https://www.nintendo.com.hk/", "https://www.nintendo.com.hk/index.html",
+                        "https://www.nintendo.com/hk/", "https://www.nintendo.com/hk/index.htm",
+                        "https://www.nintendo.com/tw/schedule/", "https://www.nintendo.com/us/schedule/",
+                        "https://www.nintendo.com.hk.evil.example/schedule/", "https://other.nintendo.com.hk/schedule/",
+                        "http://www.nintendo.com.hk/schedule/", "https://user:pass@www.nintendo.com.hk/schedule/",
+                        "https://www.nintendo.com.hk:8443/schedule/", "https://www.nintendo.com.hk/schedule/#game",
+                        "https://www.nintendo.com.hk/schedule/?date=2026-10-09", "https://ec.nintendo.com/HK/game/",
+                        "https://www.nintendo.com.hk:443/schedule/", "https://www.nintendo.com/hk/../tw/schedule",
+                        "https://www.nintendo.com/hk/%2e%2e/tw/schedule", "https://www.nintendo.com/hk/%2e%2e%2fus/schedule",
+                        "https://www.nintendo.com/hk/%5c../tw/schedule",
+                        "https://store.playstation.com/zh-hant-hk/concept/10009999/"]
+        for changes in [*mutations, *[{"official_source_url": url} for url in invalid_urls]]:
+            with self.subTest(changes=changes):
+                self.assertFalse(M.accepted_nintendo_release_source({**release, **changes}))
+
     def test_first_public_snapshot_uses_source_time_and_namespaced_identity_without_steam_growth(self):
         first = self.update(document=nintendo_catalog(nintendo_game()))
         event = first["events"][0]

@@ -12,7 +12,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 try:
     from scripts.twitch_steam_admission import is_twitch_qualified
@@ -129,6 +129,24 @@ def ps5_taiwan_official_url(value):
         return None
 
 
+def hong_kong_official_nintendo_date_url(value):
+    if not isinstance(value, str) or not 0 < len(value) <= 2000:
+        return False
+    try:
+        url = urlsplit(value)
+        decoded_path = unquote(url.path)
+        if (url.scheme != "https" or url.username or url.password or url.port is not None
+                or url.query or url.fragment or "\\" in decoded_path
+                or any(part in {".", ".."} for part in decoded_path.split("/"))):
+            return False
+        return ((url.hostname in {"nintendo.com.hk", "www.nintendo.com.hk", "store.nintendo.com.hk"}
+                 and url.path not in {"", "/", "/index.html", "/index.htm"})
+                or (url.hostname == "www.nintendo.com" and url.path.startswith("/hk/")
+                    and url.path[len("/hk/"):] not in {"", "index.html", "index.htm"}))
+    except ValueError:
+        return False
+
+
 def accepted_nintendo_release_source(release):
     """Consume the publisher's date audit without treating UTC midnight as an unlock time."""
     source, status = release.get("source"), release.get("timezone_status")
@@ -160,6 +178,18 @@ def accepted_nintendo_release_source(release):
             return False
     if source == "official_registry":
         name = release.get("official_source_name")
+        if status == "hong_kong_official_date":
+            official_time = release.get("official_release_time_utc")
+            instant = stamp(official_time) if official_time is not None else None
+            return (release.get("platform") in NINTENDO_PLATFORMS and day(release.get("date"))
+                    and release.get("region") == "hong_kong"
+                    and release.get("date_basis") == "hong_kong_official_calendar_day"
+                    and release.get("taiwan_release_confirmed") is False
+                    and isinstance(name, str) and bool(name.strip())
+                    and bool(stamp(release.get("official_verified_at")))
+                    and hong_kong_official_nintendo_date_url(release.get("official_source_url"))
+                    and (official_time is None or instant is not None
+                         and instant.astimezone(TAIPEI).date().isoformat() == release["date"]))
         if release.get("platform") == "PS5":
             proof = ps5_taiwan_official_url(release.get("official_source_url"))
             if (not proof or not stamp(release.get("official_verified_at"))

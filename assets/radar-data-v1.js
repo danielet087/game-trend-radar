@@ -618,9 +618,13 @@
       const name = String(raw.display_name || nameTw || nameCn || raw.name_en_traditional || nameEn || `IGDB ${id}`).trim();
       const steamAppid = nintendoSteamIdentity(raw);
       const grouped = new Map();
-      for (const release of raw.releases) {
-        if (release?.precision !== "day" || !validDate(release.date) ||
-          !platforms.includes(release.platform) || !nintendoReleaseAudited(release)) continue;
+      const admittedReleases = raw.releases.filter(release => release?.precision === "day" &&
+        validDate(release.date) && platforms.includes(release.platform) && nintendoReleaseAudited(release));
+      const officialPriority = release => release.timezone_status === "taiwan_official_date" ? 2
+        : release.timezone_status === "hong_kong_official_date" ? 1 : 0;
+      for (const release of admittedReleases) {
+        if (admittedReleases.some(other => other.platform === release.platform &&
+          officialPriority(other) > officialPriority(release))) continue;
         if (!grouped.has(release.date)) grouped.set(release.date, []);
         const rows = grouped.get(release.date);
         if (!rows.some(row => row.platform === release.platform && row.region === release.region)) rows.push(release);
@@ -693,16 +697,26 @@
   function nintendoReleaseAudited(release) {
     // Old public bundles remain readable during the publisher transition. New
     // audited records must not turn an ambiguous timestamp into a calendar day.
-    if (release.timezone_status == null) return release.platform !== "PS5";
+    if (release.timezone_status == null) return release.platform !== "PS5" &&
+      release.source !== "official_registry" && release.taiwan_release_confirmed !== true;
     if (release.time_zone !== "Asia/Taipei" ||
-      !["same_calendar_day", "date_only", "taiwan_official_date"].includes(release.timezone_status)) return false;
+      !["same_calendar_day", "date_only", "taiwan_official_date", "hong_kong_official_date"].includes(release.timezone_status)) return false;
     if (release.source_date != null && !validDate(release.source_date)) return false;
     if (release.timestamp_taipei_date != null && !validDate(release.timestamp_taipei_date)) return false;
-    if (release.platform === "PS5" && release.source_timestamp != null) {
+    if ((release.platform === "PS5" || release.timezone_status === "hong_kong_official_date") && release.source_timestamp != null) {
       if (!Number.isSafeInteger(release.source_timestamp) || release.source_timestamp < 0) return false;
       const instant = new Date(release.source_timestamp * 1000);
       if (!Number.isFinite(instant.getTime()) || instant.toISOString().slice(0, 10) !== release.source_date ||
         todayInTaipei(instant) !== release.timestamp_taipei_date) return false;
+    }
+    if (release.timezone_status === "hong_kong_official_date") {
+      return ["NS", "NS2"].includes(release.platform) && validDate(release.date) &&
+        release.source === "official_registry" && release.region === "hong_kong" &&
+        release.date_basis === "hong_kong_official_calendar_day" && release.taiwan_release_confirmed === false &&
+        awareTime(release.official_verified_at) !== null &&
+        typeof release.official_source_name === "string" && !!release.official_source_name.trim() &&
+        !!nintendoHongKongDateURL(release.official_source_url) &&
+        (release.official_release_time_utc == null || officialTaiwanReleaseTime(release) !== null);
     }
     if (release.timezone_status === "taiwan_official_date") {
       if (!(release.source === "official_registry" && release.region === "taiwan" &&
@@ -730,6 +744,21 @@
     return release.taiwan_release_confirmed !== true && release.source !== "official_registry" &&
       (release.source_date == null || release.source_date === release.date) &&
       (release.timestamp_taipei_date == null || release.timestamp_taipei_date === release.date);
+  }
+  function nintendoHongKongDateURL(value) {
+    if (typeof value !== "string" || value.length > 2000) return "";
+    try {
+      const url = new URL(value);
+      const rawPath = /^https:\/\/[^/?#]+([^?#]*)/i.exec(value)?.[1] || "";
+      const decodedPath = decodeURIComponent(rawPath);
+      if (url.protocol !== "https:" || url.username || url.password || url.port || url.hash || url.search ||
+        /^https:\/\/[^/?#]+:[0-9]+(?:[/?#]|$)/i.test(value) || decodedPath.includes("\\") ||
+        decodedPath.split("/").some(part => [".", ".."].includes(part))) return "";
+      const hongKongHost = ["nintendo.com.hk", "www.nintendo.com.hk", "store.nintendo.com.hk"].includes(url.hostname);
+      return (hongKongHost && !["/", "/index.html", "/index.htm"].includes(url.pathname) ||
+        url.hostname === "www.nintendo.com" && url.pathname.startsWith("/hk/") &&
+        !["", "index.html", "index.htm"].includes(url.pathname.slice(4))) ? url.href : "";
+    } catch { return ""; }
   }
   function officialTaiwanReleaseTime(release) {
     const instant = awareTime(release?.official_release_time_utc);
@@ -938,6 +967,7 @@
     platformEdition,
     nativeCardLanguages: nintendoCardLanguages,
     nativeReleaseAudited: nintendoReleaseAudited,
+    nintendoHongKongDateURL,
     officialTaiwanReleaseTime,
     nintendoLanguageURL,
     nintendoLanguageSupport,

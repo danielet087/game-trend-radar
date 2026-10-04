@@ -284,6 +284,27 @@ test('official Taiwan dates show their official source and regional correction i
   assert.equal(source.rel, 'noopener noreferrer');
 });
 
+test('Hong Kong official Nintendo dates show their real region and source without claiming Taiwan confirmation', async () => {
+  const hk = officialRelease({ date: '2027-01-16', region: 'hong_kong', source_timestamp: 1799971200,
+    date_basis: 'hong_kong_official_calendar_day', timezone_status: 'hong_kong_official_date',
+    taiwan_release_confirmed: false, official_source_url: 'https://www.nintendo.com/hk/schedule',
+    official_source_name: 'Nintendo 香港', official_verified_at: '2026-10-04T15:00:00Z' });
+  const { elements: e } = await display('?igdb=366896', sample({ releases: [hk] }));
+  assert.equal(e.get('gameDate').textContent, '2027/01/16');
+  assert.equal(e.get('gameReleaseLabel').textContent, '預定發售・香港官方');
+  assert.match(e.get('gameReleaseNote').textContent, /來源：Nintendo 香港。已確認香港官方發售日（UTC\+8，與台灣同時區）。/);
+  assert.match(e.get('gameReleaseNote').textContent, /官方僅提供日期，未另行推算解鎖時間/);
+  assert.doesNotMatch(e.get('gameReleaseNote').textContent, /台灣待確認|已確認台灣上市日|08:00/);
+  const source = e.get('gamePlatformDates').children[0].children[0].children[1];
+  assert.equal(source.tagName, 'a');
+  assert.equal(source.textContent, 'Nintendo 香港');
+  assert.equal(source.href, hk.official_source_url);
+  const timed = await display('?igdb=366896', sample({ releases: [{ ...hk,
+    official_release_time_utc: '2027-01-15T18:00:00Z' }] }));
+  assert.equal(timed.elements.get('gameDate').textContent, '2027/01/16 02:00（台灣時間）');
+  assert.match(timed.elements.get('gameReleaseNote').textContent, /已確認香港官方發售日.*依官方發售時間換算/);
+});
+
 test('audited IGDB dates show unconfirmed Taiwan provenance without inventing an unlock time', async () => {
   const release = { date: '2027-01-15', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB',
     source_date: '2027-01-15', source_timestamp: 1800057600, source_region: 'worldwide',
