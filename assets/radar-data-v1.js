@@ -713,7 +713,11 @@
       const url = platformURL(release.official_source_url, "PS5", "taiwan");
       if (!url) return false;
       const product = playstationProduct(url, "taiwan");
-      return !product || release.official_product_id === product.id;
+      if (product?.kind === "concept") {
+        if (release.official_concept_id !== product.id || release.official_product_id != null ||
+          officialTaiwanReleaseTime(release) === null) return false;
+      } else if (product && release.official_product_id !== product.id) return false;
+      return release.official_release_time_utc == null || officialTaiwanReleaseTime(release) !== null;
     }
     if (release.platform === "PS5") {
       return release.source === "IGDB" && release.date_basis === "regional_calendar_day" &&
@@ -726,6 +730,10 @@
     return release.taiwan_release_confirmed !== true && release.source !== "official_registry" &&
       (release.source_date == null || release.source_date === release.date) &&
       (release.timestamp_taipei_date == null || release.timestamp_taipei_date === release.date);
+  }
+  function officialTaiwanReleaseTime(release) {
+    const instant = awareTime(release?.official_release_time_utc);
+    return instant !== null && todayInTaipei(new Date(instant)) === release.date ? instant : null;
   }
   function detailURL(game) {
     return game.source === "nintendo"
@@ -930,6 +938,7 @@
     platformEdition,
     nativeCardLanguages: nintendoCardLanguages,
     nativeReleaseAudited: nintendoReleaseAudited,
+    officialTaiwanReleaseTime,
     nintendoLanguageURL,
     nintendoLanguageSupport,
     nintendoCardLanguages,

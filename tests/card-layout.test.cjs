@@ -362,7 +362,8 @@ test('PS5 calendar event retains its release date, own shop and unknown language
     releases: [{ date: '2027-01-15', platform: 'PS5', precision: 'day', region: 'taiwan',
       source: 'official_registry', date_basis: 'taiwan_official_calendar_day', time_zone: 'Asia/Taipei',
       timezone_status: 'taiwan_official_date', taiwan_release_confirmed: true,
-      official_source_url: ps5Store, official_source_name: 'PlayStation 台灣', official_product_id: '10009999',
+      official_source_url: ps5Store, official_source_name: 'PlayStation 台灣', official_product_id: null,
+      official_concept_id: '10009999', official_release_time_utc: '2027-01-14T16:00:00Z',
       official_verified_at: '2026-10-04T13:00:00Z' }],
   });
   const data = D.datasets({ games: [steam()] }, null, native);

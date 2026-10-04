@@ -169,6 +169,29 @@ test('Taiwan PS5 official dates require matching Sony product identity and retai
     { official_verified_at: null }, { official_verified_at: '2026-10-04T13:00:00' }, { official_source_name: '' },
     { date_basis: 'timestamp_shift' }, { taiwan_release_confirmed: false }])
     assert.deepEqual(normalized({ releases: [{ ...official, ...fields }] }), [], JSON.stringify(fields));
+  for (const official_release_time_utc of ['2027-02-18T18:00:00Z', '2027-02-19T02:00:00+08:00'])
+    assert.equal(normalized({ releases: [{ ...official, official_release_time_utc }] }).length, 1);
+  for (const official_release_time_utc of ['2027-02-18T15:00:00Z', '2027-02-18T18:00:00', 'invalid'])
+    assert.deepEqual(normalized({ releases: [{ ...official, official_release_time_utc }] }), []);
+});
+
+test('Sony Taiwan concept dates require an exact concept identity and a proven release instant', () => {
+  const conceptURL = 'https://store.playstation.com/zh-hant-tw/concept/10016571';
+  const official = release({ date: '2026-10-14', region: 'taiwan', source: 'official_registry',
+    source_date: '2026-10-13', source_timestamp: Date.parse('2026-10-13T00:00:00Z') / 1000,
+    timestamp_taipei_date: '2026-10-13', timezone_status: 'taiwan_official_date',
+    date_basis: 'taiwan_official_calendar_day', taiwan_release_confirmed: true,
+    official_source_url: conceptURL, official_concept_id: '10016571', official_product_id: null,
+    official_release_time_utc: '2026-10-13T18:00:00Z', official_source_name: 'PlayStation 台灣',
+    official_verified_at: '2026-10-04T14:00:00Z' });
+  const [game] = normalized({ name_en: 'Valor Mortis', playstation_url: conceptURL, releases: [official] });
+  assert.equal(game.date, '2026-10-14');
+  assert.equal(D.officialTaiwanReleaseTime(game.releases[0]), Date.parse('2026-10-13T18:00:00Z'));
+  for (const fields of [{ official_concept_id: undefined }, { official_concept_id: '10016572' },
+    { official_product_id: '10016571' }, { official_release_time_utc: null },
+    { official_release_time_utc: '2026-10-13T18:00:00' }, { official_release_time_utc: '2026-10-13T15:00:00Z' },
+    { date: '2026-10-13' }, { official_source_url: conceptURL.replace('zh-hant-tw', 'zh-hant-hk') }])
+    assert.deepEqual(normalized({ releases: [{ ...official, ...fields }] }), [], JSON.stringify(fields));
 });
 
 test('PS5 language proof is product-specific and Hong Kong fallback never claims Taiwan support', () => {

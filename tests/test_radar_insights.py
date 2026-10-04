@@ -520,7 +520,9 @@ class NintendoInsightTests(unittest.TestCase):
     def test_ps5_taiwan_official_date_proof_is_platform_scoped_and_malformed_urls_are_rejected(self):
         release = {**official_nintendo_release(), "platform": "PS5", "official_source_name": "PlayStation 台灣",
                    "official_source_url": "https://store.playstation.com/zh-hant-tw/concept/1001",
-                   "official_product_id": "1001", "official_verified_at": "2026-10-04T02:00:00Z"}
+                   "official_product_id": None, "official_concept_id": "1001",
+                   "official_release_time_utc": "2026-10-08T18:00:00Z",
+                   "official_verified_at": "2026-10-04T02:00:00Z"}
         for url in [release["official_source_url"], "https://www.playstation.com/zh-hant-tw/games/game/"]:
             self.update(document=igdb_catalog(nintendo_game(releases=[{**release, "official_source_url": url}])))
         for url in ["https://www.nintendo.com/tw/schedule/", "https://playstation.com.evil.example/",
@@ -534,7 +536,9 @@ class NintendoInsightTests(unittest.TestCase):
                 self.update(document=igdb_catalog(nintendo_game(releases=[{**release, "official_source_url": url}])))
         with self.assertRaises(ValueError):
             self.update(document=igdb_catalog(nintendo_game(releases=[{**release, "platform": "NS2"}])))
-        for changes in [{"official_product_id": "1002"}, {"official_product_id": None},
+        for changes in [{"official_concept_id": "1002"}, {"official_concept_id": None}, {"official_product_id": "1001"},
+                        {"official_release_time_utc": None}, {"official_release_time_utc": "2026-10-08T15:00:00Z"},
+                        {"official_release_time_utc": "2026-10-08T18:00:00"},
                         {"official_verified_at": None}, {"official_verified_at": "2026-10-04T02:00:00"},
                         {"official_source_name": ""}]:
             with self.subTest(changes=changes), self.assertRaises(ValueError):

@@ -214,7 +214,7 @@ test('both merged Steam event links and existing IGDB event links retain the req
     assert.deepEqual(e.get('gameReleaseDates').children.map(row => [row.dataset.platform, row.dataset.date]), [['NS2', '2027-03-19'], ['Steam', '2027-01-15']]);
     assert.equal(e.get('detailPage').hidden, false);
     assert.equal(e.get('gameDate').textContent, '2027/03/19');
-    assert.equal(e.get('gameReleaseLabel').textContent, '預定發售・日本');
+    assert.equal(e.get('gameReleaseLabel').textContent, '預定發售・日本日期（台灣待確認）');
     assert.equal(e.get('gameReleaseNote').hidden, false);
     assert.match(e.get('gameReleaseNote').textContent, /尚未另行確認台灣上市日/);
     assert.equal(e.get('gameFollowers').textContent, '6,000');
@@ -289,7 +289,9 @@ test('audited IGDB dates show unconfirmed Taiwan provenance without inventing an
     source_date: '2027-01-15', source_timestamp: 1800057600, source_region: 'worldwide',
     time_zone: 'Asia/Taipei', timestamp_taipei_date: '2027-01-15', timezone_status: 'same_calendar_day', taiwan_release_confirmed: false };
   const { elements: e } = await display('?igdb=366896', sample({ releases: [release] }));
-  assert.match(e.get('gameReleaseNote').textContent, /尚未另行確認台灣上市日.*Asia\/Taipei.*不代表確切解鎖時間/);
+  assert.equal(e.get('gameReleaseLabel').textContent, '預定發售・全球日期（台灣待確認）');
+  assert.match(e.get('gameReleaseNote').textContent, /來源僅提供日期.*尚未另行確認台灣上市日.*無法推算台灣解鎖時間/);
+  assert.doesNotMatch(e.get('gameReleaseNote').textContent, /日期已核對台灣時區/);
   assert.match(e.get('gamePlatformDates').textContent, /NS2 · 2027\/01\/15 · 全球.*尚未另行確認台灣上市日/);
   assert.doesNotMatch(e.get('gamePlatformDates').textContent, /08:00|已確認台灣上市日/);
 });
@@ -503,7 +505,8 @@ const ps5Sample = (overrides = {}) => sample({
   exclusivity: { status: 'listed_only', platform: 'PS5' },
   playstation_url: ps5StoreURL,
   releases: [officialRelease({ platform: 'PS5', source_timestamp: 1799971200, official_source_url: ps5StoreURL,
-    official_source_name: 'PlayStation 台灣', official_product_id: '10009999', official_verified_at: '2026-10-04T13:00:00Z' })],
+    official_source_name: 'PlayStation 台灣', official_concept_id: '10009999', official_product_id: null,
+    official_release_time_utc: '2027-01-15T16:00:00Z', official_verified_at: '2026-10-04T13:00:00Z' })],
   ...overrides,
 });
 const ps5LanguageSupport = (overrides = {}) => languageSupport({
@@ -526,6 +529,23 @@ test('PS5 native detail uses its PlayStation shop and confirmed Taiwan release w
   assert.equal(document.body.dataset.gameSource, 'nintendo');
   e.get('gameSave').listeners.click({ currentTarget: e.get('gameSave') });
   assert.deepEqual(JSON.parse(storage.get('game-trend-radar:saved:v1')), ['igdb:366896']);
+});
+
+test('Sony official release instant crosses midnight into the next Taiwan calendar day and displays the exact time', async () => {
+  const source = 'https://store.playstation.com/zh-hant-tw/concept/10016571';
+  const payload = ps5Sample({ name_en: 'Valor Mortis', playstation_url: source,
+    releases: [officialRelease({ platform: 'PS5', date: '2026-10-14', source_date: '2026-10-13',
+      source_timestamp: Date.parse('2026-10-13T00:00:00Z') / 1000, timestamp_taipei_date: '2026-10-13',
+      official_source_url: source, official_source_name: 'PlayStation 台灣', official_product_id: null,
+      official_concept_id: '10016571', official_release_time_utc: '2026-10-13T18:00:00Z',
+      official_verified_at: '2026-10-04T14:00:00Z' })] });
+  const { elements: e } = await display('?igdb=366896&date=2026-10-14', payload);
+  assert.equal(e.get('gameReleaseLabel').textContent, '預定發售・台灣時間');
+  assert.equal(e.get('gameDate').textContent, '2026/10/14 02:00（台灣時間）');
+  assert.equal(e.get('gameDate').dateTime, '2026-10-13T18:00:00.000Z');
+  assert.equal(e.get('releaseDay').textContent, '14');
+  assert.match(e.get('gameReleaseNote').textContent, /台灣時間 2026\/10\/14 02:00（UTC\+8）.*官方原始時間：2026-10-13 18:00 UTC/);
+  assert.match(e.get('gamePlatformDates').textContent, /PS5 · 2026\/10\/14 02:00 · 台灣時間（UTC\+8）/);
 });
 
 test('merged Steam and PS5 detail keeps both date tickets and official shops with independent language support', async () => {

@@ -120,10 +120,10 @@ def ps5_taiwan_official_url(value):
         if url.hostname == "store.playstation.com":
             match = re.fullmatch(r"/(?:zh-hant-tw|en-tw)/(?:product/(" + PS5_PRODUCT_ID
                                  + r")|concept/([1-9][0-9]{0,11}))/?", url.path)
-            return {"product_id": match[1] or match[2]} if match else None
+            return {"product_id": match[1], "concept_id": match[2]} if match else None
         if url.hostname == "www.playstation.com" and re.fullmatch(
                 r"/(?:zh-hant-tw|en-tw)/games/[a-z0-9-]+/?", url.path):
-            return {"product_id": None}
+            return {"product_id": None, "concept_id": None}
         return None
     except ValueError:
         return None
@@ -165,6 +165,15 @@ def accepted_nintendo_release_source(release):
             if (not proof or not stamp(release.get("official_verified_at"))
                     or proof["product_id"] and release.get("official_product_id") != proof["product_id"]):
                 return False
+            official_time = release.get("official_release_time_utc")
+            if proof["concept_id"] and (release.get("official_concept_id") != proof["concept_id"]
+                                       or release.get("official_product_id") is not None
+                                       or official_time is None):
+                return False
+            if official_time is not None:
+                instant = stamp(official_time)
+                if not instant or instant.astimezone(TAIPEI).date().isoformat() != release["date"]:
+                    return False
         return (status == "taiwan_official_date" and release.get("region") == "taiwan"
                 and release.get("date_basis") == "taiwan_official_calendar_day"
                 and release.get("taiwan_release_confirmed") is True
