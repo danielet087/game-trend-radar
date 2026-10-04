@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-03T16:40:12Z",
+  "generated_at": "2026-10-04T02:21:20Z",
   "window": {
     "start": "2026-10-04",
     "end": "2027-10-04",
@@ -11,7 +11,7 @@
     "provider": "IGDB",
     "complete": true,
     "hypes_threshold": 30,
-    "discovery_release_count": 5406,
+    "discovery_release_count": 5409,
     "request_count": 66,
     "retry_count": 0,
     "platform_ids_verified": [
@@ -126,7 +126,7 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -217,7 +217,97 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
+      "first_observed_at": "2026-10-03T16:40:12Z"
+    },
+    {
+      "id": "igdb:381222",
+      "igdb_id": 381222,
+      "display_name": "Order of the Sinking Star",
+      "name_en": "Order of the Sinking Star",
+      "name_zh_tw": null,
+      "name_source": "IGDB name",
+      "hypes": 30,
+      "hypes_status": "available",
+      "popularity_status": "qualified",
+      "platforms": [
+        {
+          "id": 508,
+          "name": "Nintendo Switch 2",
+          "code": "NS2"
+        }
+      ],
+      "known_platforms": [
+        {
+          "id": 6,
+          "name": "PC (Microsoft Windows)"
+        },
+        {
+          "id": 167,
+          "name": "PlayStation 5"
+        },
+        {
+          "id": 508,
+          "name": "Nintendo Switch 2",
+          "code": "NS2"
+        }
+      ],
+      "platform_data_complete": true,
+      "exclusivity": {
+        "status": "multi_platform",
+        "platform": null,
+        "source": "IGDB",
+        "url": "https://www.igdb.com/games/order-of-the-sinking-star"
+      },
+      "releases": [
+        {
+          "date": "2026-10-08",
+          "platform": "NS2",
+          "precision": "day",
+          "region": "worldwide",
+          "source": "IGDB",
+          "date_basis": "regional_calendar_day"
+        }
+      ],
+      "cover_image": "https://images.igdb.com/igdb/image/upload/t_cover_big/coc954.jpg",
+      "url": "https://www.igdb.com/games/order-of-the-sinking-star",
+      "websites": [
+        {
+          "url": "https://store.steampowered.com/app/499170"
+        },
+        {
+          "url": "https://www.orderofthesinkingstar.com/"
+        },
+        {
+          "url": "https://discord.gg/PcCxqvfeKK"
+        },
+        {
+          "url": "https://x.com/SinkingStarGame"
+        },
+        {
+          "url": "https://www.facebook.com/SinkingStarGame/"
+        },
+        {
+          "url": "https://www.instagram.com/sinkingstargame/"
+        },
+        {
+          "url": "https://www.youtube.com/@SinkingStarGame"
+        },
+        {
+          "url": "https://store.playstation.com/en-us/concept/10017166"
+        },
+        {
+          "url": "https://www.nintendo.com/us/store/products/order-of-the-sinking-star-switch-2/"
+        },
+        {
+          "url": "https://www.twitch.tv/directory/category/order-of-the-sinking-star"
+        }
+      ],
+      "nintendo_url": "https://www.nintendo.com/us/store/products/order-of-the-sinking-star-switch-2/",
+      "game_type": "main_game",
+      "sexual_content_screened": true,
+      "calendar_eligible": true,
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -308,7 +398,7 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -399,7 +489,7 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -515,7 +605,7 @@
       "game_type": "remake",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -624,7 +714,7 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -658,7 +748,7 @@
         "source": "Nintendo official",
         "url": "https://www.nintendo.com/us/store/products/the-legend-of-zelda-ocarina-of-time-switch-2/",
         "evidence": "Nintendo Switch 2 Exclusive",
-        "checked_at": "2026-10-03T16:40:16Z",
+        "checked_at": "2026-10-04T02:21:25Z",
         "evidence_title": "The Legend of Zelda: Ocarina of Time – Nintendo Switch 2 Exclusive - Nintendo Official Site",
         "evidence_method": "product_metadata"
       },
@@ -692,7 +782,7 @@
       "game_type": "remake",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -799,7 +889,7 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -893,7 +983,7 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -996,7 +1086,7 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -1090,7 +1180,7 @@
       "game_type": "remake",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -1184,7 +1274,7 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -1268,7 +1358,7 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -1353,7 +1443,7 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -1438,7 +1528,7 @@
       "game_type": "remake",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -1532,7 +1622,7 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -1614,7 +1704,7 @@
       "game_type": "main_game",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     },
     {
@@ -1711,7 +1801,7 @@
       "game_type": "remake",
       "sexual_content_screened": true,
       "calendar_eligible": true,
-      "checked_at": "2026-10-03T16:40:12Z",
+      "checked_at": "2026-10-04T02:21:20Z",
       "first_observed_at": "2026-10-03T16:40:12Z"
     }
   ]
