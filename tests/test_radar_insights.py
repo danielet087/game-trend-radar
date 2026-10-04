@@ -263,6 +263,33 @@ class NintendoInsightTests(unittest.TestCase):
         later = self.update(first, nintendo_catalog(nintendo_game(), at="2026-10-04T03:00:00Z"))
         self.assertEqual(later["events"], first["events"])
 
+    def test_name_only_localization_updates_existing_activity_without_new_events_or_steam_measurements(self):
+        english = nintendo_game(26602, display_name="Metaphor: ReFantazio")
+        first = M.update(None, catalog(game()), observed_at="2026-10-04T01:00:00Z",
+                         nintendo_catalog=nintendo_catalog(english))
+        first = M.update(first, catalog(game(), game(2)), observed_at="2026-10-04T02:00:00Z")
+        before = deepcopy(first)
+        localized = nintendo_game(26602, display_name="暗喻幻想：ReFantazio",
+                                  name_zh_tw="暗喻幻想：ReFantazio", name_en="Metaphor: ReFantazio")
+        document = nintendo_catalog(localized, at="2026-10-04T03:00:00Z")
+        changed = M.update(first, catalog(game(), game(2)), observed_at=self.NOW,
+                           nintendo_catalog=document)
+
+        self.assertEqual(first, before)
+        self.assertEqual(changed["records"], first["records"])
+        self.assertEqual(changed["events"], first["events"])
+        record = changed["nintendo_records"]["igdb:26602"]
+        self.assertEqual(record["name"], "暗喻幻想：ReFantazio")
+        self.assertEqual(record["first_seen_at"], first["nintendo_records"]["igdb:26602"]["first_seen_at"])
+        self.assertEqual(record["release_dates"], first["nintendo_records"]["igdb:26602"]["release_dates"])
+        activity, growth = M.projections(changed, date(2026, 10, 4))
+        event = next(row for row in activity["events"] if row.get("source") == "nintendo")
+        original = next(row for row in first["events"] if row.get("source") == "nintendo")
+        self.assertEqual(event, {**original, "name": "暗喻幻想：ReFantazio"})
+        self.assertEqual(growth["games"], M.projections(first, date(2026, 10, 4))[1]["games"])
+        self.assertEqual(changed, M.update(changed, catalog(game(), game(2)),
+                                          observed_at="2026-10-04T05:00:00Z", nintendo_catalog=document))
+
     def test_removed_and_requalified_games_do_not_repeat_addition(self):
         first = self.update(document=nintendo_catalog(nintendo_game()))
         absent = self.update(first, nintendo_catalog(at="2026-10-04T02:00:00Z"))
