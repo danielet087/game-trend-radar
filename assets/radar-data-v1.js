@@ -328,7 +328,7 @@
     } catch { return ""; }
   }
   const languageRegionNames = { taiwan: "台灣", north_america: "北美", japan: "日本", hong_kong: "香港", asia: "亞洲", worldwide: "全球公告",
-    united_kingdom: "英國", europe: "歐洲" };
+    united_kingdom: "英國", europe: "歐洲", australia: "澳洲" };
   const officialLanguageHosts = new Set(["www.nintendo.com", "www.nintendo.co.jp", "www.nintendo.com.hk",
     "ec.nintendo.com", "asia.sega.com", "www.konami.com", "www.playtombraider.com", "www.layton.jp"]);
   function nintendoLanguageURL(value, region = null) {
@@ -338,12 +338,13 @@
       if (url.protocol !== "https:" || url.username || url.password || url.port || url.hash ||
         !officialLanguageHosts.has(url.hostname)) return "";
       if (region) {
+        if (region === "australia" && !["www.nintendo.com", "ec.nintendo.com"].includes(url.hostname)) return "";
         if (url.hostname === "www.nintendo.com" && !url.pathname.startsWith(
-          { taiwan: "/tw/", north_america: "/us/", united_kingdom: "/en-gb/", europe: "/en-gb/" }[region] || "\0")) return "";
+          { taiwan: "/tw/", north_america: "/us/", united_kingdom: "/en-gb/", europe: "/en-gb/", australia: "/au/" }[region] || "\0")) return "";
         if (url.hostname === "www.nintendo.co.jp" && region !== "japan") return "";
         if (url.hostname === "www.nintendo.com.hk" && region !== "hong_kong") return "";
         if (url.hostname === "ec.nintendo.com" && !url.pathname.startsWith(
-          { taiwan: "/TW/", hong_kong: "/HK/", japan: "/JP/" }[region] || "\0")) return "";
+          { taiwan: "/TW/", hong_kong: "/HK/", japan: "/JP/", australia: "/AU/" }[region] || "\0")) return "";
       }
       return url.href;
     } catch { return ""; }

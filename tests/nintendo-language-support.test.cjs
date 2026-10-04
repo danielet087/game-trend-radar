@@ -96,3 +96,16 @@ test('foreign official language evidence retains its region without implying a T
     ['asia', 'https://asia.sega.com/example/'],
   ]) assert.equal(D.nintendoLanguageSupport(support({ region, source_url })).region, region);
 });
+
+test('Australian language evidence accepts only matching Nintendo AU product URLs', () => {
+  for (const source_url of ['https://www.nintendo.com/au/games/example/', 'https://ec.nintendo.com/AU/en/titles/700100001']) {
+    const row = support({ region: 'australia', source: 'Nintendo 澳洲', source_url });
+    assert.equal(D.nintendoLanguageSupport(row).region, 'australia');
+    const [game] = D.nintendoGames(payload({ platform_language_support: { NS2: row } }));
+    assert.match(game.languageBadges[0].title, /澳洲來源.*尚未確認台灣販售版本是否相同/);
+  }
+  for (const source_url of [
+    'https://www.nintendo.com/us/store/products/example/', 'https://www.nintendo.com.hk/example/',
+    'https://ec.nintendo.com/HK/en/titles/700100001', 'https://asia.sega.com/example/',
+  ]) assert.equal(D.nintendoLanguageSupport(support({ region: 'australia', source_url })).status, 'unknown');
+});
