@@ -423,26 +423,8 @@
     tagsExpanded = !tagsExpanded;
     updateTagVisibility();
   });
-  function tagLink(tag, className) {
-    const link = node("a", className);
-    link.href = R.url(tag);
-    link.dataset.tag = tag;
-    link.setAttribute("aria-label", `探索「${R.label(tag)}」遊戲`);
-    link.title = tag;
-    return link;
-  }
   function setupTags(game) {
-    $("gameTagPreview").hidden = !game.tags.length;
     $("gameIntro").hidden = false;
-    $("heroTags").replaceChildren(
-      ...game.tags.slice(0, 4).map((tag) => {
-        const link = tagLink(tag, "hero-tag");
-        const arrow = node("span", "", "↗");
-        arrow.setAttribute("aria-hidden", "true");
-        link.append(node("span", "", R.label(tag)), arrow);
-        return link;
-      }),
-    );
     const counts = new Map(
       R.catalog(candidates.filter((row) => row.appid !== game.appid)).map((entry) => [R.key(entry.tag), entry.count]),
     );
@@ -466,27 +448,14 @@
     );
     $("showTags").hidden = game.tags.length <= 8;
     $("tagsEmpty").hidden = game.tags.length > 0;
-    if (!game.tags.length) $("gameJump").textContent = "看看其他新作 ↓";
     renderRelated();
   }
   function render(game, data, pending = false) {
     const unchangedArt = currentGame?.art === game.art && currentGame?.art2x === game.art2x;
     currentGame = game;
-    const comparison = $("gameCompare");
     const nintendo = isNintendo(game);
     const displayNames = D.releaseDisplayNames(game);
     document.body.dataset.gameSource = game.source || "steam";
-    comparison.hidden = nintendo;
-    if (nintendo) {
-      delete comparison.dataset.compare;
-      delete comparison.dataset.gameName;
-      comparison.setAttribute("aria-pressed", "false");
-    } else {
-      comparison.dataset.compare = game.appid;
-      comparison.dataset.gameName = game.name;
-      comparison.setAttribute("aria-pressed", String(window.RadarCompare.ids().includes(game.appid)));
-      comparison.textContent = window.RadarCompare.ids().includes(game.appid) ? "✓ 已加入比較" : "＋ 加入比較";
-    }
     renderPlatforms(game);
     recommendationsReady = !pending;
     if (selectedTag && !R.hasTag(game, selectedTag)) selectedTag = "";
@@ -640,10 +609,9 @@
   }
   function renderPlatforms(game) {
     const nintendo = isNintendo(game);
-    const supported = nintendo || game.hasNintendo === true;
-    $("gamePlatforms").hidden = !supported;
+    $("gamePlatforms").hidden = false;
     $("gamePlatforms").replaceChildren(
-      ...(supported ? game.platformBadges || [] : []).map((badge) => {
+      ...(game.platformBadges || []).map((badge) => {
         const chip = node("span", "game-platform-chip", badge.label);
         chip.title = badge.title || game.platformLabel || badge.label;
         return chip;
@@ -652,8 +620,7 @@
     const editions = (game.platforms || []).filter(code => ["NS", "NS2"].includes(code))
       .map(code => ({ code, edition: game.platformEditions?.[code] }))
       .filter(({ edition }) => edition?.label && edition.title && publicSourceURL(edition.source_url));
-    $("gamePlatformSupport").hidden = !supported;
-    if (!supported) return;
+    $("gamePlatformSupport").hidden = false;
     $("gamePlatformLabel").textContent = game.platformLabel || "平台資訊待確認";
     $("gamePlatformNote").textContent = [...new Set((game.platformBadges || []).map(badge => badge.title).filter(Boolean))].join(" ");
     if (!nintendo && Number.isSafeInteger(game.hypes))

@@ -62,7 +62,7 @@ async function display(search, nintendo = sample(), catalog = null, stored = [],
       loadSources: async () => { calls.sources++; return { catalog, preview: null }; },
       loadGame: async () => { calls.steam++; return catalog?.games?.[0] || null; },
     },
-    RadarCompare: { ids: () => [] }, RadarArtwork: { load: (_img, _game, callbacks = {}) => callbacks.onExhausted?.() },
+    RadarArtwork: { load: (_img, _game, callbacks = {}) => callbacks.onExhausted?.() },
     addEventListener() {},
   };
   const context = vm.createContext({
@@ -85,7 +85,10 @@ test('Nintendo detail uses its own public source, hypes and verified native excl
   assert.equal(e.get('gameFollowers').textContent, '45');
   assert.equal(e.get('gameInterestCaption').textContent, 'IGDB hypes · 發售前關注數');
   assert.equal(e.get('gameAppId').textContent, 'IGDB ID：366896');
-  assert.equal(e.get('gameCompare').hidden, true);
+  for (const removed of ['gameCompare', 'gameTagPreview', 'heroTags', 'gameJump']) {
+    assert.equal(e.has(removed), false);
+  }
+  assert.equal(e.get('gamePlatformSupport').hidden, false);
   assert.equal(e.get('gameLanguageContent').hidden, false);
   assert.equal(e.get('steamLanguageSection').hidden, true);
   assert.match(e.get('nintendoLanguageSections').textContent, /NS2 版本.*語言支援待確認/);
@@ -139,11 +142,20 @@ test('existing Steam detail route retains Followers, external Steam link and num
   assert.equal(e.get('gameFollowers').textContent, '6,000');
   assert.equal(e.get('gameInterestCaption').textContent, 'Steam Followers · 非願望清單數');
   assert.equal(e.get('gameReleaseLabel').textContent, '預定發售・台灣');
-  assert.equal(e.get('gameCompare').hidden, false);
-  assert.equal(e.get('gamePlatforms').hidden, true);
+  assert.equal(e.has('gameCompare'), false);
+  assert.equal(e.get('gamePlatforms').hidden, false);
+  assert.equal(e.get('gamePlatforms').textContent, 'Steam');
+  assert.equal(e.get('gamePlatformSupport').hidden, false);
+  assert.equal(e.get('gamePlatformLabel').textContent, 'Steam');
+  assert.match(e.get('gamePlatformDates').textContent, /Steam · 2027\/01\/15 · 台灣/);
   assert.equal(e.get('gameSteam').href, 'https://store.steampowered.com/app/632950/');
   e.get('gameSave').listeners.click({ currentTarget: e.get('gameSave') });
   assert.deepEqual(JSON.parse(storage.get('game-trend-radar:saved:v1')), ['igdb:366896', 632950]);
+  assert.equal(e.get('gameSave').attributes['aria-pressed'], 'true');
+  assert.equal(e.get('gameSaveMobile').attributes['aria-pressed'], 'true');
+  e.get('gameSaveMobile').listeners.click({ currentTarget: e.get('gameSaveMobile') });
+  assert.deepEqual(JSON.parse(storage.get('game-trend-radar:saved:v1')), ['igdb:366896']);
+  assert.equal(e.get('gameSave').attributes['aria-pressed'], 'false');
 });
 
 const steamCatalog = () => ({ version: 3, generated_at: '2026-10-03T15:56:37Z',
@@ -166,6 +178,7 @@ test('merged Steam detail preserves its Steam date, separate hypes and Nintendo 
   assert.equal(e.get('gameFollowers').textContent, '6,000');
   assert.equal(e.get('gameInterestCaption').textContent, 'Steam Followers · 非願望清單數');
   assert.equal(e.get('gamePlatforms').hidden, false);
+  assert.equal(e.get('gamePlatformSupport').hidden, false);
   assert.equal(e.get('gamePlatformLabel').textContent, 'Steam／NS2・多平台');
   assert.match(e.get('gamePlatformDates').textContent, /Steam · 2027\/01\/15 · 台灣/);
   assert.match(e.get('gamePlatformDates').textContent, /NS2 · 2027\/03\/19 · 日本/);
@@ -213,7 +226,9 @@ test('optional Nintendo failure leaves the Steam profile usable without unconfir
   const { elements: e } = await display('?appid=632950', null, steamCatalog(), [], { nintendoFailure: true });
   assert.equal(e.get('detailPage').hidden, false);
   assert.equal(e.get('gameDate').textContent, '2027/01/15');
-  assert.equal(e.get('gamePlatforms').hidden, true);
+  assert.equal(e.get('gamePlatforms').hidden, false);
+  assert.equal(e.get('gamePlatforms').textContent, 'Steam');
+  assert.equal(e.get('gamePlatformSupport').hidden, false);
   assert.equal(e.get('gameFollowers').textContent, '6,000');
   assert.equal(e.get('gameSteam').href, 'https://store.steampowered.com/app/632950/');
 });
@@ -224,7 +239,9 @@ test('Steam first paint does not wait for Nintendo and later enrichment keeps th
   const { elements: e } = await display('?appid=632950', null, steamCatalog(), [], { nintendoPending });
   assert.equal(e.get('detailPage').hidden, false);
   assert.equal(e.get('gameDate').textContent, '2027/01/15');
-  assert.equal(e.get('gamePlatforms').hidden, true);
+  assert.equal(e.get('gamePlatforms').hidden, false);
+  assert.equal(e.get('gamePlatforms').textContent, 'Steam');
+  assert.equal(e.get('gamePlatformSupport').hidden, false);
   assert.equal(e.get('gameReleaseDates').children.length, 1);
   finishNintendo(crossPlatformSample());
   await new Promise(resolve => setImmediate(resolve));

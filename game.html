@@ -24,7 +24,7 @@
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
     <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.14.0" />
     <link rel="stylesheet" href="./assets/radar-insights-v1.css?v=1.2.0" />
-    <link rel="stylesheet" href="./assets/radar-game-detail-v1.css?v=3.9.0" />
+    <link rel="stylesheet" href="./assets/radar-game-detail-v1.css?v=3.10.0" />
     <script src="./assets/radar-data-v1.js?v=3.11.0" defer></script>
     <script src="./assets/radar-storage-v2.js?v=3.1.0" defer></script>
     <script src="./assets/radar-discovery-v1.js?v=1.3.1" defer></script>
@@ -33,7 +33,7 @@
     <script src="./assets/radar-artwork-v1.js?v=1.0.0" defer></script>
     <script src="./assets/radar-insights-v1.js?v=1.2.0" defer></script>
     <script src="./assets/radar-enhancements-v1.js?v=1.2.0" defer></script>
-    <script src="./assets/radar-game-detail-v1.js?v=3.12.0" defer></script>
+    <script src="./assets/radar-game-detail-v1.js?v=3.13.0" defer></script>
   </head>
   <body data-page="game">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -114,14 +114,28 @@
       </div>
       <div id="detailPage" hidden>
         <section class="game-hero" aria-labelledby="gameTitle">
-          <div class="game-headline">
+          <div class="game-hero-toolbar">
             <div class="game-page-kicker">
               <span class="eyebrow">A NEW WORLD AWAITS</span
               ><span class="game-state" id="gameState">新作觀測中</span>
             </div>
+            <button
+              class="game-profile-save"
+              id="gameSave"
+              data-game-save
+              type="button"
+              aria-pressed="false"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M20.8 4.8a5.6 5.6 0 0 0-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"
+                /></svg
+              ><span id="gameSaveLabel" data-save-label>加入收藏</span>
+            </button>
+          </div>
+          <div class="game-headline">
             <h1 class="game-page-title" id="gameTitle"></h1>
             <p class="game-page-en" id="gameEnglish" hidden></p>
-            <div class="game-platform-badges" id="gamePlatforms" aria-label="遊戲原生平台與獨佔資訊" hidden></div>
             <div
               class="game-genres"
               id="gameGenres"
@@ -147,41 +161,9 @@
           <div class="game-intro" id="gameIntro">
             <p class="game-description" id="gameDescription" lang="zh-Hant" hidden></p>
             <p class="description-source" id="descriptionSource" hidden>本站繁中翻譯 · 依 Steam 商店介紹</p>
-            <div class="hero-tag-preview" id="gameTagPreview" hidden>
-              <p>從這些 TAG，找到下一個喜歡。</p>
-              <div
-                id="heroTags"
-                role="group"
-                aria-label="快速探索遊戲 TAG"
-              ></div>
-            </div>
           </div>
-          <div class="game-profile-actions">
-            <button class="profile-compare" id="gameCompare" type="button" aria-pressed="false" hidden>＋ 加入比較</button>
-            <a
-              class="button primary"
-              id="gameSteam"
-              data-game-steam
-              target="_blank"
-              rel="noopener noreferrer"
-              >前往 Steam 商店 <span aria-hidden="true">↗</span></a
-            >
-            <button
-              class="game-profile-save"
-              id="gameSave"
-              data-game-save
-              type="button"
-              aria-pressed="false"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M20.8 4.8a5.6 5.6 0 0 0-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"
-                /></svg
-              ><span id="gameSaveLabel" data-save-label>加入收藏</span>
-            </button>
-            <a class="game-jump" id="gameJump" href="#gameDiscovery"
-              >用 TAG 找下一款 <span aria-hidden="true">↓</span></a
-            >
+          <div class="game-hero-footer">
+            <div class="game-platform-badges" id="gamePlatforms" aria-label="遊戲原生平台與獨佔資訊" hidden></div>
           </div>
         </section>
 
@@ -214,6 +196,16 @@
               <p class="game-platform-label" id="gamePlatformLabel"></p>
               <p class="game-platform-note" id="gamePlatformNote"></p>
               <ul class="game-platform-dates" id="gamePlatformDates"></ul>
+              <div class="game-platform-store-actions">
+                <a
+                  class="button primary"
+                  id="gameSteam"
+                  data-game-steam
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >前往 Steam 商店 <span aria-hidden="true">↗</span></a
+                >
+              </div>
             </div>
             <div id="gameLanguageContent">
               <p class="intel-label">用熟悉的語言，進入新世界</p>
