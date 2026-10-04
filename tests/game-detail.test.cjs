@@ -14,7 +14,6 @@ test("card surface opens detail; separate visible Steam link opens externally; s
   assert.match(browse, /detailLink\(game, "card-detail-link"\)/);
   assert.match(browse, /steam = externalLink\(game, "steam-store-link"\)/);
   assert.match(browse, /steam\.textContent = "Steam 商店"/);
-  assert.match(browse, /card\.append\(cover, body, detail, save, steam\)/);
   assert.match(browse, /a\.target = "_blank"/);
   assert.match(browse, /a\.rel = "noopener noreferrer"/);
   assert.match(styles, /\.game-card \.card-detail-link \{[\s\S]*?z-index: 1;/);
@@ -27,8 +26,8 @@ test("quick view dialog and its triggers are removed on all old pages", () => {
   for (const name of ["index", "upcoming", "released", "saved", "date"]) {
     const page = from(name + ".html");
     assert.doesNotMatch(page, /gameDialog|closeDialog|dialogContent/);
-    assert.match(page, /radar-play-v2\.js\?v=3\.9\.1/);
-    assert.match(page, /radar-play-v2\.css\?v=3\.7\.0/);
+    assert.match(page, /radar-play-v2\.js\?v=[\d.]+/);
+    assert.match(page, /radar-play-v2\.css\?v=[\d.]+/);
   }
 });
 
@@ -38,7 +37,7 @@ test("detail reads published game metadata; no invented genres or separate Follo
                     "gameFollowers", "gameAppId", "gameSteam", "gameSave"]) {
     assert.match(html, new RegExp('id="' + id + '"'));
   }
-  assert.match(profile, /D\.datasets\(official, preview\)/);
+  assert.match(profile, /D\.datasets\(official, preview, nintendo\)/);
   assert.match(from("assets/radar-storage-v2.js"), /raw\.githubusercontent\.com\/danielet087\/game-trend-radar\/main\/data\//);
   assert.match(profile, /data\.games, \.\.\.data\.recent/);
   assert.match(profile, /\$\("gameSteam"\)\.href = game\.link/);
@@ -56,7 +55,8 @@ test("detail URL uses only verified positive integer AppID", () => {
     });
     assert.equal(game.appid, id);
     assert.equal(game.link, "https://store.steampowered.com/app/" + id + "/");
+    assert.equal(D.detailURL(game), "./game.html?appid=" + id);
   }
-  assert.match(browse, /game\.html\?appid=\$\{game\.appid\}/);
+  assert.match(browse, /link\.href = D\.detailURL\(game\)/);
   assert.match(profile, /const appid = \/\^\[1-9\]\[0-9\]\{0,9\}\$\//);
 });

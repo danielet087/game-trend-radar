@@ -1364,25 +1364,29 @@ h1 {
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: 17px 17px 52px;
+  padding: 17px;
+}
+.card-names {
+  position: relative;
+  z-index: 2;
+  display: block;
+  min-width: 0;
 }
 .card-title {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  display: block;
   overflow: hidden;
-  min-height: 2.95em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 15px;
   font-weight: 800;
   line-height: 1.5;
   letter-spacing: -0.02em;
-  overflow-wrap: anywhere;
 }
 .card-english {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-top: 5px;
+  margin-top: 1px;
   font:
     12px/1.6 Arial,
     "Noto Sans TC",
@@ -1394,8 +1398,8 @@ h1 {
   flex-wrap: wrap;
   align-items: center;
   gap: 5px;
-  margin-top: 12px;
-  margin-bottom: 17px;
+  justify-content: flex-end;
+  margin: 0;
 }
 .card-language,
 .game-language-chip,
@@ -1431,14 +1435,19 @@ h1 {
 .card-meta {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-end;
   flex-wrap: wrap;
   gap: 5px 9px;
-  margin-top: auto;
+  margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid #ecedf2;
   font-variant-numeric: tabular-nums;
 }
+.card-release-dates { display: grid; gap: 5px; min-width: 0; }
+.card-release-date { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 5px; }
+.card-release-platform { color: var(--muted); font-size: 9px; line-height: 1.6; }
+.card-release-date.current-release time { color: var(--ink); font-weight: 700; }
+.card-interest { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; margin-left: auto; }
 .card-meta time {
   color: #737e92;
   font:
@@ -1461,13 +1470,7 @@ h1 {
   margin-left: 4px;
 }
 .game-card::after {
-  content: "遊戲資訊 →";
-  position: absolute;
-  bottom: 17px;
-  left: 17px;
-  color: #778195;
-  font-size: 10px;
-  pointer-events: none;
+  content: none;
 }
 .game-card .card-detail-link {
   position: absolute;
@@ -1521,15 +1524,13 @@ h1 {
   fill: currentColor;
 }
 .game-card .steam-store-link {
-  position: absolute;
-  right: 15px;
-  bottom: 10px;
+  position: relative;
   z-index: 5;
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  min-height: 32px;
-  padding: 5px 4px;
+  min-height: 26px;
+  padding: 2px 0;
   color: var(--blue);
   font-size: 10px;
   font-weight: 700;
@@ -2110,7 +2111,7 @@ body.motion-on::after {
     gap: 13px;
   }
   .card-body {
-    padding: 14px 13px 48px;
+    padding: 14px 13px;
   }
   .card-title {
     font-size: 14px;
@@ -2119,15 +2120,13 @@ body.motion-on::after {
     font-size: 11px;
   }
   .card-meta {
-    flex-direction: column;
-    gap: 3px;
+    gap: 7px;
   }
   .card-followers {
     font-size: 17px;
   }
   .card-languages {
-    margin-top: 10px;
-    margin-bottom: 12px;
+    margin: 0;
   }
   .card-language {
     padding: 4px 6px;
@@ -2139,10 +2138,8 @@ body.motion-on::after {
     font-size: 9px;
   }
   .game-card .steam-store-link {
-    right: 10px;
     font-size: 9px;
-    min-height: 35px;
-    bottom: 8px;
+    min-height: 26px;
   }
   .save-button {
     width: 40px;
@@ -2250,7 +2247,7 @@ body.motion-on::after {
     grid-template-columns: minmax(0, 1fr);
   }
   .card-body {
-    padding: 17px 17px 49px;
+    padding: 17px;
   }
   .card-title {
     font-size: 16px;
@@ -2264,7 +2261,7 @@ body.motion-on::after {
     font-size: 12px;
   }
   .card-languages {
-    margin-bottom: 16px;
+    margin: 0;
   }
   .card-language {
     font-size: 11px;
@@ -2274,7 +2271,6 @@ body.motion-on::after {
     font-size: 10px;
   }
   .game-card .steam-store-link {
-    right: 15px;
     font-size: 11px;
   }
   .countdown {
@@ -2542,12 +2538,30 @@ body[data-page="explore"] {
   .site-header { backdrop-filter: none; background: #fffdf8; }
 }
 
-/* Native Nintendo platforms use their own community indicator and badges. */
+/* Platform tags and language support share the card's lower edge. */
+.card-footer {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 11px;
+}
+.card-footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
 .card-platforms {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  margin: 11px 0 14px;
+  align-items: flex-end;
+  margin: 0;
 }
 .platform-badge {
   display: inline-flex;
@@ -2565,6 +2579,8 @@ body[data-page="explore"] {
   color: #683bac;
   background: #f3edff;
 }
+.platform-steam { border-color: #cbd6ed; color: #3b5391; background: #edf1fb; }
+.platform-multi { border-color: #d8d6ce; color: #6c685c; background: #f7f5ee; }
 .platform-release-note {
   margin: -7px 0 11px;
   font-size: 10px;

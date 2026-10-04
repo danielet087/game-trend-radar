@@ -39,6 +39,7 @@
     : `${number.format(game.followers)} 人關注`;
   let currentGame = null,
     candidates = [],
+    knownGames = [],
     tagsExpanded = false,
     selectedTag = "",
     recommendationsReady = false;
@@ -63,12 +64,23 @@
     }
   }
   let saved = savedIds();
+  const savedAliases = (game) => Array.isArray(game?.savedAliases)
+    ? game.savedAliases : [game?.appid];
+  const isSaved = (game) => savedAliases(game).some((id) => saved.has(id));
   function updateSaveControls() {
+    const remaining = new Set(saved);
+    let knownSaved = 0;
+    for (const game of knownGames) {
+      const aliases = savedAliases(game);
+      if (!aliases.some((id) => remaining.has(id))) continue;
+      knownSaved++;
+      aliases.forEach((id) => remaining.delete(id));
+    }
     document.querySelectorAll("[data-saved-count]").forEach((count) => {
-      count.textContent = String(saved.size);
+      count.textContent = String(knownSaved + remaining.size);
     });
     if (!currentGame) return;
-    const active = saved.has(currentGame.appid);
+    const active = isSaved(currentGame);
     document.querySelectorAll("[data-game-save]").forEach((button) => {
       button.setAttribute("aria-pressed", String(active));
       button.setAttribute(
@@ -83,12 +95,12 @@
   function toggleSave(event) {
     if (!currentGame) return;
     const game = currentGame;
-    if (saved.has(game.appid)) saved.delete(game.appid);
+    if (isSaved(game)) savedAliases(game).forEach((id) => saved.delete(id));
     else saved.add(game.appid);
     let message;
     try {
       localStorage.setItem(storageKey, JSON.stringify([...saved]));
-      message = saved.has(game.appid)
+      message = isSaved(game)
         ? `已把「${game.name}」加入收藏。`
         : `已取消收藏「${game.name}」。`;
     } catch {
@@ -365,6 +377,12 @@
     currentGame = game;
     const comparison = $("gameCompare");
     const nintendo = isNintendo(game);
+    const nativeRelease = (game.dateReleases || game.releases || []).find((row) =>
+      ["NS", "NS2"].includes(row.platform) && row.date === game.date,
+    );
+    const nativeDate = nintendo || (game.hasNintendo === true && !!nativeRelease &&
+      !(game.releases || []).some((row) => row.platform === "Steam" && row.date === game.date));
+    const dateRegion = nativeRelease?.region || game.dateRegion;
     document.body.dataset.gameSource = game.source || "steam";
     comparison.hidden = nintendo;
     if (nintendo) {
@@ -380,7 +398,8 @@
     renderPlatforms(game);
     recommendationsReady = !pending;
     if (selectedTag && !R.hasTag(game, selectedTag)) selectedTag = "";
-    candidates = D.unique([
+    knownGames = D.cardGames([...data.games, ...data.recent]);
+    candidates = D.cardGames([
       ...data.games.filter((row) => row.date >= today),
       ...D.selectGames(data, "released", today),
     ]);
@@ -443,12 +462,13 @@
     $("gameInterestCaption").textContent = nintendo
       ? "IGDB hypes · 發售前關注數"
       : "Steam Followers · 非願望清單數";
-    $("gameReleaseLabel").textContent = nintendo
-      ? `預定發售・${regionLabel(game.dateRegion)}`
+    $("gameReleaseLabel").textContent = nativeDate
+      ? `預定發售・${regionLabel(dateRegion)}`
       : "預定發售・台灣";
-    $("gameReleaseNote").hidden = !nintendo;
-    $("gameReleaseNote").textContent = nintendo
-      ? `來源：${publicSourceURL(game.dateSource) ? "IGDB 平台發售資料" : String(game.dateSource || "IGDB").slice(0, 120)}。依 ${regionLabel(game.dateRegion)}發售資料顯示；實際上市時間請以該地區官方公告為準。${game.dateRegion === "taiwan" ? "" : "此日期尚未另行確認台灣上市日。"}`
+    $("gameReleaseNote").hidden = !nativeDate;
+    const dateSource = nativeRelease?.source || game.dateSource || "IGDB";
+    $("gameReleaseNote").textContent = nativeDate
+      ? `來源：${publicSourceURL(dateSource) ? "IGDB 平台發售資料" : String(dateSource).slice(0, 120)}。依 ${regionLabel(dateRegion)}發售資料顯示；實際上市時間請以該地區官方公告為準。${dateRegion === "taiwan" ? "" : "此日期尚未另行確認台灣上市日。"}`
       : "";
     $("gameCountdown").textContent =
       days > 0
@@ -485,6 +505,8 @@
     $("gameSteamMobile").textContent = `${sourceName} ↗`;
     $("gameFootnote").textContent = nintendo
       ? "發售日期可能依平台、地區調整；平台與語言支援請以任天堂及發行商最新公告為準。IGDB hypes 屬遊戲整體的發售前關注數，並非單一平台玩家人數。"
+      : game.hasNintendo === true
+        ? "各平台發售日期可能不同；實際上市時間與語言支援請以各平台官方公告為準。語言標籤依 Steam 商店資料顯示。IGDB hypes 與 Steam Followers 分別呈現，不合併計算。"
       : "發售日期可能調整，實際上市時間與語言支援請以 Steam 商店公告為準。";
     document.querySelectorAll("[data-game-steam]").forEach((link) => {
       link.href = game.link;
@@ -508,29 +530,32 @@
   }
   function renderPlatforms(game) {
     const nintendo = isNintendo(game);
-    $("gamePlatforms").hidden = !nintendo;
+    const supported = nintendo || game.hasNintendo === true;
+    $("gamePlatforms").hidden = !supported;
     $("gamePlatforms").replaceChildren(
-      ...(nintendo ? game.platformBadges || [] : []).map((badge) => {
+      ...(supported ? game.platformBadges || [] : []).map((badge) => {
         const chip = node("span", "game-platform-chip", badge.label);
         chip.title = badge.title || game.platformLabel || badge.label;
         return chip;
       }),
     );
-    $("gamePlatformSupport").hidden = !nintendo;
-    if (!nintendo) return;
+    $("gamePlatformSupport").hidden = !supported;
+    if (!supported) return;
     $("gamePlatformLabel").textContent = game.platformLabel || "平台資訊待確認";
     $("gamePlatformNote").textContent = [...new Set((game.platformBadges || []).map(badge => badge.title).filter(Boolean))].join(" ");
+    if (!nintendo && Number.isSafeInteger(game.hypes))
+      $("gamePlatformNote").append(node("span", "", ` IGDB hypes ${number.format(game.hypes)}（遊戲整體關注數，與 Steam Followers 分開計算）。`));
     const rows = Array.isArray(game.releases) ? game.releases : [];
     const seen = new Set();
     const dates = rows.filter((row) => {
-      if (!row || !["NS", "NS2"].includes(row.platform) || row.precision !== "day" || !D.validDate(row.date)) return false;
+      if (!row || !["NS", "NS2", "Steam"].includes(row.platform) || row.precision !== "day" || !D.validDate(row.date)) return false;
       const key = `${row.platform}|${row.date}|${row.region || ""}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     }).sort((a, b) => a.date.localeCompare(b.date) || a.platform.localeCompare(b.platform));
     $("gamePlatformDates").replaceChildren(...dates.map(row =>
-      node("li", "", `${row.platform} · ${row.date.replaceAll("-", "/")} · ${regionLabel(row.region)}`),
+      node("li", "", `${row.platform} · ${row.date.replaceAll("-", "/")} · ${row.platform === "Steam" ? "台灣" : regionLabel(row.region)}`),
     ));
     $("gamePlatformDates").hidden = !dates.length;
   }
@@ -542,7 +567,8 @@
       if (!data) return;
       const enriched = R.enrich(data, catalog, preview);
       const matches = [...enriched.games, ...enriched.recent].filter(entry =>
-        isNintendo(entry) && entry.igdbId === igdbId && (!requestedDate || entry.date === requestedDate),
+        (entry.igdbId === igdbId || entry.igdbIds?.includes(igdbId)) &&
+        (!requestedDate || entry.date === requestedDate),
       );
       const game = matches.find(entry => entry.date >= today) || matches[0];
       if (!game) return;
@@ -574,11 +600,11 @@
       await loadNintendoDetail(force);
       return;
     }
-    if (!appid) {
-      setStatus("找不到這款遊戲", "連結沒有有效的 Steam AppID，請返回遊戲清單重新選擇。");
+    if (!appid || (requestedDate !== null && !D.validDate(requestedDate))) {
+      setStatus("找不到這款遊戲", "連結沒有有效的 Steam AppID 或發售日期，請返回遊戲清單重新選擇。");
       return;
     }
-    let rawGame = null, catalog = null, preview = null;
+    let rawGame = null, catalog = null, preview = null, nintendo = null;
     let catalogDone = false, shown = false;
     function present() {
       if (!rawGame && !catalog && !preview) return;
@@ -589,8 +615,11 @@
         games: [{ ...rows.find(row => Number(row.appid) === appid), ...rawGame },
           ...rows.filter(row => Number(row.appid) !== appid)]
       } : catalog;
-      const data = R.enrich(D.datasets(official, preview), official, preview);
-      const game = [...data.games, ...data.recent].find(entry => entry.appid === appid);
+      const data = R.enrich(D.datasets(official, preview, nintendo), official, preview);
+      const matches = [...data.games, ...data.recent].filter(entry =>
+        entry.appid === appid && (!requestedDate || entry.date === requestedDate),
+      );
+      const game = matches.find(entry => entry.dateReleases?.some(row => row.platform === "Steam")) || matches[0];
       if (!game) return;
       render(game, data, !catalogDone);
       shown = true;
@@ -607,6 +636,8 @@
         window.RadarStorage.loadSources({ force }).then(result => {
           catalog = result.catalog; preview = result.preview; catalogDone = true; present();
         }),
+        window.RadarStorage.loadNintendo({ force }).then(result => { nintendo = result; present(); })
+          .catch(() => { /* Optional platform data must not block the Steam profile. */ }),
       ]);
       if (!shown) {
         if (!rawGame && !catalog && !preview)
