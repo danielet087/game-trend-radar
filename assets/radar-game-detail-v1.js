@@ -600,6 +600,14 @@
         return chip;
       }),
     );
+    const editions = (game.platforms || []).filter(code => ["NS", "NS2"].includes(code))
+      .map(code => ({ code, edition: game.platformEditions?.[code] }))
+      .filter(({ edition }) => edition?.label && edition.title && publicSourceURL(edition.source_url));
+    for (const { code, edition } of editions) {
+      const chip = node("span", "game-platform-chip game-edition-chip", `${code} ${edition.label}`);
+      chip.title = `${edition.title} · ${regionLabel(edition.region)}版本`;
+      $("gamePlatforms").append(chip);
+    }
     $("gamePlatformSupport").hidden = !supported;
     if (!supported) return;
     $("gamePlatformLabel").textContent = game.platformLabel || "平台資訊待確認";
@@ -617,7 +625,11 @@
     }).sort((a, b) => a.date.localeCompare(b.date) || a.platform.localeCompare(b.platform));
     $("gamePlatformDates").replaceChildren(...dates.map(row => {
       const item = node("li", "", `${row.platform} · ${row.date.replaceAll("-", "/")} · ${row.platform === "Steam" ? "台灣" : regionLabel(row.region)}`);
-      if (row.platform === "Steam") return item;
+      item.dataset.platform = row.platform;
+      if (row.platform === "Steam") {
+        item.append(node("p", "game-release-edition-label game-release-steam-version", "Steam 版本"));
+        return item;
+      }
       const evidence = node("div", "game-release-source");
       const sourceURL = taiwanOfficialRelease(row) ? publicSourceURL(row.official_source_url) : publicSourceURL(row.source);
       const source = node(sourceURL ? "a" : "span", "", releaseSourceName(row));
@@ -628,6 +640,25 @@
       }
       evidence.append(node("span", "", "來源："), source, node("span", "", `。${releaseDateNote(row)}`));
       item.append(evidence);
+      const edition = editions.find(entry => entry.code === row.platform)?.edition;
+      if (edition) {
+        const version = node("div", "game-release-edition");
+        version.setAttribute("aria-label", `${row.platform} 已確認的版本與內容組合`);
+        version.append(node("strong", "game-release-edition-label", `${row.platform} ${edition.label}`));
+        version.append(node("p", "game-release-edition-title", `官方商品名稱：${edition.title}`));
+        const origin = node("p", "game-release-edition-source");
+        const link = node("a", "", "Nintendo 官方商品頁 ↗");
+        link.href = publicSourceURL(edition.source_url);
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        origin.append(node("span", "", `版本資料：${regionLabel(edition.region)}版本 · `), link);
+        version.append(origin);
+        const contentNote = edition.type === "deluxe"
+          ? "此平台發售的是上述 Deluxe 版本。"
+          : "此平台發售的是包含本體與追加內容的版本。";
+        version.append(node("p", "game-release-edition-note", `${contentNote}發售日期對應上述版本與內容組合。${edition.region === "taiwan" ? "版本內容依台灣官方商品頁確認。" : "版本內容依此地區商品頁確認；台灣販售版本是否相同仍待確認。"}`));
+        item.append(version);
+      }
       return item;
     }));
     $("gamePlatformDates").hidden = !dates.length;

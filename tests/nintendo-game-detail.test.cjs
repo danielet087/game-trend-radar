@@ -352,3 +352,75 @@ test('pure Steam detail keeps only the Steam language section', async () => {
   assert.equal(e.get('nintendoLanguageSections').children.length, 0);
   assert.equal(e.get('gameLanguagePolicy').hidden, true);
 });
+
+function edition(fields = {}) {
+  return { type: 'base_plus_dlc', label: '本體＋Re Mind DLC', title: 'KINGDOM HEARTS III + Re Mind',
+    product_id: '70010000117242', region: 'hong_kong',
+    source_url: 'https://ec.nintendo.com/HK/zh/titles/70010000117242',
+    checked_at: '2026-10-04T08:00:00Z', ...fields };
+}
+
+test('every merged game entry point retains the complete platform edition, official title and regional source', async () => {
+  const payload = crossPlatformSample();
+  payload.games[0].platform_editions = { NS2: edition() };
+  for (const search of ['?appid=632950&date=2027-01-15', '?appid=632950&date=2027-03-19',
+    '?igdb=366896&date=2027-01-15', '?igdb=366896&date=2027-03-19']) {
+    const { elements: e } = await display(search, payload, steamCatalog());
+    assert.equal(e.get('detailPage').hidden, false);
+    assert.equal(e.get('gameDate').textContent, search.includes('2027-03-19') ? '2027/03/19' : '2027/01/15');
+    assert.match(e.get('gamePlatforms').textContent, /NS2 本體＋Re Mind DLC/);
+    const dates = e.get('gamePlatformDates').children;
+    assert.equal(dates.length, 2);
+    assert.match(dates[0].textContent, /Steam · 2027\/01\/15 · 台灣.*Steam 版本/);
+    assert.doesNotMatch(dates[0].textContent, /Re Mind|原版|本體/);
+    assert.match(dates[1].textContent, /NS2 · 2027\/03\/19 · 日本.*NS2 本體＋Re Mind DLC.*官方商品名稱：KINGDOM HEARTS III \+ Re Mind.*香港版本.*台灣販售版本是否相同仍待確認/);
+    const version = dates[1].children.find(child => child.className === 'game-release-edition');
+    assert.equal(version.children[2].children[1].href, 'https://ec.nintendo.com/HK/zh/titles/70010000117242');
+    assert.equal(version.children[2].children[1].rel, 'noopener noreferrer');
+    assert.equal(version.children[2].children[1].target, '_blank');
+    assert.doesNotMatch(e.get('gameLanguageContent').textContent, /Re Mind|官方商品名稱/);
+  }
+});
+
+test('Nintendo-only expansion and Deluxe releases keep their own confirmed edition without inventing a Steam base version', async () => {
+  const variants = [
+    edition({ type: 'base_plus_expansion', label: '本體＋Dark Arisen 擴充版', title: "Dragon's Dogma 2: Dark Arisen",
+      product_id: '70010000116366', region: 'australia', source_url: 'https://www.nintendo.com/au/games/nintendo-switch-2/dragons-dogma-2-dark-arisen/' }),
+    edition({ type: 'deluxe', label: 'Deluxe 版', title: 'Resident Evil 2: Deluxe Edition', product_id: '70010000114443',
+      region: 'australia', source_url: 'https://ec.nintendo.com/AU/en/titles/70010000114443' }),
+  ];
+  for (const version of variants) {
+    const { elements: e } = await display('?igdb=366896&date=2027-01-15', sample({ platform_editions: { NS2: version } }));
+    assert.equal(e.get('detailPage').hidden, false);
+    assert.match(e.get('gamePlatforms').textContent, new RegExp('NS2 ' + version.label));
+    const row = e.get('gamePlatformDates').children[0];
+    assert.match(row.textContent, /NS2 · 2027\/01\/15 · 全球/);
+    assert.ok(row.textContent.includes(version.title));
+    assert.match(row.textContent, /澳洲版本.*發售日期對應上述版本與內容組合/);
+    assert.ok(row.textContent.includes(version.type === 'deluxe' ? '此平台發售的是上述 Deluxe 版本。' : '此平台發售的是包含本體與追加內容的版本。'));
+    assert.doesNotMatch(row.textContent, /Steam 版本|重製|重製版|高畫質|原版/);
+  }
+});
+
+test('a NS2 content bundle does not become a label on an ordinary NS release or its language section', async () => {
+  const payload = sample({ platforms: [{ id: 130, code: 'NS' }, { id: 508, code: 'NS2' }],
+    known_platforms: [{ id: 130, code: 'NS' }, { id: 508, code: 'NS2' }], exclusivity: { status: 'multi_platform' },
+    releases: [{ platform: 'NS', date: '2027-01-15', precision: 'day', source: 'IGDB' },
+      { platform: 'NS2', date: '2027-03-19', precision: 'day', source: 'IGDB' }],
+    platform_editions: { NS2: edition() } });
+  const { elements: e } = await display('?igdb=366896&date=2027-01-15', payload);
+  assert.equal(e.get('gameDate').textContent, '2027/01/15');
+  const rows = e.get('gamePlatformDates').children;
+  assert.doesNotMatch(rows[0].textContent, /本體|Re Mind|DLC/);
+  assert.match(rows[1].textContent, /NS2 本體＋Re Mind DLC/);
+  assert.doesNotMatch(e.get('nintendoLanguageSections').textContent, /本體|Re Mind|DLC/);
+});
+
+test('missing or unverified edition records never produce an edition or base-version claim', async () => {
+  for (const entry of [null, edition({ source_url: 'https://nintendo.com.evil.test/product' }),
+    edition({ type: 'remaster' }), edition({ checked_at: '2026-10-04T08:00:00' })]) {
+    const { elements: e } = await display('?igdb=366896', sample({ platform_editions: { NS2: entry } }));
+    assert.doesNotMatch(e.get('gamePlatforms').textContent, /本體|Re Mind|原版|重製/);
+    assert.doesNotMatch(e.get('gamePlatformDates').textContent, /官方商品名稱|本體|Re Mind|原版|重製/);
+  }
+});

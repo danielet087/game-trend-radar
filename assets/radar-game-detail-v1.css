@@ -1360,10 +1360,24 @@ body.motion-on .art-dialog[open] {
 /* Native Nintendo editions remain separate from Steam Followers and languages. */
 .game-platform-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .game-platform-chip { padding: 6px 10px; border: 1px solid var(--game-edge); border-radius: 8px; background: var(--game-light); color: var(--game-accent); font-size: 12px; font-weight: 750; }
+.game-edition-chip { border-color: #c7b0e5; background: #f1eafa; color: #5c378b; }
 .game-platform-label { color: var(--game-accent); font-size: 15px; line-height: 1.6; font-weight: 750; }
 .game-platform-note, .game-platform-dates, .game-release-note { color: var(--muted); font-size: 10px; line-height: 1.7; margin-top: 7px; overflow-wrap: anywhere; }
 .game-platform-dates { padding-left: 15px; }
 .game-platform-dates li + li { margin-top: 4px; }
+.game-release-edition {
+  margin: 8px 0 12px;
+  padding: 10px 12px;
+  border: 1px solid #d8c9ed;
+  border-left: 3px solid #9c78cb;
+  border-radius: 8px;
+  background: #fbf8ff;
+}
+.game-release-edition-label { display: block; color: #5c378b; font-size: 12px; line-height: 1.6; font-weight: 750; }
+.game-release-steam-version { color: var(--game-accent); font-size: 10px; margin-top: 2px; }
+.game-release-edition-title { margin-top: 4px; color: var(--ink); font-size: 11px; line-height: 1.7; overflow-wrap: anywhere; }
+.game-release-edition-source, .game-release-edition-note { margin-top: 5px; font-size: 10px; line-height: 1.8; overflow-wrap: anywhere; }
+.game-release-edition-source a { color: #5c378b; text-decoration: underline; text-underline-offset: 2px; }
 body[data-game-source="nintendo"] #gameLanguageContent:not([hidden]) { margin-top: 15px; }
 .game-language-version { margin-top: 12px; min-width: 0; }
 .game-language-version + .game-language-version,

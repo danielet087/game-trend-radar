@@ -149,11 +149,20 @@
     link.setAttribute("aria-label", `查看 ${game.name} 的遊戲資訊`);
     return link;
   }
-  function cardDate(game) {
+  function cardDate(game, event = false) {
+    if (event) return game.date;
     const dates = (Array.isArray(game.releases) ? game.releases : [])
       .filter(release => release?.precision === "day" && D.validDate(release.date) && ["Steam", "NS", "NS2"].includes(release.platform))
       .map(release => release.date);
     return dates.sort()[0] || game.date;
+  }
+  function releaseEventGames(games) {
+    const events = new Map();
+    for (const game of games) {
+      const key = `${game.identityKey || game.appid}@${game.date}`;
+      if (!events.has(key)) events.set(key, game);
+    }
+    return [...events.values()];
   }
   function makeCard(game, options = {}) {
     const card = node("article", "game-card");
@@ -179,9 +188,10 @@
       });
       cover.append(img);
     }
-    const earliestDate = cardDate(game);
+    const event = options.event ?? mode === "date";
+    const displayedDate = cardDate(game, event);
     const days = Math.round(
-      (Date.parse(earliestDate + "T12:00:00Z") -
+      (Date.parse(displayedDate + "T12:00:00Z") -
         Date.parse(today + "T12:00:00Z")) /
         86400000,
     );
@@ -212,16 +222,34 @@
     else english.setAttribute("aria-hidden", "true");
     names.append(english);
     body.append(names);
+    const editions = D.releaseEditionBadges?.(game, event ? game.releasePlatforms : game.platforms) || [];
+    if (editions.length) {
+      const versions = node("div", "card-editions");
+      versions.setAttribute("aria-label", "各平台收錄版本");
+      for (const edition of editions) {
+        const version = node("span", "card-edition", `${edition.platform}・${edition.label}`);
+        version.title = edition.title;
+        versions.append(version);
+      }
+      body.append(versions);
+    }
     const languages = node("div", "card-languages");
-    languages.setAttribute("aria-label", game.source === "nintendo" ? "Nintendo 版本遊戲支援語言" : "Steam 版本遊戲支援語言");
-    if (game.source !== "nintendo" && game.hasNintendo) languages.title = "此處標籤為 Steam 版本語言支援；Nintendo 各版本請進入遊戲頁查看";
-    for (const badge of game.languageBadges || []) {
+    const nativePlatforms = (game.releasePlatforms || []).filter(platform => ["NS", "NS2"].includes(platform));
+    const nativeEvent = event && nativePlatforms.length > 0 && !game.releasePlatforms.includes("Steam");
+    const nativeLanguages = nativeEvent || game.source === "nintendo";
+    const support = nativeEvent
+      ? D.nintendoCardLanguages?.(game.platformLanguages || {}, nativePlatforms) ||
+        { languageBadges: [{ label: "語言支援待確認", status: "unknown", title: "Nintendo 此版本語言支援待確認" }] }
+      : game;
+    languages.setAttribute("aria-label", nativeLanguages ? "Nintendo 版本遊戲支援語言" : "Steam 版本遊戲支援語言");
+    if (!nativeLanguages && game.hasNintendo) languages.title = "此處標籤為 Steam 版本語言支援；Nintendo 各版本請進入遊戲頁查看";
+    for (const badge of support.languageBadges || []) {
       const language = node(
         "span",
         `card-language language-${badge.status}`,
         badge.label,
       );
-      language.title = game.source === "nintendo" ? badge.title || "Nintendo 此版本語言支援待確認" :
+      language.title = nativeLanguages ? badge.title || "Nintendo 此版本語言支援待確認" :
         "Steam 版本公布的遊戲語言支援；介面、字幕及配音的詳細項目請以商店為準";
       languages.append(language);
     }
@@ -248,11 +276,16 @@
     const meta = node("div", "card-meta");
     const dates = node("div", "card-release-dates");
     const line = node("div", "card-release-date");
-    const time = node("time", "", earliestDate.replaceAll("-", "/"));
-    time.dateTime = earliestDate;
-    time.title = "最早發售日期；各平台日期可於遊戲資訊查看";
+    const time = node("time", "", displayedDate.replaceAll("-", "/"));
+    time.dateTime = displayedDate;
+    time.title = event ? "本次平台發售日期" : "最早發售日期；各平台日期可於遊戲資訊查看";
     line.append(time);
     dates.append(line);
+    if (event && game.releasePlatforms?.length) {
+      const releasePlatforms = node("span", "card-release-platform", game.releasePlatforms.join("／"));
+      releasePlatforms.title = "本次發售的平台";
+      dates.append(releasePlatforms);
+    }
     const metrics = node("div", "card-interest");
     for (const [value, label] of [[game.followers, "人關注"], [game.hypes, "IGDB hypes"]]) {
       if (!Number.isFinite(value)) continue;
@@ -525,7 +558,7 @@
     const min = Number($("followersFilter").value);
     const period = mode === "all" ? $("releaseFilter").value : "";
     const language = ["all", "explore"].includes(mode) ? $("languageFilter").value : "";
-    const events = source.filter(
+    const events = releaseEventGames(source.filter(
       (game) =>
         (!term ||
           `${game.name} ${game.nameEn} ${game.nameOriginalTw || ""} ${game.nameOriginalCn || ""} ${(game.nameSearchAliases || []).join(" ")} ${game.appid} ${mode === "all" ? (game.tags || []).map(tag => tag + " " + R.label(tag)).join(" ") : ""}`
@@ -536,19 +569,20 @@
         (!period || (period === "future" ? game.date >= today : game.date < today)) &&
         (!language || game.languages?.[language] === true) &&
         (!model.savedOnly || D.isSaved(game, saved)),
-    );
+    ));
     const order = $("sortSelect").value;
-    const items = D.cardGames(events, order === "newest" || mode === "released" ? "latest" : "earliest");
+    const eventScoped = mode === "home" || mode === "date";
+    const items = eventScoped ? [...events] : D.cardGames(events, order === "newest" || mode === "released" ? "latest" : "earliest");
     items.sort((a, b) =>
       order === "followers"
         ? D.popularityCompare(a, b)
         : order === "name"
           ? a.name.localeCompare(b.name, "zh-TW")
           : order === "newest"
-            ? cardDate(b).localeCompare(cardDate(a)) || D.popularityCompare(a, b)
-            : cardDate(a).localeCompare(cardDate(b)) || D.popularityCompare(a, b),
+            ? cardDate(b, eventScoped).localeCompare(cardDate(a, eventScoped)) || D.popularityCompare(a, b)
+            : cardDate(a, eventScoped).localeCompare(cardDate(b, eventScoped)) || D.popularityCompare(a, b),
     );
-    return { source: D.cardGames(source), items, events };
+    return { source: eventScoped ? releaseEventGames(source) : D.cardGames(source), items, events };
   }
   function renderCalendar(games) {
     const [year, month] = model.month.split("-").map(Number);
@@ -587,16 +621,15 @@
       cell.append(link);
       D.calendarFeatured(dayGames).forEach((game, rank) => {
         const tag = detailLink(game, "day-game" + (rank ? " second" : ""));
+        const releasePlatforms = game.releasePlatforms || [game.source === "nintendo" ? game.platformShort : "Steam"];
         const nativePlatforms = (game.releasePlatforms || []).filter(platform => ["NS", "NS2"].includes(platform));
-        if (nativePlatforms.length) {
-          tag.classList.add("day-game-nintendo");
-          const platform = node("span", "day-platform", nativePlatforms.join("／"));
-          tag.append(platform, node("span", "day-game-name", game.name));
-          tag.title = `${game.name} · 本日發售：${game.releasePlatforms.join("／")} · ${number.format(game.hypes)} IGDB hypes${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;
-        } else {
-          tag.textContent = game.name;
-          tag.title = `${game.name} · ${number.format(game.followers)} 人關注`;
-        }
+        tag.classList.add("day-game-platform");
+        if (nativePlatforms.length) tag.classList.add("day-game-nintendo");
+        const editions = D.releaseEditionBadges?.(game, releasePlatforms) || [];
+        const versionText = editions.map(edition => edition.label).join("／");
+        tag.append(node("span", "day-platform", releasePlatforms.join("／")),
+          node("span", "day-game-name", game.name + (versionText ? ` · ${versionText}` : "")));
+        tag.title = `${game.name} · 本日發售：${releasePlatforms.join("／")}${editions.map(edition => ` · ${edition.platform}：${edition.title}`).join("")}${Number.isFinite(game.hypes) ? ` · ${number.format(game.hypes)} IGDB hypes` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;
         cell.append(tag);
       });
       if (dayGames.length > 2) {
@@ -664,7 +697,7 @@
     const grid = $("gamesGrid");
     const retained = new Map([...grid.querySelectorAll(".game-card[data-appid]")]
       .map(card => [card.dataset.gameKey || card.dataset.appid, card]));
-    grid.replaceChildren(...items.slice(0, model.limit).map(game => cardGames.get(retained.get(String(D.gameKey(game)))) === game ? retained.get(String(D.gameKey(game))) : makeCard(game)));
+    grid.replaceChildren(...items.slice(0, model.limit).map(game => cardGames.get(retained.get(String(D.gameKey(game)))) === game ? retained.get(String(D.gameKey(game))) : makeCard(game, { event: mode === "home" || mode === "date" })));
     document.dispatchEvent(new CustomEvent("radar:content-ready", { detail: { limit: model.limit } }));
     $("loadMoreWrap").hidden =
       items.length <= model.limit ||

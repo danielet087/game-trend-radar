@@ -394,7 +394,7 @@
       source: raw.source.trim().slice(0, 120), source_url: sourceURL, checked_at: raw.checked_at,
       evidence_type: raw.evidence_type, languageBadges: badges.length ? badges : unknown.languageBadges };
   }
-  function nintendoCardLanguages(platformLanguages, platforms) {
+  function nintendoCardLanguages(platformLanguages = {}, platforms = []) {
     const selected = platforms.map(platform => ({ platform, support: platformLanguages[platform] || nintendoLanguageSupport() }));
     const badges = selected.flatMap(({ platform, support }) => support.languageBadges.map(badge => ({
       ...badge, label: `${selected.length > 1 ? platform + " " : ""}${badge.label}`,
@@ -405,6 +405,31 @@
       [key, selected.length && selected.every(({ support }) => support.languages[key] === true) ? true : null]));
     return { languages, languageBadges: badges, languageBadge: badges.map(badge => badge.label).join("・"),
       languageStatus: badges[0]?.status || "unknown" };
+  }
+  function nintendoEdition(raw) {
+    if (!raw || !["base_plus_expansion", "deluxe", "base_plus_dlc"].includes(raw.type) ||
+      typeof raw.label !== "string" || !raw.label.trim() || raw.label.trim().length > 120 ||
+      typeof raw.title !== "string" || !raw.title.trim() || raw.title.trim().length > 240 ||
+      typeof raw.product_id !== "string" || !/^[1-9][0-9]{13}$/.test(raw.product_id) ||
+      !Object.hasOwn(languageRegionNames, raw.region) || awareTime(raw.checked_at) === null) return null;
+    const sourceURL = nintendoLanguageURL(raw.source_url, raw.region);
+    if (!sourceURL) return null;
+    const url = new URL(sourceURL);
+    if (!["www.nintendo.com", "www.nintendo.co.jp", "www.nintendo.com.hk", "ec.nintendo.com"].includes(url.hostname)) return null;
+    if (url.hostname === "ec.nintendo.com") {
+      const product = /^\/(?:TW|HK|JP|AU)\/[A-Za-z-]+\/titles\/([1-9][0-9]{13})\/?$/.exec(url.pathname);
+      if (!product || product[1] !== raw.product_id) return null;
+    }
+    return { type: raw.type, label: raw.label.trim(), title: raw.title.trim(), product_id: raw.product_id,
+      region: raw.region, source_url: sourceURL, checked_at: raw.checked_at };
+  }
+  function releaseEditionBadges(game, platforms = game?.releasePlatforms || []) {
+    return [...new Set(Array.isArray(platforms) ? platforms : [])]
+      .filter(platform => ["NS", "NS2"].includes(platform) && game?.platforms?.includes(platform))
+      .flatMap(platform => {
+        const edition = nintendoEdition(game?.platformEditions?.[platform]);
+        return edition ? [{ platform, ...edition }] : [];
+      });
   }
   function nintendoGames(payload) {
     if (!payload || payload.schema_version !== 1 || !Array.isArray(payload.games)) return [];
@@ -420,6 +445,10 @@
       if (!platforms.length) continue;
       const platformLanguages = Object.fromEntries(platforms.map(code =>
         [code, nintendoLanguageSupport(raw.platform_language_support?.[code])]));
+      const platformEditions = Object.fromEntries(platforms.flatMap(code => {
+        const edition = nintendoEdition(raw.platform_editions?.[code]);
+        return edition ? [[code, edition]] : [];
+      }));
       const nameEn = String(raw.name_en || raw.name || "").trim();
       const nameTw = String(raw.name_zh_tw_traditional || raw.name_zh_tw || "").trim();
       const nameCn = String(raw.name_zh_cn_traditional || "").trim();
@@ -470,7 +499,7 @@
               status: confirmed ? "exclusive" : "nintendo", title: platformTitle })),
             ...(multiPlatform ? [{ label: "多平台", status: "multi", title: platformTitle }] : []),
           ],
-          hypes: raw.hypes, followers: null, platformLanguages,
+          hypes: raw.hypes, followers: null, platformLanguages, platformEditions,
           ...nintendoCardLanguages(platformLanguages, releasePlatforms),
           art, artSources: art ? [art] : [], art2x: "", artVariants: {}, hasVerifiedHeader: !!art,
           recent: false, darkHorse: false, link, linkLabel: nintendoLink ? "Nintendo 官網" : igdbLink ? "IGDB 遊戲資料" : "IGDB 官網",
@@ -571,6 +600,12 @@
           const sources = rows.map(row => row.platformLanguages?.[code]).filter(Boolean);
           return [code, sources.length && sources.every(source => JSON.stringify(source) === JSON.stringify(sources[0]))
             ? sources[0] : nintendoLanguageSupport()];
+        })),
+        platformEditions: Object.fromEntries(platforms.filter(code => code !== "Steam").flatMap(code => {
+          const versions = rows.filter(row => row.platforms.includes(code));
+          const editions = versions.map(row => row.platformEditions?.[code]);
+          return editions.length && editions[0] && editions.every(edition =>
+            edition && JSON.stringify(edition) === JSON.stringify(editions[0])) ? [[code, editions[0]]] : [];
         })),
         platformLabel: platforms.join("／") + "・多平台",
         platformBadges: [
@@ -678,6 +713,9 @@
     nintendoURL,
     nintendoLanguageURL,
     nintendoLanguageSupport,
+    nintendoCardLanguages,
+    nintendoEdition,
+    releaseEditionBadges,
     nintendoGames,
     detailURL,
     popularityCompare,

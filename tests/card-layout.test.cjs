@@ -20,6 +20,7 @@ class Element {
   append(...children) { for (const child of children) { child.parentElement = this; this.children.push(child); } }
   replaceChildren(...children) { this._text = ''; this.children = []; this.append(...children); }
   matches(selector) {
+    if (selector === '.game-card[data-appid]') return this.className.split(/\s+/).includes('game-card') && this.dataset.appid !== undefined;
     if (selector.startsWith('.')) return this.className.split(/\s+/).includes(selector.slice(1));
     if (selector === 'button[data-save]') return this.tagName === 'button' && this.dataset.save !== undefined;
     if (selector === '[data-saved-count]') return this.dataset.savedCount !== undefined;
@@ -37,15 +38,21 @@ class Element {
     };
   }
   remove() {}
+  addEventListener() {}
 }
 
-function renderer(stored = [], page = 'all') {
+function renderer(stored = [], page = 'all', search = '') {
   const root = new Element('body'); root.dataset.page = page;
   const grid = new Element(); const toast = new Element();
   const count = new Element('span'); count.dataset.savedCount = '';
   root.append(grid, toast, count);
   const listeners = {};
-  const controls = new Map(['searchInput', 'followersFilter', 'releaseFilter', 'languageFilter', 'sortSelect'].map(id => [id, { value: '' }]));
+  const controls = new Map(['searchInput', 'followersFilter', 'releaseFilter', 'languageFilter', 'sortSelect',
+    'savedFilter', 'resetFilters', 'resultCount', 'loadMoreWrap', 'calendarArea', 'calendarView', 'listView',
+    'sortWrap', 'monthPicker', 'monthLabel', 'calendarGrid'].map(id => {
+      const control = new Element(); control.value = ''; control.selectedIndex = 0;
+      return [id, control];
+    }));
   controls.get('followersFilter').value = '0';
   const document = {
     body: root, activeElement: null,
@@ -53,6 +60,7 @@ function renderer(stored = [], page = 'all') {
     createElement: tag => new Element(tag), createDocumentFragment: () => new Element('fragment'),
     querySelectorAll: selector => root.querySelectorAll(selector),
     addEventListener: (type, callback) => { listeners[type] = callback; },
+    dispatchEvent() {},
   };
   const storage = new Map([['game-trend-radar:saved:v1', JSON.stringify(stored)]]);
   const window = {
@@ -62,19 +70,22 @@ function renderer(stored = [], page = 'all') {
     addEventListener() {},
   };
   const context = vm.createContext({
-    window, document, location: { search: '' }, URLSearchParams, Intl, Date, Number, Set, Map, WeakMap,
+    window, document, location: { search }, URLSearchParams, Intl, Date, Number, Set, Map, WeakMap,
+    CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options?.detail; } },
     localStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
     matchMedia: () => ({ matches: false }), setTimeout: () => 0, clearTimeout() {},
   });
   // Execute the real card renderer without starting unrelated page/network setup.
   const prefix = script.slice(0, script.indexOf('  function empty('));
-  const filters = script.slice(script.indexOf('  function filteredGames('), script.indexOf('  function renderCalendar('));
-  vm.runInContext(prefix + filters + '\n function celebrateSave() {}\n window.renderCard = makeCard;\n window.filterCards = filteredGames;\n window.setData = data => { model.data = data; updateSavedControls(); };\n})();', context);
+  const filters = script.slice(script.indexOf('  function activeFilters('), script.indexOf('  function resetFilters('));
+  vm.runInContext(prefix + filters + '\n const motionOn = false, revealObserver = null; function celebrateSave() {} function revealCards() {}\n window.renderCard = makeCard;\n window.filterCards = filteredGames;\n window.renderGrid = renderExplorer;\n window.setData = data => { model.data = data; model.loading = false; updateSavedControls(); };\n})();', context);
   return {
-    card(game) { const card = window.renderCard(game); grid.append(card); return card; },
+    card(game, options) { const card = window.renderCard(game, options); grid.append(card); return card; },
     click(button) { listeners.click({ target: button }); }, storage, count,
     setData(data) { window.setData(data); },
     filtered(order) { controls.get('sortSelect').value = order; return window.filterCards(); },
+    render() { window.renderGrid(); return grid.querySelectorAll('.game-card'); },
+    calendar: controls.get('calendarGrid'),
   };
 }
 
@@ -90,6 +101,11 @@ function nintendo(changes = {}) {
     releases: [{ date: '2026-12-01', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }],
     websites: [{ url: 'https://store.steampowered.com/app/3167930/' }],
     url: 'https://www.igdb.com/games/hela-of-mice-and-magic', ...changes }] };
+}
+function edition(changes = {}) {
+  return { type: 'deluxe', label: 'Deluxe版', title: 'Hela: Of Mice & Magic Deluxe Edition',
+    product_id: '70010000106881', region: 'taiwan',
+    source_url: 'https://ec.nintendo.com/TW/zh/titles/70010000106881', checked_at: '2026-10-04T03:00:00Z', ...changes };
 }
 
 test('merged card keeps both independent interest counts with one multi-platform tag and one earliest date', () => {
@@ -198,7 +214,7 @@ test('card date ordering follows the earliest displayed release while calendar r
   const newest = app.filtered('newest');
   assert.deepEqual(newest.items.map(game => game.appid), [2, 1]);
   assert.equal(renderer().card(newest.items[1]).querySelector('time').dateTime, '2026-10-05');
-  assert.deepEqual(newest.events.map(game => game.date), ['2026-10-20', '2026-10-15', '2026-10-05']);
+  assert.deepEqual(Array.from(newest.events, game => game.date), ['2026-10-20', '2026-10-15', '2026-10-05']);
   assert.deepEqual(app.filtered('date').items.map(game => game.date), ['2026-10-05', '2026-10-15']);
 });
 
@@ -212,4 +228,61 @@ test('recently released list retains the latest event context and orders cards b
   const card = app.card(app.filtered('newest').items[1]);
   assert.equal(card.querySelector('time').dateTime, '2026-09-21');
   assert.equal(card.querySelector('.countdown').textContent, '已上市');
+});
+
+test('October calendar list shows distinct Nintendo and Steam release events with their own dates and edition labels', () => {
+  const data = D.datasets({ games: [steam({ release_start: '2026-10-09' })] }, null, nintendo({
+    releases: [{ date: '2026-10-08', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }],
+    platform_editions: { NS2: edition() },
+  }));
+  const app = renderer([], 'home', '?month=2026-10&view=list');
+  app.setData(data);
+  const cards = app.render();
+  assert.deepEqual(cards.map(card => card.querySelector('time').dateTime), ['2026-10-08', '2026-10-09']);
+  assert.deepEqual(cards.map(card => card.querySelector('.card-release-platform').textContent), ['NS2', 'Steam']);
+  assert.deepEqual(cards.map(card => card.querySelector('.card-detail-link').href), [
+    './game.html?appid=3167930&date=2026-10-08', './game.html?appid=3167930&date=2026-10-09',
+  ]);
+  assert.equal(cards[0].querySelector('.card-edition').textContent, 'NS2・Deluxe版');
+  assert.equal(cards[0].querySelector('.card-edition').title, 'Hela: Of Mice & Magic Deluxe Edition');
+  assert.equal(cards[1].querySelector('.card-editions'), null);
+  assert.equal(cards[0].querySelector('.card-languages').attributes['aria-label'], 'Nintendo 版本遊戲支援語言');
+  assert.deepEqual(cards[0].querySelectorAll('.card-language').map(chip => chip.textContent), ['語言支援待確認']);
+  assert.deepEqual(cards[1].querySelectorAll('.card-language').map(chip => chip.textContent), ['支援繁中', '支援簡中']);
+  assert.deepEqual(cards.map(card => card.querySelectorAll('.platform-badge').map(tag => tag.textContent)), [['多平台'], ['多平台']]);
+  const calendarLinks = app.calendar.querySelectorAll('.day-game');
+  assert.deepEqual(calendarLinks.map(link => link.querySelector('.day-platform').textContent), ['NS2', 'Steam']);
+  assert.match(calendarLinks[0].querySelector('.day-game-name').textContent, /Deluxe版/);
+  assert.match(calendarLinks[0].title, /Hela: Of Mice & Magic Deluxe Edition/);
+  assert.equal(calendarLinks[0].href, './game.html?appid=3167930&date=2026-10-08');
+});
+
+test('daily release card shows its selected platform date while the general physical card keeps the earliest date and all editions', () => {
+  const data = D.datasets({ games: [steam({ release_start: '2027-02-18' })] }, null, nintendo({
+    releases: [{ date: '2027-05-20', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }],
+    platform_editions: { NS2: edition({ type: 'base_plus_expansion', label: '本體＋Dark Arisen擴充版' }) },
+  }));
+  const day = renderer([], 'date', '?date=2027-05-20'); day.setData(data);
+  const dailyCard = day.render()[0];
+  assert.equal(dailyCard.querySelector('time').dateTime, '2027-05-20');
+  assert.equal(dailyCard.querySelector('.card-release-platform').textContent, 'NS2');
+  assert.equal(dailyCard.querySelector('.card-edition').textContent, 'NS2・本體＋Dark Arisen擴充版');
+  const catalog = renderer(); catalog.setData(data);
+  const generalCard = catalog.render()[0];
+  assert.equal(catalog.render().length, 1);
+  assert.equal(generalCard.querySelector('time').dateTime, '2027-02-18');
+  assert.equal(generalCard.querySelector('.card-release-platform'), null);
+  assert.equal(generalCard.querySelector('.card-edition').textContent, 'NS2・本體＋Dark Arisen擴充版');
+});
+
+test('same-day Steam and Nintendo versions produce one monthly release card showing both event platforms', () => {
+  const data = D.datasets({ games: [steam({ release_start: '2026-10-08' })] }, null, nintendo({
+    releases: [{ date: '2026-10-08', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }],
+  }));
+  const app = renderer([], 'home', '?month=2026-10&view=list'); app.setData(data);
+  const cards = app.render();
+  assert.equal(cards.length, 1);
+  assert.equal(cards[0].querySelector('.card-release-platform').textContent, 'Steam／NS2');
+  assert.equal(cards[0].querySelector('time').dateTime, '2026-10-08');
+  assert.equal(cards[0].querySelector('.card-editions'), null);
 });
