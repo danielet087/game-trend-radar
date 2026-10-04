@@ -11,6 +11,7 @@ from datetime import date, datetime, timedelta, timezone
 import hashlib
 import json
 from pathlib import Path
+from urllib.parse import urlsplit
 
 try:
     from scripts.twitch_steam_admission import is_twitch_qualified
@@ -21,6 +22,8 @@ TAIPEI = timezone(timedelta(hours=8))
 POST_RELEASE_DAYS = 30
 NINTENDO_PLATFORMS = {"NS": 130, "NS2": 508}
 NINTENDO_GAME_TYPES = {"main_game", "standalone_expansion", "remake", "remaster", "expanded_game", "port"}
+NINTENDO_OFFICIAL_DATE_DOMAINS = {"nintendo.com", "nintendo.com.hk", "nintendo.co.jp",
+                                  "sega.com", "konami.com", "playtombraider.com"}
 
 
 def stamp(value):
@@ -87,6 +90,62 @@ def merge_measurement(record, observation, now):
     record["history"] = sorted(by_day.values(), key=lambda item: stamp(item["at"]))[-400:]
 
 
+def official_nintendo_date_url(value):
+    if not isinstance(value, str):
+        return False
+    try:
+        url = urlsplit(value)
+        return (url.scheme == "https" and not url.username and not url.password and url.port is None
+                and bool(url.hostname) and any(url.hostname == host or url.hostname.endswith("." + host)
+                                              for host in NINTENDO_OFFICIAL_DATE_DOMAINS))
+    except ValueError:
+        return False
+
+
+def accepted_nintendo_release_source(release):
+    """Consume the publisher's date audit without treating UTC midnight as an unlock time."""
+    source, status = release.get("source"), release.get("timezone_status")
+    if status is None:
+        # Previously published IGDB calendar-day rows have no audit metadata.
+        # An explicit Taiwan claim or partial audit cannot use that compatibility path.
+        return (source == "IGDB" and release.get("date_basis") in {None, "regional_calendar_day"}
+                and release.get("region") != "taiwan" and release.get("taiwan_release_confirmed") is not True
+                and not any(key in release for key in ("timezone_status", "time_zone", "source_date",
+                                                       "source_timestamp", "timestamp_taipei_date")))
+    if release.get("time_zone") != "Asia/Taipei":
+        return False
+    source_day = release.get("source_date")
+    taipei_day = release.get("timestamp_taipei_date")
+    if ((source_day is not None and not day(source_day))
+            or (taipei_day is not None and not day(taipei_day))):
+        return False
+    timestamp = release.get("source_timestamp")
+    if timestamp is not None:
+        if type(timestamp) is not int or timestamp < 0:
+            return False
+        try:
+            instant = datetime.fromtimestamp(timestamp, timezone.utc)
+        except (OverflowError, OSError, ValueError):
+            return False
+        if (source_day != instant.date().isoformat()
+                or taipei_day != instant.astimezone(TAIPEI).date().isoformat()):
+            return False
+    if source == "official_registry":
+        name = release.get("official_source_name")
+        return (status == "taiwan_official_date" and release.get("region") == "taiwan"
+                and release.get("date_basis") == "taiwan_official_calendar_day"
+                and release.get("taiwan_release_confirmed") is True
+                and isinstance(name, str) and bool(name.strip())
+                and official_nintendo_date_url(release.get("official_source_url")))
+    return (source == "IGDB" and status in {"same_calendar_day", "date_only"}
+            and release.get("region") != "taiwan" and release.get("source_region") != "taiwan"
+            and release.get("date_basis") == "regional_calendar_day"
+            and release.get("taiwan_release_confirmed") is False
+            and source_day == release["date"] and (taipei_day is None or taipei_day == release["date"])
+            and ((status == "same_calendar_day" and timestamp is not None)
+                 or (status == "date_only" and timestamp is None)))
+
+
 def accepted_nintendo(catalog, now):
     """Validate public qualifications before changing optional Nintendo state.
 
@@ -140,7 +199,7 @@ def accepted_nintendo(catalog, now):
         for release in row["releases"]:
             if (not isinstance(release, dict) or release.get("platform") not in platforms
                     or release.get("platform") in releases or release.get("precision") != "day"
-                    or release.get("source") != "IGDB" or not day(release.get("date"))
+                    or not day(release.get("date")) or not accepted_nintendo_release_source(release)
                     or not start <= day(release["date"]) < end):
                 raise ValueError("Exact, unique Nintendo platform release dates in the source window required")
             releases[release["platform"]] = release["date"]

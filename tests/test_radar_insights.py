@@ -44,13 +44,16 @@ def twitch_store_authority(**fields):
 
 def nintendo_game(igdb_id=1, releases=None, **fields):
     releases = releases or {"NS2": "2026-11-05"}
+    codes = [row["platform"] for row in releases] if isinstance(releases, list) else list(releases)
+    rows = releases if isinstance(releases, list) else [
+        {"platform": code, "date": release, "precision": "day", "source": "IGDB"}
+        for code, release in releases.items()]
     return {"id": f"igdb:{igdb_id}", "igdb_id": igdb_id, "display_name": "Nintendo game",
             "hypes": 45, "hypes_status": "available", "popularity_status": "qualified",
             "calendar_eligible": True, "sexual_content_screened": True,
             "game_type": "main_game", "platform_data_complete": True,
-            "platforms": [{"code": code, "id": M.NINTENDO_PLATFORMS[code]} for code in releases],
-            "releases": [{"platform": code, "date": release, "precision": "day", "source": "IGDB"}
-                         for code, release in releases.items()], **fields}
+            "platforms": [{"code": code, "id": M.NINTENDO_PLATFORMS[code]} for code in codes],
+            "releases": rows, **fields}
 
 
 def nintendo_catalog(*rows, at="2026-10-03T16:40:12Z"):
@@ -60,6 +63,22 @@ def nintendo_catalog(*rows, at="2026-10-03T16:40:12Z"):
                        "end_inclusive": False, "time_zone": "Asia/Taipei"},
             "source": {"provider": "IGDB", "complete": True, "hypes_threshold": 30,
                        "platform_ids_verified": [130, 508]}, "games": list(rows)}
+
+
+def audited_nintendo_release(release="2026-10-08", **fields):
+    return {"platform": "NS2", "date": release, "precision": "day", "region": "worldwide",
+            "source": "IGDB", "date_basis": "regional_calendar_day", "source_date": release,
+            "source_timestamp": int(M.stamp(release + "T00:00:00Z").timestamp()),
+            "source_region": "worldwide", "time_zone": "Asia/Taipei", "timestamp_taipei_date": release,
+            "timezone_status": "same_calendar_day", "taiwan_release_confirmed": False,
+            "official_source_url": None, "official_source_name": None, **fields}
+
+
+def official_nintendo_release(**fields):
+    return audited_nintendo_release(date="2026-10-09", region="taiwan", source="official_registry",
+                                    date_basis="taiwan_official_calendar_day", timezone_status="taiwan_official_date",
+                                    taiwan_release_confirmed=True, official_source_name="Nintendo 台灣",
+                                    official_source_url="https://www.nintendo.com/tw/schedule/", **fields)
 
 
 class InsightTests(unittest.TestCase):
@@ -183,6 +202,74 @@ class NintendoInsightTests(unittest.TestCase):
     def update(self, previous=None, document=None, **kwargs):
         return M.update(previous, catalog(game()), observed_at=self.NOW,
                         nintendo_catalog=document, **kwargs)
+
+    def test_official_taiwan_correction_generates_the_existing_date_change_event_without_mutation(self):
+        original = nintendo_game(381222, releases={"NS2": "2026-10-08"}, display_name="沉星之序")
+        first = self.update(document=nintendo_catalog(original))
+        release = official_nintendo_release()
+        corrected = {**original, "releases": [release]}
+        document = nintendo_catalog(corrected, at="2026-10-04T03:00:00Z")
+        unchanged_input = deepcopy(document)
+        state = self.update(first, document)
+        changes = [event for event in state["events"] if event["type"] == "release_date"]
+        self.assertEqual(len(changes), 1)
+        event = changes[0]
+        self.assertEqual((event["source"], event["game_id"], event["igdb_id"], event["platforms"]),
+                         ("nintendo", "igdb:381222", 381222, ["NS2"]))
+        self.assertEqual((event["previous_date"], event["date"], event["at"]),
+                         ("2026-10-08", "2026-10-09", document["generated_at"]))
+        record = state["nintendo_records"]["igdb:381222"]
+        self.assertEqual(record["first_seen_at"], first["nintendo_records"]["igdb:381222"]["first_seen_at"])
+        self.assertEqual(record["current_releases"], {"NS2": "2026-10-09"})
+        self.assertEqual(document, unchanged_input)
+        self.assertEqual(document["games"][0]["releases"][0]["source_date"], "2026-10-08")
+        self.assertEqual(state, self.update(state, document))
+        activity, _ = M.projections(state, date(2026, 10, 4))
+        self.assertEqual(activity["events"][0], event)
+
+    def test_audited_igdb_dates_and_legacy_regional_calendar_dates_remain_accepted(self):
+        for release in [audited_nintendo_release(),
+                        audited_nintendo_release(source_timestamp=None, timestamp_taipei_date=None,
+                                                 timezone_status="date_only"),
+                        {"platform": "NS2", "date": "2026-10-08", "precision": "day", "source": "IGDB",
+                         "region": "worldwide", "date_basis": "regional_calendar_day"}]:
+            with self.subTest(release=release):
+                state = self.update(document=nintendo_catalog(nintendo_game(releases=[release])))
+                self.assertEqual(state["nintendo_records"]["igdb:1"]["current_releases"], {"NS2": "2026-10-08"})
+
+    def test_unconfirmed_crossday_and_falsely_claimed_taiwan_dates_are_rejected(self):
+        mutations = [{"timezone_status": "requires_time_evidence"}, {"timezone_status": "imprecise_date"},
+                     {"timezone_status": "date_only"}, {"time_zone": "UTC"}, {"region": "taiwan"},
+                     {"taiwan_release_confirmed": True}, {"taiwan_release_confirmed": "false"},
+                     {"date": "2026-10-09"}, {"source_date": "2026-10-07"},
+                     {"timestamp_taipei_date": "2026-10-09"}, {"source_timestamp": True}]
+        crossday = audited_nintendo_release(source_timestamp=int(M.stamp("2026-10-08T20:00:00Z").timestamp()),
+                                            timestamp_taipei_date="2026-10-09")
+        legacy_false_taiwan = {"platform": "NS2", "date": "2026-10-08", "precision": "day",
+                              "source": "IGDB", "region": "taiwan"}
+        for release in [*[audited_nintendo_release(**changes) for changes in mutations], crossday, legacy_false_taiwan]:
+            with self.subTest(release=release), self.assertRaises(ValueError):
+                self.update(document=nintendo_catalog(nintendo_game(releases=[release])))
+
+    def test_official_calendar_dates_require_complete_audit_and_a_safe_official_source(self):
+        release = official_nintendo_release()
+        for url in ["https://www.nintendo.com/tw/schedule/", "https://asia.sega.com/metaphor/cht/switch2/",
+                    "https://www.konami.com/games/castlevania/", "https://www.playtombraider.com/zh-hant/"]:
+            with self.subTest(url=url):
+                self.update(document=nintendo_catalog(nintendo_game(releases=[{**release, "official_source_url": url}])))
+        missing_original = {**release, "source_date": None, "source_timestamp": None, "timestamp_taipei_date": None}
+        self.update(document=nintendo_catalog(nintendo_game(releases=[missing_original])))
+        mutations = [{"region": "worldwide"}, {"source": "IGDB"}, {"date_basis": "regional_calendar_day"},
+                     {"timezone_status": "same_calendar_day"}, {"taiwan_release_confirmed": False},
+                     {"taiwan_release_confirmed": "true"}, {"time_zone": "UTC"}, {"official_source_name": ""},
+                     {"official_source_url": "javascript:alert(1)"},
+                     {"official_source_url": "https://www.nintendo.com.evil.example/tw/"},
+                     {"official_source_url": "https://user:password@www.nintendo.com/tw/"},
+                     {"official_source_url": "https://www.nintendo.com:8443/tw/"},
+                     {"official_source_url": "https://www.igdb.com/games/order-of-the-sinking-star"}]
+        for changes in mutations:
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                self.update(document=nintendo_catalog(nintendo_game(releases=[{**release, **changes}])))
 
     def test_first_public_snapshot_uses_source_time_and_namespaced_identity_without_steam_growth(self):
         first = self.update(document=nintendo_catalog(nintendo_game()))
