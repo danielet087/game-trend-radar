@@ -698,6 +698,12 @@
       !["same_calendar_day", "date_only", "taiwan_official_date"].includes(release.timezone_status)) return false;
     if (release.source_date != null && !validDate(release.source_date)) return false;
     if (release.timestamp_taipei_date != null && !validDate(release.timestamp_taipei_date)) return false;
+    if (release.platform === "PS5" && release.source_timestamp != null) {
+      if (!Number.isSafeInteger(release.source_timestamp) || release.source_timestamp < 0) return false;
+      const instant = new Date(release.source_timestamp * 1000);
+      if (!Number.isFinite(instant.getTime()) || instant.toISOString().slice(0, 10) !== release.source_date ||
+        todayInTaipei(instant) !== release.timestamp_taipei_date) return false;
+    }
     if (release.timezone_status === "taiwan_official_date") {
       if (!(release.source === "official_registry" && release.region === "taiwan" &&
         release.date_basis === "taiwan_official_calendar_day" && release.taiwan_release_confirmed === true)) return false;
@@ -708,6 +714,14 @@
       if (!url) return false;
       const product = playstationProduct(url, "taiwan");
       return !product || release.official_product_id === product.id;
+    }
+    if (release.platform === "PS5") {
+      return release.source === "IGDB" && release.date_basis === "regional_calendar_day" &&
+        release.region !== "taiwan" && release.source_region !== "taiwan" &&
+        release.taiwan_release_confirmed === false && release.source_date === release.date &&
+        (release.timestamp_taipei_date == null || release.timestamp_taipei_date === release.date) &&
+        (release.timezone_status === "same_calendar_day" ? release.source_timestamp != null
+          : release.timezone_status === "date_only" && release.source_timestamp == null);
     }
     return release.taiwan_release_confirmed !== true && release.source !== "official_registry" &&
       (release.source_date == null || release.source_date === release.date) &&

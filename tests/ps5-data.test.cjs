@@ -5,9 +5,10 @@ const D = require('../assets/radar-data-v1.js');
 const PSID = 'JP0005-PPSA23593_00-APPLICATION00000';
 const psURL = `https://store.playstation.com/zh-hant-tw/product/${PSID}`;
 const platform = code => ({ id: D.nativePlatformIDs[code], code });
-const release = (fields = {}) => ({ platform: 'PS5', date: '2027-02-18', precision: 'day',
-  source: 'IGDB', region: 'worldwide', source_date: '2027-02-18',
-  timestamp_taipei_date: '2027-02-18', time_zone: 'Asia/Taipei', timezone_status: 'same_calendar_day',
+const release = (fields = {}) => ({ platform: 'PS5', date: fields.date || '2027-02-18', precision: 'day',
+  source: 'IGDB', date_basis: 'regional_calendar_day', region: 'worldwide', source_region: 'worldwide',
+  source_date: fields.date || '2027-02-18', source_timestamp: Date.parse((fields.date || '2027-02-18') + 'T00:00:00Z') / 1000,
+  timestamp_taipei_date: fields.date || '2027-02-18', time_zone: 'Asia/Taipei', timezone_status: 'same_calendar_day',
   taiwan_release_confirmed: false, ...fields });
 const raw = (fields = {}) => ({ id: 'igdb:348210', igdb_id: 348210, name_en: 'Persona 4 Revival',
   name_zh_tw: '女神異聞錄４ Revival', hypes: 50, sexual_content_screened: true,
@@ -40,6 +41,21 @@ test('PS5 admission requires native ID 167, hypes 30, content screening and an a
     { releases: [release({ timezone_status: undefined })] },
     { releases: [release({ timestamp_taipei_date: '2027-02-19' })] }])
     assert.deepEqual(normalized(fields), [], JSON.stringify(fields));
+});
+
+test('PS5 IGDB audit validates source provenance and recalculates actual UTC and Taipei timestamp dates', () => {
+  const dateOnly = release({ timezone_status: 'date_only', source_timestamp: null, timestamp_taipei_date: null });
+  assert.equal(normalized({ releases: [dateOnly] }).length, 1);
+  assert.equal(normalized({ releases: [release({ region: 'unknown', source_region: 'unknown' })] }).length, 1);
+  for (const fields of [{ source: 'manual' }, { source: undefined }, { date_basis: undefined },
+    { date_basis: 'converted_unlock_time' }, { region: 'taiwan' }, { source_region: 'taiwan' },
+    { taiwan_release_confirmed: undefined }, { taiwan_release_confirmed: true },
+    { source_date: undefined }, { source_timestamp: null }, { source_timestamp: undefined },
+    { source_timestamp: '1802908800' }, { source_timestamp: -1 }, { source_timestamp: Number.MAX_SAFE_INTEGER },
+    { source_timestamp: Date.parse('2027-02-17T00:00:00Z') / 1000 },
+    { source_timestamp: Date.parse('2027-02-18T16:00:00Z') / 1000 }])
+    assert.deepEqual(normalized({ releases: [release(fields)] }), [], JSON.stringify(fields));
+  assert.deepEqual(normalized({ releases: [release({ timezone_status: 'date_only' })] }), []);
 });
 
 test('PS4 compatibility and known platform lists cannot invent a native PS5 date', () => {
@@ -138,6 +154,8 @@ test('multiple verified native records share an admitted Steam identity without 
 
 test('Taiwan PS5 official dates require matching Sony product identity and retain regional provenance', () => {
   const official = release({ date: '2027-02-19', region: 'taiwan', source: 'official_registry',
+    source_date: '2027-02-18', source_timestamp: Date.parse('2027-02-18T00:00:00Z') / 1000,
+    timestamp_taipei_date: '2027-02-18',
     timezone_status: 'taiwan_official_date', date_basis: 'taiwan_official_calendar_day', taiwan_release_confirmed: true,
     official_source_url: psURL, official_product_id: PSID, official_source_name: 'PlayStation 台灣',
     official_verified_at: '2026-10-04T13:00:00Z' });

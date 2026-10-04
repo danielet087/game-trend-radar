@@ -502,7 +502,7 @@ const ps5Sample = (overrides = {}) => sample({
   known_platforms: [{ id: 167, name: 'PlayStation 5', code: 'PS5' }],
   exclusivity: { status: 'listed_only', platform: 'PS5' },
   playstation_url: ps5StoreURL,
-  releases: [officialRelease({ platform: 'PS5', official_source_url: ps5StoreURL,
+  releases: [officialRelease({ platform: 'PS5', source_timestamp: 1799971200, official_source_url: ps5StoreURL,
     official_source_name: 'PlayStation 台灣', official_product_id: '10009999', official_verified_at: '2026-10-04T13:00:00Z' })],
   ...overrides,
 });
@@ -571,7 +571,7 @@ test('PS5 evidence rejects lookalike hosts, foreign Taiwan claims and mismatched
     'https://store.playstation.com/en-us/concept/10009999', 'javascript:alert(1)']) {
     const payload = ps5Sample({
       playstation_url: source_url,
-      releases: [officialRelease({ platform: 'PS5', official_source_url: source_url,
+      releases: [officialRelease({ platform: 'PS5', source_timestamp: 1799971200, official_source_url: source_url,
         official_source_name: 'PlayStation 台灣', official_product_id: '10009999', official_verified_at: '2026-10-04T13:00:00Z' })],
       platform_language_support: { PS5: ps5LanguageSupport({ source_url }) },
     });
