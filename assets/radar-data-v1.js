@@ -270,6 +270,8 @@
       identityKey: `steam:${appid}`,
       savedAliases: [appid],
       platforms: ["Steam"],
+      knownPlatforms: normalizeKnownPlatforms(raw.known_platforms),
+      platformDataComplete: knownPlatformCompleteness(raw),
       releasePlatforms: ["Steam"],
       platformShort: "Steam",
       platformLabel: "Steam",
@@ -295,6 +297,74 @@
     ? value : typeof value === "string" && /^igdb:[1-9][0-9]*$/.test(value) ? value : null;
   const saveID = (game) => savedID(game?.appid);
   const gameKey = (game) => game?.key || game?.appid;
+  const cardPlatformNames = {
+    6: { label: "PC（Windows）", type: "pc" }, 14: { label: "Mac", type: "pc" }, 3: { label: "Linux", type: "pc" },
+    130: { label: "NS", type: "console" }, 508: { label: "NS2", type: "console" },
+    48: { label: "PS4", type: "console" }, 167: { label: "PS5", type: "console" },
+    49: { label: "Xbox One", type: "console" }, 169: { label: "Xbox Series X|S", type: "console" },
+    39: { label: "iOS", type: "mobile" }, 34: { label: "Android", type: "mobile" },
+  };
+  function normalizeKnownPlatforms(rows) {
+    const records = new Map();
+    for (const row of Array.isArray(rows) ? rows : []) {
+      if (!row || !Number.isSafeInteger(row.id) || row.id <= 0 || records.has(row.id)) continue;
+      records.set(row.id, { id: row.id,
+        name: typeof row.name === "string" && row.name.trim() ? row.name.trim().slice(0, 120) : cardPlatformNames[row.id]?.label || "",
+        ...(row.id === 130 ? { code: "NS" } : row.id === 508 ? { code: "NS2" } : {}) });
+    }
+    return [...records.values()].sort((a, b) => a.id - b.id);
+  }
+  function knownPlatformCompleteness(raw) {
+    if (raw?.platform_data_complete !== true && raw?.platform_data_complete !== false) return null;
+    if (!Array.isArray(raw.known_platforms) || !raw.known_platforms.length ||
+      normalizeKnownPlatforms(raw.known_platforms).length !== raw.known_platforms.length) return null;
+    if (raw.platform_data_complete === true && Array.isArray(raw.platforms)) {
+      const known = new Set(raw.known_platforms.map(row => row.id));
+      if (raw.platforms.some(row => [130, 508].includes(row?.id) && !known.has(row.id))) return null;
+    }
+    return raw.platform_data_complete;
+  }
+  function cardPlatformBadge(game) {
+    const native = (game?.platforms || []).filter(platform => ["NS", "NS2"].includes(platform));
+    const known = normalizeKnownPlatforms(game?.knownPlatforms);
+    const ids = new Set(known.map(row => row.id));
+    const nativeListed = native.every(platform => ids.has(platform === "NS" ? 130 : 508));
+    for (const platform of native) ids.add(platform === "NS" ? 130 : 508);
+    let steam = game?.source === "steam" && Number.isSafeInteger(game.appid) && game.appid > 0;
+    if (!steam && Number.isSafeInteger(game?.steamAppid) && game.steamAppid > 0) {
+      try {
+        const url = new URL(game.steamLink);
+        steam = url.protocol === "https:" && url.hostname === "store.steampowered.com" &&
+          !url.username && !url.password && !url.port && /^\/app\/[1-9][0-9]*\/?$/.test(url.pathname) &&
+          Number(url.pathname.split("/")[2]) === game.steamAppid;
+      } catch { /* Only a verified Steam product identity establishes PC. */ }
+    }
+    const pc = steam || [...ids].some(id => cardPlatformNames[id]?.type === "pc");
+    const consoles = [...ids].filter(id => cardPlatformNames[id]?.type === "console");
+    const other = [...ids].some(id => !cardPlatformNames[id] || cardPlatformNames[id].type === "mobile");
+    const complete = game?.platformDataComplete === true && nativeListed &&
+      (!steam || known.some(row => cardPlatformNames[row.id]?.type === "pc"));
+    const names = [];
+    if (steam) names.push("PC（Steam）");
+    for (const id of [6, 14, 3, 48, 167, 49, 169, 130, 508, 39, 34])
+      if (ids.has(id) && !(steam && id === 6)) names.push(cardPlatformNames[id].label);
+    for (const platform of known)
+      if (!cardPlatformNames[platform.id] && platform.name) names.push(`${platform.name}（類型待確認）`);
+    const scope = names.length ? `已確認平台：${names.join("／")}。` : "尚無可確認的平台清單。";
+    const uncertain = !complete || [...ids].some(id => !cardPlatformNames[id]);
+    const title = scope + (uncertain ? "平台清單或類型仍待確認。" : "") +
+      "此標籤表示同款遊戲的平台範圍；版本內容以各平台詳情為準。";
+    if (pc && consoles.length) return { label: "PC＋主機", status: "multi", title };
+    if (!pc && consoles.length >= 2 && complete && !other) return { label: "主機多平台", status: "multi", title };
+    if (!pc && consoles.length === 1 && !other && native.length === 1 &&
+      (complete || game?.multiPlatform !== true)) {
+      const exclusive = complete && (game.platformBadges || []).some(badge =>
+        badge.status === "exclusive" && badge.label === `${native[0]} 獨佔`);
+      return { label: exclusive ? `${native[0]} 獨佔` : native[0], status: exclusive ? "exclusive" : "nintendo", title };
+    }
+    if (steam && !consoles.length && !other) return { label: "Steam", status: "steam", title };
+    return { label: "平台待確認", status: "unknown", title };
+  }
   function isSaved(game, saved) {
     return !!saved && [saveID(game), ...(game?.savedAliases || [])]
       .some(id => savedID(id) !== null && saved.has(id));
@@ -502,7 +572,7 @@
       for (const [date, releases] of grouped) {
         const releasePlatforms = platforms.filter(code => releases.some(release => release.platform === code));
         const exclusive = raw.exclusivity || {};
-        const knownPlatforms = Array.isArray(raw.known_platforms) ? raw.known_platforms : [];
+        const knownPlatforms = normalizeKnownPlatforms(raw.known_platforms);
         const soleKnown = knownPlatforms.length === 1 &&
           Number(knownPlatforms[0]?.id) === (platforms[0] === "NS" ? 130 : 508);
         const otherPlatforms = knownPlatforms.some(platform => ![130, 508].includes(Number(platform?.id)));
@@ -527,7 +597,7 @@
           igdbIds: [Number(id)], identityKey: steamAppid ? `steam:${steamAppid}` : `igdb:${id}`,
           savedAliases: [`igdb:${id}`, ...(steamAppid ? [steamAppid] : [])],
           steamAppid, steamLink: steamAppid ? `https://store.steampowered.com/app/${steamAppid}/` : "",
-          hasNintendo: true, multiPlatform, knownPlatforms,
+          hasNintendo: true, multiPlatform, knownPlatforms, platformDataComplete: knownPlatformCompleteness(raw),
           name, nameEn, nameTw, nameCn, nameOriginalTw: raw.name_zh_tw || "", nameOriginalCn: raw.name_zh_cn || "",
           nameSearchAliases: [...new Set(Object.values(platformEditions).flatMap(edition => [edition.title, edition.label]))],
           date, releases: [...grouped.values()].flat(), dateReleases: releases, dateRegion: releases[0]?.region || "",
@@ -621,6 +691,11 @@
       const dates = [...new Set([...steamRows.filter(game => game.appid === appid), ...rows]
         .map(game => game.date))].sort();
       const translated = !/[\u3400-\u9fff]/.test(steam.name) && /[\u3400-\u9fff]/.test(nintendo.name);
+      const platformSources = [...rows, ...(steam.knownPlatforms?.length ? [steam] : [])];
+      const completeness = platformSources.map(row => row.platformDataComplete);
+      const signatures = platformSources.map(row => JSON.stringify((row.knownPlatforms || []).map(platform => platform.id).sort((a, b) => a - b)));
+      const platformDataComplete = completeness.every(value => value === true) && signatures.every(value => value === signatures[0])
+        ? true : completeness.every(value => value === false) ? false : null;
       const metadata = {
         ...steam,
         ...(translated ? { name: nintendo.name, nameTw: nintendo.nameTw, nameCn: nintendo.nameCn } : {}),
@@ -653,7 +728,8 @@
           { label: "多平台", status: "multi", title: `同一款遊戲的 Steam／Nintendo 版本；各平台保留自己的發售日` },
         ],
         exclusivity: { status: "multi_platform" },
-        knownPlatforms: nintendo.knownPlatforms,
+        knownPlatforms: normalizeKnownPlatforms([...(steam.knownPlatforms || []), ...rows.flatMap(row => row.knownPlatforms || [])]),
+        platformDataComplete,
       };
       for (const date of dates) {
         const dateReleases = releases.filter(release => release.date === date);
@@ -748,6 +824,7 @@
     saveID,
     isSaved,
     gameKey,
+    cardPlatformBadge,
     nintendoSteamIdentity,
     nintendoURL,
     nintendoLanguageURL,

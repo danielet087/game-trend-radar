@@ -296,16 +296,10 @@
     const footer = node("div", "card-footer");
     const platforms = node("div", "card-platforms");
     platforms.setAttribute("aria-label", "遊戲平台與獨佔狀態");
-    const badges = game.platformBadges || [{ label: "Steam", status: "steam", title: "Steam 版本" }];
-    const multiple = game.multiPlatform || game.platforms?.length > 1 || badges.some(badge => badge.status === "multi");
-    const cardBadges = multiple
-      ? [{ label: "多平台", status: "multi", title: "支援多個平台；各平台資訊可於遊戲資訊查看" }]
-      : badges;
-    for (const badge of cardBadges) {
-      const platform = node("span", "platform-badge platform-" + badge.status, badge.label);
-      platform.title = badge.title;
-      platforms.append(platform);
-    }
+    const badge = D.cardPlatformBadge(game);
+    const platform = node("span", "platform-badge platform-" + badge.status, badge.label);
+    platform.title = badge.title;
+    platforms.append(platform);
     const right = node("div", "card-footer-right");
     right.append(steam);
     footer.append(platforms, right);

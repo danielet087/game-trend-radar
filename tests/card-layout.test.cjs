@@ -108,10 +108,13 @@ function edition(changes = {}) {
     source_url: 'https://ec.nintendo.com/TW/zh/titles/70010000106881', checked_at: '2026-10-04T03:00:00Z', ...changes };
 }
 
-test('merged card keeps both independent interest counts with one multi-platform tag and one earliest date', () => {
+test('merged PC and console card renders one combined tag, with the actual platforms available on hover', () => {
   const data = D.datasets({ games: [steam()] }, null, nintendo());
   const card = renderer().card(D.cardGames(data.games)[0]);
-  assert.deepEqual(card.querySelectorAll('.platform-badge').map(tag => tag.textContent), ['多平台']);
+  assert.deepEqual(card.querySelectorAll('.platform-badge').map(tag => tag.textContent), ['PC＋主機']);
+  assert.equal(card.querySelector('.card-platforms').textContent, 'PC＋主機');
+  assert.match(card.querySelector('.platform-badge').title, /PC|Steam/);
+  assert.match(card.querySelector('.platform-badge').title, /Nintendo Switch 2|NS2/);
   assert.deepEqual(card.querySelectorAll('.card-followers').map(metric => metric.textContent), ['39,021人關注', '46IGDB hypes']);
   assert.equal(card.querySelectorAll('time').length, 1);
   assert.equal(card.querySelector('.card-release-date').textContent, '2026/12/01');
@@ -167,9 +170,14 @@ test('ordinary NS2 listing and official sole-platform proof produce different ca
   const confirmed = nintendo({ websites: [], known_platforms: [{ id: 508, code: 'NS2' }],
     exclusivity: { status: 'confirmed', platform: 'NS2', url: 'https://www.nintendo.com/us/store/products/hela-switch-2/' } });
   assert.deepEqual(renderer().card(D.nintendoGames(confirmed)[0]).querySelectorAll('.platform-badge').map(tag => tag.textContent), ['NS2 獨佔']);
+  const confirmedNS = nintendo({ websites: [], platforms: [{ id: 130, code: 'NS' }],
+    known_platforms: [{ id: 130, code: 'NS' }],
+    releases: [{ date: '2026-12-01', platform: 'NS', precision: 'day', region: 'worldwide', source: 'IGDB' }],
+    exclusivity: { status: 'confirmed', platform: 'NS', url: 'https://www.nintendo.com/us/store/products/hela-switch/' } });
+  assert.deepEqual(renderer().card(D.nintendoGames(confirmedNS)[0]).querySelectorAll('.platform-badge').map(tag => tag.textContent), ['NS 獨佔']);
 });
 
-test('Nintendo titles on both NS and NS2 or another confirmed platform show only the multi-platform tag', () => {
+test('console-only titles render one console tag while Nintendo titles also on PC render one PC-and-console tag', () => {
   const both = nintendo({ websites: [],
     platforms: [{ id: 130, code: 'NS' }, { id: 508, code: 'NS2' }],
     known_platforms: [{ id: 130, code: 'NS' }, { id: 508, code: 'NS2' }],
@@ -178,10 +186,23 @@ test('Nintendo titles on both NS and NS2 or another confirmed platform show only
   });
   const later = D.nintendoGames(both).find(game => game.date === '2026-12-05');
   const card = renderer().card(later);
-  assert.deepEqual(card.querySelectorAll('.platform-badge').map(tag => tag.textContent), ['多平台']);
+  assert.deepEqual(card.querySelectorAll('.platform-badge').map(tag => tag.textContent), ['主機多平台']);
+  assert.equal(card.querySelector('.card-platforms').textContent, '主機多平台');
+  assert.match(card.querySelector('.platform-badge').title, /Nintendo Switch|NS/);
+  assert.match(card.querySelector('.platform-badge').title, /Nintendo Switch 2|NS2/);
   assert.equal(card.querySelector('time').dateTime, '2026-12-01');
   const otherPlatform = nintendo({ websites: [] });
-  assert.deepEqual(renderer().card(D.nintendoGames(otherPlatform)[0]).querySelectorAll('.platform-badge').map(tag => tag.textContent), ['多平台']);
+  assert.deepEqual(renderer().card(D.nintendoGames(otherPlatform)[0]).querySelectorAll('.platform-badge').map(tag => tag.textContent), ['PC＋主機']);
+});
+
+test('unknown additional platform evidence does not falsely label a card as console-only multi-platform', () => {
+  const payload = nintendo({ websites: [], known_platforms: [{ id: 508, code: 'NS2' }, { id: 999999, name: 'Unclassified platform' }] });
+  const card = renderer().card(D.nintendoGames(payload)[0]);
+  const tags = card.querySelectorAll('.platform-badge');
+  assert.equal(tags.length, 1);
+  assert.notEqual(tags[0].textContent, '主機多平台');
+  assert.notEqual(tags[0].textContent, 'PC＋主機');
+  assert.match(tags[0].title, /Nintendo Switch 2|NS2/);
 });
 
 test('old Nintendo bookmarks remain selected on merged cards and toggle both identities together', () => {
@@ -259,7 +280,7 @@ test('October calendar list writes the Nintendo edition into its title while the
   assert.equal(cards[0].querySelector('.card-languages').attributes['aria-label'], 'Nintendo 版本遊戲支援語言');
   assert.deepEqual(cards[0].querySelectorAll('.card-language').map(chip => chip.textContent), ['語言支援待確認']);
   assert.deepEqual(cards[1].querySelectorAll('.card-language').map(chip => chip.textContent), ['支援繁中', '支援簡中']);
-  assert.deepEqual(cards.map(card => card.querySelectorAll('.platform-badge').map(tag => tag.textContent)), [['多平台'], ['多平台']]);
+  assert.deepEqual(cards.map(card => card.querySelectorAll('.platform-badge').map(tag => tag.textContent)), [['PC＋主機'], ['PC＋主機']]);
   const calendarLinks = app.calendar.querySelectorAll('.day-game');
   assert.deepEqual(calendarLinks.map(link => link.querySelector('.day-platform').textContent), ['NS2', 'Steam']);
   assert.match(calendarLinks[0].querySelector('.day-game-name').textContent, /Deluxe版/);
