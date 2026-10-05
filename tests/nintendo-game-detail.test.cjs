@@ -317,6 +317,58 @@ test('audited IGDB dates show unconfirmed Taiwan provenance without inventing an
   assert.doesNotMatch(e.get('gamePlatformDates').textContent, /08:00|已確認台灣上市日/);
 });
 
+const unifiedRelease = (overrides = {}) => ({
+  date: '2027-01-16', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB',
+  source_date: '2027-01-15', source_timestamp: Date.parse('2027-01-15T18:00:00Z') / 1000,
+  source_region: 'worldwide', date_basis: 'igdb_timestamp_taipei', timezone_status: 'converted_to_taipei',
+  time_zone: 'Asia/Taipei', timestamp_taipei_date: '2027-01-16', taiwan_release_confirmed: false,
+  official_source_url: null, official_source_name: null, official_verified_at: null,
+  official_product_id: null, official_concept_id: null, official_release_time_utc: null, ...overrides,
+});
+
+test('all console date tickets display unified IGDB Taipei days without synthetic unlock clocks', async () => {
+  for (const platform of ['NS', 'NS2', 'PS5']) {
+    const payload = sample({ platforms: [{ id: D.nativePlatformIDs[platform], code: platform }],
+      known_platforms: [{ id: D.nativePlatformIDs[platform], code: platform }],
+      releases: [unifiedRelease({ platform })] });
+    const { elements: e } = await display('?igdb=366896&date=2027-01-16', payload);
+    assert.equal(e.get('gameReleaseLabel').textContent, 'IGDB 預定發售・台灣時區');
+    assert.equal(e.get('gameDate').textContent, '2027/01/16');
+    assert.equal(e.get('gameDate').dateTime, '2027-01-16');
+    assert.equal(e.get('releaseDay').textContent, '16');
+    assert.match(e.get('gameReleaseNote').textContent, /來源：IGDB 平台發售資料。依 IGDB 全球發售資料換算為台灣時區/);
+    assert.match(e.get('gameReleaseNote').textContent, /原始 IGDB 日期為 2027\/01\/15，換算後為 2027\/01\/16/);
+    assert.match(e.get('gameReleaseNote').textContent, /不視為實際解鎖時間/);
+    assert.match(e.get('gamePlatformDates').textContent, new RegExp(`${platform} · 2027/01/16 · 台灣時區`));
+    assert.doesNotMatch(e.get('gameDate').textContent, /02:00|08:00|00:00/);
+    assert.doesNotMatch(e.get('gameReleaseLabel').textContent, /官方|待確認/);
+  }
+});
+
+test('date-only IGDB rows clearly retain calendar precision without a synthetic timezone conversion', async () => {
+  const payload = sample({ releases: [unifiedRelease({ date: '2027-01-15', date_basis: 'igdb_calendar_day',
+    timezone_status: 'date_only', source_timestamp: null, timestamp_taipei_date: null })] });
+  const { elements: e } = await display('?igdb=366896', payload);
+  assert.equal(e.get('gameReleaseLabel').textContent, 'IGDB 預定發售・日期資料');
+  assert.equal(e.get('gameDate').textContent, '2027/01/15');
+  assert.match(e.get('gameReleaseNote').textContent, /來源僅提供年月日，未提供可換算的時刻/);
+  assert.doesNotMatch(e.get('gameReleaseNote').textContent, /換算為台灣時區|08:00|00:00/);
+});
+
+test('unified console days remain separate from Steam dates and route to one merged profile', async () => {
+  const payload = crossPlatformSample();
+  payload.games[0].releases = [unifiedRelease()];
+  for (const search of ['?appid=632950', '?appid=632950&date=2027-01-16']) {
+    const { elements: e } = await display(search, payload, steamCatalog());
+    const selectedConsole = search.includes('date=');
+    assert.equal(e.get('gameReleaseDates').children.length, 2);
+    assert.equal(e.get('gameDate').textContent, selectedConsole ? '2027/01/16' : '2027/01/15');
+    assert.equal(e.get('gameReleaseLabel').textContent, selectedConsole ? 'IGDB 預定發售・台灣時區' : '預定發售・台灣');
+    assert.match(e.get('gamePlatformDates').textContent, /Steam · 2027\/01\/15 · 台灣.*NS2 · 2027\/01\/16 · 台灣時區/);
+    assert.equal(e.get('gameSteam').href, 'https://store.steampowered.com/app/632950/');
+  }
+});
+
 test('official release evidence sanitizes its source link before claiming Taiwan confirmation', async () => {
   const { elements: e } = await display('?igdb=366896', sample({
     releases: [officialRelease({ official_source_url: 'javascript:alert(1)' })],

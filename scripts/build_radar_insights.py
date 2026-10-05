@@ -148,7 +148,7 @@ def hong_kong_official_nintendo_date_url(value):
 
 
 def accepted_nintendo_release_source(release):
-    """Consume the publisher's date audit without treating UTC midnight as an unlock time."""
+    """Validate a displayed Taipei date; IGDB timestamps are not unlock-time proof."""
     source, status = release.get("source"), release.get("timezone_status")
     if status is None:
         # Previously published IGDB calendar-day rows have no audit metadata.
@@ -176,6 +176,21 @@ def accepted_nintendo_release_source(release):
         if (source_day != instant.date().isoformat()
                 or taipei_day != instant.astimezone(TAIPEI).date().isoformat()):
             return False
+    basis = release.get("date_basis")
+    if source == "IGDB" and basis in {"igdb_timestamp_taipei", "igdb_calendar_day"}:
+        official_fields = ("official_source_url", "official_source_name", "official_verified_at",
+                           "official_product_id", "official_concept_id", "official_release_time_utc")
+        if (release.get("platform") not in IGDB_PLATFORMS or not day(release.get("date"))
+                or not isinstance(release.get("region"), str) or not release["region"]
+                or release.get("source_region") != release["region"]
+                or release.get("taiwan_release_confirmed") is not False
+                or any(release.get(field) is not None for field in official_fields)):
+            return False
+        if basis == "igdb_timestamp_taipei":
+            return (status == "converted_to_taipei" and timestamp is not None
+                    and taipei_day == release["date"])
+        return (status == "date_only" and timestamp is None and taipei_day is None
+                and source_day == release["date"])
     if source == "official_registry":
         name = release.get("official_source_name")
         if status == "hong_kong_official_date":

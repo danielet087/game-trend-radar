@@ -620,7 +620,8 @@
       const grouped = new Map();
       const admittedReleases = raw.releases.filter(release => release?.precision === "day" &&
         validDate(release.date) && platforms.includes(release.platform) && nintendoReleaseAudited(release));
-      const officialPriority = release => release.timezone_status === "taiwan_official_date" ? 2
+      const officialPriority = release => ["igdb_timestamp_taipei", "igdb_calendar_day"].includes(release.date_basis) ? 3
+        : release.timezone_status === "taiwan_official_date" ? 2
         : release.timezone_status === "hong_kong_official_date" ? 1 : 0;
       for (const release of admittedReleases) {
         if (admittedReleases.some(other => other.platform === release.platform &&
@@ -695,8 +696,25 @@
     return unique(games);
   }
   function nintendoReleaseAudited(release) {
-    // Old public bundles remain readable during the publisher transition. New
-    // audited records must not turn an ambiguous timestamp into a calendar day.
+    // The unified IGDB policy converts only the calendar date. A source
+    // timestamp is retained for reproducibility, never as an unlock-time claim.
+    if (["igdb_timestamp_taipei", "igdb_calendar_day"].includes(release.date_basis)) {
+      if (!nativePlatformOrder.includes(release.platform) || release.precision !== "day" ||
+        release.source !== "IGDB" || release.time_zone !== "Asia/Taipei" ||
+        !validDate(release.date) || !validDate(release.source_date) ||
+        typeof release.region !== "string" || !release.region || release.source_region !== release.region ||
+        release.taiwan_release_confirmed !== false ||
+        ["official_source_url", "official_source_name", "official_verified_at", "official_product_id",
+          "official_concept_id", "official_release_time_utc"].some(field => release[field] != null)) return false;
+      if (release.date_basis === "igdb_calendar_day") return release.timezone_status === "date_only" &&
+        release.source_timestamp == null && release.timestamp_taipei_date == null && release.date === release.source_date;
+      if (release.timezone_status !== "converted_to_taipei" ||
+        !Number.isSafeInteger(release.source_timestamp) || release.source_timestamp < 0) return false;
+      const instant = new Date(release.source_timestamp * 1000);
+      return Number.isFinite(instant.getTime()) && instant.toISOString().slice(0, 10) === release.source_date &&
+        todayInTaipei(instant) === release.timestamp_taipei_date && release.date === release.timestamp_taipei_date;
+    }
+    // Retain legacy audits for previously published and archived bundles.
     if (release.timezone_status == null) return release.platform !== "PS5" &&
       release.source !== "official_registry" && release.taiwan_release_confirmed !== true;
     if (release.time_zone !== "Asia/Taipei" ||

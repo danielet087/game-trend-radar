@@ -47,6 +47,65 @@ test('ambiguous, imprecise and inconsistent audited dates do not enter the calen
   ]) assert.deepEqual(D.nintendoGames(payload({ ...auditedIGDB, ...overrides })), []);
 });
 
+const taipeiIGDB = (overrides = {}) => ({
+  platform: 'NS2', precision: 'day', source: 'IGDB', region: 'worldwide', source_region: 'worldwide',
+  date: '2026-10-09', source_date: '2026-10-08', source_timestamp: Date.parse('2026-10-08T18:00:00Z') / 1000,
+  date_basis: 'igdb_timestamp_taipei', timezone_status: 'converted_to_taipei',
+  timestamp_taipei_date: '2026-10-09', time_zone: 'Asia/Taipei', taiwan_release_confirmed: false,
+  official_source_url: null, official_source_name: null, official_verified_at: null,
+  official_product_id: null, official_concept_id: null, official_release_time_utc: null,
+  ...overrides,
+});
+
+test('unified IGDB dates recalculate Taipei midnight crossings for NS, NS2 and PS5', () => {
+  for (const platform of ['NS', 'NS2', 'PS5']) {
+    const native = payload(taipeiIGDB({ platform }));
+    native.games[0].platforms = [{ id: D.nativePlatformIDs[platform], code: platform }];
+    const [game] = D.nintendoGames(native);
+    assert.equal(game.date, '2026-10-09');
+    assert.equal(game.releases[0].source_date, '2026-10-08');
+    assert.equal(game.releases[0].taiwan_release_confirmed, false);
+  }
+  const sameDay = taipeiIGDB({ date: '2026-10-08', timestamp_taipei_date: '2026-10-08',
+    source_timestamp: Date.parse('2026-10-08T00:00:00Z') / 1000 });
+  assert.equal(D.nativeReleaseAudited(sameDay), true);
+  assert.equal(D.nativeReleaseAudited(taipeiIGDB({ region: 'taiwan', source_region: 'taiwan' })), true);
+});
+
+test('unified IGDB policy rejects inconsistent dates, timestamps and official claims', () => {
+  for (const changes of [
+    { source: 'official_registry' }, { time_zone: 'UTC' }, { timezone_status: 'same_calendar_day' },
+    { source_date: '2026-10-09' }, { date: '2026-10-08' }, { timestamp_taipei_date: '2026-10-08' },
+    { source_timestamp: null }, { source_timestamp: undefined }, { source_timestamp: true },
+    { source_timestamp: '1791482400' }, { source_timestamp: -1 }, { source_timestamp: Number.MAX_SAFE_INTEGER },
+    { source_region: 'asia' }, { region: undefined }, { taiwan_release_confirmed: true },
+    { taiwan_release_confirmed: undefined }, { precision: 'month' },
+    { official_source_url: 'https://www.nintendo.com/tw/schedule/' }, { official_source_name: 'Nintendo 台灣' },
+    { official_verified_at: '2026-10-04T15:00:00Z' }, { official_release_time_utc: '2026-10-08T18:00:00Z' },
+    { official_product_id: '70010000000001' }, { official_concept_id: '10009999' },
+  ]) assert.deepEqual(D.nintendoGames(payload(taipeiIGDB(changes))), [], JSON.stringify(changes));
+});
+
+test('IGDB calendar dates without timestamps retain their exact day without inventing conversion', () => {
+  const day = taipeiIGDB({ date: '2026-10-08', date_basis: 'igdb_calendar_day', timezone_status: 'date_only',
+    source_timestamp: null, timestamp_taipei_date: null });
+  assert.equal(D.nintendoGames(payload(day))[0].date, '2026-10-08');
+  for (const changes of [{ date: '2026-10-09' }, { source_timestamp: 1791417600 },
+    { timestamp_taipei_date: '2026-10-08' }, { timezone_status: 'converted_to_taipei' }])
+    assert.deepEqual(D.nintendoGames(payload({ ...day, ...changes })), []);
+});
+
+test('new unified IGDB platform rows supersede legacy official overrides in mixed bundles', () => {
+  const native = payload(taipeiIGDB());
+  native.games[0].releases.push({ ...auditedIGDB, platform: 'NS2', precision: 'day', date: '2026-10-10', region: 'taiwan',
+    source: 'official_registry', date_basis: 'taiwan_official_calendar_day', timezone_status: 'taiwan_official_date',
+    taiwan_release_confirmed: true, official_source_url: 'https://www.nintendo.com/tw/schedule/', official_source_name: 'Nintendo 台灣' });
+  const [game] = D.nintendoGames(native);
+  assert.equal(game.date, '2026-10-09');
+  assert.equal(game.releases.length, 1);
+  assert.equal(game.releases[0].source, 'IGDB');
+});
+
 test('an official Taiwan date replaces its IGDB calendar candidate and survives Steam merging', () => {
   const release = { ...auditedIGDB, date: '2026-10-09', region: 'taiwan',
     source: 'official_registry', date_basis: 'taiwan_official_calendar_day',

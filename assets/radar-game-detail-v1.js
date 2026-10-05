@@ -47,7 +47,10 @@
     row?.source === "official_registry" && row.region === "hong_kong" &&
     row.timezone_status === "hong_kong_official_date" && D.nativeReleaseAudited?.(row) === true;
   const nativeOfficialRelease = (row) => taiwanOfficialRelease(row) || hongKongOfficialRelease(row);
-  const officialReleasePriority = (row) => taiwanOfficialRelease(row) ? 2 : hongKongOfficialRelease(row) ? 1 : 0;
+  const unifiedIGDBRelease = (row) => row?.source === "IGDB" &&
+    ["igdb_timestamp_taipei", "igdb_calendar_day"].includes(row.date_basis) && D.nativeReleaseAudited?.(row) === true;
+  const officialReleasePriority = (row) => unifiedIGDBRelease(row) ? 3
+    : taiwanOfficialRelease(row) ? 2 : hongKongOfficialRelease(row) ? 1 : 0;
   function officialReleaseClock(row) {
     if (!nativeOfficialRelease(row)) return null;
     const instant = D.officialTaiwanReleaseTime?.(row);
@@ -58,6 +61,7 @@
     return { time, utc };
   }
   function releaseSourceName(row) {
+    if (unifiedIGDBRelease(row)) return "IGDB 平台發售資料";
     if (nativeOfficialRelease(row)) return String(row.official_source_name ||
       (hongKongOfficialRelease(row) ? "Nintendo 香港" : "台灣官方發售資料")).slice(0, 120);
     const sourceURL = publicSourceURL(row?.source);
@@ -66,6 +70,12 @@
     return row?.source ? String(row.source).slice(0, 120) : "IGDB 平台發售資料";
   }
   function releaseDateNote(row) {
+    if (unifiedIGDBRelease(row)) {
+      if (row.date_basis === "igdb_calendar_day") return `依 IGDB ${regionLabel(row.region)}發售日期顯示。來源僅提供年月日，未提供可換算的時刻；台灣官方上市日及解鎖時間尚未確認。`;
+      const original = row.source_date !== row.date
+        ? `原始 IGDB 日期為 ${row.source_date.replaceAll("-", "/")}，換算後為 ${row.date.replaceAll("-", "/")}。` : "";
+      return `依 IGDB ${regionLabel(row.region)}發售資料換算為台灣時區（Asia/Taipei／UTC+8）的日期。${original}此處只顯示日期；IGDB 時間戳不視為實際解鎖時間，也不表示台灣官方已確認上市日。`;
+    }
     if (hongKongOfficialRelease(row)) {
       const original = D.validDate(row.source_date) && row.source_date !== row.date
         ? `原始 IGDB 日期為 ${row.source_date.replaceAll("-", "/")}，已依香港官方日期修正。` : "";
@@ -89,7 +99,7 @@
       if (!row || !releasePlatformOrder.includes(row.platform) ||
         !game.platforms?.includes(row.platform) || row.precision !== "day" || !D.validDate(row.date)) continue;
       const key = `${row.platform}|${row.date}|${row.region || ""}`;
-      if (!records.has(key) || nativeOfficialRelease(row)) records.set(key, row);
+      if (!records.has(key) || officialReleasePriority(row) > officialReleasePriority(records.get(key))) records.set(key, row);
     }
     const rows = [...records.values()].sort((a, b) => a.date.localeCompare(b.date) ||
       releasePlatformOrder.indexOf(a.platform) - releasePlatformOrder.indexOf(b.platform));
@@ -97,8 +107,7 @@
       !rows.some(other => other.platform === row.platform &&
         officialReleasePriority(other) > officialReleasePriority(row)));
     const selected = preferred.find(row => row.date === game.date) || rows.find(row => row.date === game.date);
-    // Keep the requested calendar event visible even if a newer Taiwan source
-    // is preferred for the platform's other release rows.
+    // Keep the requested calendar event visible in the version's date list.
     if (selected) return [selected, ...preferred.filter(row => row !== selected)];
     if (preferred.length) return preferred;
     const platform = isNativeConsole(game)
@@ -138,7 +147,9 @@
       const note = index === 0 ? $("gameReleaseNote") : node("p", "game-release-note");
       const clock = native ? officialReleaseClock(row) : null;
       platform.textContent = `${row.platform} 版本`;
-      label.textContent = hongKongOfficialRelease(row) ? "預定發售・香港官方"
+      label.textContent = unifiedIGDBRelease(row) ? row.date_basis === "igdb_timestamp_taipei"
+        ? "IGDB 預定發售・台灣時區" : "IGDB 預定發售・日期資料"
+        : hongKongOfficialRelease(row) ? "預定發售・香港官方"
         : native && !taiwanOfficialRelease(row) ? `預定發售・${region}日期（台灣待確認）`
           : `預定發售・${region}${clock ? "時間" : ""}`;
       date.textContent = `${row.date.replaceAll("-", "/")}${clock ? ` ${clock.time}（台灣時間）` : ""}`;
@@ -671,7 +682,9 @@
     }).sort((a, b) => a.date.localeCompare(b.date) || a.platform.localeCompare(b.platform));
     $("gamePlatformDates").replaceChildren(...dates.map(row => {
       const clock = officialReleaseClock(row);
-      const item = node("li", "", `${row.platform} · ${row.date.replaceAll("-", "/")}${clock ? ` ${clock.time}` : ""} · ${row.platform === "Steam" ? "台灣" : regionLabel(row.region)}${clock ? "時間（UTC+8）" : ""}`);
+      const displayedRegion = unifiedIGDBRelease(row) && row.date_basis === "igdb_timestamp_taipei"
+        ? "台灣時區（UTC+8）" : row.platform === "Steam" ? "台灣" : regionLabel(row.region);
+      const item = node("li", "", `${row.platform} · ${row.date.replaceAll("-", "/")}${clock ? ` ${clock.time}` : ""} · ${displayedRegion}${clock ? "時間（UTC+8）" : ""}`);
       item.dataset.platform = row.platform;
       if (row.platform === "Steam") {
         item.append(node("p", "game-release-edition-label game-release-steam-version", "Steam 版本"));
@@ -703,7 +716,7 @@
         const contentNote = edition.type === "deluxe"
           ? "此平台發售的是上述 Deluxe 版本。"
           : "此平台發售的是包含本體與追加內容的版本。";
-        version.append(node("p", "game-release-edition-note", `${contentNote}發售日期對應上述版本與內容組合。${edition.region === "taiwan" ? "版本內容依台灣官方商品頁確認。" : "版本內容依此地區商品頁確認；台灣販售版本是否相同仍待確認。"}`));
+        version.append(node("p", "game-release-edition-note", `${contentNote}${unifiedIGDBRelease(row) ? "發售日期採 IGDB 平台資料。" : "發售日期對應上述版本與內容組合。"}${edition.region === "taiwan" ? "版本內容依台灣官方商品頁確認。" : "版本內容依此地區商品頁確認；台灣販售版本是否相同仍待確認。"}`));
         item.append(version);
       }
       return item;

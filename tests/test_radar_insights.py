@@ -88,6 +88,18 @@ def official_nintendo_release(**fields):
                                     official_source_url="https://www.nintendo.com/tw/schedule/", **fields)
 
 
+def taipei_igdb_release(at="2026-10-08T20:00:00Z", **fields):
+    instant = M.stamp(at) if at is not None else None
+    source_day = instant.date().isoformat() if instant else "2026-10-08"
+    taipei_day = instant.astimezone(M.TAIPEI).date().isoformat() if instant else None
+    return audited_nintendo_release(
+        date=taipei_day or source_day, source_date=source_day,
+        source_timestamp=int(instant.timestamp()) if instant else None,
+        timestamp_taipei_date=taipei_day,
+        date_basis="igdb_timestamp_taipei" if instant else "igdb_calendar_day",
+        timezone_status="converted_to_taipei" if instant else "date_only", **fields)
+
+
 class InsightTests(unittest.TestCase):
     def test_verified_store_authority_keeps_calendar_day_and_real_follower_history(self):
         raw = twitch_store_authority()
@@ -244,7 +256,56 @@ class NintendoInsightTests(unittest.TestCase):
                 state = self.update(document=nintendo_catalog(nintendo_game(releases=[release])))
                 self.assertEqual(state["nintendo_records"]["igdb:1"]["current_releases"], {"NS2": "2026-10-08"})
 
-    def test_unconfirmed_crossday_and_falsely_claimed_taiwan_dates_are_rejected(self):
+    def test_igdb_taipei_policy_tracks_converted_dates_for_every_native_platform(self):
+        for at, expected in [("2026-10-08T00:00:00Z", "2026-10-08"),
+                             ("2026-10-08T15:59:59Z", "2026-10-08"),
+                             ("2026-10-08T16:00:00Z", "2026-10-09"),
+                             (None, "2026-10-08")]:
+            releases = [taipei_igdb_release(at, platform=code) for code in M.IGDB_PLATFORMS]
+            document = igdb_catalog(nintendo_game(releases=releases))
+            original = deepcopy(document)
+            with self.subTest(at=at):
+                state = self.update(document=document)
+                record = state["nintendo_records"]["igdb:1"]
+                self.assertEqual(record["current_releases"], {code: expected for code in M.IGDB_PLATFORMS})
+                self.assertEqual({event["date"] for event in state["events"]}, {expected})
+                self.assertEqual(document, original)
+
+    def test_igdb_taipei_policy_rejects_forged_conversion_or_official_proof(self):
+        timestamp_release = taipei_igdb_release()
+        mutations = [{"date": "2026-10-08"}, {"source_date": "2026-10-09"},
+                     {"timestamp_taipei_date": "2026-10-08"}, {"source_timestamp": None},
+                     {"source_timestamp": True}, {"source_timestamp": -1},
+                     {"source_timestamp": 10**30}, {"time_zone": "UTC"},
+                     {"timezone_status": "same_calendar_day"}, {"source_region": "japan"},
+                     {"region": ""}, {"taiwan_release_confirmed": True},
+                     {"taiwan_release_confirmed": "false"}, {"date_basis": "igdb_calendar_day"},
+                     {"precision": "month"}]
+        mutations += [{field: "unexpected official evidence"} for field in (
+            "official_source_url", "official_source_name", "official_verified_at",
+            "official_product_id", "official_concept_id", "official_release_time_utc")]
+        for changes in mutations:
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                self.update(document=igdb_catalog(nintendo_game(releases=[{**timestamp_release, **changes}])))
+        date_only = taipei_igdb_release(None)
+        for changes in [{"date": "2026-10-09"}, {"timestamp_taipei_date": "2026-10-08"},
+                        {"source_timestamp": timestamp_release["source_timestamp"]},
+                        {"timezone_status": "converted_to_taipei"}, {"date_basis": "igdb_timestamp_taipei"}]:
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                self.update(document=igdb_catalog(nintendo_game(releases=[{**date_only, **changes}])))
+
+    def test_igdb_policy_conversion_updates_activity_without_changing_steam_history(self):
+        first = self.update(document=nintendo_catalog(nintendo_game(releases=[audited_nintendo_release()])))
+        document = igdb_catalog(nintendo_game(releases=[taipei_igdb_release()]), at="2026-10-04T03:00:00Z")
+        state = self.update(first, document)
+        changes = [event for event in state["events"] if event["type"] == "release_date"]
+        self.assertEqual(len(changes), 1)
+        self.assertEqual((changes[0]["previous_date"], changes[0]["date"], changes[0]["at"]),
+                         ("2026-10-08", "2026-10-09", document["generated_at"]))
+        self.assertEqual(state["records"], first["records"])
+        self.assertEqual(state, self.update(state, document))
+
+    def test_legacy_unconfirmed_crossday_and_falsely_claimed_taiwan_dates_are_rejected(self):
         mutations = [{"timezone_status": "requires_time_evidence"}, {"timezone_status": "imprecise_date"},
                      {"timezone_status": "date_only"}, {"time_zone": "UTC"}, {"region": "taiwan"},
                      {"taiwan_release_confirmed": True}, {"taiwan_release_confirmed": "false"},
