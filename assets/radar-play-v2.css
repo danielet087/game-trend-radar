@@ -1396,11 +1396,33 @@ h1 {
 }
 .card-languages {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 5px;
   justify-content: flex-end;
   margin: 0;
+}
+.card-language-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 0;
+}
+.card-multiplayer {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-right: auto;
+  padding: 4px 7px;
+  border: 1px solid #cbd9e7;
+  border-radius: 6px;
+  color: #42617e;
+  background: #eef4fa;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.45;
 }
 .card-body > .card-languages {
   align-self: stretch;

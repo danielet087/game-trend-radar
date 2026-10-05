@@ -236,6 +236,14 @@
       ? nativePlatforms.length === 1 ? "PS5" : "主機" : "Nintendo";
     languages.setAttribute("aria-label", nativeLanguages ? `${nativeLanguageLabel} 版本遊戲支援語言` : "Steam 版本遊戲支援語言");
     if (!nativeLanguages && (game.hasNativePlatforms || game.hasNintendo)) languages.title = "此處標籤為 Steam 版本語言支援；主機各版本請進入遊戲頁查看";
+    const multiplayer = D.cardMultiplayerBadge?.(game, event);
+    if (multiplayer) {
+      const badge = node("span", "card-multiplayer", multiplayer.label);
+      badge.title = multiplayer.title;
+      badge.setAttribute("aria-label", `多人遊戲；${multiplayer.title}`);
+      languages.append(badge);
+    }
+    const languageBadges = node("div", "card-language-badges");
     for (const badge of support.languageBadges || []) {
       const language = node(
         "span",
@@ -244,8 +252,9 @@
       );
       language.title = nativeLanguages ? badge.title || "此主機版本語言支援待確認" :
         "Steam 版本公布的遊戲語言支援；介面、字幕及配音的詳細項目請以商店為準";
-      languages.append(language);
+      languageBadges.append(language);
     }
+    if (languageBadges.children.length) languages.append(languageBadges);
     if (["explore", "all"].includes(mode) && game.tags?.length) {
       const tags = node("div", "explorer-card-tags");
       const ordered = [...game.tags].sort(

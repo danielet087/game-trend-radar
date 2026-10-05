@@ -160,8 +160,42 @@ test('Steam card keeps support languages directly above the dates-and-interest s
   const body = card.querySelector('.card-body'), languages = card.querySelector('.card-languages');
   assert.equal(languages.parentElement, body);
   assert.equal(body.children[body.children.indexOf(languages) + 1].className, 'card-meta');
-  assert.deepEqual(languages.children.map(chip => chip.textContent), ['支援繁中', '支援簡中']);
+  assert.deepEqual(languages.querySelectorAll('.card-language').map(chip => chip.textContent), ['支援繁中', '支援簡中']);
   assert.equal(card.querySelector('.card-footer').querySelector('.card-languages'), null);
+});
+
+test('multiplayer badge shares the language row on its left and single-player cards omit it', () => {
+  const multiplayer = D.normalize(steam({ categories: [{ id: 2 }, { id: 9 }],
+    categories_source: 'Steam Store appdetails cc=TW categories', categories_checked_at: '2026-10-05T07:00:00Z' }));
+  const card = renderer().card(multiplayer), row = card.querySelector('.card-languages');
+  assert.deepEqual(row.children.map(child => child.className), ['card-multiplayer', 'card-language-badges']);
+  assert.equal(row.children[0].textContent, '多人');
+  assert.match(row.children[0].title, /Steam.*合作/);
+  assert.match(row.children[0].attributes['aria-label'], /多人遊戲/);
+  assert.deepEqual(row.querySelectorAll('.card-language').map(chip => chip.textContent), ['支援繁中', '支援簡中']);
+  const body = card.querySelector('.card-body');
+  assert.equal(body.children[body.children.indexOf(row) + 1].className, 'card-meta');
+  for (const categories of [undefined, [{ id: 2 }]]) {
+    const single = renderer().card(D.normalize(steam({ categories,
+      categories_source: 'Steam Store appdetails cc=TW categories', categories_checked_at: '2026-10-05T07:00:00Z' })));
+    assert.equal(single.querySelector('.card-multiplayer'), null);
+    assert.equal(single.querySelector('.card-language-badges').parentElement, single.querySelector('.card-languages'));
+  }
+});
+
+test('calendar event cards do not show another platform multiplayer mode while summary cards can identify it on hover', () => {
+  const data = D.datasets({ games: [steam({ release_start: '2026-11-01', categories: [{ id: 2 }],
+    categories_source: 'Steam Store appdetails cc=TW categories', categories_checked_at: '2026-10-05T07:00:00Z' })] },
+    null, nintendo({ multiplayer_modes: [{ platform: { id: 508 }, onlinemax: 4 }] }));
+  const early = data.games.find(game => game.date === '2026-11-01'), late = data.games.find(game => game.date === '2026-12-01');
+  assert.equal(renderer().card(early, { event: true }).querySelector('.card-multiplayer'), null);
+  const nativeBadge = renderer().card(late, { event: true }).querySelector('.card-multiplayer');
+  assert.equal(nativeBadge.textContent, '多人');
+  assert.match(nativeBadge.title, /NS2：IGDB/);
+  const summary = renderer().card(D.cardGames(data.games)[0]).querySelector('.card-multiplayer');
+  assert.equal(summary.textContent, '多人');
+  assert.match(summary.title, /NS2：IGDB/);
+  assert.doesNotMatch(summary.title, /Steam/);
 });
 
 test('ordinary NS2 listing and official sole-platform proof produce different card tags', () => {
