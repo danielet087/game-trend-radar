@@ -4,7 +4,6 @@
   "display_name": "Antivirus Survivors 2003 Professional",
   "display_name_source": "english",
   "name_en": "Antivirus Survivors 2003 Professional",
-  "name_en_traditional": "Antivirus Survivors 2003 Professional",
   "language_support": {
     "tchinese": false,
     "schinese": false,
@@ -141,19 +140,11 @@
     "checked_at": "2026-10-04T21:12:21Z",
     "source_frontend_commit": "025819f066339cc336d23e41f75513e94806c5c3",
     "source_enrollment": {
-      "min_viewers": 7000,
-      "observed_at": "2026-10-04T21:12:21Z",
       "source": "igdb_first_release_date",
-      "viewer_count": 14400
-    },
-    "categories": [
-      {
-        "id": 2,
-        "description": "Single-player"
-      }
-    ],
-    "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
-    "categories_checked_at": "2026-10-05T07:17:08Z"
+      "observed_at": "2026-10-04T21:12:21Z",
+      "viewer_count": 14400,
+      "min_viewers": 7000
+    }
   },
   "content_enrichment_signature": "3832490:2395:2026-09-28",
   "storage_version": 2,
@@ -166,5 +157,6 @@
     }
   ],
   "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
-  "categories_checked_at": "2026-10-05T07:17:08Z"
+  "categories_checked_at": "2026-10-05T07:17:08Z",
+  "community_url": "https://steamcommunity.com/app/3832490/"
 }

@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "generated_at": "2026-10-05T17:04:44.883703+00:00",
   "month": "2027-02",
+  "count": 7,
   "games": [
     {
       "appid": 2659410,
@@ -10,7 +12,6 @@
       "name_en": "Elta: Defy All Gods",
       "name_zh_cn": "艾尔塔：逆神",
       "name_zh_cn_traditional": "艾爾塔：逆神",
-      "name_en_traditional": "Elta: Defy All Gods",
       "language_support": {
         "tchinese": true,
         "schinese": true,
@@ -148,19 +149,11 @@
         "checked_at": "2026-10-04T20:12:49Z",
         "source_frontend_commit": "e8985949d96008a156675f6beee978668030e1c2",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-04T20:12:49Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 15547
-        },
-        "categories": [
-          {
-            "id": 2,
-            "description": "Single-player"
-          }
-        ],
-        "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
-        "categories_checked_at": "2026-10-05T07:17:08Z"
+          "observed_at": "2026-10-04T20:12:49Z",
+          "viewer_count": 15547,
+          "min_viewers": 7000
+        }
       },
       "content_enrichment_signature": "2659410:3288:2027-02-03",
       "storage_version": 2,
@@ -171,7 +164,8 @@
         }
       ],
       "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
-      "categories_checked_at": "2026-10-05T07:17:08Z"
+      "categories_checked_at": "2026-10-05T07:17:08Z",
+      "community_url": "https://steamcommunity.com/app/2659410/"
     },
     {
       "appid": 4253770,
@@ -1056,7 +1050,5 @@
       "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
       "categories_checked_at": "2026-10-05T07:17:08Z"
     }
-  ],
-  "generated_at": "2026-10-04T21:08:18Z",
-  "count": 7
+  ]
 }

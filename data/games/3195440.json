@@ -6,7 +6,6 @@
   "name_en": "Welcome to Elderfield",
   "name_zh_cn": "欢迎来到古原镇",
   "name_zh_cn_traditional": "歡迎來到古原鎮",
-  "name_en_traditional": "Welcome to Elderfield",
   "language_support": {
     "tchinese": false,
     "schinese": true,
@@ -149,19 +148,11 @@
     "checked_at": "2026-10-04T17:14:24Z",
     "source_frontend_commit": "e8985949d96008a156675f6beee978668030e1c2",
     "source_enrollment": {
-      "min_viewers": 7000,
-      "observed_at": "2026-10-04T17:14:24Z",
       "source": "igdb_first_release_date",
-      "viewer_count": 8213
-    },
-    "categories": [
-      {
-        "id": 2,
-        "description": "Single-player"
-      }
-    ],
-    "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
-    "categories_checked_at": "2026-10-05T07:17:08Z"
+      "observed_at": "2026-10-04T17:14:24Z",
+      "viewer_count": 8213,
+      "min_viewers": 7000
+    }
   },
   "content_enrichment_signature": "3195440:24229:2026-09-10",
   "storage_version": 2,
@@ -172,5 +163,6 @@
     }
   ],
   "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
-  "categories_checked_at": "2026-10-05T07:17:08Z"
+  "categories_checked_at": "2026-10-05T07:17:08Z",
+  "community_url": "https://steamcommunity.com/app/3195440/"
 }
