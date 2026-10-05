@@ -148,8 +148,24 @@
       "observed_at": "2026-10-04T20:12:49Z",
       "source": "igdb_first_release_date",
       "viewer_count": 15547
-    }
+    },
+    "categories": [
+      {
+        "id": 2,
+        "description": "Single-player"
+      }
+    ],
+    "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+    "categories_checked_at": "2026-10-05T07:17:08Z"
   },
   "content_enrichment_signature": "2659410:3288:2027-02-03",
-  "storage_version": 2
+  "storage_version": 2,
+  "categories": [
+    {
+      "id": 2,
+      "description": "Single-player"
+    }
+  ],
+  "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+  "categories_checked_at": "2026-10-05T07:17:08Z"
 }

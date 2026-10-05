@@ -152,10 +152,26 @@
           "observed_at": "2026-10-04T20:12:49Z",
           "source": "igdb_first_release_date",
           "viewer_count": 15547
-        }
+        },
+        "categories": [
+          {
+            "id": 2,
+            "description": "Single-player"
+          }
+        ],
+        "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+        "categories_checked_at": "2026-10-05T07:17:08Z"
       },
       "content_enrichment_signature": "2659410:3288:2027-02-03",
-      "storage_version": 2
+      "storage_version": 2,
+      "categories": [
+        {
+          "id": 2,
+          "description": "Single-player"
+        }
+      ],
+      "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+      "categories_checked_at": "2026-10-05T07:17:08Z"
     },
     {
       "appid": 4253770,
@@ -292,7 +308,15 @@
       "genres_fetch_status": "ok",
       "genres_source": "https://store.steampowered.com/app/4253770/?cc=TW&l=tchinese",
       "genres_checked_at": "2026-09-28T04:26:49Z",
-      "tag_labels_source": "https://store.steampowered.com/app/4253770/?cc=TW&l=tchinese"
+      "tag_labels_source": "https://store.steampowered.com/app/4253770/?cc=TW&l=tchinese",
+      "categories": [
+        {
+          "id": 2,
+          "description": "Single-player"
+        }
+      ],
+      "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+      "categories_checked_at": "2026-10-05T07:17:08Z"
     },
     {
       "appid": 2590240,
@@ -431,7 +455,15 @@
       "genres_fetch_status": "ok",
       "genres_source": "https://store.steampowered.com/app/2590240/?cc=TW&l=tchinese",
       "genres_checked_at": "2026-09-28T04:26:22Z",
-      "tag_labels_source": "https://store.steampowered.com/app/2590240/?cc=TW&l=tchinese"
+      "tag_labels_source": "https://store.steampowered.com/app/2590240/?cc=TW&l=tchinese",
+      "categories": [
+        {
+          "id": 2,
+          "description": "Single-player"
+        }
+      ],
+      "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+      "categories_checked_at": "2026-10-05T07:17:08Z"
     },
     {
       "appid": 2365790,
@@ -570,7 +602,27 @@
       "genres_fetch_status": "ok",
       "genres_source": "https://store.steampowered.com/app/2365790/?cc=TW&l=tchinese",
       "genres_checked_at": "2026-09-28T04:26:22Z",
-      "tag_labels_source": "https://store.steampowered.com/app/2365790/?cc=TW&l=tchinese"
+      "tag_labels_source": "https://store.steampowered.com/app/2365790/?cc=TW&l=tchinese",
+      "categories": [
+        {
+          "id": 2,
+          "description": "Single-player"
+        },
+        {
+          "id": 1,
+          "description": "Multi-player"
+        },
+        {
+          "id": 9,
+          "description": "Co-op"
+        },
+        {
+          "id": 38,
+          "description": "Online Co-op"
+        }
+      ],
+      "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+      "categories_checked_at": "2026-10-05T07:17:08Z"
     },
     {
       "appid": 3558670,
@@ -700,7 +752,15 @@
       "genres_fetch_status": "ok",
       "genres_source": "https://store.steampowered.com/app/3558670/?cc=TW&l=tchinese",
       "genres_checked_at": "2026-09-28T04:26:40Z",
-      "tag_labels_source": "https://store.steampowered.com/app/3558670/?cc=TW&l=tchinese"
+      "tag_labels_source": "https://store.steampowered.com/app/3558670/?cc=TW&l=tchinese",
+      "categories": [
+        {
+          "id": 2,
+          "description": "Single-player"
+        }
+      ],
+      "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+      "categories_checked_at": "2026-10-05T07:17:08Z"
     },
     {
       "appid": 2963950,
@@ -839,7 +899,15 @@
       "genres_fetch_status": "ok",
       "genres_source": "https://store.steampowered.com/app/2963950/?cc=TW&l=tchinese",
       "genres_checked_at": "2026-09-28T04:26:34Z",
-      "tag_labels_source": "https://store.steampowered.com/app/2963950/?cc=TW&l=tchinese"
+      "tag_labels_source": "https://store.steampowered.com/app/2963950/?cc=TW&l=tchinese",
+      "categories": [
+        {
+          "id": 2,
+          "description": "Single-player"
+        }
+      ],
+      "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+      "categories_checked_at": "2026-10-05T07:17:08Z"
     },
     {
       "appid": 2769570,
@@ -978,7 +1046,15 @@
       "genres_fetch_status": "ok",
       "genres_source": "https://store.steampowered.com/app/2769570/?cc=TW&l=tchinese",
       "genres_checked_at": "2026-09-28T04:26:27Z",
-      "tag_labels_source": "https://store.steampowered.com/app/2769570/?cc=TW&l=tchinese"
+      "tag_labels_source": "https://store.steampowered.com/app/2769570/?cc=TW&l=tchinese",
+      "categories": [
+        {
+          "id": 2,
+          "description": "Single-player"
+        }
+      ],
+      "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+      "categories_checked_at": "2026-10-05T07:17:08Z"
     }
   ],
   "generated_at": "2026-10-04T21:08:18Z",

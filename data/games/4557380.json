@@ -149,9 +149,41 @@
       "viewer_count": 9448,
       "min_viewers": 7000,
       "kind": "history_recovery"
-    }
+    },
+    "categories": [
+      {
+        "id": 1,
+        "description": "Multi-player"
+      },
+      {
+        "id": 49,
+        "description": "PvP"
+      },
+      {
+        "id": 36,
+        "description": "Online PvP"
+      }
+    ],
+    "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+    "categories_checked_at": "2026-10-05T07:17:08Z"
   },
   "content_enrichment_signature": "4557380:4571:2026-09-15",
   "storage_version": 2,
-  "community_url": "https://steamcommunity.com/app/4557380/"
+  "community_url": "https://steamcommunity.com/app/4557380/",
+  "categories": [
+    {
+      "id": 1,
+      "description": "Multi-player"
+    },
+    {
+      "id": 49,
+      "description": "PvP"
+    },
+    {
+      "id": 36,
+      "description": "Online PvP"
+    }
+  ],
+  "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+  "categories_checked_at": "2026-10-05T07:17:08Z"
 }

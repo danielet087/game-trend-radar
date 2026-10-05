@@ -141,7 +141,35 @@
       "genres_fetch_status": "ok",
       "genres_source": "https://store.steampowered.com/app/3161310/?cc=TW&l=tchinese",
       "genres_checked_at": "2026-09-28T04:26:38Z",
-      "tag_labels_source": "https://store.steampowered.com/app/3161310/?cc=TW&l=tchinese"
+      "tag_labels_source": "https://store.steampowered.com/app/3161310/?cc=TW&l=tchinese",
+      "categories": [
+        {
+          "id": 2,
+          "description": "Single-player"
+        },
+        {
+          "id": 1,
+          "description": "Multi-player"
+        },
+        {
+          "id": 9,
+          "description": "Co-op"
+        },
+        {
+          "id": 38,
+          "description": "Online Co-op"
+        },
+        {
+          "id": 39,
+          "description": "Shared/Split Screen Co-op"
+        },
+        {
+          "id": 24,
+          "description": "Shared/Split Screen"
+        }
+      ],
+      "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+      "categories_checked_at": "2026-10-05T07:17:08Z"
     },
     {
       "appid": 4084710,
@@ -279,7 +307,43 @@
       "genres_fetch_status": "ok",
       "genres_source": "https://store.steampowered.com/app/4084710/?cc=TW&l=tchinese",
       "genres_checked_at": "2026-09-28T04:26:45Z",
-      "tag_labels_source": "https://store.steampowered.com/app/4084710/?cc=TW&l=tchinese"
+      "tag_labels_source": "https://store.steampowered.com/app/4084710/?cc=TW&l=tchinese",
+      "categories": [
+        {
+          "id": 2,
+          "description": "Single-player"
+        },
+        {
+          "id": 1,
+          "description": "Multi-player"
+        },
+        {
+          "id": 49,
+          "description": "PvP"
+        },
+        {
+          "id": 37,
+          "description": "Shared/Split Screen PvP"
+        },
+        {
+          "id": 9,
+          "description": "Co-op"
+        },
+        {
+          "id": 39,
+          "description": "Shared/Split Screen Co-op"
+        },
+        {
+          "id": 24,
+          "description": "Shared/Split Screen"
+        },
+        {
+          "id": 27,
+          "description": "Cross-Platform Multiplayer"
+        }
+      ],
+      "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+      "categories_checked_at": "2026-10-05T07:17:08Z"
     },
     {
       "appid": 2272360,
@@ -413,7 +477,35 @@
       "genres_fetch_status": "ok",
       "genres_source": "https://store.steampowered.com/app/2272360/?cc=TW&l=tchinese",
       "genres_checked_at": "2026-09-28T04:26:21Z",
-      "tag_labels_source": "https://store.steampowered.com/app/2272360/?cc=TW&l=tchinese"
+      "tag_labels_source": "https://store.steampowered.com/app/2272360/?cc=TW&l=tchinese",
+      "categories": [
+        {
+          "id": 2,
+          "description": "Single-player"
+        },
+        {
+          "id": 1,
+          "description": "Multi-player"
+        },
+        {
+          "id": 49,
+          "description": "PvP"
+        },
+        {
+          "id": 36,
+          "description": "Online PvP"
+        },
+        {
+          "id": 9,
+          "description": "Co-op"
+        },
+        {
+          "id": 38,
+          "description": "Online Co-op"
+        }
+      ],
+      "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+      "categories_checked_at": "2026-10-05T07:17:08Z"
     },
     {
       "appid": 2988120,
@@ -554,7 +646,27 @@
       "genres_fetch_status": "ok",
       "genres_source": "https://store.steampowered.com/app/2988120/?cc=TW&l=tchinese",
       "genres_checked_at": "2026-09-28T04:26:34Z",
-      "tag_labels_source": "https://store.steampowered.com/app/2988120/?cc=TW&l=tchinese"
+      "tag_labels_source": "https://store.steampowered.com/app/2988120/?cc=TW&l=tchinese",
+      "categories": [
+        {
+          "id": 2,
+          "description": "Single-player"
+        },
+        {
+          "id": 1,
+          "description": "Multi-player"
+        },
+        {
+          "id": 9,
+          "description": "Co-op"
+        },
+        {
+          "id": 38,
+          "description": "Online Co-op"
+        }
+      ],
+      "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+      "categories_checked_at": "2026-10-05T07:17:08Z"
     },
     {
       "appid": 2916700,
@@ -666,7 +778,15 @@
       },
       "genre_labels_language": "zh-TW",
       "genres_source": "https://store.steampowered.com/api/appdetails?appids=2916700&cc=TW&l=tchinese",
-      "genres_checked_at": "2026-09-28T04:26:34Z"
+      "genres_checked_at": "2026-09-28T04:26:34Z",
+      "categories": [
+        {
+          "id": 2,
+          "description": "Single-player"
+        }
+      ],
+      "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+      "categories_checked_at": "2026-10-05T07:17:08Z"
     }
   ]
 }

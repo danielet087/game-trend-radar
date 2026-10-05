@@ -135,5 +135,13 @@
   },
   "genre_labels_language": "zh-TW",
   "genres_source": "https://store.steampowered.com/api/appdetails?appids=2828710&cc=TW&l=tchinese",
-  "genres_checked_at": "2026-09-28T04:26:31Z"
+  "genres_checked_at": "2026-09-28T04:26:31Z",
+  "categories": [
+    {
+      "id": 2,
+      "description": "Single-player"
+    }
+  ],
+  "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+  "categories_checked_at": "2026-10-05T07:17:08Z"
 }

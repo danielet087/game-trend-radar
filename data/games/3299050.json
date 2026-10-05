@@ -139,5 +139,29 @@
   "genres_fetch_status": "ok",
   "genres_source": "https://store.steampowered.com/app/3299050/?cc=TW&l=tchinese",
   "genres_checked_at": "2026-09-28T04:26:39Z",
-  "tag_labels_source": "https://store.steampowered.com/app/3299050/?cc=TW&l=tchinese"
+  "tag_labels_source": "https://store.steampowered.com/app/3299050/?cc=TW&l=tchinese",
+  "categories": [
+    {
+      "id": 2,
+      "description": "Single-player"
+    },
+    {
+      "id": 1,
+      "description": "Multi-player"
+    },
+    {
+      "id": 9,
+      "description": "Co-op"
+    },
+    {
+      "id": 38,
+      "description": "Online Co-op"
+    },
+    {
+      "id": 48,
+      "description": "LAN Co-op"
+    }
+  ],
+  "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+  "categories_checked_at": "2026-10-05T07:17:08Z"
 }

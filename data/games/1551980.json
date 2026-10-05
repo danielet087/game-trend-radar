@@ -128,5 +128,13 @@
   "genres_fetch_status": "ok",
   "genres_source": "https://store.steampowered.com/app/1551980/?cc=TW&l=tchinese",
   "genres_checked_at": "2026-09-28T04:25:48Z",
-  "tag_labels_source": "https://store.steampowered.com/app/1551980/?cc=TW&l=tchinese"
+  "tag_labels_source": "https://store.steampowered.com/app/1551980/?cc=TW&l=tchinese",
+  "categories": [
+    {
+      "id": 2,
+      "description": "Single-player"
+    }
+  ],
+  "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+  "categories_checked_at": "2026-10-05T07:17:08Z"
 }

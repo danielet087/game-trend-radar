@@ -137,5 +137,13 @@
   "steam_type": "game",
   "release_store_date": "2026-09-25",
   "release_date_normalization": "steam_store_date_matches_taipei",
-  "content_descriptorids": []
+  "content_descriptorids": [],
+  "categories": [
+    {
+      "id": 2,
+      "description": "Single-player"
+    }
+  ],
+  "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+  "categories_checked_at": "2026-10-05T07:17:08Z"
 }

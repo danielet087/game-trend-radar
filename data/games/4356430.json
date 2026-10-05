@@ -142,9 +142,89 @@
       "viewer_count": 7705,
       "min_viewers": 7000,
       "kind": "history_recovery"
-    }
+    },
+    "categories": [
+      {
+        "id": 2,
+        "description": "Single-player"
+      },
+      {
+        "id": 1,
+        "description": "Multi-player"
+      },
+      {
+        "id": 49,
+        "description": "PvP"
+      },
+      {
+        "id": 36,
+        "description": "Online PvP"
+      },
+      {
+        "id": 37,
+        "description": "Shared/Split Screen PvP"
+      },
+      {
+        "id": 9,
+        "description": "Co-op"
+      },
+      {
+        "id": 38,
+        "description": "Online Co-op"
+      },
+      {
+        "id": 39,
+        "description": "Shared/Split Screen Co-op"
+      },
+      {
+        "id": 24,
+        "description": "Shared/Split Screen"
+      }
+    ],
+    "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+    "categories_checked_at": "2026-10-05T07:17:08Z"
   },
   "content_enrichment_signature": "4356430:10451:2026-09-03",
   "storage_version": 2,
-  "community_url": "https://steamcommunity.com/app/4356430/"
+  "community_url": "https://steamcommunity.com/app/4356430/",
+  "categories": [
+    {
+      "id": 2,
+      "description": "Single-player"
+    },
+    {
+      "id": 1,
+      "description": "Multi-player"
+    },
+    {
+      "id": 49,
+      "description": "PvP"
+    },
+    {
+      "id": 36,
+      "description": "Online PvP"
+    },
+    {
+      "id": 37,
+      "description": "Shared/Split Screen PvP"
+    },
+    {
+      "id": 9,
+      "description": "Co-op"
+    },
+    {
+      "id": 38,
+      "description": "Online Co-op"
+    },
+    {
+      "id": 39,
+      "description": "Shared/Split Screen Co-op"
+    },
+    {
+      "id": 24,
+      "description": "Shared/Split Screen"
+    }
+  ],
+  "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+  "categories_checked_at": "2026-10-05T07:17:08Z"
 }

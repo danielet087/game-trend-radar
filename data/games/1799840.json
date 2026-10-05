@@ -130,5 +130,13 @@
   "content_enrichment_source": "Steam Store Browse + appdetails + Taiwan Traditional Chinese Store tags and genres",
   "content_enrichment_version": 4,
   "content_enrichment_signature": "1799840:11655:2026-10-31",
-  "storage_version": 2
+  "storage_version": 2,
+  "categories": [
+    {
+      "id": 2,
+      "description": "Single-player"
+    }
+  ],
+  "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+  "categories_checked_at": "2026-10-05T07:17:08Z"
 }

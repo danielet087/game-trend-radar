@@ -149,9 +149,57 @@
       "observed_at": "2026-09-30T21:14:58Z",
       "viewer_count": 10306,
       "min_viewers": 7000
-    }
+    },
+    "categories": [
+      {
+        "id": 2,
+        "description": "Single-player"
+      },
+      {
+        "id": 1,
+        "description": "Multi-player"
+      },
+      {
+        "id": 9,
+        "description": "Co-op"
+      },
+      {
+        "id": 38,
+        "description": "Online Co-op"
+      },
+      {
+        "id": 48,
+        "description": "LAN Co-op"
+      }
+    ],
+    "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+    "categories_checked_at": "2026-10-05T07:17:08Z"
   },
   "content_enrichment_signature": "3669570:27091:2026-09-07",
   "storage_version": 2,
-  "community_url": "https://steamcommunity.com/app/3669570/"
+  "community_url": "https://steamcommunity.com/app/3669570/",
+  "categories": [
+    {
+      "id": 2,
+      "description": "Single-player"
+    },
+    {
+      "id": 1,
+      "description": "Multi-player"
+    },
+    {
+      "id": 9,
+      "description": "Co-op"
+    },
+    {
+      "id": 38,
+      "description": "Online Co-op"
+    },
+    {
+      "id": 48,
+      "description": "LAN Co-op"
+    }
+  ],
+  "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
+  "categories_checked_at": "2026-10-05T07:17:08Z"
 }
