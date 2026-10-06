@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-06T15:13:05Z",
+  "updated_at": "2026-10-06T16:12:48Z",
   "games": {
     "1217522406": {
       "twitch_game_id": "1217522406",
@@ -32,7 +32,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3640200"
       ],
@@ -69,7 +69,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3070070"
       ],
@@ -107,7 +107,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "4080220"
       ],
@@ -144,7 +144,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "4968640"
       ],
@@ -155,14 +155,14 @@
     "1254042066": {
       "twitch_game_id": "1254042066",
       "twitch_name": "The Witcher 3: Wild Hunt Remastered",
-      "igdb_id": "415005",
-      "status": "no_steam_link",
+      "igdb_id": null,
+      "status": "pending",
       "method": "twitch_igdb_external_steam_v1",
       "steam_appids": [],
       "links": [],
       "first_seen_at": "2026-09-29T14:28:32Z",
-      "checked_at": "2026-10-05T16:11:57Z",
-      "retry_at": "2026-10-06T16:11:57Z",
+      "checked_at": "2026-10-06T16:12:48Z",
+      "retry_at": "2026-10-07T16:12:48Z",
       "twitch_enrollment": {
         "source": "igdb_first_release_date",
         "observed_at": "2026-09-29T14:28:32Z",
@@ -171,49 +171,11 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [],
       "missing_public_appids": [],
-      "reason": "no_igdb_steam_link",
-      "lookup_policy_version": 2,
-      "related_steam_identity": {
-        "method": "twitch_igdb_steam_website_v1",
-        "twitch_game_id": "1254042066",
-        "igdb_id": "415005",
-        "steam_appid": "292030",
-        "website_links": [
-          {
-            "website_id": "1125221",
-            "game": "415005",
-            "steam_appid": "292030",
-            "source_url": "https://store.steampowered.com/app/292030/The_Witcher_3_Wild_Hunt__Remastered/",
-            "url": "https://store.steampowered.com/app/292030/"
-          }
-        ],
-        "checked_at": "2026-10-05T16:11:57Z",
-        "steam_identity_metadata": {
-          "steam_appid": "292030",
-          "steam_type": "game",
-          "display_name": "巫師3：狂獵 — 重製版",
-          "store_url": "https://store.steampowered.com/app/292030/",
-          "sexual_content_screened": true,
-          "content_descriptor_ids": [
-            1,
-            5
-          ],
-          "release_store_date": "2015-05-18",
-          "release_date_raw": "2015 年 5 月 18 日",
-          "raw_release_date": {
-            "coming_soon": false,
-            "date": "2015 年 5 月 18 日"
-          },
-          "checked_at": "2026-10-05T16:11:57Z",
-          "provider": "Steam Store appdetails cc=TW l=tchinese"
-        }
-      },
-      "related_lookup_status": "matched",
-      "related_checked_at": "2026-10-05T16:11:57Z",
-      "related_retry_at": "2026-10-06T16:11:57Z"
+      "reason": "missing_twitch_igdb_identity",
+      "lookup_policy_version": 2
     },
     "1267582829": {
       "twitch_game_id": "1267582829",
@@ -245,7 +207,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "4126040"
       ],
@@ -273,8 +235,8 @@
         }
       ],
       "first_seen_at": "2026-09-30T18:14:34Z",
-      "checked_at": "2026-10-05T16:11:57Z",
-      "retry_at": "2026-10-06T16:11:57Z",
+      "checked_at": "2026-10-06T16:12:48Z",
+      "retry_at": "2026-10-07T16:12:48Z",
       "twitch_enrollment": {
         "source": "igdb_first_release_date",
         "observed_at": "2026-09-30T18:14:34Z",
@@ -282,7 +244,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "4019220"
       ],
@@ -294,7 +256,7 @@
         "twitch_game_id": "1288749557",
         "igdb_id": "365465",
         "twitch_source_id": "14",
-        "checked_at": "2026-10-05T16:11:57Z",
+        "checked_at": "2026-10-06T16:12:48Z",
         "links": [
           {
             "external_game_id": "3096814",
@@ -335,7 +297,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3669870"
       ],
@@ -372,7 +334,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "2938460"
       ],
@@ -409,7 +371,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "2887580"
       ],
@@ -446,7 +408,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "5160800"
@@ -483,7 +445,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "2223980"
       ],
@@ -520,7 +482,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "2659410"
       ],
@@ -557,7 +519,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3195580"
       ],
@@ -594,7 +556,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3832490"
       ],
@@ -631,7 +593,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3010850"
       ],
@@ -668,7 +630,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3926930"
       ],
@@ -685,8 +647,8 @@
       "steam_appids": [],
       "links": [],
       "first_seen_at": "2026-10-01T14:11:59Z",
-      "checked_at": "2026-10-05T16:11:57Z",
-      "retry_at": "2026-10-06T16:11:57Z",
+      "checked_at": "2026-10-06T16:12:48Z",
+      "retry_at": "2026-10-07T16:12:48Z",
       "twitch_enrollment": {
         "source": "igdb_first_release_date",
         "observed_at": "2026-10-01T14:11:59Z",
@@ -694,14 +656,14 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [],
       "missing_public_appids": [],
       "reason": "no_igdb_steam_link",
       "lookup_policy_version": 2,
       "related_lookup_status": "no_steam_website",
-      "related_checked_at": "2026-10-05T16:11:57Z",
-      "related_retry_at": "2026-10-06T16:11:57Z"
+      "related_checked_at": "2026-10-06T16:12:48Z",
+      "related_retry_at": "2026-10-07T16:12:48Z"
     },
     "1870528958": {
       "twitch_game_id": "1870528958",
@@ -732,7 +694,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "2920220"
       ],
@@ -769,7 +731,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3560670"
       ],
@@ -806,7 +768,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "4182430"
       ],
@@ -844,7 +806,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "1636440"
       ],
@@ -882,7 +844,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3493540"
       ],
@@ -920,7 +882,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "1912410"
       ],
@@ -957,7 +919,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "2543830"
       ],
@@ -995,7 +957,7 @@
         "kind": "history_recovery"
       },
       "active": false,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "2638890"
       ],
@@ -1031,7 +993,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "4694270"
       ],
@@ -1069,7 +1031,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "2288340"
       ],
@@ -1106,7 +1068,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "4078430"
       ],
@@ -1143,7 +1105,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "3948460"
@@ -1181,7 +1143,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "892970"
       ],
@@ -1218,7 +1180,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "4140530"
       ],
@@ -1256,7 +1218,7 @@
         "kind": "history_recovery"
       },
       "active": false,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "4356430"
       ],
@@ -1292,7 +1254,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "4072240"
       ],
@@ -1329,7 +1291,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3669570"
       ],
@@ -1366,7 +1328,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3917700"
       ],
@@ -1404,7 +1366,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "1867240"
       ],
@@ -1421,8 +1383,8 @@
       "steam_appids": [],
       "links": [],
       "first_seen_at": "2026-09-30T03:20:32Z",
-      "checked_at": "2026-10-05T16:11:57Z",
-      "retry_at": "2026-10-06T16:11:57Z",
+      "checked_at": "2026-10-06T16:12:48Z",
+      "retry_at": "2026-10-07T16:12:48Z",
       "twitch_enrollment": {
         "source": "igdb_first_release_date",
         "observed_at": "2026-09-30T03:20:32Z",
@@ -1431,14 +1393,14 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [],
       "missing_public_appids": [],
       "reason": "no_igdb_steam_link",
       "lookup_policy_version": 2,
       "related_lookup_status": "no_steam_website",
-      "related_checked_at": "2026-10-05T16:11:57Z",
-      "related_retry_at": "2026-10-06T16:11:57Z"
+      "related_checked_at": "2026-10-06T16:12:48Z",
+      "related_retry_at": "2026-10-07T16:12:48Z"
     },
     "828915555": {
       "twitch_game_id": "828915555",
@@ -1469,7 +1431,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "4247840"
       ],
@@ -1506,7 +1468,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3195440"
       ],
@@ -1544,7 +1506,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "1488490"
       ],
@@ -1581,7 +1543,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "3219630"
       ],
@@ -1619,7 +1581,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [
         "4557380"
       ],
@@ -1657,7 +1619,7 @@
         "kind": "history_recovery"
       },
       "active": false,
-      "updated_at": "2026-10-06T15:13:05Z",
+      "updated_at": "2026-10-06T16:12:48Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "2776270"
@@ -1808,13 +1770,14 @@
   "report": {
     "status": "ok",
     "active_twitch_games": 41,
-    "lookup_count": 0,
+    "lookup_count": 4,
     "counts": {
       "matched": 38,
-      "no_steam_link": 3
+      "pending": 1,
+      "no_steam_link": 2
     },
     "errors": [],
-    "related_lookup_count": 0,
+    "related_lookup_count": 2,
     "deadline_exhausted": false,
     "missing_public_appids": [
       "3948460",
