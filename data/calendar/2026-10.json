@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "generated_at": "2026-10-06T16:59:39.385219+00:00",
   "month": "2026-10",
+  "count": 45,
   "games": [
     {
       "appid": 2067820,
@@ -1906,7 +1908,6 @@
       "display_name": "Japanese Ramen Simulator",
       "display_name_source": "english",
       "name_en": "Japanese Ramen Simulator",
-      "name_en_traditional": "Japanese Ramen Simulator",
       "language_support": {
         "tchinese": true,
         "schinese": true,
@@ -2063,14 +2064,15 @@
         "checked_at": "2026-10-05T08:09:32Z",
         "source_frontend_commit": "0c6b35fe9e29ed21b04c10ae5a00a42c58f294da",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-05T08:09:32Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 7188
+          "observed_at": "2026-10-05T08:09:32Z",
+          "viewer_count": 7188,
+          "min_viewers": 7000
         }
       },
       "content_enrichment_signature": "4968640:2550:2026-10-09",
-      "storage_version": 2
+      "storage_version": 2,
+      "community_url": "https://steamcommunity.com/app/4968640/"
     },
     {
       "appid": 3090810,
@@ -6885,7 +6887,5 @@
       "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
       "categories_checked_at": "2026-10-05T07:17:08Z"
     }
-  ],
-  "generated_at": "2026-10-06T09:01:28Z",
-  "count": 45
+  ]
 }
