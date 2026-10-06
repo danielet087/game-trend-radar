@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-06T04:00:58.717131Z",
+  "generated_at": "2026-10-06T05:01:04.053779Z",
   "today_taipei": "2026-10-06",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-10-06T04:00:51.567183Z",
-    "group_resolution_updated_at": "2026-10-05T22:00:58.698657Z",
+    "checkpoint_updated_at": "2026-10-06T05:00:54.695243Z",
+    "group_resolution_updated_at": "2026-10-06T05:00:52.052099Z",
     "candidate_state_updated_at": "2026-10-05T17:04:37.723493Z",
     "prefilter_updated_at": "2026-10-05T17:04:37.711885Z",
     "eligible_screened_at": "2026-10-05T17:04:38.137914Z",
-    "twitch_import_updated_at": "2026-10-06T02:01:17.801908Z",
-    "last_official_success_at": "2026-10-06T02:01:06.938695Z",
+    "twitch_import_updated_at": "2026-10-06T05:01:02.941654Z",
+    "last_official_success_at": "2026-10-06T05:00:54.648718Z",
     "queue_projection": "official_collector_make_queue"
   },
   "source_status": {
@@ -25,7 +25,7 @@
     ],
     "combined_pending_now": 0,
     "completed_legacy": 384,
-    "completed_new": 1859,
+    "completed_new": 1860,
     "twitch_priority_pending": 0
   },
   "summary": {
@@ -36,14 +36,14 @@
     "followers_ready_pending": 0,
     "awaiting_group_pending": 0,
     "total_pending": 1,
-    "today_attempts": 77,
-    "today_successes": 74,
+    "today_attempts": 78,
+    "today_successes": 75,
     "today_429": 3
   },
   "group_resolution_api_cooldown": {
     "status": "available",
     "retry_at": null,
-    "observed_at": "2026-10-05T22:00:58.698657Z",
+    "observed_at": "2026-10-06T05:00:52.052099Z",
     "attempts": 0,
     "source": "Steam ISteamUser/ResolveVanityURL"
   },
@@ -57,17 +57,19 @@
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-10-06T12:00:51.473082+08:00",
-    "last_updated_at": "2026-10-06T12:00:51.567183+08:00",
-    "finished_at": "2026-10-06T12:00:51.567183+08:00",
-    "stop_reason": "nothing_pending",
-    "requests_this_run": 0,
-    "official_new_this_run": 0,
+    "started_at": "2026-10-06T13:00:54.378874+08:00",
+    "last_updated_at": "2026-10-06T13:00:54.695243+08:00",
+    "finished_at": "2026-10-06T13:00:54.695243+08:00",
+    "stop_reason": "batch_request_limit",
+    "last_appid": 2938460,
+    "last_name": "Police Chief Simulator",
+    "requests_this_run": 1,
+    "official_new_this_run": 1,
     "http_429_this_run": 0,
     "manual_cooldown_override": false,
     "request_limit": 250,
-    "run_id": "37411646093",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37411646093"
+    "run_id": "37416397355",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37416397355"
   },
   "queue": [],
   "parked": [
@@ -96,19 +98,6 @@
     }
   ],
   "events": [
-    {
-      "at": "2026-10-04T21:05:05.078900Z",
-      "kind": "official_attempt",
-      "appid": 5318010,
-      "name": "Apoc Tank: Rush Forward",
-      "status": "ok",
-      "http": 200,
-      "source": "fresh_daily_prefilter_unresolved",
-      "official_followers": 3,
-      "retry_at": null,
-      "run_id": "37234301755",
-      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37234301755"
-    },
     {
       "at": "2026-10-04T21:05:13.079003Z",
       "kind": "official_attempt",
@@ -1395,6 +1384,19 @@
       "retry_at": null,
       "run_id": "37402005341",
       "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37402005341"
+    },
+    {
+      "at": "2026-10-06T05:00:54.504910Z",
+      "kind": "official_attempt",
+      "appid": 2938460,
+      "name": "Police Chief Simulator",
+      "status": "ok",
+      "http": 200,
+      "source": "twitch_steam_discovery",
+      "official_followers": 7233,
+      "retry_at": null,
+      "run_id": "37416397355",
+      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37416397355"
     }
   ],
   "events_limit": 100
