@@ -9,8 +9,8 @@
     <meta name="description" content="Game Trend Radar 排程觀測：依台灣時間查看處理順序、執行紀錄與 Steam 待查佇列。" />
     <title>排程觀測｜Game Trend Radar</title>
     <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./assets/radar-scheduler-v1.css?v=1.0.0" />
-    <script src="./assets/radar-scheduler-v1.js?v=1.1.0" defer></script>
+    <link rel="stylesheet" href="./assets/radar-scheduler-v1.css?v=1.1.0" />
+    <script src="./assets/radar-scheduler-v1.js?v=1.2.0" defer></script>
   </head>
   <body data-page="scheduler">
     <a class="skip-link" href="#mainContent">跳到排程觀測</a>
@@ -63,12 +63,13 @@
           <div><p class="section-kicker">01 / 今天的節奏</p><h2 id="scheduleTitle">一天，沿著排程往前走</h2></div>
           <span class="date-pill" id="scheduleDate">—</span>
         </div>
-        <p class="section-description">每一條軌道是一項工作。查看時間點，分辨已執行、待觸發與中斷的紀錄。</p>
+        <p class="section-description">每一條軌道是一項工作。每日候選更新與 Steam 成長追蹤每 6 小時檢查；當日完整成功後，後續時段直接略過。</p>
         <div class="schedule-legend" aria-label="時間軸圖例">
           <span><i class="legend-dot is-success" aria-hidden="true"></i>已完成</span>
           <span><i class="legend-dot is-interrupted" aria-hidden="true"></i>中斷 / 受阻</span>
           <span><i class="legend-dot is-running" aria-hidden="true"></i>執行中</span>
           <span><i class="legend-dot is-waiting" aria-hidden="true"></i>預定時間</span>
+          <span><i class="legend-dot is-skipped" aria-hidden="true"></i>今日成功後略過</span>
           <span><i class="legend-dot is-unknown" aria-hidden="true"></i>紀錄待確認</span>
           <span><i class="legend-line" aria-hidden="true"></i>現在</span>
         </div>
@@ -115,3 +116,4 @@
     <footer class="scheduler-footer"><span>GAME TREND RADAR</span><p>時間以 Asia/Taipei 顯示。</p></footer>
   </body>
 </html>
+

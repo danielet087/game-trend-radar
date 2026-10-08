@@ -4,8 +4,8 @@
   const OWNER = "danielet087";
   const RAW = "https://raw.githubusercontent.com/" + OWNER + "/";
   const JOBS = Object.freeze([
-    { id: "steam_daily", name: "每日候選更新", repo: "game-trend-radar-backend", workflow: "steam-two-phase.yml", hours: [0], minute: 0, note: "每日 00:00" },
-    { id: "steam_growth", name: "Steam 成長追蹤", repo: "game-trend-radar-backend", workflow: "steam-public-growth.yml", hours: [1], minute: 15, note: "每日 01:15" },
+    { id: "steam_daily", name: "每日候選更新", repo: "game-trend-radar-backend", workflow: "steam-two-phase.yml", hours: [0, 6, 12, 18], minute: 0, oncePerDay: true, note: "00:00／06:00／12:00／18:00 · 今日成功後略過" },
+    { id: "steam_growth", name: "Steam 成長追蹤", repo: "game-trend-radar-backend", workflow: "steam-public-growth.yml", hours: [1, 7, 13, 19], minute: 15, oncePerDay: true, note: "01:15／07:15／13:15／19:15 · 今日成功後略過" },
     { id: "steam_catchup", name: "官方 Followers", repo: "game-trend-radar-backend", workflow: "steam-official-daily-catchup-250.yml", hours: Array.from({ length: 21 }, (_, i) => i + 3), minute: 0, note: "03:00–23:00，每小時" },
     { id: "twitch", name: "Twitch 新作觀測", repo: "game-trend-radar-twitch-backend", workflow: "collect.yml", hours: Array.from({ length: 24 }, (_, i) => i), minute: 5, note: "每小時 :05" },
     { id: "frontend_insights", name: "前端動態與成長榜", repo: "game-trend-radar", workflow: "radar-insights.yml", hours: Array.from({ length: 24 }, (_, i) => i), minute: 17, note: "每小時 :17" },
@@ -92,11 +92,11 @@
   function normalizeRun(run, repo) {
     const job = jobForRun(run, repo);
     if (!job || !/^[1-9]\d{0,19}$/.test(String(run.id)) || !instant(run.created_at)) return null;
-    const slot = String(run.display_title || "").match(/(?:^|[|·]\s*)slot=(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ)(?:\s*[|·]|$)/)?.[1];
+    const slot = String(run.display_title || "").match(/(?:^|[|·]\s*)slot=(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ|manual)(?:\s*[|·]|$)/)?.[1];
     const planned = instant(slot);
     return { id: String(run.id), job_id: job.id, status: String(run.status || "unknown"), conclusion: run.conclusion || null,
       created_at: run.created_at, started_at: ACTIVE.has(run.status) && run.status !== "in_progress" ? null : instant(run.run_started_at) ? run.run_started_at : null, updated_at: run.updated_at || run.created_at,
-      slot: planned ? slot : null, event: run.event || "unknown", url: runUrl(job, run.id) };
+      slot: planned ? slot : slot === "manual" ? "manual" : null, event: run.event || "unknown", url: runUrl(job, run.id) };
   }
   function interruptionForRun(run, snapshot, growth) {
     const start = instant(run.started_at), finish = instant(run.updated_at);
@@ -131,6 +131,21 @@
     if (["failure", "cancelled", "timed_out", "action_required", "startup_failure"].includes(run.conclusion)) return { state: "interrupted", text: ({ failure: "執行失敗", cancelled: "執行取消", timed_out: "執行逾時", action_required: "等待人工處理", startup_failure: "無法啟動" })[run.conclusion] };
     return { state: "waiting", text: run.conclusion === "skipped" ? "已略過" : "未完成確認" };
   }
+  function priorDailySuccess(job, runs, snapshot, growth, date, before, excludedId = null) {
+    if (!job.oncePerDay) return null;
+    const midnight = Date.parse(date + "T00:00:00+08:00");
+    return runs.filter(run => {
+      const finish = instant(run.updated_at), created = instant(run.created_at), target = instant(run.slot);
+      const allowedSlot = job.hours.some(hour => target === midnight + hour * HOUR + job.minute * 60000) ||
+        job.id === "steam_growth" && run.slot === "manual";
+      return run.job_id === job.id && run.id !== excludedId && allowedSlot && created !== null && day(created) === date &&
+        finish !== null && day(finish) === date && finish <= before && runState(run, snapshot, growth).state === "success" &&
+        (job.id !== "steam_growth" || run.complete_growth_verified === true);
+    }).sort((a, b) => instant(a.updated_at) - instant(b.updated_at))[0] || null;
+  }
+  function skippedAfterSuccess(success) {
+    return { state: "skipped", text: "今日已於 " + clockLabel(instant(success.updated_at)) + " 成功，略過後續檢查" };
+  }
   function buildSlots(date, runs = [], snapshot, growth, now = Date.now(), freshRepos = {}) {
     const midnight = Date.parse(date + "T00:00:00+08:00");
     return JOBS.map(job => ({ job, slots: job.hours.map(hour => {
@@ -139,6 +154,8 @@
       const matches = runs.filter(r => r.job_id === job.id && instant(r.slot) === runSlot).sort((a, b) => instant(b.created_at) - instant(a.created_at));
       const run = matches[0];
       let status = run ? runState(run, snapshot, growth, freshRepos[job.repo] !== false) : at > now ? { state: "planned", text: "原定時段，尚未到期" } : { state: "unknown", text: "此時段尚未觀測到執行紀錄" };
+      const priorSuccess = priorDailySuccess(job, runs, snapshot, growth, date, Math.min(now, run ? instant(run.created_at) : at), run?.id);
+      if (priorSuccess && (!run || status.state === "success" || run.conclusion === "skipped")) status = skippedAfterSuccess(priorSuccess);
       if (!run && job.id === "twitch" && snapshot?.twitchReceipt?.collection_complete === true && instant(snapshot.twitchReceipt.target_slot) === midnight + hour * HOUR) {
         status = { state: "success", text: "完整量測已發布" };
       }
@@ -163,7 +180,9 @@
     for (const run of runs) {
       const start = instant(run.started_at), end = instant(run.updated_at), job = JOBS.find(j => j.id === run.job_id);
       if (day(instant(run.created_at)) !== date && (start === null || day(start) !== date)) continue;
-      const s = runState(run, snapshot, growth, freshness[job.repo] !== false);
+      let s = runState(run, snapshot, growth, freshness[job.repo] !== false);
+      const priorSuccess = priorDailySuccess(job, runs, snapshot, growth, day(instant(run.slot) ?? instant(run.created_at)), Math.min(now, instant(run.created_at)), run.id);
+      if (priorSuccess && (s.state === "success" || run.conclusion === "skipped")) s = skippedAfterSuccess(priorSuccess);
       const active = ACTIVE.has(run.status);
       const batchSlot = instant(run.slot), scheduleAt = batchSlot === null ? null : batchSlot + (job.id === "twitch" ? 5 * 60000 : 0);
       events.push({ id: "run-" + run.id, at: start || instant(run.created_at), job_id: job.id, state: s.state,
@@ -230,6 +249,18 @@
       if (!response.ok) throw new Error("unavailable");
       const data = await response.json(); if (!Array.isArray(data.workflow_runs)) throw new Error("shape");
       const runs = data.workflow_runs.map(r => normalizeRun(r, repo)).filter(Boolean);
+      const cachedById = new Map((cached?.runs || []).map(run => [run.id, run]));
+      await Promise.allSettled(runs.filter(run => run.job_id === "steam_growth" && run.status === "completed" && run.conclusion === "success" &&
+        day(instant(run.created_at)) === day(now) && day(instant(run.updated_at)) === day(now)).map(async run => {
+        const verified = cachedById.get(run.id)?.complete_growth_verified;
+        if (typeof verified === "boolean" && cachedById.get(run.id)?.updated_at === run.updated_at) { run.complete_growth_verified = verified; return; }
+        const jobsResponse = await fetch(`https://api.github.com/repos/${OWNER}/${repo}/actions/runs/${run.id}/jobs?per_page=100`, {
+          cache: "no-store", credentials: "omit", signal: AbortSignal.timeout(12000), headers: { Accept: "application/vnd.github+json" } });
+        if (!jobsResponse.ok) return;
+        const jobs = await jobsResponse.json(); if (!Array.isArray(jobs.jobs)) return;
+        run.complete_growth_verified = jobs.jobs.some(job => (job.steps || []).some(step =>
+          step.name === "Require complete growth coverage" && step.status === "completed" && step.conclusion === "success"));
+      }));
       state.repoChecks[repo] = now; delete state.repoErrors[repo]; returnCached(runs, repo); storageWrite(key, { at: now, runs });
       const remaining = response.headers.get("x-ratelimit-remaining");
       if (remaining !== null && Number(remaining) < 5) { ratePauseUntil = Math.max(now + ACTION_REFRESH, Number(response.headers.get("x-ratelimit-reset")) * 1000 || 0); storageWrite("radarSchedulerRatePause", ratePauseUntil); }
@@ -268,11 +299,11 @@
       const common = `class="schedule-slot is-${slot.state}" style="left:${(slot.at - start) / DAY * 100}%" title="${esc(label)}" aria-label="${esc(label)}"`;
       return slot.run?.url ? `<a ${common} href="${slot.run.url}" target="_blank" rel="noopener noreferrer"><span class="sr-only">${esc(label)}</span></a>` : `<button ${common} type="button" data-slot-note="${esc(label)}"><span class="sr-only">${esc(label)}</span></button>`;
     }).join("")}</div></div>`).join("");
-    $("scheduleCaption").textContent = `藍線為現在 ${clockLabel(now)}。圓點位置代表原定時段；點選可查看實際開始時間與 Actions。灰色過去時段代表尚未取得紀錄，不直接判定失敗。`;
+    $("scheduleCaption").textContent = `藍線為現在 ${clockLabel(now)}。圓點位置代表原定時段；點選可查看實際開始時間與 Actions。每日候選更新與 Steam 成長追蹤每 6 小時檢查，當日完整成功後略過後續時段。灰色過去時段代表尚未取得紀錄，不直接判定失敗。`;
   }
   function renderEvents() {
     const events = eventHistory(state.queue, state.runs, state.growth, Date.now(), freshRepos());
-    $("eventTimeline").innerHTML = events.length ? events.map(e => `<li class="timeline-event is-${e.state}" id="${e.id}"><time class="event-time" datetime="${new Date(e.at).toISOString()}">${clockLabel(e.at)}</time><div class="event-card"><span class="event-state state-${e.state}">${({ success: "已完成", interrupted: "已中斷", running: "進行中", waiting: "等待", unknown: "待確認" })[e.state]}</span><h3>${esc(e.title)}</h3><p>${esc(e.detail)}</p>${e.url ? `<a class="event-link" href="${e.url}" target="_blank" rel="noopener noreferrer">查看這次執行 ↗</a>` : ""}</div></li>`).join("") : '<li class="empty-state">今日執行紀錄尚未取得。原定排程不會被當成實際執行。</li>';
+    $("eventTimeline").innerHTML = events.length ? events.map(e => `<li class="timeline-event is-${e.state}" id="${e.id}"><time class="event-time" datetime="${new Date(e.at).toISOString()}">${clockLabel(e.at)}</time><div class="event-card"><span class="event-state state-${e.state}">${({ success: "已完成", interrupted: "已中斷", running: "進行中", waiting: "等待", skipped: "已略過", unknown: "待確認" })[e.state]}</span><h3>${esc(e.title)}</h3><p>${esc(e.detail)}</p>${e.url ? `<a class="event-link" href="${e.url}" target="_blank" rel="noopener noreferrer">查看這次執行 ↗</a>` : ""}</div></li>`).join("") : '<li class="empty-state">今日執行紀錄尚未取得。原定排程不會被當成實際執行。</li>';
     $("eventTimelineNote").textContent = "由新到舊呈現今日已觀測事件。實際查詢中斷會單獨記錄，即使 Actions 最後顯示成功。";
   }
   function render() {

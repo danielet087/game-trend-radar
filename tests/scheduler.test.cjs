@@ -14,6 +14,14 @@ function run(workflow = 'steam-official-daily-catchup-250.yml', repo = 'game-tre
     created_at: '2026-10-03T07:00:20Z', run_started_at: '2026-10-03T07:01:00Z', updated_at: '2026-10-03T07:10:00Z',
     status: 'completed', conclusion: 'success', ...overrides }, repo);
 }
+function scheduled(workflow, hour, overrides = {}) {
+  const minute = workflow === 'steam-public-growth.yml' ? 15 : 0;
+  const at = Date.parse('2026-10-03T00:00:00+08:00') + (hour * 60 + minute) * 60000;
+  return run(workflow, 'game-trend-radar-backend', { id: String(40000000000 + hour),
+    display_title: 'Observed | slot=' + new Date(at).toISOString().replace('.000Z', 'Z') + ' | source=cloudflare',
+    created_at: new Date(at + 20000).toISOString(), run_started_at: new Date(at + 60000).toISOString(),
+    updated_at: new Date(at + 600000).toISOString(), ...overrides });
+}
 
 test('queue validation rejects unknown counts, missing items and duplicate AppIDs', () => {
   assert.equal(validateQueue(queue()).summary.total_pending, 3);
@@ -35,13 +43,88 @@ test('queued workflow has no actual start and large run IDs retain canonical lin
 test('Twitch whole-hour batch maps to the :05 scheduled point, without inventing other successes', () => {
   const observed = run('collect.yml', 'game-trend-radar-twitch-backend', { run_started_at: '2026-10-03T07:06:00Z' });
   const lanes = buildSlots('2026-10-03', [observed], queue(), null, now);
-  assert.equal(lanes.flatMap(l => l.slots).length, 74);
+  assert.equal(lanes.flatMap(l => l.slots).length, 80);
   const twitch = lanes.find(l => l.job.id === 'twitch');
   assert.equal(twitch.slots[15].state, 'success');
   assert.equal(twitch.slots[15].at, Date.parse('2026-10-03T07:05:00Z'));
   assert.equal(twitch.slots[14].state, 'unknown');
   assert.equal(twitch.slots[16].state, 'planned');
   assert.match(eventHistory(queue(), [observed], null, now)[0].detail, /原定 15:05 → 15:06 開始/);
+});
+
+test('daily candidate and growth schedules retry at six-hour intervals after failure', () => {
+  const daily = scheduled('steam-two-phase.yml', 0, { conclusion: 'failure' });
+  const growth = scheduled('steam-public-growth.yml', 1, { conclusion: 'failure' });
+  const lanes = buildSlots('2026-10-03', [daily, growth], queue(), null, now);
+  for (const [id, hours, minute] of [['steam_daily', [0, 6, 12, 18], 0], ['steam_growth', [1, 7, 13, 19], 15]]) {
+    const lane = lanes.find(row => row.job.id === id);
+    assert.deepEqual(lane.slots.map(slot => slot.hour), hours);
+    assert.ok(lane.slots.every(slot => slot.minute === minute));
+    assert.deepEqual(lane.slots.map(slot => slot.state), ['interrupted', 'unknown', 'unknown', 'planned']);
+    assert.match(lane.job.note, /今日成功後略過/);
+  }
+});
+
+test('candidate retry success skips later checks and keeps the original failure and actual later failure', () => {
+  const failed = scheduled('steam-two-phase.yml', 0, { conclusion: 'failure' });
+  const success = scheduled('steam-two-phase.yml', 6);
+  const runs = [failed, success];
+  const lane = buildSlots('2026-10-03', runs, queue(), null, now, { 'game-trend-radar-backend': false }).find(row => row.job.id === 'steam_daily');
+  assert.deepEqual(lane.slots.map(slot => slot.state), ['interrupted', 'success', 'skipped', 'skipped']);
+  assert.match(lane.slots[2].text, /06:10.*成功/);
+  const skippedCheck = scheduled('steam-two-phase.yml', 12);
+  const observed = buildSlots('2026-10-03', [...runs, skippedCheck], queue(), null, now).find(row => row.job.id === 'steam_daily');
+  assert.equal(observed.slots[2].state, 'skipped');
+  assert.equal(observed.slots[2].run.id, skippedCheck.id);
+  assert.equal(eventHistory(queue(), [...runs, skippedCheck], null, now).find(event => event.id === 'run-' + skippedCheck.id).state, 'skipped');
+  const laterFailure = { ...skippedCheck, conclusion: 'failure' };
+  assert.equal(buildSlots('2026-10-03', [...runs, laterFailure], queue(), null, now).find(row => row.job.id === 'steam_daily').slots[2].state, 'interrupted');
+});
+
+test('candidate manual continuation and another Taiwan day never suppress daily checks', () => {
+  const manual = scheduled('steam-two-phase.yml', 0, { display_title: 'Observed | slot=manual | source=manual' });
+  assert.equal(manual.slot, 'manual');
+  const wrongSlot = scheduled('steam-two-phase.yml', 1);
+  const previousDay = { ...scheduled('steam-two-phase.yml', 0), slot: '2026-10-01T16:00:00Z',
+    created_at: '2026-10-01T16:00:20Z', updated_at: '2026-10-01T16:10:00Z' };
+  const crossedDay = { ...scheduled('steam-two-phase.yml', 0), updated_at: '2026-10-03T16:01:00Z' };
+  const createdPreviousDay = { ...scheduled('steam-two-phase.yml', 0), created_at: '2026-10-02T15:59:00Z' };
+  for (const observed of [manual, wrongSlot, previousDay, crossedDay, createdPreviousDay]) {
+    const lane = buildSlots('2026-10-03', [observed], queue(), null, now).find(row => row.job.id === 'steam_daily');
+    assert.ok(lane.slots.slice(1).every(slot => slot.state !== 'skipped'));
+  }
+});
+
+test('growth skips only after the complete coverage gate succeeds, including complete manual work', () => {
+  const success = scheduled('steam-public-growth.yml', 1);
+  for (const verified of [undefined, false, true]) {
+    const observed = { ...success, complete_growth_verified: verified };
+    const lane = buildSlots('2026-10-03', [observed], queue(), null, now).find(row => row.job.id === 'steam_growth');
+    assert.deepEqual(lane.slots.slice(1).map(slot => slot.state), verified ? ['skipped', 'skipped', 'skipped'] : ['unknown', 'unknown', 'planned']);
+  }
+  const manual = scheduled('steam-public-growth.yml', 1, { display_title: 'Observed | slot=manual | source=manual' });
+  manual.complete_growth_verified = true;
+  const lane = buildSlots('2026-10-03', [manual], queue(), null, now).find(row => row.job.id === 'steam_growth');
+  assert.deepEqual(lane.slots.map(slot => slot.state), ['unknown', 'skipped', 'skipped', 'skipped']);
+});
+
+test('partial or interrupted growth measurement never suppresses six-hour retries', () => {
+  const observed = { ...scheduled('steam-public-growth.yml', 1), complete_growth_verified: true };
+  for (const status of ['bounded_run', 'source_unavailable', 'rate_limited']) {
+    const growth = { collection: { at: '2026-10-02T17:18:00Z', status } };
+    const lane = buildSlots('2026-10-03', [observed], queue(), growth, now).find(row => row.job.id === 'steam_growth');
+    assert.ok(lane.slots.slice(1).every(slot => slot.state !== 'skipped'));
+  }
+});
+
+test('stale active work and success after a scheduled point do not invent skipped checks', () => {
+  const active = scheduled('steam-two-phase.yml', 0, { status: 'in_progress', conclusion: null });
+  const lane = buildSlots('2026-10-03', [active], queue(), null, now, { 'game-trend-radar-backend': false }).find(row => row.job.id === 'steam_daily');
+  assert.deepEqual(lane.slots.map(slot => slot.state), ['unknown', 'unknown', 'unknown', 'planned']);
+  const slow = scheduled('steam-two-phase.yml', 0, { updated_at: '2026-10-02T22:05:00Z' });
+  const later = buildSlots('2026-10-03', [slow], queue(), null, now).find(row => row.job.id === 'steam_daily');
+  assert.equal(later.slots[1].state, 'unknown');
+  assert.equal(later.slots[2].state, 'skipped');
 });
 
 test('IGDB uses its existing daily 08:30 workflow and keeps Steam queue results separate', () => {
