@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "generated_at": "2026-10-08T11:02:06.677426+00:00",
   "month": "2026-10",
+  "count": 47,
   "games": [
     {
       "appid": 2067820,
@@ -1164,7 +1166,6 @@
       "display_name": "SPAM",
       "display_name_source": "english",
       "name_en": "SPAM",
-      "name_en_traditional": "SPAM",
       "language_support": {
         "tchinese": false,
         "schinese": false,
@@ -1315,16 +1316,17 @@
         "checked_at": "2026-10-07T17:14:53Z",
         "source_frontend_commit": "a1477b84c37dfc1d4cb6f3590b771a04f242c6cc",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-07T17:14:53Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 14970
+          "observed_at": "2026-10-07T17:14:53Z",
+          "viewer_count": 14970,
+          "min_viewers": 7000
         }
       },
       "content_enrichment_signature": "2902720:4338:2026-10-08",
       "storage_version": 2,
       "short_description": "",
-      "short_description_language": ""
+      "short_description_language": "",
+      "community_url": "https://steamcommunity.com/app/2902720/"
     },
     {
       "appid": 2254990,
@@ -4329,7 +4331,6 @@
       "name_zh_cn": "明日方舟：终末地",
       "name_zh_tw_traditional": "明日方舟：終末地",
       "name_zh_cn_traditional": "明日方舟：終末地",
-      "name_en_traditional": "Arknights: Endfield",
       "language_support": {
         "tchinese": true,
         "schinese": true,
@@ -7202,7 +7203,5 @@
       "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
       "categories_checked_at": "2026-10-05T07:17:08Z"
     }
-  ],
-  "generated_at": "2026-10-07T19:02:27Z",
-  "count": 47
+  ]
 }
