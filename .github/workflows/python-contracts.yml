@@ -1,0 +1,28 @@
+name: Verify Python publication contracts
+
+on:
+  pull_request:
+    paths: ['scripts/*.py', 'tests/test_*.py', 'requirements-core.txt', '.github/workflows/python-contracts.yml', '.github/workflows/radar-insights.yml']
+  push:
+    branches: [main]
+    paths: ['scripts/*.py', 'tests/test_*.py', 'requirements-core.txt', '.github/workflows/python-contracts.yml', '.github/workflows/radar-insights.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install shared policies and offline test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-core.txt 'requests>=2.32,<3' 'opencc-python-reimplemented>=0.1.7,<1'
+      - name: Run Python contract and historical tool regressions without collection
+        run: python -m unittest discover -s tests -p 'test_*.py' -q
