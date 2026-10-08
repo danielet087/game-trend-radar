@@ -1,0 +1,71 @@
+name: Build and verify modular frontend
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['src/**', 'assets/app/**', 'assets/*.svg', 'package*.json', 'tsconfig.json', 'vite.config.mjs', 'playwright.config.ts', 'scripts/publish-static.mjs', 'tests/frontend-*', 'tests/browser/**', '.github/workflows/frontend-build.yml']
+  push:
+    branches: [main]
+    paths: ['src/**', 'assets/*.svg', 'package*.json', 'tsconfig.json', 'vite.config.mjs', 'playwright.config.ts', 'scripts/publish-static.mjs', 'tests/frontend-*', 'tests/browser/**', '.github/workflows/frontend-build.yml']
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: frontend-build-${{ github.event.pull_request.number || 'main' }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run publish:static
+      - run: npm test && npm run test:frontend
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - name: Verify generated files in the pull request
+        if: github.event_name == 'pull_request'
+        run: git diff --exit-code -- '*.html' assets/app .nojekyll
+      - name: Publish generated code without replacing collector data
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- '*.html' assets/app .nojekyll; then exit 0; fi
+          source_sha=$(git rev-parse HEAD)
+          git fetch origin main
+          if ! git diff --quiet "$source_sha" origin/main -- src package.json package-lock.json tsconfig.json vite.config.mjs playwright.config.ts scripts/publish-static.mjs tests '.github/workflows/frontend-build.yml' 'assets/*.svg'; then
+            echo 'A newer source revision will be built by the next queued run.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*.html' assets/app .nojekyll
+          git commit -m 'build: refresh static frontend artifacts'
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git diff --quiet "$source_sha" origin/main -- src package.json package-lock.json tsconfig.json vite.config.mjs playwright.config.ts scripts/publish-static.mjs tests '.github/workflows/frontend-build.yml' 'assets/*.svg'; then
+              echo 'A newer source revision will be built by the next queued run.'
+              exit 0
+            fi
+            git rebase origin/main
+            if git push origin HEAD:main; then
+              gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds" --silent
+              exit 0
+            fi
+          done
+          echo '::error::Static publication conflicted; existing public data was preserved.'
+          exit 1

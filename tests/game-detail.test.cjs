@@ -26,8 +26,8 @@ test("quick view dialog and its triggers are removed on all old pages", () => {
   for (const name of ["index", "upcoming", "released", "saved", "date"]) {
     const page = from(name + ".html");
     assert.doesNotMatch(page, /gameDialog|closeDialog|dialogContent/);
-    assert.match(page, /radar-play-v2\.js\?v=[\d.]+/);
-    assert.match(page, /radar-play-v2\.css\?v=[\d.]+/);
+    assert.match(page, /<script type="module"[^>]*src="\/game-trend-radar\/assets\/app\//);
+    assert.match(page, /<link rel="stylesheet"[^>]*href="\/game-trend-radar\/assets\/app\/play-/);
   }
 });
 

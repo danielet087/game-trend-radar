@@ -1,0 +1,67 @@
+.games-grid,
+.spotlight-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+}
+.games-grid {
+  padding: 4px 24px 26px;
+}
+.recent-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+.spotlight-section,
+.recent-section {
+  margin-top: 48px;
+  position: relative;
+  isolation: isolate;
+  padding: 32px;
+  border: 1px solid #d8cee9;
+  border-radius: 26px;
+}
+.spotlight-section {
+  background:
+    radial-gradient(circle at 100% 0%, #f6e6ba 0 118px, transparent 119px),
+    radial-gradient(#a092c03b 1px, transparent 1.2px) 0 0 / 16px 16px,
+    #e9e0f6;
+  box-shadow: 0 5px 0 #ddd3ed;
+}
+.recent-section {
+  border-color: #bfd8c7;
+  background:
+    radial-gradient(circle at 0 100%, #efe9c5 0 112px, transparent 113px),
+    url("../../../assets/radar-pattern.svg") 0 0 / 480px 360px repeat,
+    #e3efdf;
+  box-shadow: 0 5px 0 #d2dfc9;
+}
+.spotlight-section::before,
+.recent-section::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 33px;
+  width: 55px;
+  height: 9px;
+  border: 2px solid var(--paper);
+  border-radius: 8px;
+  background: #b49acc;
+  pointer-events: none;
+}
+.recent-section::before {
+  background: #86bca1;
+}
+.spotlight-section .eyebrow,
+.recent-section .eyebrow {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: #fffdf5ce;
+}
+.spotlight-section .eyebrow {
+  color: #6d528b;
+}
+.recent-section .eyebrow {
+  color: #45745b;
+}

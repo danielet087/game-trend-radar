@@ -1,0 +1,25 @@
+/* Radar 3.1 — original paper textures, orbital shapes and a content-first calendar. */
+:root {
+  --paper: #fffaf0;
+  --white: #fff;
+  --ink: #202c46;
+  --muted: #616d82;
+  --blue: #4057d6;
+  --blue-dark: #2b40b4;
+  --blue-light: #edf0ff;
+  --coral: #ffd7c6;
+  --lime: #eaf4a3;
+  --mint: #e3f3eb;
+  --lavender: #ece9fa;
+  --line: #e2dfd6;
+  --page-wash: #ffeab0;
+  --page-wash-soft: #fff3d3;
+  --page-orbit: #f7be9d;
+  --page-orbit-line: #da996f;
+  --radius: 20px;
+  --ease: cubic-bezier(0.22, 0.68, 0, 1);
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font-synthesis: none;
+  color: var(--ink);
+  background: var(--paper);
+}

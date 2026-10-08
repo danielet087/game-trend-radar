@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#3652ed" />
+    <meta
+      name="description"
+      content="關注成長榜，整理已公開收錄的 Steam 遊戲資訊。 Steam、NS、NS2 與 PS5 新作發售月曆、社群關注與收藏清單。"
+    />
+    <title>關注成長榜｜Game Trend Radar</title>
+    <link rel="icon" id="siteFavicon" type="image/svg+xml" />
+    <link rel="preconnect" href="https://shared.akamai.steamstatic.com" crossorigin />
+    <link rel="preconnect" href="https://shared.fastly.steamstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
+    <script type="module" src="./entries/growth.ts"></script>
+</head>
+  <body data-page="growth">
+    <a class="skip-link" href="#mainContent">跳到主要內容</a>
+    <div id="siteHeader"></div>
+    <main class="page-shell lab-shell" id="mainContent">
+      <section class="page-heading lab-heading">
+        <div><p class="eyebrow">ON THE RISE</p><h1 id="pageTitle">關注成長榜</h1><p>關注正在增加，下一款值得等待的遊戲會是誰？</p></div>
+        <span class="lab-scope-pill">上市後 30 天，完成追蹤</span>
+      </section>
+      <div class="lab-status-line"><p id="labStatus" role="status">正在整理遊戲與量測紀錄…</p><button id="labRetry" type="button" class="text-link" hidden>重新讀取</button></div>
+      <div id="growthNotice" class="notice" role="status" hidden></div>
+      <section class="growth-workspace" aria-labelledby="growthResultCount">
+        <div class="growth-toolbar">
+          <div class="lab-segmented" role="group" aria-label="成長比較期間"><button type="button" data-growth-days="1" aria-pressed="false">1 日</button><button type="button" data-growth-days="7" aria-pressed="true">7 日</button><button type="button" data-growth-days="30" aria-pressed="false">30 日</button></div>
+          <label class="lab-search"><span class="sr-only">搜尋成長榜遊戲</span><input id="growthSearch" type="search" placeholder="搜尋名稱或 AppID…" autocomplete="off"></label>
+          <label class="lab-select"><span class="sr-only">發售範圍</span><select id="growthScope"><option value="all">全部追蹤中</option><option value="future">尚未上市</option><option value="released">上市 30 天內</option></select></label>
+          <label class="lab-select"><span class="sr-only">成長排序</span><select id="growthSort"><option value="delta">新增人數最多</option><option value="percent">成長比例最高</option></select></label>
+        </div>
+        <div class="growth-summary" aria-label="目前量測狀況"><span><b id="growthRanked">—</b> 款可比較</span><span><b id="growthPending">—</b> 款累積中</span><span>追蹤範圍 <b id="growthTracked">—</b> 款</span></div>
+        <div class="lab-section-heading"><h2 id="growthResultCount" aria-live="polite">7 日成長榜</h2><span id="growthUpdated"></span></div>
+        <div id="growthRows" class="growth-rows"></div>
+        <button id="growthMore" type="button" class="button secondary" hidden>載入更多 ↓</button>
+      </section>
+      <section id="pendingSection" class="pending-section" hidden aria-labelledby="pendingTitle"><div class="lab-section-heading"><h2 id="pendingTitle">資料累積中</h2><span>有足夠實測紀錄後，自動加入排名</span></div><div id="pendingList" class="pending-list"></div><p id="pendingOverflow" class="lab-fine-print"></p></section>
+      <details class="lab-method"><summary>成長數字怎麼計算？</summary><div><p>新增關注＝最新官方量測 − 該量測日往前 1／7／30 天的日紀錄；成長比例＝新增關注 ÷ 基準日關注數。時間皆以台灣日期對齊。</p><p>只追蹤本站公開收錄、未來一年內上市或上市後 30 天內的遊戲。超過期限保留既有紀錄，停止新增量測；缺少基準日或超過 2 天未更新時，暫不排名。</p><p>小曲線使用各遊戲自己的刻度，呈現實際量測的變化，不代表遊戲間的關注規模。Steam Followers 與願望清單數不同。</p></div></details>
+    </main>
+    <div id="siteFooter"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#3652ed" />
+    <meta
+      name="description"
+      content="把心動的新作收在一起，期待的日子一目了然。 Steam、NS、NS2 與 PS5 新作發售月曆、社群關注與收藏清單。"
+    />
+    <title>我的收藏｜Game Trend Radar</title>
+    <link rel="icon" id="siteFavicon" type="image/svg+xml" />
+    <link rel="preconnect" href="https://shared.akamai.steamstatic.com" crossorigin />
+    <link rel="preconnect" href="https://shared.fastly.steamstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
+    <script type="module" src="./entries/saved.ts"></script>
+</head>
+  <body data-page="saved">
+    <a class="skip-link" href="#mainContent">跳到主要內容</a>
+    <div id="siteHeader"></div>
+    <main class="page-shell" id="mainContent">
+      <section class="page-heading">
+        <a class="back-link" id="backCalendar" href="./index.html"
+          >← 返回發售月曆</a
+        >
+        <p class="eyebrow">YOUR GAME DISCOVERY</p>
+        <h1 id="pageTitle">我的收藏</h1>
+        <p>把心動的新作收在一起，期待的日子一目了然。</p>
+        <p class="scope-note" id="scopeNote"></p>
+      </section>
+      <div class="data-status" id="dataStatus" role="status">
+        <span class="signal-dot"></span
+        ><span id="updateText">正在與新作相遇…</span>
+        <details id="dataDetails">
+          <summary>關於資料</summary>
+          <div class="data-detail-content">
+            <p id="coverageText">
+              清單包含 Steam、已驗證 Twitch 新作與 NS／NS2／PS5 遊戲；各平台分別依確切發售日收錄。
+            </p>
+            <p>
+              Steam 關注人數與 IGDB hypes 是不同來源的指標。NS／NS2／PS5 代表原生版本；各主機平台日期會標明資料來源地區，實際上市請以官方公告為準。
+            </p>
+          </div>
+        </details>
+      </div>
+      <div class="notice" id="notice" hidden role="alert"></div>
+      <section
+        class="explorer"
+        id="releaseCalendar"
+        aria-labelledby="explorerTitle"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">FIND YOUR NEXT FAVORITE</p>
+            <h2 id="explorerTitle">探索遊戲</h2>
+          </div>
+          <span class="timezone">台灣時間 UTC+8</span>
+        </div>
+        <div class="explorer-panel">
+          <div class="filter-bar">
+            <label class="search-box"
+              ><svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m16 16 5 5" /></svg
+              ><span class="sr-only">搜尋遊戲名稱或 ID</span
+              ><input
+                id="searchInput"
+                type="search"
+                placeholder="搜尋遊戲名稱或 ID…"
+                autocomplete="off"
+              /><kbd aria-hidden="true">/</kbd></label
+            ><label class="select-wrap"
+              ><span class="sr-only">Steam 最低關注人數</span
+              ><select id="followersFilter">
+                <option value="0">全部關注度</option>
+                <option value="5000">5 千人以上</option>
+                <option value="10000">1 萬人以上</option>
+                <option value="50000">5 萬人以上</option>
+              </select></label
+            ><button class="filter-chip" id="savedFilter" aria-pressed="false">
+              ♡ 只看收藏
+            </button>
+          </div>
+          <div class="results-bar">
+            <p id="resultCount" role="status">正在讀取遊戲資料…</p>
+            <button class="reset-button" id="resetFilters" hidden>
+              清除篩選</button
+            ><label class="sort-wrap" id="sortWrap"
+              ><span>排序</span
+              ><select id="sortSelect" aria-label="排序方式">
+                <option value="date">上市日期最近</option>
+                <option value="followers">各來源關注度</option>
+                <option value="name">遊戲名稱 A–Z</option>
+              </select></label
+            >
+          </div>
+          <div id="calendarArea" hidden>
+            <div class="weekdays" aria-hidden="true">
+              <span>日</span><span>一</span><span>二</span><span>三</span
+              ><span>四</span><span>五</span><span>六</span>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="calendar-help">
+              <span><i></i> 各來源當日熱門新作</span
+              ><span>點日期看完整清單・點遊戲看詳細資訊 ↗</span>
+            </div>
+          </div>
+          <div class="games-grid" id="gamesGrid" aria-busy="true"></div>
+          <div class="load-more-wrap" id="loadMoreWrap" hidden>
+            <button id="loadMore" class="button secondary">
+              載入更多遊戲 ↓
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="bottom-note">
+        <span class="mini-radar" aria-hidden="true">◎</span>
+        <div>
+          <strong>讓每一份期待，都有個位置。</strong>
+          <p>點擊遊戲旁的愛心，即可收藏在這個瀏覽器。無須登入。</p>
+        </div>
+        <a href="./saved.html" class="text-link">我的收藏 ↗</a>
+      </section>
+      <noscript
+        ><p class="notice">
+          請啟用 JavaScript 以查看遊戲資料、使用搜尋與收藏功能。
+        </p></noscript
+      >
+    </main>
+    <div id="siteFooter"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

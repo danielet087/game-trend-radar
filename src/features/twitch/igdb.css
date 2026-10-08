@@ -1,0 +1,7 @@
+/* IGDB-only presentation; data collection and audience calculations are unchanged. */
+.tw-evidence-grid.tw-igdb-only,
+.tw-guide-grid.tw-igdb-only { grid-template-columns:minmax(0,1fr); }
+.tw-evidence-card.tw-evidence-igdb { border-top-color:#e1b495; }
+.tw-guide-card.tw-tone-igdb { border-color:#ddc2ac; background:#f9eada; box-shadow:0 3px 0 #e9d4c1; }
+.tw-evidence-igdb dl { grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr)); gap:12px 24px; }
+.tw-evidence-igdb dl > div { grid-template-columns:minmax(0,1fr); gap:4px; }

@@ -1,0 +1,293 @@
+.game-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid #d3d8e3;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 4px 0 #202c4609;
+  transition:
+    transform 0.25s var(--ease),
+    box-shadow 0.25s var(--ease),
+    border-color 0.25s;
+}
+.game-card:hover,
+.game-card:focus-within {
+  border-color: #7c8bcc;
+  box-shadow:
+    0 8px 0 #dfe3f4,
+    0 12px 24px #202c460b;
+}
+.cover-link {
+  display: block;
+  position: relative;
+  aspect-ratio: 460/215;
+  overflow: hidden;
+  background: #e9ecf5;
+  border-radius: 15px 15px 0 0;
+}
+.cover-link img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--ease);
+}
+.game-card:hover .cover-link img {
+  transform: scale(1.035);
+}
+.cover-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 100px;
+  background: repeating-linear-gradient(
+    135deg,
+    #e9ecf5 0 16px,
+    #e4e8f1 16px 17px
+  );
+  color: #a1acc5;
+}
+.cover-placeholder::before {
+  content: "◎";
+  font:
+    52px Arial,
+    "Noto Sans TC",
+    sans-serif;
+}
+.countdown {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 5px 9px;
+  border-radius: 7px;
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 700;
+  color: #39412c;
+  background: #f1f8c6f5;
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+}
+.countdown.released {
+  color: #396e58;
+  background: #e7f4ebf5;
+}
+.card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 17px;
+}
+.card-names {
+  position: relative;
+  z-index: 2;
+  display: block;
+  min-width: 0;
+}
+.card-title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+}
+.card-english {
+  min-height: 1.6em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 1px;
+  font:
+    12px/1.6 Arial,
+    "Noto Sans TC",
+    sans-serif;
+  color: var(--muted);
+}
+.card-languages {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 5px;
+  justify-content: flex-end;
+  margin: 0;
+}
+.card-language-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 0;
+}
+.card-multiplayer {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-right: auto;
+  padding: 4px 7px;
+  border: 1px solid #cbd9e7;
+  border-radius: 6px;
+  color: #42617e;
+  background: #eef4fa;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+.card-body > .card-languages {
+  align-self: stretch;
+  margin-top: 12px;
+}
+.card-body > .card-languages + .card-meta {
+  margin-top: 10px;
+}
+.card-language,
+.game-language-chip,
+.game-language-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 7px;
+  border: 1px solid #c4dfd2;
+  border-radius: 6px;
+  color: #39745a;
+  background: #edf7f1;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+.language-simplified {
+  color: #4a60a5;
+  background: #edf1ff;
+  border-color: #d3dcf7;
+}
+.language-english {
+  color: #886634;
+  background: #fbf2df;
+  border-color: #eeddbc;
+}
+.language-other,
+.language-unknown {
+  color: #687287;
+  background: #f2f4f7;
+  border-color: #dfe3eb;
+}
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 5px 9px;
+  margin-top: 16px;
+  padding-top: 8px;
+  border-top: 1px solid #ecedf2;
+  font-variant-numeric: tabular-nums;
+}
+.card-release-dates { min-width: 0; }
+.card-release-platform { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.card-release-date { display: flex; align-items: baseline; }
+.card-interest { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; margin-left: auto; }
+.card-meta time {
+  color: #737e92;
+  font:
+    11px/1.6 Arial,
+    "Noto Sans TC",
+    sans-serif;
+}
+.card-followers {
+  color: var(--blue);
+  font:
+    800 17px/1.5 Arial,
+    "Noto Sans TC",
+    sans-serif;
+}
+.card-followers small {
+  color: var(--muted);
+  font:
+    10px "Noto Sans TC",
+    sans-serif;
+  margin-left: 4px;
+}
+.game-card::after {
+  content: none;
+}
+.game-card .card-detail-link {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 1;
+}
+.game-card .card-detail-link:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 4px;
+}
+.game-card .save-button {
+  position: absolute;
+  z-index: 4;
+  right: 10px;
+  top: 10px;
+}
+.save-button {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  background: #ffffffed;
+  border: 1px solid #ffffffb3;
+  border-radius: 50%;
+  color: #4a5369;
+  box-shadow: 0 2px 6px #202c4612;
+  transition:
+    background 0.2s,
+    transform 0.2s,
+    color 0.2s;
+}
+.save-button svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+}
+.save-button:hover {
+  transform: scale(1.1);
+  background: #fff0e9;
+  color: #ad5750;
+}
+.save-button[aria-pressed="true"] {
+  color: #a94d4d;
+  background: #ffe4d9;
+  border-color: #f5c9b8;
+}
+.save-button[aria-pressed="true"] svg {
+  fill: currentColor;
+}
+.game-card .steam-store-link {
+  position: relative;
+  z-index: 5;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 26px;
+  padding: 2px 0;
+  color: var(--blue);
+  font-size: 10px;
+  font-weight: 700;
+}
+.game-card .steam-store-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.dark-horse {
+  width: fit-content;
+  margin: -5px 0 9px;
+  padding: 4px 7px;
+  background: var(--coral);
+  font-size: 10px;
+  border-radius: 5px;
+  color: #8e503d;
+}

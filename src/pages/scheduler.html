@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#fffaf0" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="description" content="Game Trend Radar 排程觀測：依台灣時間查看處理順序、執行紀錄與 Steam 待查佇列。" />
+    <title>排程觀測｜Game Trend Radar</title>
+    <link rel="icon" id="siteFavicon" type="image/svg+xml" />
+    <script type="module" src="./entries/scheduler.ts"></script>
+</head>
+  <body data-page="scheduler">
+    <a class="skip-link" href="#mainContent">跳到排程觀測</a>
+    <header class="scheduler-header">
+      <div class="scheduler-header-inner">
+        <a class="scheduler-brand" href="./index.html" aria-label="Game Trend Radar 首頁"><img src="./assets/radar-mark.svg" width="36" height="36" alt="" /><span>GAME TREND <b>RADAR<span class="brand-dot">.</span></b></span></a>
+        <span class="url-only-label">URL 專用頁面</span>
+      </div>
+    </header>
+    <main class="scheduler-shell" id="mainContent">
+      <section class="page-heading" aria-labelledby="pageTitle">
+        <div>
+          <p class="eyebrow">SCHEDULE WATCH</p>
+          <h1 id="pageTitle">排程觀測<span class="heading-orbit" aria-hidden="true">↗</span></h1>
+          <p class="heading-note">從今天的執行節奏，看到下一款準備處理的遊戲。</p>
+        </div>
+        <div class="page-actions">
+          <p class="clock-label">目前 <time id="currentTime">—</time></p>
+          <button class="refresh-button" id="refreshButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 8a8 8 0 1 0 1 7M19 3v5h-5" /></svg><span>更新狀態</span></button>
+        </div>
+      </section>
+
+      <div class="source-strip">
+        <p class="source-freshness" id="sourceFreshness">正在核對資料更新時間…</p>
+        <p class="status-message" id="statusMessage" role="status" aria-live="polite">正在讀取排程與佇列…</p>
+      </div>
+      <div class="error-message" id="errorMessage" role="alert" hidden></div>
+      <noscript><div class="error-message">請啟用 JavaScript，以讀取排程紀錄與待查佇列。</div></noscript>
+
+      <section class="queue-overview" aria-labelledby="statusHeadline">
+        <div class="overview-current">
+          <p class="section-kicker"><span class="status-dot" aria-hidden="true"></span>佇列目前狀況</p>
+          <h2 id="statusHeadline">正在讀取處理進度</h2>
+          <p class="status-detail" id="statusDetail">執行結果與等待原因會在這裡顯示。</p>
+          <div class="current-progress" id="currentProgress"></div>
+        </div>
+        <div class="overview-counts">
+          <div class="count-total"><span>全部未完成</span><strong id="totalRemaining">—</strong><span class="count-unit">款</span></div>
+          <div class="count-breakdown">
+            <div class="count-item is-twitch"><span class="count-label"><span aria-hidden="true">↗</span>Twitch 優先</span><strong id="twitchCount">—</strong><small>優先進入處理順序</small></div>
+            <div class="count-item is-ordinary"><span class="count-label"><span aria-hidden="true">·</span>一般 Steam</span><strong id="ordinaryCount">—</strong><small>依正式佇列排列</small></div>
+            <div class="count-item is-paused"><span class="count-label"><span aria-hidden="true">Ⅱ</span>暫停處理</span><strong id="pausedCount">—</strong><small>需要解決資料問題</small></div>
+          </div>
+        </div>
+        <p class="overview-note" id="queueOverviewNote">數量以最新公開狀態為準。</p>
+      </section>
+
+      <section class="panel schedule-panel" aria-labelledby="scheduleTitle">
+        <div class="section-heading">
+          <div><p class="section-kicker">01 / 今天的節奏</p><h2 id="scheduleTitle">一天，沿著排程往前走</h2></div>
+          <span class="date-pill" id="scheduleDate">—</span>
+        </div>
+        <p class="section-description">每一條軌道是一項工作。每日候選更新與 Steam 成長追蹤每 6 小時檢查；當日完整成功後，後續時段直接略過。</p>
+        <div class="schedule-legend" aria-label="時間軸圖例">
+          <span><i class="legend-dot is-success" aria-hidden="true"></i>已完成</span>
+          <span><i class="legend-dot is-interrupted" aria-hidden="true"></i>中斷 / 受阻</span>
+          <span><i class="legend-dot is-running" aria-hidden="true"></i>執行中</span>
+          <span><i class="legend-dot is-waiting" aria-hidden="true"></i>預定時間</span>
+          <span><i class="legend-dot is-skipped" aria-hidden="true"></i>今日成功後略過</span>
+          <span><i class="legend-dot is-unknown" aria-hidden="true"></i>紀錄待確認</span>
+          <span><i class="legend-line" aria-hidden="true"></i>現在</span>
+        </div>
+        <div class="schedule-scroller" tabindex="0" aria-label="今天的排程時間軸，可左右捲動">
+          <div class="schedule-timeline" id="scheduleTimeline"><p class="loading-state">正在整理今天的執行軌道…</p></div>
+        </div>
+        <p class="schedule-caption" id="scheduleCaption">時間軸將依台灣時間顯示；預定時間不代表已成功執行。</p>
+      </section>
+
+      <div class="detail-grid">
+        <section class="panel next-panel" aria-labelledby="nextTitle">
+          <div class="section-heading"><div><p class="section-kicker">02 / 接下來處理</p><h2 id="nextTitle">輪到哪些遊戲？</h2></div><span class="priority-label">Twitch 優先</span></div>
+          <p class="section-description" id="nextQueueNote">正在依正式佇列排列下一批遊戲…</p>
+          <div class="next-queue" id="nextQueue"><p class="loading-state">正在讀取待查順序…</p></div>
+          <a class="subtle-link" href="#allQueueTitle">查看完整佇列 <span aria-hidden="true">↓</span></a>
+        </section>
+        <section class="panel events-panel" aria-labelledby="eventsTitle">
+          <div class="section-heading"><div><p class="section-kicker">03 / 執行歷程</p><h2 id="eventsTitle">發生了什麼？</h2></div><span class="history-symbol" aria-hidden="true">↶</span></div>
+          <p class="section-description" id="eventTimelineNote">沿時間查看查詢、中斷與後續等待。</p>
+          <ol class="event-timeline" id="eventTimeline" tabindex="0" aria-label="今日實際執行紀錄，可上下捲動"><li class="loading-state">正在讀取實際紀錄…</li></ol>
+        </section>
+      </div>
+
+      <section class="panel paused-panel" aria-labelledby="pausedTitle">
+        <div class="section-heading"><div><p class="section-kicker">04 / 需要處理的問題</p><h2 id="pausedTitle"><span class="pause-symbol" aria-hidden="true">Ⅱ</span>暫停的遊戲</h2></div></div>
+        <p class="section-description" id="pausedQueueNote">正在核對群組 ID 與 XML 問題…</p>
+        <div class="paused-queue" id="pausedQueue"><p class="loading-state">正在讀取暫停原因…</p></div>
+      </section>
+
+      <section class="panel all-queue-panel" aria-labelledby="allQueueTitle">
+        <div class="section-heading"><div><p class="section-kicker">05 / 完整待查清單</p><h2 id="allQueueTitle">每一款，都有自己的位置</h2></div><span class="queue-count" id="queueCount" aria-live="polite">—</span></div>
+        <div class="queue-controls">
+          <label class="queue-search" for="queueSearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg><span class="sr-only">搜尋遊戲名稱或 Steam App ID</span><input id="queueSearch" type="search" placeholder="搜尋遊戲名稱或 App ID" autocomplete="off" /></label>
+          <label class="queue-filter" for="queueFilter"><span class="sr-only">依佇列類別篩選</span><select id="queueFilter"><option value="all">全部待查</option><option value="twitch">Twitch 優先</option><option value="ordinary">一般 Steam</option><option value="paused">暫停處理</option></select></label>
+        </div>
+        <div class="pending-queue" id="pendingQueue"><p class="loading-state">正在讀取完整佇列…</p></div>
+      </section>
+
+      <details class="sources-disclosure">
+        <summary>資料來源與狀態判讀 <span aria-hidden="true">＋</span></summary>
+        <div class="sources-details" id="sourcesDetails"><p>此頁讀取已公開的排程與佇列紀錄；更新時間會分別標示。等待、預定時間與實際成功執行會分開顯示。</p></div>
+      </details>
+    </main>
+    <footer class="scheduler-footer"><span>GAME TREND RADAR</span><p>時間以 Asia/Taipei 顯示。</p></footer>
+  </body>
+</html>

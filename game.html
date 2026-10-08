@@ -10,7 +10,7 @@
       content="查看 Steam、Nintendo Switch、Switch 2 與 PlayStation 5 新作的發售日、平台與社群關注資訊。"
     />
     <title>遊戲資訊｜Game Trend Radar</title>
-    <link rel="icon" href="./assets/radar-mark.svg" type="image/svg+xml" />
+    <link rel="icon" id="siteFavicon" type="image/svg+xml" />
     <link
       rel="preconnect"
       href="https://shared.akamai.steamstatic.com"
@@ -22,79 +22,16 @@
       crossorigin
     />
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
-    <link rel="stylesheet" href="./assets/radar-play-v2.css?v=3.16.0" />
-    <link rel="stylesheet" href="./assets/radar-insights-v1.css?v=1.2.0" />
-    <link rel="stylesheet" href="./assets/radar-game-detail-v1.css?v=3.11.0" />
-    <script src="./assets/radar-data-v1.js?v=3.14.0" defer></script>
-    <script src="./assets/radar-storage-v2.js?v=3.1.0" defer></script>
-    <script src="./assets/radar-discovery-v1.js?v=1.3.1" defer></script>
-    <script src="./assets/radar-motion-v1.js?v=1.0.0" defer></script>
-    <script src="./assets/radar-navigation-v1.js?v=1.0.1" defer></script>
-    <script src="./assets/radar-artwork-v1.js?v=1.0.0" defer></script>
-    <script src="./assets/radar-insights-v1.js?v=1.3.0" defer></script>
-    <script src="./assets/radar-enhancements-v1.js?v=1.2.0" defer></script>
-    <script src="./assets/radar-game-detail-v1.js?v=3.15.0" defer></script>
-  </head>
+  <script type="module" crossorigin src="/game-trend-radar/assets/app/game-C4_hLK5E.js"></script>
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-DEFkXkmv.js">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/bootstrap-oTuMO7h7.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/game-BTW-Z9Wl.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-C2DykKV5.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/styles-D_d13LHH.css">
+</head>
   <body data-page="game">
     <a class="skip-link" href="#mainContent">跳到主要內容</a>
-    <header class="site-header">
-      <div class="header-inner">
-        <a class="brand" href="./index.html" aria-label="Game Trend Radar 首頁">
-          <img src="./assets/radar-mark.svg" width="40" height="40" alt="" />
-          <span
-            >GAME TREND <b>RADAR<span class="brand-dot">.</span></b></span
-          >
-        </a>
-        <nav class="main-nav" aria-label="主要導覽">
-          <a href="./index.html">發售月曆</a>
-          <details class="explore-nav">
-            <summary class="explore-toggle" aria-controls="exploreMenu">遊戲探索<svg class="explore-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary>
-            <div class="explore-menu" id="exploreMenu">
-              <a class="explore-route explore-route-all" href="./games.html">
-                <span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><rect x="14" y="15" width="22" height="22" rx="6"/><rect x="44" y="15" width="22" height="22" rx="6"/><rect x="14" y="45" width="22" height="22" rx="6"/><path d="M55 47v18m-9-9h18"/></svg></span>
-                <span class="explore-route-copy"><span class="explore-route-title">全部遊戲</span><span class="explore-route-note">瀏覽本站全部收錄</span></span>
-                <span class="explore-route-arrow" aria-hidden="true">↗</span>
-              </a>
-              <a class="explore-route explore-route-upcoming" href="./upcoming.html">
-                <span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><rect x="13" y="18" width="49" height="47" rx="10"/><path d="M13 33h49M26 12v13m22-13v13M27 47h8m-8 10h8"/><circle cx="59" cy="58" r="15"/><path d="m53 58 5 5 8-10"/></svg></span>
-                <span class="explore-route-copy"><span class="explore-route-title">即將上市</span><span class="explore-route-note">未來 45 天的新作</span></span>
-                <span class="explore-route-arrow" aria-hidden="true">↗</span>
-              </a>
-              <a class="explore-route explore-route-released" href="./released.html">
-                <span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><path d="m24 49 3-15 26-20 13 13-20 26-15 3-7-7Z"/><circle cx="50" cy="30" r="6"/><path d="m29 56-5 13-2-11-11-2 13-6M43 20l-17-1-9 16 12-1m31 12 1 17-16 9 1-19"/></svg></span>
-                <span class="explore-route-copy"><span class="explore-route-title">近期上市</span><span class="explore-route-note">近 30 天的新登場</span></span>
-                <span class="explore-route-arrow" aria-hidden="true">↗</span>
-              </a>
-              <a class="explore-route explore-route-tags" href="./explore.html">
-                <span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><path d="m13 37 27-24 24 4 4 24-27 27-28-31Z"/><circle cx="52" cy="28" r="5"/><path d="m25 40 12 13m-5-20 13 13M13 17l-4-6m55 48 7 2M49 72l1 5"/></svg></span>
-                <span class="explore-route-copy"><span class="explore-route-title">TAG 探索</span><span class="explore-route-note">依照喜好找新作</span></span>
-                <span class="explore-route-arrow" aria-hidden="true">↗</span>
-              </a>
-              <p class="explore-menu-label">觀察與分析</p>
-              <a class="explore-route explore-route-growth" href="./growth.html"><span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M15 16v48h52M22 50l15-16 12 7 16-22M53 19h12v13"/><circle cx="37" cy="34" r="4"/></svg></span><span class="explore-route-copy"><span class="explore-route-title">關注成長榜</span><span class="explore-route-note">找出正在上升的新作</span></span><span class="explore-route-arrow" aria-hidden="true">↗</span></a>
-              <a class="explore-route explore-route-analysis" href="./analysis.html"><span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><rect x="12" y="20" width="23" height="42" rx="6"/><rect x="45" y="13" width="23" height="49" rx="6"/><path d="M20 33h7m-7 9h7m26-14h7m-7 9h7m-7 9h7M25 71h30"/></svg></span><span class="explore-route-copy"><span class="explore-route-title">遊戲比較 <small>實驗</small></span><span class="explore-route-note">一次並排 2～3 款</span></span><span class="explore-route-arrow" aria-hidden="true">↗</span></a>
-              <a class="explore-route explore-route-twitch" href="./twitch.html"><span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><rect x="15" y="25" width="50" height="38" rx="10"/><path d="m28 12 12 13 12-13M29 72h22M31 39v8m18-8v8m-16 7h14M6 34v16m68-16v16"/></svg></span><span class="explore-route-copy"><span class="explore-route-title">Twitch 新作觀測 <small>實驗</small></span><span class="explore-route-note">直播熱度與全新判讀</span></span><span class="explore-route-arrow" aria-hidden="true">↗</span></a>
-            </div>
-          </details>
-          <a href="./saved.html">我的收藏 <span class="saved-count" data-saved-count>0</span></a>
-        </nav>
-        <button
-          class="motion-toggle"
-          id="motionToggle"
-          type="button"
-          aria-pressed="true"
-          aria-label="關閉動態效果"
-          title="關閉動態效果"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 5v14M15 5v14" /></svg
-          ><span>動態 ON</span>
-        </button>
-        <span class="header-tag"
-          >每款期待，都值得多看一眼 <span aria-hidden="true">↗</span></span
-        >
-      </div>
-    </header>
+    <div id="siteHeader"></div>
     <main class="game-page-shell" id="mainContent">
       <a class="game-breadcrumb" id="gameBack" href="./index.html"
         >← 返回遊戲清單</a
@@ -332,17 +269,6 @@
         ><p class="notice">請啟用 JavaScript 以查看遊戲資訊。</p></noscript
       >
     </main>
-    <footer class="site-footer">
-      <div>
-        <a class="footer-brand" href="./index.html"
-          >GAME TREND RADAR<span>◎</span></a
-        >
-        <p>
-          資料來源：Steam 商店、Steam Community 與 IGDB。<br />遊戲名稱與封面屬各自權利人所有；本站與
-          Valve / Steam、Nintendo、Sony / PlayStation 無官方隸屬關係。
-        </p>
-      </div>
-      <a href="#mainContent" class="back-top">回到頂端 ↑</a>
-    </footer>
+    <div id="siteFooter"></div>
   </body>
 </html>

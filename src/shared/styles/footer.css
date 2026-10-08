@@ -1,0 +1,81 @@
+.bottom-note {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 46px;
+  padding: 24px 28px;
+  border: 1px solid #e4c899;
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at 97% 120%,
+      transparent 0 48px,
+      #e8c39480 49px 50px,
+      transparent 51px 65px,
+      #e8c39480 66px 67px,
+      transparent 68px
+    ),
+    #fff0d5;
+}
+.mini-radar {
+  font:
+    34px Arial,
+    "Noto Sans TC",
+    sans-serif;
+  color: #a17b46;
+}
+.bottom-note strong {
+  font-size: 14px;
+  font-weight: 750;
+}
+.bottom-note p {
+  font-size: 11px;
+  color: #856f52;
+  line-height: 1.8;
+  margin-top: 5px;
+}
+.bottom-note .text-link {
+  margin-left: auto;
+  color: #876538;
+}
+.site-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 25px;
+  align-items: center;
+  max-width: 1376px;
+  margin: auto;
+  padding: 28px 40px 38px;
+  border-top: 1px dashed #cdc3aa;
+  background: linear-gradient(180deg, #fffaf000, #fff4dccc);
+}
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font:
+    800 11px Arial,
+    "Noto Sans TC",
+    sans-serif;
+  letter-spacing: 0.08em;
+}
+.footer-brand span {
+  color: var(--blue);
+  font-size: 20px;
+}
+.site-footer p {
+  font-size: 10px;
+  line-height: 1.9;
+  color: #8390a2;
+  margin-top: 10px;
+}
+.back-top {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  padding: 10px;
+}
+.back-top:hover {
+  color: var(--blue);
+}

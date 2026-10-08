@@ -1,0 +1,106 @@
+.data-status {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+  margin: 0 0 17px;
+}
+.signal-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4c9a7f;
+  box-shadow: 0 0 0 3px #4c9a7f16;
+}
+.data-status details {
+  margin-left: auto;
+}
+.data-status summary {
+  cursor: pointer;
+  color: var(--muted);
+  padding: 7px 0 7px 12px;
+  text-underline-offset: 4px;
+}
+.data-status summary:hover {
+  color: var(--blue);
+}
+.data-detail-content {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 12;
+  width: min(430px, 100%);
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 12px 30px #202c4614;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.9;
+}
+.data-detail-content p + p {
+  margin-top: 10px;
+}
+.notice {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: #fff2dd;
+  border: 1px solid #ebd3a9;
+  padding: 15px 18px;
+  border-radius: 12px;
+  color: #76521c;
+  font-size: 13px;
+  margin: 14px 0;
+}
+.notice button {
+  color: var(--blue);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 20px;
+}
+.section-heading h2 {
+  font-size: clamp(21px, 2.2vw, 28px);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.45;
+}
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--blue);
+  padding: 10px 0;
+}
+.text-link span {
+  transition: transform 0.2s;
+}
+.text-link:hover span {
+  transform: translate(3px, -3px);
+}
+.timezone {
+  color: var(--muted);
+  font:
+    500 11px/1.5 Arial,
+    "Noto Sans TC",
+    sans-serif;
+  white-space: nowrap;
+}

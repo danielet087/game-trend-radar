@@ -1,0 +1,523 @@
+@media (max-width: 1100px) {
+  .header-inner,
+  .page-shell {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+  .main-nav > a,
+  .explore-toggle {
+    padding: 10px 13px;
+  }
+  .games-grid,
+  .spotlight-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .spotlight-grid .game-card:last-child {
+    display: none;
+  }
+  .calendar-toolbar {
+    flex-wrap: wrap;
+  }
+  .month-jump {
+    margin-left: 2px;
+  }
+}
+@media (max-width: 800px) {
+  body::before {
+    top: 120px;
+    height: 490px;
+  }
+  body::after {
+    top: 150px;
+    width: 38vw;
+  }
+  .header-inner {
+    min-height: 74px;
+    gap: 15px;
+    flex-wrap: wrap;
+    padding: 15px 24px 0;
+  }
+  .brand {
+    margin-right: auto;
+  }
+  .main-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    gap: 6px;
+    padding-bottom: 14px;
+  }
+  .explore-nav { flex: 1; min-width: 0; }
+  .explore-toggle { width: 100%; justify-content: center; }
+  .main-nav > a,
+  .explore-toggle {
+    flex: 1;
+    text-align: center;
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+  .page-shell {
+    padding: 30px 24px 44px;
+  }
+  .workspace-heading {
+    gap: 14px;
+  }
+  .workspace-shortcut {
+    padding: 11px 13px;
+  }
+  .calendar-toolbar {
+    padding: 20px;
+  }
+  .month-controls h3 {
+    font-size: 22px;
+    min-width: 142px;
+  }
+  .month-jump {
+    margin-left: 8px;
+  }
+  .games-grid,
+  .spotlight-grid,
+  .recent-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .spotlight-grid .game-card:last-child {
+    display: flex;
+  }
+  .calendar-day {
+    padding: 6px;
+    min-height: 72px;
+  }
+  .day-game {
+    font-size: 10px;
+    padding: 5px;
+  }
+  .date-link b {
+    font-size: 8px;
+    padding: 2px 4px;
+  }
+  .calendar-help {
+    padding: 14px 20px;
+  }
+  .spotlight-section,
+  .recent-section {
+    padding: 24px;
+  }
+  .site-footer {
+    padding: 26px 24px;
+  }
+}
+@media (max-width: 620px) {
+  body {
+    background-size:
+      360px 270px,
+      16px 16px,
+      auto;
+  }
+  body::before {
+    top: 111px;
+    height: 440px;
+    background-size:
+      360px 270px,
+      auto,
+      auto;
+    clip-path: ellipse(150% 100% at 50% 0%);
+  }
+  body::after {
+    top: 170px;
+    width: 120px;
+    height: 225px;
+    opacity: 0.4;
+  }
+  html {
+    scroll-padding-top: 132px;
+  }
+  .header-inner {
+    padding: 12px 18px 0;
+    gap: 12px;
+  }
+  .brand img {
+    width: 31px;
+    height: 31px;
+  }
+  .brand b {
+    font-size: 21px;
+  }
+  .brand > span {
+    font-size: 8px;
+  }
+  .main-nav {
+    gap: 3px;
+    padding-bottom: 12px;
+  }
+  .main-nav > a,
+  .explore-toggle {
+    font-size: 11px;
+    padding: 10px 5px;
+    border-radius: 10px;
+  }
+  .saved-count {
+    min-width: 16px;
+    height: 17px;
+    padding: 0 4px;
+    font-size: 9px;
+    margin-left: 1px;
+  }
+  .motion-toggle {
+    font-size: 9px;
+    min-height: 34px;
+    padding: 7px 9px;
+  }
+  .page-shell {
+    padding: 26px 16px 38px;
+  }
+  .workspace-heading {
+    margin-bottom: 20px;
+  }
+  .workspace-heading p:not(.eyebrow) {
+    font-size: 11px;
+    max-width: 235px;
+  }
+  .workspace-shortcut {
+    padding: 9px 10px;
+    font-size: 10px;
+    gap: 7px;
+    border-radius: 10px;
+  }
+  .workspace-shortcut span {
+    font-size: 15px;
+  }
+  .eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.13em;
+  }
+  .page-heading {
+    margin-bottom: 19px;
+  }
+  .page-heading > p:not(.eyebrow) {
+    font-size: 12px;
+  }
+  .data-status {
+    font-size: 10px;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .data-status > #updateText {
+    flex: 1;
+    min-width: 200px;
+  }
+  .data-status details {
+    margin-left: 13px;
+  }
+  .data-status summary {
+    padding: 0;
+  }
+  .explorer-panel {
+    border-radius: 17px;
+  }
+  .section-heading {
+    gap: 10px;
+    margin-bottom: 17px;
+  }
+  .section-heading h2 {
+    font-size: 21px;
+  }
+  .text-link {
+    font-size: 11px;
+  }
+  .timezone {
+    font-size: 9px;
+  }
+  .calendar-toolbar {
+    gap: 14px;
+    padding: 18px 15px;
+  }
+  .month-controls {
+    width: 100%;
+    gap: 7px;
+  }
+  .month-controls h3 {
+    font-size: 22px;
+    min-width: 0;
+    flex: 1;
+  }
+  .icon-button {
+    width: 35px;
+    height: 35px;
+  }
+  .quiet-button {
+    margin-left: 0;
+    min-height: 35px;
+    padding: 7px 10px;
+  }
+  .month-jump {
+    order: initial;
+    margin: 0;
+  }
+  .month-jump > span {
+    display: none;
+  }
+  .month-jump input {
+    max-width: 139px;
+  }
+  .view-switch {
+    margin-left: auto;
+  }
+  .view-switch button {
+    min-height: 34px;
+    padding: 7px 11px;
+    font-size: 11px;
+  }
+  .filter-bar {
+    padding: 17px 15px 0;
+    gap: 8px;
+  }
+  .search-box {
+    flex-basis: 100%;
+    min-height: 46px;
+  }
+  .search-box input {
+    font-size: 16px;
+  }
+  .search-box kbd {
+    display: none;
+  }
+  .select-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+  .select-wrap select {
+    font-size: 12px;
+    padding: 10px 25px 10px 11px;
+  }
+  .filter-chip {
+    font-size: 12px;
+    padding: 9px 13px;
+  }
+  .results-bar {
+    padding: 11px 15px;
+    gap: 6px;
+  }
+  #resultCount {
+    font-size: 11px;
+  }
+  .sort-wrap {
+    gap: 4px;
+  }
+  .sort-wrap > span {
+    display: none;
+  }
+  .sort-wrap select {
+    font-size: 11px;
+    max-width: 135px;
+  }
+  .games-grid {
+    padding: 0 13px 18px;
+    gap: 13px;
+  }
+  .card-body {
+    padding: 14px 13px;
+  }
+  .card-title {
+    font-size: 14px;
+  }
+  .card-english {
+    font-size: 11px;
+  }
+  .card-meta {
+    gap: 7px;
+  }
+  .card-followers {
+    font-size: 17px;
+  }
+  .card-languages {
+    margin: 0;
+  }
+  .card-language {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+  .game-card::after {
+    bottom: 17px;
+    left: 13px;
+    font-size: 9px;
+  }
+  .game-card .steam-store-link {
+    font-size: 9px;
+    min-height: 26px;
+  }
+  .save-button {
+    width: 40px;
+    height: 40px;
+  }
+  .game-card .save-button {
+    top: 7px;
+    right: 7px;
+  }
+  .countdown {
+    left: 7px;
+    bottom: 7px;
+    padding: 4px 7px;
+    font-size: 9px;
+  }
+  .calendar-day {
+    min-height: 62px;
+    padding: 3px;
+  }
+  .date-link {
+    font-size: 11px;
+    padding: 3px;
+    flex-wrap: wrap;
+    gap: 1px;
+  }
+  .date-link b {
+    font-size: 7px;
+    padding: 1px 3px;
+  }
+  .day-game {
+    font-size: 9px;
+    padding: 4px;
+    line-height: 1.7;
+  }
+  .day-more {
+    padding: 3px 1px;
+    font-size: 8px;
+  }
+  .calendar-help {
+    font-size: 9px;
+    padding: 13px;
+    gap: 8px;
+  }
+  .spotlight-section,
+  .recent-section {
+    margin-top: 34px;
+  }
+  .spotlight-section,
+  .recent-section {
+    margin-left: -2px;
+    margin-right: -2px;
+    padding: 20px 15px;
+    border-radius: 19px;
+  }
+  .spotlight-grid,
+  .recent-grid {
+    gap: 13px;
+  }
+  .bottom-note {
+    margin-top: 33px;
+    padding: 20px;
+    gap: 12px;
+  }
+  .mini-radar {
+    font-size: 28px;
+  }
+  .bottom-note > div {
+    flex: 1;
+    min-width: 180px;
+  }
+  .bottom-note .text-link {
+    margin-left: 40px;
+    padding: 0;
+  }
+  .bottom-note strong {
+    font-size: 13px;
+  }
+  .bottom-note p {
+    font-size: 11px;
+  }
+  .site-footer {
+    align-items: flex-start;
+    padding: 25px 18px;
+    gap: 10px;
+  }
+  .site-footer p {
+    font-size: 9px;
+  }
+  .back-top {
+    font-size: 10px;
+    padding-right: 0;
+  }
+  .toast {
+    bottom: 18px;
+    font-size: 11px;
+  }
+}
+@media (max-width: 420px) {
+  .workspace-shortcut {
+    display: none;
+  }
+  .games-grid,
+  .spotlight-grid,
+  .recent-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .card-body {
+    padding: 17px;
+  }
+  .card-title {
+    font-size: 16px;
+    min-height: auto;
+  }
+  .card-meta {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .card-meta time {
+    font-size: 12px;
+  }
+  .card-languages {
+    margin: 0;
+  }
+  .card-language {
+    font-size: 11px;
+  }
+  .game-card::after {
+    left: 17px;
+    font-size: 10px;
+  }
+  .game-card .steam-store-link {
+    font-size: 11px;
+  }
+  .countdown {
+    font-size: 10px;
+  }
+  .card-english {
+    font-size: 12px;
+  }
+  .section-heading h2 {
+    font-size: 20px;
+  }
+  .section-heading .timezone {
+    display: none;
+  }
+}
+body.motion-off::before,
+body.motion-off::after,
+body.motion-off *,
+body.motion-off *::before,
+body.motion-off *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+body.motion-off .reveal-pending {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal-pending {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
