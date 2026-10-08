@@ -1,0 +1,72 @@
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 50;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  background: var(--ink);
+  color: white;
+  border: 1px solid #ffffff30;
+  border-radius: 13px;
+  box-shadow: 0 6px 20px #202c4622;
+  padding: 14px 20px;
+  font-size: 12px;
+  line-height: 1.7;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 15px);
+  transition:
+    opacity 0.2s,
+    transform 0.25s;
+}
+.toast.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+body.motion-on .reveal-pending {
+  opacity: 0;
+  transform: translateY(13px);
+  transition:
+    opacity 0.45s var(--ease),
+    transform 0.45s var(--ease);
+}
+body.motion-on .reveal-pending.is-visible {
+  opacity: 1;
+  transform: none;
+}
+body.motion-on::after {
+  animation: orbit-arrive 0.85s var(--ease) both;
+}
+@keyframes orbit-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+.celebrate svg,
+.bounce {
+  animation: heart-pop 0.45s var(--ease);
+}
+@keyframes heart-pop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.3);
+  }
+  70% {
+    transform: scale(0.93);
+  }
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  body.motion-on .game-card:hover:not(.reveal-pending) {
+    transform: translateY(-5px);
+  }
+}

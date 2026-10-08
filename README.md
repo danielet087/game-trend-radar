@@ -1,6 +1,8 @@
 # Game Trend Radar
 
-Steam、NS／NS2 與 PS5 新作關注度、發售月曆與個人收藏。純 HTML / CSS / JavaScript，GitHub Pages 可直接提供網站，不需前端建置或 API Key。
+Steam、NS／NS2 與 PS5 新作關注度、發售月曆與個人收藏。Vue 3＋TypeScript＋Vite 多頁式前端；GitHub Pages 提供建置後的靜態檔，公開 JSON 由後端發布，瀏覽器不需要 API Key。
+
+前端原始碼、資料模型、建置及驗證方式見 [前端架構與維護](docs/frontend-architecture.md)。修改入口與功能時請編輯 `src/`；根目錄 HTML 與 `assets/app` 由建置產生。
 
 ## 頁面與操作
 
@@ -84,7 +86,9 @@ node --test tests/*.test.cjs
 
 ## GitHub Pages
 
-既有網站使用 main 分支根目錄：<https://danielet087.github.io/game-trend-radar/>。
+既有網站維持 main 分支根目錄，包含建置後的 HTML 與 `assets/app`。前端程式更新由 `frontend-build.yml` 建置、驗證及同步靜態檔；一般 `data/**` 更新沿用原 Pages 發布，無需前端重建。
+
+網站：<https://danielet087.github.io/game-trend-radar/>。
 
 若從新 repository 啟用，於 Settings → Pages 選 Deploy from a branch，指定 main 與 /(root)。
 

@@ -1,0 +1,5 @@
+/* Opaque compact controls avoid repainting filtered layers during scrolling. */
+.countdown { backdrop-filter: none; background: #fffdf5; }
+@media (max-width: 640px) {
+  .site-header { backdrop-filter: none; background: #fffdf8; }
+}

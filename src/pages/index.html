@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#3652ed" />
+    <meta
+      name="description"
+      content="把下一款期待，放進你的遊戲日曆。 Steam、NS、NS2 與 PS5 新作發售月曆、社群關注與收藏清單。"
+    />
+    <title>新作發售雷達｜Game Trend Radar</title>
+    <link rel="icon" id="siteFavicon" type="image/svg+xml" />
+    <link rel="preconnect" href="https://shared.akamai.steamstatic.com" crossorigin />
+    <link rel="preconnect" href="https://shared.fastly.steamstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
+    <script type="module" src="./entries/home.ts"></script>
+</head>
+  <body data-page="home">
+    <a class="skip-link" href="#mainContent">跳到主要內容</a>
+    <div id="siteHeader"></div>
+    <main class="page-shell" id="mainContent">
+      <section class="activity-ticker" id="activityTicker" aria-label="新收錄與發售日期更新">
+        <span class="activity-label"><span aria-hidden="true">✳</span> 雷達動態</span>
+        <div class="activity-viewport" id="activityViewport"><div class="activity-track" id="activityTrack"><span class="activity-empty">正在整理最新動態…</span></div></div>
+        <button class="activity-pause" id="activityPause" type="button" aria-label="暫停雷達動態" aria-pressed="false">Ⅱ</button>
+        <button class="activity-more" id="activityMore" type="button" aria-haspopup="dialog">全部動態 ↗</button>
+      </section>
+      <dialog class="activity-dialog" id="activityDialog" aria-labelledby="activityDialogTitle"><div class="activity-dialog-head"><div><p class="eyebrow">RADAR UPDATES</p><h2 id="activityDialogTitle">最近的雷達動態</h2></div><button id="activityClose" type="button" aria-label="關閉更新動態">×</button></div><p class="activity-dialog-note">近 14 天的新收錄與公開發售日期更新；日期修正不一定代表遊戲延期。</p><ol id="activityList" class="activity-list"></ol></dialog>
+
+      <header class="workspace-heading">
+        <div>
+          <p class="eyebrow">RELEASE CALENDAR</p>
+          <h1 id="pageTitle">發售月曆</h1>
+          <p>追蹤遊戲熱度，收藏發售日。你的下一場冒險，從這裡開始。</p>
+        </div>
+        <a class="workspace-shortcut" href="./saved.html"
+          >打開我的收藏 <span aria-hidden="true">↗</span></a
+        >
+      </header>
+      <div class="data-status" id="dataStatus" role="status">
+        <span class="signal-dot"></span
+        ><span id="updateText">正在與新作相遇…</span>
+        <details id="dataDetails">
+          <summary>關於資料</summary>
+          <div class="data-detail-content">
+            <p id="coverageText">
+              清單包含 Steam、已驗證 Twitch 新作與 NS／NS2／PS5 遊戲；各平台分別依確切發售日收錄。
+            </p>
+            <p>
+              Steam 關注人數與 IGDB hypes 是不同來源的指標。NS／NS2／PS5 代表原生版本；各主機平台日期會標明資料來源地區，實際上市請以官方公告為準。
+            </p>
+          </div>
+        </details>
+      </div>
+      <div class="notice" id="notice" hidden role="alert"></div>
+      <section
+        class="explorer"
+        id="releaseCalendar"
+        aria-labelledby="pageTitle"
+      >
+        <div class="explorer-panel">
+          <div class="calendar-toolbar">
+            <div class="month-controls">
+              <button class="icon-button" id="prevMonth" aria-label="上個月">
+                ←
+              </button>
+              <h3 id="monthLabel"></h3>
+              <button class="icon-button" id="nextMonth" aria-label="下個月">
+                →</button
+              ><button class="quiet-button" id="todayButton">本月</button>
+            </div>
+            <label class="month-jump"
+              ><span>跳至</span
+              ><input
+                type="month"
+                id="monthPicker"
+                aria-label="選擇發售月份"
+                min="1900-01"
+                max="2199-12"
+            /></label>
+            <div class="view-switch" role="group" aria-label="顯示方式">
+              <button id="calendarView" aria-pressed="true">▦ 月曆</button
+              ><button id="listView" aria-pressed="false">☷ 清單</button>
+            </div>
+          </div>
+          <div class="filter-bar">
+            <label class="search-box"
+              ><svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m16 16 5 5" /></svg
+              ><span class="sr-only">搜尋遊戲名稱或 ID</span
+              ><input
+                id="searchInput"
+                type="search"
+                placeholder="搜尋遊戲名稱或 ID…"
+                autocomplete="off"
+              /><kbd aria-hidden="true">/</kbd></label
+            ><label class="select-wrap"
+              ><span class="sr-only">Steam 最低關注人數</span
+              ><select id="followersFilter">
+                <option value="0">全部關注度</option>
+                <option value="5000">5 千人以上</option>
+                <option value="10000">1 萬人以上</option>
+                <option value="50000">5 萬人以上</option>
+              </select></label
+            ><button class="filter-chip" id="savedFilter" aria-pressed="false">
+              ♡ 只看收藏
+            </button>
+          </div>
+          <div class="results-bar">
+            <p id="resultCount" role="status">正在讀取遊戲資料…</p>
+            <button class="reset-button" id="resetFilters" hidden>
+              清除篩選</button
+            ><label class="sort-wrap" id="sortWrap"
+              ><span>排序</span
+              ><select id="sortSelect" aria-label="排序方式">
+                <option value="date">上市日期最近</option>
+                <option value="followers">各來源關注度</option>
+                <option value="name">遊戲名稱 A–Z</option>
+              </select></label
+            >
+          </div>
+          <div id="calendarArea">
+            <div class="weekdays" aria-hidden="true">
+              <span>日</span><span>一</span><span>二</span><span>三</span
+              ><span>四</span><span>五</span><span>六</span>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="calendar-help">
+              <span><i></i> 各來源當日熱門新作</span
+              ><span>點日期看完整清單・點遊戲看詳細資訊 ↗</span>
+            </div>
+          </div>
+          <div class="games-grid" id="gamesGrid" hidden aria-busy="true"></div>
+          <div class="load-more-wrap" id="loadMoreWrap" hidden>
+            <button id="loadMore" class="button secondary">
+              載入更多遊戲 ↓
+            </button>
+          </div>
+        </div>
+      </section>
+      <section class="spotlight-section" aria-labelledby="spotlightTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">COMING SOON</p>
+            <h2 id="spotlightTitle">即將登場，先放進雷達</h2>
+          </div>
+          <a class="text-link" href="./upcoming.html"
+            >查看全部 <span aria-hidden="true">↗</span></a
+          >
+        </div>
+        <div class="spotlight-grid" id="spotlightGames" aria-busy="true">
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+        </div>
+      </section>
+      <section class="recent-section" aria-labelledby="recentTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">JUST RELEASED</p>
+            <h2 id="recentTitle">新鮮上架，現在就出發</h2>
+          </div>
+          <a class="text-link" href="./released.html"
+            >查看全部 <span aria-hidden="true">↗</span></a
+          >
+        </div>
+        <div id="recentGames" class="recent-grid"></div>
+      </section>
+      <section class="bottom-note">
+        <span class="mini-radar" aria-hidden="true">◎</span>
+        <div>
+          <strong>讓每一份期待，都有個位置。</strong>
+          <p>點擊遊戲旁的愛心，即可收藏在這個瀏覽器。無須登入。</p>
+        </div>
+        <a href="./saved.html" class="text-link">我的收藏 ↗</a>
+      </section>
+      <noscript
+        ><p class="notice">
+          請啟用 JavaScript 以查看遊戲資料、使用搜尋與收藏功能。
+        </p></noscript
+      >
+    </main>
+    <div id="siteFooter"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

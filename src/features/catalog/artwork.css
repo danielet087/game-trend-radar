@@ -1,0 +1,11 @@
+.cover-link img {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition:
+    opacity 0.25s,
+    transform 0.5s var(--ease);
+}
+.cover-link img.art-loaded {
+  opacity: 1;
+}

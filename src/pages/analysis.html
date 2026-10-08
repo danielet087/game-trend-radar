@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#3652ed" />
+    <meta
+      name="description"
+      content="遊戲比較・實驗功能，整理已公開收錄的 Steam 遊戲資訊。 Steam、NS、NS2 與 PS5 新作發售月曆、社群關注與收藏清單。"
+    />
+    <title>遊戲比較・實驗功能｜Game Trend Radar</title>
+    <link rel="icon" id="siteFavicon" type="image/svg+xml" />
+    <link rel="preconnect" href="https://shared.akamai.steamstatic.com" crossorigin />
+    <link rel="preconnect" href="https://shared.fastly.steamstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
+    <script type="module" src="./entries/analysis.ts"></script>
+</head>
+  <body data-page="analysis">
+    <a class="skip-link" href="#mainContent">跳到主要內容</a>
+    <div id="siteHeader"></div>
+    <main class="page-shell lab-shell" id="mainContent">
+      <section class="page-heading lab-heading"><div><p class="eyebrow">SIDE BY SIDE</p><h1 id="pageTitle">遊戲比較<span class="experimental-badge">實驗功能</span></h1><p>沿著每日紀錄，看見不同遊戲的關注變化。</p></div><a class="lab-back-link" href="./games.html">繼續找遊戲 ↗</a></section>
+      <div class="lab-status-line"><p id="labStatus" role="status">正在讀取遊戲資料…</p><button id="labRetry" type="button" class="text-link" hidden>重新讀取</button></div>
+      <div class="notice" id="compareWarning" role="status" hidden></div>
+      <section class="compare-picker" aria-labelledby="comparePickerTitle">
+        <div class="lab-section-heading"><h2 id="comparePickerTitle">這次，想比較哪幾款？</h2><span id="compareCount" aria-live="polite">0 / 3 款</span></div>
+        <div id="compareSlots" class="compare-slots"></div>
+        <a id="compareJump" class="compare-jump" href="#comparisonResults" hidden>查看比較分析 ↓ <span>每日趨勢・期間淨增・成長率</span></a>
+        <div class="compare-search-row"><label class="lab-search"><span class="sr-only">搜尋要比較的遊戲</span><input id="compareSearch" type="search" placeholder="遊戲名稱、AppID 或 TAG…" autocomplete="off"></label><button id="compareClear" type="button" class="text-link" disabled>清空</button><button id="compareShare" type="button" class="button secondary" disabled>複製比較連結 ↗</button></div>
+        <p id="compareSearchHint" class="lab-fine-print" role="status"></p>
+        <div id="compareSuggestions" class="compare-suggestions"></div>
+      </section>
+      <p id="comparisonPrompt" class="comparison-prompt">選擇 2～3 款遊戲，比較同一期間的每日關注變化。</p>
+      <section id="comparisonResults" class="comparison-results" hidden aria-labelledby="comparisonTitle">
+        <div class="lab-section-heading"><div><p class="eyebrow">DAY BY DAY</p><h2 id="comparisonTitle">每日歷史比較</h2></div><span id="historyWindowLabel"></span></div>
+        <div class="history-workspace">
+          <div class="history-toolbar">
+            <div class="lab-segmented" role="group" aria-label="歷史比較期間"><button type="button" data-history-days="7" aria-pressed="false">7 日</button><button type="button" data-history-days="30" aria-pressed="true">30 日</button><button type="button" data-history-days="90" aria-pressed="false">90 日</button></div>
+            <label class="history-end">截至日期 <input type="date" id="historyEnd" required></label>
+            <button id="historyLatest" type="button">最新紀錄 ↗</button>
+          </div>
+          <p id="historySourceNotice" class="history-source-note" role="status"></p>
+          <div id="historyMetrics" class="history-metrics"></div>
+          <div class="history-chart-heading"><h3 id="historyChartTitle">每日關注人數</h3><div class="history-modes" role="group" aria-label="圖表指標"><button type="button" data-history-metric="total" aria-pressed="true">關注人數</button><button type="button" data-history-metric="daily" aria-pressed="false">每日淨增</button><button type="button" data-history-metric="percent" aria-pressed="false">累積成長率</button></div></div>
+          <div id="historyLegend" class="history-legend" role="group" aria-label="圖表顯示遊戲"></div>
+          <p id="historyChartNote" class="lab-fine-print"></p>
+          <div id="historyPlot" class="history-plot"></div>
+          <p id="historyPlotEmpty" class="history-plot-empty" hidden></p>
+          <div class="history-scrubber"><label for="historyCursor">檢視日期 <output id="historyCursorDate" for="historyCursor"></output></label><input id="historyCursor" type="range" min="0" max="30" step="1" value="30"></div>
+          <div id="historyReadout" class="history-readout" aria-live="polite"></div>
+          <details class="history-method"><summary>歷史紀錄與計算方式</summary><p>每日排程取得官方 Steam Followers 後，保留實際量測時間；同一個台灣日期取最後一筆。重複發布資料不算新的量測。</p><p>期間淨增＝共同截止日關注數 − 共同比較起點關注數；成長率以起點人數為基準。每日淨增只在連續兩天都有實測時顯示。缺日保持空白、曲線斷開，起點為零時不計百分比。</p><p>各遊戲追蹤至上市後第 30 天；停止追蹤後仍可選擇較早的截止日期，查看已保存的歷史。此頁提供各遊戲最近 100 筆日紀錄。這裡的關注數與 Steam 願望清單數不同。</p></details>
+        </div>
+        <details class="comparison-reference"><summary>遊戲資料參考 <span>發售日期、語言與 TAG</span></summary>
+          <div class="comparison-table-scroll" role="region" aria-label="遊戲資料比較表，可左右捲動" tabindex="0"><table class="comparison-table"><caption class="sr-only">所選遊戲目前的發售資訊與遊戲特色；每日歷史比較見上方</caption><thead id="comparisonHead"></thead><tbody id="comparisonBody"></tbody></table></div>
+        </details>
+      </section>
+    </main>
+    <div id="siteFooter"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
