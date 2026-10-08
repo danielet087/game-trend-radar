@@ -3,39 +3,31 @@
     4182430,
     2938460,
     3640200,
+    3510740,
     4694270,
     3832490,
     2902720
   ],
-  "description_translation_pending_count": 6,
-  "generated_at": "2026-10-08T11:31:38Z",
-  "qualified_master": 138,
+  "description_translation_pending_count": 7,
+  "generated_at": "2026-10-08T23:31:33Z",
+  "qualified_master": 143,
   "attempted": 2,
-  "enriched": 1,
+  "enriched": 2,
   "repaired_indexes": 0,
-  "pending_count": 2,
+  "pending_count": 1,
   "pending_enrichment": {
-    "3328490": [
-      "categories"
-    ],
     "2712590": [
       "release_date_diagnostics"
     ]
   },
   "failures": {
-    "3328490": {
-      "signature": "3328490:5207:2026-09-22",
-      "reason": "Steam Store Browse missing AppID 3328490 in english",
-      "attempted_at": "2026-10-08T11:31:31Z",
-      "retry_after": "2026-10-08T17:31:31Z"
-    },
     "2712590": {
       "signature": "2712590:8968:2026-09-25",
       "reason": "release_date_diagnostics",
-      "attempted_at": "2026-10-08T11:31:34Z",
-      "retry_after": "2026-10-08T17:31:34Z"
+      "attempted_at": "2026-10-08T23:31:29Z",
+      "retry_after": "2026-10-09T05:31:29Z"
     }
   },
   "complete": false,
-  "public_count": 138
+  "public_count": 143
 }
