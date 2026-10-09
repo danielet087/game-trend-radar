@@ -447,8 +447,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", type=Path, default=Path("data"))
     parser.add_argument("--measurements", type=Path)
+    parser.add_argument("--observed-at", help="Freeze a timezone-aware publication clock across Git retries")
     args = parser.parse_args()
-    now = datetime.now(timezone.utc)
+    now = stamp(args.observed_at) if args.observed_at is not None else datetime.now(timezone.utc)
+    if now is None:
+        parser.error("--observed-at requires a timezone-aware ISO timestamp")
+    now = now.astimezone(timezone.utc)
     observed = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
     path = args.data_dir / "insights-state.json"
     run = load(args.measurements, {}) if args.measurements else {}
