@@ -54,10 +54,11 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          observed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           for attempt in 1 2 3 4 5; do
             git fetch origin main
             git reset --hard origin/main
-            python scripts/build_radar_insights.py
+            python scripts/build_radar_insights.py --observed-at "$observed_at"
             python scripts/sync_scheduler_queue_status.py
             git add data/insights-state.json data/activity.json data/growth.json data/scheduler_queue_status.json
             if git diff --cached --quiet; then
