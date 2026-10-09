@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-09T03:02:09.756811Z",
+  "generated_at": "2026-10-09T04:02:15.543795Z",
   "today_taipei": "2026-10-09",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-10-09T03:02:03.587518Z",
-    "group_resolution_updated_at": "2026-10-08T22:01:50.443084Z",
+    "checkpoint_updated_at": "2026-10-09T04:02:05.381718Z",
+    "group_resolution_updated_at": "2026-10-09T04:02:02.069997Z",
     "candidate_state_updated_at": "2026-10-08T17:06:41.953520Z",
     "prefilter_updated_at": "2026-10-08T17:06:41.933575Z",
     "eligible_screened_at": "2026-10-08T17:06:42.585018Z",
-    "twitch_import_updated_at": "2026-10-08T22:02:01.787366Z",
-    "last_official_success_at": "2026-10-08T22:01:53.443831Z",
+    "twitch_import_updated_at": "2026-10-09T04:02:14.352222Z",
+    "last_official_success_at": "2026-10-09T04:02:05.329077Z",
     "queue_projection": "official_collector_make_queue"
   },
   "source_status": {
@@ -23,7 +23,7 @@
     "parked_group_xml_appids": [],
     "combined_pending_now": 1,
     "completed_legacy": 384,
-    "completed_new": 2105,
+    "completed_new": 2106,
     "twitch_priority_pending": 0
   },
   "summary": {
@@ -34,14 +34,14 @@
     "followers_ready_pending": 0,
     "awaiting_group_pending": 1,
     "total_pending": 1,
-    "today_attempts": 25,
-    "today_successes": 25,
+    "today_attempts": 26,
+    "today_successes": 26,
     "today_429": 0
   },
   "group_resolution_api_cooldown": {
     "status": "available",
     "retry_at": null,
-    "observed_at": "2026-10-08T22:01:50.443084Z",
+    "observed_at": "2026-10-09T04:02:02.069997Z",
     "attempts": 0,
     "source": "Steam ISteamUser/ResolveVanityURL"
   },
@@ -49,23 +49,25 @@
     "active": false,
     "until": null,
     "reason": null,
-    "next_eligible_slot": "2026-10-09T04:00:00Z",
+    "next_eligible_slot": "2026-10-09T05:00:00Z",
     "schedule_taipei": "03:00–23:00 hourly"
   },
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-10-09T11:02:03.488165+08:00",
-    "last_updated_at": "2026-10-09T11:02:03.587518+08:00",
-    "finished_at": "2026-10-09T11:02:03.587518+08:00",
-    "stop_reason": "awaiting_group_resolution_no_request",
-    "requests_this_run": 0,
-    "official_new_this_run": 0,
+    "started_at": "2026-10-09T12:02:04.940174+08:00",
+    "last_updated_at": "2026-10-09T12:02:05.381718+08:00",
+    "finished_at": "2026-10-09T12:02:05.381718+08:00",
+    "stop_reason": "batch_request_limit",
+    "last_appid": 4287460,
+    "last_name": "POOL LOOP",
+    "requests_this_run": 1,
+    "official_new_this_run": 1,
     "http_429_this_run": 0,
     "manual_cooldown_override": false,
     "request_limit": 250,
-    "run_id": "37877348989",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37877348989"
+    "run_id": "37881950754",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37881950754"
   },
   "queue": [
     {
@@ -93,19 +95,6 @@
   ],
   "parked": [],
   "events": [
-    {
-      "at": "2026-10-08T12:11:10.889836Z",
-      "kind": "official_attempt",
-      "appid": 4779040,
-      "name": "Stellar Abyss",
-      "status": "ok",
-      "http": 200,
-      "source": "fresh_daily_prefilter_unresolved",
-      "official_followers": 2,
-      "retry_at": null,
-      "run_id": "37773993704",
-      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37773993704"
-    },
     {
       "at": "2026-10-08T12:11:18.889958Z",
       "kind": "official_attempt",
@@ -1392,6 +1381,19 @@
       "retry_at": null,
       "run_id": "37850763781",
       "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37850763781"
+    },
+    {
+      "at": "2026-10-09T04:02:05.038723Z",
+      "kind": "official_attempt",
+      "appid": 4287460,
+      "name": "POOL LOOP",
+      "status": "ok",
+      "http": 200,
+      "source": "twitch_steam_discovery",
+      "official_followers": 149,
+      "retry_at": null,
+      "run_id": "37881950754",
+      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/37881950754"
     }
   ],
   "events_limit": 100
