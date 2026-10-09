@@ -42,6 +42,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install versioned shared admission rules
+        run: python -m pip install --disable-pip-version-check -r requirements-core.txt
       - name: Test observation dates and tracking boundaries
         run: python -m unittest discover -s tests -p test_radar_insights.py
       - name: Test queue backup validation and preservation
