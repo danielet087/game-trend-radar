@@ -62,6 +62,8 @@ export const GameCard = defineComponent({
         Number(selected.some(tag => R.key(tag) === R.key(b))) - Number(selected.some(tag => R.key(tag) === R.key(a))))
         .slice(0, 2).map(tag => h('span', { title: tag }, R.label(tag)))) : null;
       const metrics = [[game.followers, '人關注'], [game.hypes, 'IGDB hypes']].filter(([value]) => Number.isFinite(value));
+      const twitchEvidence = game.twitchAdmission?.source_enrollment;
+      const admissionTitle = twitchEvidence ? `Twitch 分類 ${game.twitchAdmission.twitch_game_id} · ${new Intl.NumberFormat('zh-TW').format(twitchEvidence.viewer_count)} 人觀看 · 達標時間 ${twitchEvidence.observed_at}` : undefined;
       const merchant = nativeEvent && nativePlatforms.length === 1 ? game.platformLinks?.[nativePlatforms[0]] : null;
       const merchantURL = merchant && D.platformURL?.(merchant.url, nativePlatforms[0]);
       const storeGame = merchantURL ? { ...game, source: 'nintendo', link: merchantURL, linkLabel: merchant.label } : game;
@@ -88,9 +90,15 @@ export const GameCard = defineComponent({
                 title: event ? '本次平台發售日期' : '最早發售日期；各平台日期可於遊戲資訊查看' }, displayedDate.replaceAll('-', '/'))]),
               event && game.releasePlatforms?.length ? h('span', { class: 'card-release-platform', title: '本次發售的平台' }, game.releasePlatforms.join('／')) : null,
             ]),
-            h('div', { class: 'card-interest' }, metrics.map(([value, label]) => h('span', { class: 'card-followers' }, [
-              new Intl.NumberFormat('zh-TW').format(Number(value)), h('small', null, String(label)),
-            ]))),
+            h('div', { class: 'card-interest' }, [
+              ...metrics.map(([value, label]) => h('span', { class: 'card-followers' }, [
+                new Intl.NumberFormat('zh-TW').format(Number(value)), h('small', null, String(label)),
+              ])),
+              game.followerStatus === 'unavailable_group_id' ? h('span', { class: 'card-followers', title: '本次未取得 GroupID；尚無可驗證的 Steam Followers' }, [
+                '未取得', h('small', null, 'Steam Followers'),
+              ]) : null,
+              twitchEvidence ? h('span', { class: 'card-admission', title: admissionTitle }, '收錄依據 Twitch') : null,
+            ]),
           ]),
           h('div', { class: 'card-footer' }, [
             h('div', { class: 'card-platforms', 'aria-label': '遊戲平台與獨佔狀態' }, [h('span', { class: 'platform-badge platform-' + badge.status, title: badge.title }, badge.label)]),

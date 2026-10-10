@@ -1,4 +1,5 @@
 /* Shared, local-only discovery over the already-published Steam dataset. */
+import { observedMetricCompare } from '../../domain/collections.mjs';
 const names = {
   Action: "動作",
   Adventure: "冒險",
@@ -331,7 +332,7 @@ function recommendations(game, games, selected = "", limit = 3) {
       b.sharedTags.length - a.sharedTags.length ||
       Math.abs(Date.parse(a.date) - Date.parse(game.date)) -
         Math.abs(Date.parse(b.date) - Date.parse(game.date)) ||
-      b.followers - a.followers ||
+      observedMetricCompare(a.followers, b.followers) ||
       a.appid - b.appid,
   );
   return {

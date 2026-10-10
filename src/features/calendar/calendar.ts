@@ -50,7 +50,7 @@ export function createCalendarFeature(D: CatalogAPI, filters: FilterState, state
         platform.title = `${badge.title} 本日發售：${releasePlatforms.join("／")}。`;
         tag.append(platform,
           node("span", "day-game-name", display.name));
-        tag.title = `${display.name}${display.nameEn && display.nameEn !== display.name ? ` · ${display.nameEn}` : ""} · ${platform.title}${Number.isFinite(game.hypes) ? ` · ${number.format(game.hypes)} IGDB hypes` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;
+        tag.title = `${display.name}${display.nameEn && display.nameEn !== display.name ? ` · ${display.nameEn}` : ""} · ${platform.title}${Number.isFinite(game.hypes) ? ` · ${number.format(game.hypes)} IGDB hypes` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : game.followerStatus === 'unavailable_group_id' ? ' · Steam Followers 未取得' : ""}${game.twitchAdmission ? ' · 收錄依據 Twitch' : ''}`;
         cell.append(tag);
       });
       if (dayGames.length > 2) {

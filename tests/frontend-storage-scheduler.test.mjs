@@ -231,6 +231,8 @@ test('this-attempt no-match keeps a parked game awaiting resolution without clai
   assert.equal(state.stage, 'awaiting_group');
   assert.match(state.detail, /本次 API 回應未取得群組 ID/);
   assert.match(state.detail, /不代表該遊戲沒有群組/);
+  assert.match(state.detail, /Twitch 新遊戲資格與曾達 7,000 總觀眾/);
+  assert.match(state.detail, /未達標或缺少證據仍待觀察/);
   assert.match(state.detail, /仍計入暫停項目/);
   assert.equal(q.summary.parked, 1);
   assert.ok(state.metadata.some(text => text.includes('解析 API HTTP 200')));
