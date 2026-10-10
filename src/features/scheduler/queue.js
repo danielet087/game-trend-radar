@@ -21,7 +21,8 @@ function queueGameState(game, snapshot, now = Date.now(), parked = false) {
       invalid_response: ["群組解析回應無效", "本次群組解析 API 回應缺少有效資料，尚未取得群組 ID，等待後續解析。", "interrupted"],
     };
     const [label, detail, kind] = states[resolution?.status] || ["等待群組 ID 解析", "群組 ID 尚未解析；先取得 GroupID，再查詢官方 Followers。", "waiting"];
-    return { stage: "awaiting_group", awaitingGroup: true, label, detail: detail + (parked ? " 目前仍計入暫停項目。" : ""), kind, metadata };
+    const twitchAlternative = " 若本次查無 GroupID，可依本作 Twitch 新遊戲資格與曾達 7,000 總觀眾的有效證據收錄；未達標或缺少證據仍待觀察。";
+    return { stage: "awaiting_group", awaitingGroup: true, label, detail: detail + twitchAlternative + (parked ? " 目前仍計入暫停項目。" : ""), kind, metadata };
   }
   const until = instant(snapshot?.cooldown?.until), cooling = until !== null && until > now;
   const oldPausedReason = ({ official_xml_fallback_returned_html: "官方端點回傳 HTML，尚未取得有效群組 ID。", missing_official_group_id: "尚未取得有效官方群組 ID。" })[game.reason] || game.reason || "目前資料不足，暫停官方查詢。";

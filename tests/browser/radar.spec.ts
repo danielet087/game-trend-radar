@@ -100,3 +100,35 @@ for (const route of [`index.html?month=${month}`, 'games.html', steamRoute, 'twi
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   });
 }
+
+test('built catalog and detail show qualified missing GroupID Followers as unavailable with Twitch evidence', async ({ page }) => {
+  const raw = JSON.parse(readFileSync(resolve('tests/fixtures/twitch-unavailable-group.json'), 'utf8'));
+  const catalog = {version:3,generated_at:'2026-10-10T03:00:00Z',count:1,games:[raw]};
+  await page.route('**/data/**', route => {
+    const url = new URL(route.request().url());
+    const file = url.pathname.split('/data/')[1];
+    if (['catalog.json','steam_upcoming.json','steam_preview.json'].includes(file))
+      return route.fulfill({json:catalog});
+    if (file === `games/${raw.appid}.json`) return route.fulfill({json:raw});
+    if (file === 'nintendo_upcoming.json') return route.fulfill({json:{schema_version:1,games:[]}});
+    return route.fallback();
+  });
+  await page.goto('games.html');
+  const card = page.locator('#gamesGrid .game-card');
+  await expect(card).toHaveCount(1);
+  await expect(card.locator('.card-followers')).toHaveText('未取得Steam Followers');
+  await expect(card.locator('.card-admission')).toHaveText('收錄依據 Twitch');
+  await expect(card.locator('.card-admission')).toHaveAttribute('title', /7,200 人觀看.*2026-10-09T23:00:00Z/);
+  await page.locator('#followersFilter').selectOption('5000');
+  await expect(card).toHaveCount(0);
+  await page.locator('#followersFilter').selectOption('0');
+  await expect(card).toHaveCount(1);
+  await card.locator('.card-names').click();
+  await expect(page.locator('#detailPage')).toBeVisible();
+  await expect(page.locator('#gameFollowers')).toHaveText('未取得');
+  await expect(page.locator('#gameInterestUnit')).toBeEmpty();
+  await expect(page.locator('#gameInterestCaption')).toHaveText('本次未取得 GroupID · 收錄依據 Twitch');
+  await expect(page.locator('#gameInterestCaption')).toHaveAttribute('title', /7,200 人觀看.*2026-10-09T23:00:00Z/);
+  await page.setViewportSize({width:390,height:844});
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+});

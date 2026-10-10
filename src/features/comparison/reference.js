@@ -6,10 +6,12 @@ export function createComparisonView(ctx, presentation, comparisonHistory) {
     const selected = compare.ids();
     const matches = state.games.filter(game => !selected.includes(game.appid) && (!term ||
       `${game.name} ${game.nameEn} ${game.appid} ${(game.tags || []).map(R.label).join(" ")}`.toLocaleLowerCase().includes(term)));
-    const sorted = matches.sort((a, b) => b.followers - a.followers);
+    const sorted = matches.sort(D.popularityCompare);
     $("compareSuggestions").replaceChildren(...sorted.slice(0, 6).map(game => {
       const button = node("button", "compare-suggestion"); button.type = "button";
-      const text = node("span"); text.append(node("strong", "", game.name), node("small", "", `${dateText(game.date)} · ${number.format(game.followers)} 人關注`));
+      const interest = Number.isSafeInteger(game.followers) ? `${number.format(game.followers)} 人關注`
+        : `Steam Followers 未取得${game.twitchAdmission ? " · 收錄依據 Twitch" : ""}`;
+      const text = node("span"); text.append(node("strong", "", game.name), node("small", "", `${dateText(game.date)} · ${interest}`));
       button.append(cover(game, "suggestion-cover"), text, node("span", "suggestion-plus", "+"));
       button.setAttribute("aria-label", `加入比較：${game.name}`);
       button.disabled = selected.length >= 3;

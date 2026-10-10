@@ -101,6 +101,31 @@ def taipei_igdb_release(at="2026-10-08T20:00:00Z", **fields):
 
 
 class InsightTests(unittest.TestCase):
+    def test_unavailable_group_twitch_admission_adds_activity_without_fabricated_history(self):
+        raw = {**twitch_game(), "followers": None, "follower_checked_at": None,
+               "follower_source": None, "follower_status": "unavailable_group_id",
+               "follower_unavailable_at": "2026-09-28T00:00:00Z", "official_ge5000": False,
+               "group_id64": None}
+        before = deepcopy(raw)
+        self.assertEqual(list(M.accepted([raw])), ["2"])
+        baseline = M.update(None, catalog(game()), observed_at="2026-09-27T00:00:00Z")
+        changed = M.update(baseline, catalog(game(), raw), observed_at="2026-09-28T00:00:00Z")
+        activity, growth = M.projections(changed, date(2026, 9, 28))
+        self.assertEqual([entry["appid"] for entry in activity["events"]], [2])
+        self.assertEqual(changed["records"]["2"]["history"], [])
+        self.assertEqual(next(entry for entry in growth["games"] if entry["appid"] == 2)["history"], [])
+        self.assertEqual(raw, before)
+        self.assertEqual(M.update(changed, catalog(game(), raw), observed_at="2026-09-28T01:00:00Z"), changed)
+        measured = {**raw, "followers": 0, "follower_checked_at": "2026-09-28T01:00:00Z",
+                    "follower_status": None, "follower_unavailable_at": None}
+        observed = M.update(changed, catalog(game(), measured), observed_at="2026-09-28T01:00:00Z")
+        self.assertEqual(observed["records"]["2"]["history"][0]["followers"], 0)
+        for fields in [{"follower_status": None}, {"official_ge5000": True},
+                       {"group_id64": "103582791429523071"}, {"follower_source": "steam_community"},
+                       {"follower_unavailable_at": "2026-09-27T23:59:59Z"}, {"twitch_admission": None}]:
+            with self.subTest(fields=fields):
+                self.assertEqual(M.accepted([{**raw, **fields}]), {})
+
     def test_verified_store_authority_keeps_calendar_day_and_real_follower_history(self):
         raw = twitch_store_authority()
         before = deepcopy(raw)

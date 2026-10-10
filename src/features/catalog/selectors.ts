@@ -32,7 +32,7 @@ export function selectCatalog(data: CatalogDataset | null, filters: FilterState,
   const language = ['all', 'explore'].includes(mode) ? f.language : '';
   const events = releaseEventGames(source.filter(game =>
     (!term || `${game.name} ${game.nameEn} ${game.nameOriginalTw || ''} ${game.nameOriginalCn || ''} ${(game.nameSearchAliases || []).join(' ')} ${game.appid} ${mode === 'all' ? (game.tags || []).map((tag: string) => tag + ' ' + discovery.label(tag)).join(' ') : ''}`.toLocaleLowerCase().includes(term)) &&
-    (minimum === 0 || (game.source !== 'nintendo' && game.followers >= minimum)) &&
+    (minimum === 0 || (game.source !== 'nintendo' && Number.isFinite(game.followers) && game.followers >= minimum)) &&
     (mode !== 'explore' || discovery.matchesTags(game, f.tags)) &&
     (!period || (period === 'future' ? game.date >= today : game.date < today)) &&
     (!language || game.languages?.[language] === true) && (!f.savedOnly || domain.isSaved(game, saved))));

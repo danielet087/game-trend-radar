@@ -66,6 +66,10 @@ function steam(value, fallbackID) {
   const strings = values => Array.isArray(values) ? [...new Set(values.filter(v => typeof v === "string" && v.trim()).map(v => v.trim()))] : [];
   const labels = values => values && typeof values === "object" && !Array.isArray(values) ? Object.fromEntries(Object.entries(values).filter(([key,label]) => typeof key === "string" && typeof label === "string")) : {};
   return { steam_appid:id, display_name:String(value.display_name || value.name || value.name_en || `Steam ${id}`), name:String(value.name || value.display_name || ""), name_en:String(value.name_en || ""), followers:count(value.followers), store_url:safeURL(value.store_url,"store.steampowered.com"), release_at:timestamp(value.release_at), release_date:typeof value.release_date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value.release_date) ? value.release_date : null, expires_at:timestamp(value.expires_at), is_recent:value.is_recent === true, tags:strings(value.tags), genres:strings(value.genres), tag_labels_zh_tw:labels(value.tag_labels_zh_tw), genre_labels_zh_tw:labels(value.genre_labels_zh_tw),
+    ...(value.follower_status === "unavailable_group_id" && SteamData.isTwitchQualified(value) ? {
+      follower_status: value.follower_status, follower_unavailable_at: value.follower_unavailable_at,
+      twitch_admission: value.twitch_admission,
+    } : {}),
     ...(value.release_time_utc != null ? {release_time_utc:timestamp(value.release_time_utc)} : {}),
     ...(value.release_timestamp_taipei_date != null ? {release_timestamp_taipei_date:value.release_timestamp_taipei_date} : {}),
     ...(value.release_date_normalization != null ? {release_date_normalization:value.release_date_normalization} : {}),

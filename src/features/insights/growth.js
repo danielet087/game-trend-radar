@@ -24,7 +24,7 @@ export function createGrowthView(ctx, presentation) {
       (state.scope === "all" || (state.scope === "future" ? game.date > today : game.date <= today)));
     const entries = eligible.map(game => ({ game, metric: I.metric(history(game), state.span, today) }));
     const ready = entries.filter(entry => entry.metric.status === "ready");
-    ready.sort((a, b) => (state.sort === "percent" ? (b.metric.percent ?? -Infinity) - (a.metric.percent ?? -Infinity) : b.metric.delta - a.metric.delta) || b.game.followers - a.game.followers || a.game.appid - b.game.appid);
+    ready.sort((a, b) => (state.sort === "percent" ? (b.metric.percent ?? -Infinity) - (a.metric.percent ?? -Infinity) : b.metric.delta - a.metric.delta) || ctx.D.popularityCompare(a.game, b.game) || a.game.appid - b.game.appid);
     const pending = entries.filter(entry => entry.metric.status !== "ready");
     $("growthRanked").textContent = number.format(ready.length);
     $("growthTracked").textContent = number.format(eligible.length);
@@ -39,7 +39,8 @@ export function createGrowthView(ctx, presentation) {
     $("pendingList").replaceChildren(...pending.slice(0, 12).map(({ game, metric }) => {
       const item = node("article", "pending-game");
       item.append(gameLink(game), node("span", "pending-state", statusText(metric.status)));
-      item.append(node("p", "", metric.latest ? `${number.format(metric.latest.followers)} 人 · ${dateText(metric.latest.day)} 量測` : "尚無附查詢時間的官方關注數"));
+      item.append(node("p", "", metric.latest ? `${number.format(metric.latest.followers)} 人 · ${dateText(metric.latest.day)} 量測`
+        : game.followerStatus === "unavailable_group_id" ? "Steam Followers 未取得 · 收錄依據 Twitch" : "尚無附查詢時間的官方關注數"));
       return item;
     }));
     $("pendingOverflow").textContent = pending.length > 12 ? `另有 ${pending.length - 12} 款正在累積；可輸入名稱查詢。` : "";

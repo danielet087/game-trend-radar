@@ -5,6 +5,9 @@ import { RadarInsights } from '../src/features/insights/metrics.js';
 import { RadarDiscovery } from '../src/features/discovery/index.js';
 import { createReleasePolicy } from '../src/features/detail/release-policy.js';
 import { createDetailLoader } from '../src/features/detail/load.js';
+import { createDetailRenderer } from '../src/features/detail/render.js';
+import { createDetailContext } from '../src/features/detail/context.js';
+import { readFileSync } from 'node:fs';
 
 const policy = createReleasePolicy({ D: RadarData, isNativeConsole: game => game?.source === 'nintendo' });
 
@@ -53,6 +56,32 @@ test('history metric keeps missing and measured zero separate and uses Taipei ob
   assert.equal(measured.percent, null);
   assert.equal(RadarInsights.metric(history.slice(1), 7, '2026-10-09').status, 'accumulating');
   assert.equal(RadarInsights.metric([], 7, '2026-10-09').status, 'missing');
+});
+
+test('detail and related summaries distinguish unavailable Followers from a measured zero and show Twitch evidence', () => {
+  const raw = JSON.parse(readFileSync(new URL('./fixtures/twitch-unavailable-group.json', import.meta.url), 'utf8'));
+  const game = { ...RadarData.normalize(raw), genres: [] }, elements = new Map();
+  const $ = id => {
+    if (!elements.has(id)) elements.set(id, { textContent:'', replaceChildren(){}, setAttribute(){} });
+    return elements.get(id);
+  };
+  const document = { body: { dataset:{} }, querySelectorAll:()=>[] };
+  const ctx = { $, document, node:()=>({}), D:RadarData, R:{hasTag:()=>false,theme:()=>'',genreLabel:value=>value},
+    state:{currentGame:null,selectedTag:'',recommendationsReady:false}, today:'2026-10-10',
+    number:new Intl.NumberFormat('zh-TW'),isNativeConsole:g=>g.source==='nintendo' };
+  const render = createDetailRenderer(ctx, {publicSourceURL:()=>''}, {releaseDays:()=>2,renderReleaseDates(){}},
+    {renderLanguages(){},renderPlatforms(){}}, {showArtwork(){}}, {updateSaveControls(){}}, {setupTags(){}});
+  render(game, {games:[game],recent:[],updated:'2026-10-10T03:00:00Z'});
+  assert.equal($('gameFollowers').textContent, '未取得');
+  assert.equal($('gameInterestUnit').textContent, '');
+  assert.match($('gameInterestCaption').textContent, /未取得 GroupID · 收錄依據 Twitch/);
+  assert.match($('gameInterestCaption').title, /7,200 人觀看.*2026-10-09T23:00:00Z/);
+  const context = createDetailContext({document:{},window:{location:{search:''}},today:'2026-10-10'});
+  assert.equal(context.interestText(game), 'Steam Followers 未取得 · 收錄依據 Twitch');
+  render({...game,followers:0}, {games:[game],recent:[]});
+  assert.equal($('gameFollowers').textContent, '0');
+  assert.equal($('gameInterestUnit').textContent, '人');
+  assert.equal(context.interestText({...game,followers:0}), '0 人關注');
 });
 
 test('discovery honors explicit empty primary metadata over stale preview tags', () => {

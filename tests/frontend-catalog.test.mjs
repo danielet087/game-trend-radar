@@ -9,8 +9,10 @@ import { FilterState, PAGE_SIZE } from '../src/features/catalog/filter-state.ts'
 import { cardDate, selectCatalog } from '../src/features/catalog/selectors.ts';
 import { GameCard } from '../src/features/catalog/GameCard.ts';
 import { normalizeCatalog, catalogEntity, catalogCardDate } from '../src/features/catalog/boundary.ts';
+import { catalogSteam } from '../src/features/twitch/model.js';
 
 const TODAY = '2026-10-08';
+const unavailableGroup = JSON.parse(readFileSync(new URL('./fixtures/twitch-unavailable-group.json', import.meta.url), 'utf8'));
 function filters(mode = 'all', search = '') {
   const result = new FilterState(mode, TODAY, D, R, new URLSearchParams(search));
   result.configure({minimum:['0','5000','10000'],sort:['date','followers','name','newest'],period:['','future','past'],language:['','tchinese','schinese']});
@@ -119,6 +121,34 @@ test('Vue card reserves the blank English row and omits missing metrics while re
   const html=await renderCard(game);
   assert.match(html,/class="card-english" aria-hidden="true"><\/p>/);
   assert.match(html,/0<small>人關注<\/small>/); assert.doesNotMatch(html,/IGDB hypes/);
+});
+
+test('Twitch admission renders unknown Steam Followers and the verified enrollment evidence', async () => {
+  const game = D.normalize(unavailableGroup);
+  const html = await renderCard(game);
+  assert.match(html, /未取得<small>Steam Followers<\/small>/);
+  assert.match(html, /收錄依據 Twitch/);
+  assert.match(html, /Twitch 分類 100 · 7,200 人觀看 · 達標時間 2026-10-09T23:00:00Z/);
+  assert.doesNotMatch(html, /(?:NaN|0)<small>人關注<\/small>/);
+  const data = dataset(unavailableGroup), f = filters();
+  assert.deepEqual(selectCatalog(data, f, D, R, new Set()).items.map(g => g.appid), [4435490]);
+  f.state.minimum = '5000';
+  assert.deepEqual(selectCatalog(data, f, D, R, new Set()).items, []);
+  const zero = D.normalize({ ...unavailableGroup, followers: 0, follower_checked_at: '2026-10-10T03:00:00Z',
+    follower_status:null, follower_unavailable_at:null });
+  const zeroHTML = await renderCard(zero);
+  assert.match(zeroHTML, /0<small>人關注<\/small>/);
+  assert.doesNotMatch(zeroHTML, /未取得/);
+});
+
+test('Twitch public catalog metadata preserves unknown Followers and its validated admission', () => {
+  const row = catalogSteam(unavailableGroup, Date.parse('2026-10-13T03:00:00Z'));
+  assert.equal(row.followers, null);
+  assert.equal(row.follower_status, 'unavailable_group_id');
+  assert.equal(row.follower_unavailable_at, unavailableGroup.follower_unavailable_at);
+  assert.deepEqual(row.twitch_admission, unavailableGroup.twitch_admission);
+  assert.equal(row.is_recent, true);
+  assert.equal(catalogSteam({...unavailableGroup,twitch_admission:null}, Date.parse('2026-10-13T03:00:00Z')), null);
 });
 
 test('current public JSON uses canonical indexes while catalog view models and Vue card output stay identical', async () => {

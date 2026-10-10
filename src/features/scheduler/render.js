@@ -13,9 +13,9 @@ function renderQueue() {
   const q = state.queue, search = ($("queueSearch")?.value || "").trim().toLocaleLowerCase(), filter = $("queueFilter")?.value || "all";
   if (!q) { $("nextQueue").innerHTML = '<p class="empty-state">待查清單暫時無法取得。</p>'; $("pausedQueue").innerHTML = '<p class="empty-state">暫停清單尚未確認。</p>'; $("pendingQueue").innerHTML = '<p class="empty-state">保留未知狀態，沒有將待查數量當成 0。</p>'; return; }
   $("nextQueue").innerHTML = q.queue.length ? q.queue.slice(0, 6).map((g, i) => gameCard(g, i)).join("") : '<p class="empty-state">目前沒有可處理遊戲。</p>';
-  $("nextQueueNote").textContent = "依後端佇列順序顯示前 6 款；先解析群組 ID，再查 Followers。已取得 ID 的項目直接查 Followers，實際開始仍須通過各自的冷卻與執行鎖。";
+  $("nextQueueNote").textContent = "依後端佇列順序顯示前 6 款；已取得群組 ID 的項目查詢 Followers，實際開始仍須通過冷卻與執行鎖。查無 GroupID 時，可由經驗證的本作 Twitch 新遊戲與 7,000 總觀眾資格收錄；未達標或缺少證據仍待觀察。";
   $("pausedQueue").innerHTML = q.parked.length ? q.parked.map((g, i) => gameCard(g, i, true)).join("") : '<p class="empty-state">目前沒有暫停項目。</p>';
-  $("pausedQueueNote").textContent = "暫停項目計入總待處理數；尚未取得有效群組 ID 的項目等待解析，成功後由後端恢復至既有佇列。";
+  $("pausedQueueNote").textContent = "暫停項目計入總待處理數；尚未取得群組 ID 且缺少有效 Twitch 收錄證據者繼續待查。取得 ID 後恢復 Followers 查詢；符合 Twitch 資格者可改用 Twitch 證據收錄。";
   const rows = [...q.queue.map(g => ({ ...g, parked: false })), ...q.parked.map(g => ({ ...g, parked: true }))].filter(g => (filter === "all" || filter === "paused" && g.parked || filter === "twitch" && !g.parked && g.priority || filter === "ordinary" && !g.parked && !g.priority) && (!search || String(g.name).toLocaleLowerCase().includes(search) || String(g.appid).includes(search)));
   $("queueCount").textContent = `顯示 ${rows.length} / ${q.summary.total_pending} 款`;
   $("pendingQueue").innerHTML = rows.length ? rows.map((g, i) => gameCard(g, i, g.parked)).join("") : '<p class="empty-state">沒有符合搜尋條件的遊戲。</p>';

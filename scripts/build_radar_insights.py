@@ -49,8 +49,9 @@ def accepted(rows):
     result = {}
     for row in rows:
         aid, count = row.get("appid"), row.get("followers")
+        twitch_qualified = is_twitch_qualified(row)
         if (not isinstance(aid, int) or isinstance(aid, bool) or aid <= 0
-                or not isinstance(count, int) or isinstance(count, bool) or count < 0
+                or (not twitch_qualified and (not isinstance(count, int) or isinstance(count, bool) or count < 0))
                 or not day(row.get("release_start"))
                 or row.get("release_precision", "day") != "day"):
             continue
@@ -58,7 +59,6 @@ def accepted(rows):
         # Verify the complete admission and Steam row before taking that branch.
         instant = stamp(row.get("release_time_utc"))
         release = row.get("release_start")
-        twitch_qualified = is_twitch_qualified(row)
         if (not twitch_qualified and (row.get("release_date_conflict") is True
                 or (row.get("release_end") and row["release_end"] != release)
                 or (row.get("release_timestamp_taipei_date") and row["release_timestamp_taipei_date"] != release)

@@ -8,10 +8,17 @@ export function detailURL(game) {
     : `./game.html?appid=${game.appid}${game.hasNintendo ? `&date=${game.date}` : ""}`;
 }
 
+export function observedMetricCompare(left, right) {
+  const knownLeft = Number.isFinite(left), knownRight = Number.isFinite(right);
+  return knownLeft !== knownRight ? knownLeft ? -1 : 1
+    : knownLeft ? right - left : 0;
+}
+
 export function popularityCompare(a, b) {
   // Counts belong to different communities; only compare within their source.
   if ((a.source === "nintendo") !== (b.source === "nintendo")) return a.source === "nintendo" ? 1 : -1;
-  return (a.source === "nintendo" ? b.hypes - a.hypes : b.followers - a.followers) ||
+  return observedMetricCompare(a.source === "nintendo" ? a.hypes : a.followers,
+    b.source === "nintendo" ? b.hypes : b.followers) ||
     a.date.localeCompare(b.date) || a.name.localeCompare(b.name, "zh-TW");
 }
 

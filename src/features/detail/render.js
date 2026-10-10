@@ -38,14 +38,18 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     $("gameGenres").hidden = !game.genres.length;
     renderLanguages(game);
     renderReleaseDates(game);
-    $("gameInterestLabel").textContent = nintendo ? "發售前的社群關注" : "已經有這麼多人關注";
+    const followersKnown = Number.isSafeInteger(game.followers);
+    $("gameInterestLabel").textContent = nintendo ? "發售前的社群關注" : followersKnown ? "已經有這麼多人關注" : "Steam 關注數";
     $("gameFollowers").textContent = nintendo
       ? Number.isSafeInteger(game.hypes) ? number.format(game.hypes) : "未知"
-      : number.format(game.followers);
-    $("gameInterestUnit").textContent = nintendo ? "次關注" : "人";
+      : followersKnown ? number.format(game.followers) : "未取得";
+    $("gameInterestUnit").textContent = nintendo ? "次關注" : followersKnown ? "人" : "";
     $("gameInterestCaption").textContent = nintendo
       ? "IGDB hypes · 發售前關注數"
-      : "Steam Followers · 非願望清單數";
+      : `${followersKnown ? "Steam Followers · 非願望清單數" : "本次未取得 GroupID"}${game.twitchAdmission ? " · 收錄依據 Twitch" : ""}`;
+    const evidence = game.twitchAdmission?.source_enrollment;
+    $("gameInterestCaption").title = evidence
+      ? `Twitch 分類 ${game.twitchAdmission.twitch_game_id} · ${number.format(evidence.viewer_count)} 人觀看 · 達標時間 ${evidence.observed_at}` : "";
     $("gameState").textContent =
       days > 0
         ? "值得期待的新作"
