@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated_at": "2026-10-11T11:32:12+00:00",
+  "generated_at": "2026-10-11T17:09:53.884210+00:00",
   "count": 145,
   "games": [
     {
@@ -3781,7 +3781,6 @@
       "display_name": "Night Record: Thin Walls",
       "display_name_source": "english",
       "name_en": "Night Record: Thin Walls",
-      "name_en_traditional": "Night Record: Thin Walls",
       "language_support": {
         "tchinese": false,
         "schinese": true,
@@ -3924,14 +3923,15 @@
         "checked_at": "2026-10-10T20:13:50Z",
         "source_frontend_commit": "28bae1c65538ef2db30a7938af4aa11ba062dbb9",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-10T20:13:50Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 17069
+          "observed_at": "2026-10-10T20:13:50Z",
+          "viewer_count": 17069,
+          "min_viewers": 7000
         }
       },
       "content_enrichment_signature": "4652040:343:2026-09-20",
-      "storage_version": 2
+      "storage_version": 2,
+      "community_url": "https://steamcommunity.com/app/4652040/"
     },
     {
       "appid": 4019220,
@@ -6773,7 +6773,7 @@
       "release_precision": "day",
       "followers": 8968,
       "follower_checked_at": "2026-09-19T00:50:10Z",
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2712590/ee1b3261168699b0a520f06fe5285ec02690c89d/capsule_616x353.jpg?t=1790354685",
+      "capsule_image": "bf635300fe2ea760101d71df4c47dd85a7339db8/capsule_231x87.jpg",
       "store_url": "https://store.steampowered.com/app/2712590/",
       "community_url": "https://steamcommunity.com/app/2712590/",
       "name_en": "Dragon Shelter",
@@ -6907,8 +6907,7 @@
         }
       ],
       "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
-      "categories_checked_at": "2026-10-11T11:32:01Z",
-      "name_en_traditional": "Dragon Shelter"
+      "categories_checked_at": "2026-10-11T11:32:01Z"
     },
     {
       "appid": 4072240,
@@ -9960,7 +9959,7 @@
       "release_precision": "day",
       "followers": 6856,
       "follower_checked_at": "2026-09-22T16:20:23.550613+08:00",
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1215940/66914a8bdc042931187fd92147d609bd882f4111/capsule_616x353.jpg?t=1791579249",
+      "capsule_image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1215940/fcac2e5dedea70175b16964b82cc70bdec730513/capsule_231x87.jpg?t=1785177355",
       "store_url": "https://store.steampowered.com/app/1215940/",
       "community_url": "https://steamcommunity.com/app/1215940/",
       "release_date_timezone": "Asia/Taipei",
@@ -10068,7 +10067,6 @@
       ],
       "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
       "categories_checked_at": "2026-10-10T19:13:45Z",
-      "name_en_traditional": "Forever Ago",
       "steam_type": "game",
       "release_store_date": "2026-10-08",
       "release_date_normalization": "steam_store_date_matches_taipei",
@@ -10082,10 +10080,10 @@
         "checked_at": "2026-10-10T18:14:11Z",
         "source_frontend_commit": "24f700dc1428a416e4cc8c3667752f46a2202774",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-10T18:14:11Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 9906
+          "observed_at": "2026-10-10T18:14:11Z",
+          "viewer_count": 9906,
+          "min_viewers": 7000
         }
       }
     },
