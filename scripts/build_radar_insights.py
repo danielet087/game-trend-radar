@@ -50,7 +50,6 @@ def accepted(rows):
     for row in rows:
         aid, count = row.get("appid"), row.get("followers")
         if (not isinstance(aid, int) or isinstance(aid, bool) or aid <= 0
-                or not isinstance(count, int) or isinstance(count, bool) or count < 0
                 or not day(row.get("release_start"))
                 or row.get("release_precision", "day") != "day"):
             continue
@@ -65,8 +64,8 @@ def accepted(rows):
                 or (row.get("release_time_utc") is not None
                     and (not instant or instant.astimezone(TAIPEI).date().isoformat() != release)))):
             continue
-        if (not twitch_qualified and count < 5000
-                and not (count > 3000 and row.get("recent_source") in {"direct_release", "tracked_release"})):
+        if (not twitch_qualified and (type(count) is not int or count < 0 or (count < 5000
+                and not (count > 3000 and row.get("recent_source") in {"direct_release", "tracked_release"})))):
             continue
         result[str(aid)] = row
     return result
@@ -432,6 +431,135 @@ def projections(state, today):
     return activity, growth
 
 
+def growth_collection(run, state, now):
+    """Project coverage separately from Followers; unavailable never is a point.
+
+    Use the catalog actually being published, not just the collector's frozen
+    cohort. Publication retries may have introduced games or a usable GroupID.
+    Completion remains conservative even when that latest catalog has changed.
+    """
+    today = now.astimezone(TAIPEI).date()
+    current = {int(aid) for aid, row in state["records"].items() if row.get("active")
+               and today - timedelta(days=POST_RELEASE_DAYS) <= day(row["release_date"])
+               <= today + timedelta(days=365)}
+
+    def appids(value):
+        if (not isinstance(value, list) or any(type(aid) is not int or aid <= 0 for aid in value)
+                or len(set(value)) != len(value)):
+            return None
+        return set(value)
+
+    def unavailable_receipt(receipt):
+        if not isinstance(receipt, dict):
+            return False
+        checked, retry = stamp(receipt.get("checked_at")), stamp(receipt.get("retry_at"))
+        return (receipt.get("source") == "Steam ISteamUser/ResolveVanityURL"
+                and receipt.get("status") == "not_found" and receipt.get("attempted") is True
+                and type(receipt.get("http")) is int and receipt["http"] == 200
+                and type(receipt.get("api_result")) is int and receipt["api_result"] == 42
+                and checked is not None and checked <= now and retry is not None
+                and retry > now and retry > checked)
+
+    original = appids(run.get("eligible_appids"))
+    versioned = "coverage_schema_version" in run
+    if original is None and not versioned and "eligible_appids" not in run:
+        original = current
+    published = appids(run.get("published_eligible_appids")) if "published_eligible_appids" in run else current
+    resolvable = appids(run.get("published_resolvable_appids")) if "published_resolvable_appids" in run else set()
+    checkpoint_resolvable = appids(run.get("checkpoint_resolvable_appids")) if "checkpoint_resolvable_appids" in run else set()
+    checkpoint_resolutions = run.get("checkpoint_group_resolutions", {})
+    valid = (original == current and published == current and resolvable is not None
+             and checkpoint_resolvable is not None and isinstance(checkpoint_resolutions, dict))
+    if "eligible" in run:
+        valid = valid and type(run["eligible"]) is int and original is not None and run["eligible"] == len(original)
+    if resolvable is not None:
+        valid = valid and resolvable <= current
+    generated = stamp(run.get("generated_at"))
+    if versioned:
+        valid = (valid and type(run.get("coverage_schema_version")) is int and run["coverage_schema_version"] == 2
+                 and run.get("collection_date_taipei") == today.isoformat()
+                 and generated is not None and generated <= now
+                 and generated.astimezone(TAIPEI).date() == today)
+    measured = set()
+    for point in run.get("measurements", []):
+        if not isinstance(point, dict):
+            valid = False
+            continue
+        aid, at = point.get("appid"), stamp(point.get("at"))
+        if (type(aid) is not int or aid <= 0 or type(point.get("followers")) is not int
+                or point["followers"] < 0 or point.get("source") != "steam_community"
+                or at is None or at > now or at.astimezone(TAIPEI).date() != today
+                or aid in measured):
+            valid = False
+            continue
+        if aid in current:
+            measured.add(aid)
+    unavailable = []
+    unavailable_ids = set()
+    invalid_unavailable = {}
+    for entry in run.get("unavailable", []):
+        if not isinstance(entry, dict) or type(entry.get("appid")) is not int:
+            valid = False
+            continue
+        aid, receipt = entry["appid"], entry.get("group_resolution")
+        if aid not in current:
+            continue
+        receipt = receipt if isinstance(receipt, dict) else {}
+        checked, retry = stamp(receipt.get("checked_at")), stamp(receipt.get("retry_at"))
+        latest_receipt = checkpoint_resolutions.get(str(aid)) if isinstance(checkpoint_resolutions, dict) else None
+        latest_checked = stamp(latest_receipt.get("checked_at")) if isinstance(latest_receipt, dict) else None
+        latest_changed = latest_receipt is not None and (
+            latest_checked is None or latest_checked > now or checked is None
+            or (latest_checked >= checked and not unavailable_receipt(latest_receipt)))
+        evidenced = (entry.get("reason") == "official_group_not_found"
+                     and "followers" not in entry and "at" not in entry
+                     and unavailable_receipt(receipt))
+        if (not evidenced or aid in measured or aid in unavailable_ids
+                or aid in (resolvable or set()) or aid in (checkpoint_resolvable or set())
+                or latest_changed):
+            valid = False
+            invalid_unavailable[aid] = deepcopy(entry)
+            continue
+        unavailable.append(deepcopy(entry))
+        unavailable_ids.add(aid)
+    missing = current - measured - unavailable_ids
+    if versioned:
+        valid = (valid and type(run.get("measurement_complete")) is bool
+                 and run["measurement_complete"] == (measured == current))
+    pending_by_id = {entry["appid"]: deepcopy(entry) for entry in run.get("pending", [])
+                     if isinstance(entry, dict) and type(entry.get("appid")) is int
+                     and entry["appid"] in missing}
+    for aid in sorted(missing):
+        if aid not in pending_by_id:
+            rejected = invalid_unavailable.get(aid)
+            pending_by_id[aid] = {"appid": aid, "reason": (
+                "awaiting_group_resolution" if rejected else
+                "publication_cohort_changed" if original is None or aid not in original else
+                "missing_measurement")}
+            if rejected and isinstance(rejected.get("group_resolution"), dict):
+                pending_by_id[aid]["group_resolution"] = rejected["group_resolution"]
+    complete = (valid and not missing and run.get("errors", []) == [] and run.get("pending", []) == []
+                and run.get("collection_complete") is True and run.get("reason") == "completed")
+    measurement_complete = (valid and measured == current
+                            and run.get("measurement_complete", measured == current) is True)
+    collection = {"at": run.get("generated_at", now.isoformat()),
+                  "status": run.get("reason", "interrupted"), "measurements": len(measured),
+                  "measurement_complete": measurement_complete, "collection_complete": complete,
+                  "measured_appids": sorted(measured), "unavailable": unavailable,
+                  "pending": [pending_by_id[aid] for aid in sorted(pending_by_id)],
+                  "coverage": {"eligible": len(current), "measured": len(measured),
+                               "unavailable": len(unavailable_ids), "pending": len(missing)}}
+    for key in ("coverage_schema_version", "eligible", "eligible_appids", "collection_date_taipei",
+                "published_eligible_appids", "published_resolvable_appids", "requests", "reused",
+                "checkpoint_resolvable_appids", "checkpoint_group_resolutions",
+                "errors", "next_request_after_taipei", "group_resolution_requests"):
+        if key in run:
+            collection[key] = deepcopy(run[key])
+    if collection["status"] == "completed" and not complete:
+        collection["status"] = "awaiting_group_resolution" if missing else "incomplete_coverage"
+    return collection
+
+
 def load(path, default=None):
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else default
 
@@ -462,9 +590,7 @@ def main():
                    nintendo_catalog=load(args.data_dir / "nintendo_upcoming.json"),
                    nintendo_receipt=load(args.data_dir / "nintendo_refresh_status.json"))
     if args.measurements:
-        state["collection"] = {"at": run.get("generated_at", observed),
-                               "status": run.get("reason", "interrupted"),
-                               "measurements": len(measurements)}
+        state["collection"] = growth_collection(run, state, now)
     activity, growth = projections(state, now.astimezone(TAIPEI).date())
     write(path, state)
     write(args.data_dir / "activity.json", activity)

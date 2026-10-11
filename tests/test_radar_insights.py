@@ -3,6 +3,7 @@ from copy import deepcopy
 from pathlib import Path
 from datetime import date, timedelta
 import unittest
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location("insights", Path(__file__).parents[1] / "scripts/build_radar_insights.py")
 M = importlib.util.module_from_spec(spec)
@@ -101,6 +102,15 @@ def taipei_igdb_release(at="2026-10-08T20:00:00Z", **fields):
 
 
 class InsightTests(unittest.TestCase):
+    def test_admission_consumer_preserves_unknown_followers_only_when_shared_policy_qualifies(self):
+        raw = {**twitch_game(), "followers": None, "follower_checked_at": None}
+        with patch.object(M, "is_twitch_qualified", return_value=True):
+            state = M.update(None, catalog(raw), observed_at="2026-09-28T00:00:00Z")
+        self.assertTrue(state["records"]["2"]["active"])
+        self.assertEqual(state["records"]["2"]["history"], [])
+        with patch.object(M, "is_twitch_qualified", return_value=False):
+            self.assertEqual(M.accepted([raw]), {})
+
     def test_verified_store_authority_keeps_calendar_day_and_real_follower_history(self):
         raw = twitch_store_authority()
         before = deepcopy(raw)
@@ -213,6 +223,136 @@ class InsightTests(unittest.TestCase):
         self.assertEqual(first["records"]["1"]["history"], [])
         with self.assertRaises(ValueError):
             M.update(first, {"count": 2, "games": [game()]}, observed_at="2026-09-28T00:00:00Z")
+
+
+class GrowthCoverageTests(unittest.TestCase):
+    NOW = M.stamp("2026-10-11T01:00:00Z")
+
+    def receipt(self, **fields):
+        return {"source": "Steam ISteamUser/ResolveVanityURL", "status": "not_found",
+                "attempted": True, "http": 200, "api_result": 42,
+                "checked_at": "2026-10-10T23:16:00Z", "retry_at": "2026-10-12T23:16:00Z", **fields}
+
+    def report(self, **fields):
+        return {"coverage_schema_version": 2, "generated_at": "2026-10-10T23:17:00Z",
+                "collection_date_taipei": "2026-10-11", "eligible": 2, "eligible_appids": [1, 2],
+                "published_eligible_appids": [1, 2], "published_resolvable_appids": [1],
+                "reason": "completed", "errors": [], "pending": [],
+                "measurement_complete": False, "collection_complete": True,
+                "measurements": [{"appid": 1, "at": "2026-10-10T23:16:00Z",
+                                  "followers": 6200, "source": "steam_community"}],
+                "unavailable": [{"appid": 2, "reason": "official_group_not_found",
+                                 "group_resolution": self.receipt()}], **fields}
+
+    def state(self, report, *extra):
+        rows = [game(aid, release_start="2026-11-01") for aid in [1, 2]] + list(extra)
+        return M.update(None, catalog(*rows), observed_at=self.NOW.isoformat(),
+                        measurements=report["measurements"])
+
+    def test_unavailable_coverage_is_complete_without_fabricating_measurements_or_zero(self):
+        report = self.report()
+        state = self.state(report)
+        original = deepcopy(report)
+        collection = M.growth_collection(report, state, self.NOW)
+        self.assertEqual(collection["coverage"], {"eligible": 2, "measured": 1, "unavailable": 1, "pending": 0})
+        self.assertTrue(collection["collection_complete"])
+        self.assertFalse(collection["measurement_complete"])
+        self.assertEqual(collection["unavailable"], report["unavailable"])
+        for key in ["eligible_appids", "published_eligible_appids", "published_resolvable_appids", "collection_date_taipei"]:
+            self.assertEqual(collection[key], report[key])
+        self.assertEqual(report, original)
+        self.assertEqual(state["records"]["2"]["history"], [
+            {"at": "2026-09-01T15:00:00Z", "followers": 6000, "source": "steam_community"}])
+        state["collection"] = collection
+        unchanged = M.update(state, catalog(game(1, release_start="2026-11-01"),
+                            game(2, release_start="2026-11-01")), observed_at=self.NOW.isoformat())
+        growth = M.projections(unchanged, self.NOW.astimezone(M.TAIPEI).date())[1]
+        self.assertEqual(growth["collection"], collection)
+        self.assertEqual(growth["games"][1]["history"], state["records"]["2"]["history"])
+
+    def test_retryable_or_expired_receipts_leave_a_real_pending_gap(self):
+        bad_receipts = [self.receipt(status="api_forbidden", http=403),
+                        self.receipt(attempted=False), self.receipt(api_result=1),
+                        self.receipt(http=True), self.receipt(source="unofficial"),
+                        self.receipt(checked_at="2026-10-11T02:00:00Z"),
+                        self.receipt(retry_at=self.NOW.isoformat())]
+        for receipt in bad_receipts:
+            with self.subTest(receipt=receipt):
+                report = self.report(unavailable=[{"appid": 2, "reason": "official_group_not_found",
+                                                   "group_resolution": receipt}])
+                result = M.growth_collection(report, self.state(report), self.NOW)
+                self.assertFalse(result["collection_complete"])
+                self.assertFalse(result["measurement_complete"])
+                self.assertEqual(result["coverage"], {"eligible": 2, "measured": 1, "unavailable": 0, "pending": 1})
+                self.assertEqual(result["pending"][0]["group_resolution"], receipt)
+                self.assertEqual(result["status"], "awaiting_group_resolution")
+
+    def test_catalog_changed_during_publication_does_not_claim_full_coverage(self):
+        report = self.report(published_eligible_appids=[1, 2, 3])
+        state = self.state(report, game(3, release_start="2026-11-01"))
+        result = M.growth_collection(report, state, self.NOW)
+        self.assertFalse(result["collection_complete"])
+        self.assertEqual(result["eligible_appids"], [1, 2])
+        self.assertEqual(result["coverage"], {"eligible": 3, "measured": 1, "unavailable": 1, "pending": 1})
+        self.assertEqual(result["pending"], [{"appid": 3, "reason": "publication_cohort_changed"}])
+
+    def test_newly_resolvable_group_cannot_reuse_an_old_unavailable_receipt(self):
+        report = self.report(published_resolvable_appids=[1, 2])
+        result = M.growth_collection(report, self.state(report), self.NOW)
+        self.assertFalse(result["collection_complete"])
+        self.assertEqual(result["coverage"]["unavailable"], 0)
+        self.assertEqual(result["coverage"]["pending"], 1)
+
+    def test_inconsistent_report_flags_and_declared_counts_do_not_claim_success(self):
+        for fields in [{"eligible": 999}, {"measurement_complete": True},
+                       {"coverage_schema_version": 2.0}, {"coverage_schema_version": None}, {"errors": [2]},
+                       {"pending": [{"appid": 2, "reason": "network_error"}]}]:
+            with self.subTest(fields=fields):
+                report = self.report(**fields)
+                result = M.growth_collection(report, self.state(report), self.NOW)
+                self.assertFalse(result["collection_complete"])
+
+    def test_acknowledged_checkpoint_resolution_invalidates_stale_unavailable_coverage(self):
+        for fields in [{"checkpoint_resolvable_appids": [2]},
+                       {"checkpoint_group_resolutions": {"2": self.receipt(status="resolved", api_result=1)}},
+                       {"checkpoint_group_resolutions": {"2": self.receipt(status="api_forbidden", http=403)}},
+                       {"checkpoint_group_resolutions": {"2": self.receipt(checked_at="2026-10-11T00:00:00Z",
+                                                                            retry_at="2026-10-11T00:59:59Z")}},
+                       {"checkpoint_group_resolutions": {"2": self.receipt(checked_at="2026-10-11T00:00:00Z",
+                                                                            source="unofficial")}},
+                       {"checkpoint_group_resolutions": {"2": self.receipt(checked_at="2026-10-11T02:00:00Z")}}]:
+            with self.subTest(fields=fields):
+                report = self.report(**fields)
+                result = M.growth_collection(report, self.state(report), self.NOW)
+                self.assertFalse(result["collection_complete"])
+                self.assertEqual(result["coverage"]["unavailable"], 0)
+                self.assertEqual(result["coverage"]["pending"], 1)
+                for key, value in fields.items():
+                    self.assertEqual(result[key], value)
+        report = self.report(checkpoint_group_resolutions={"2": self.receipt(checked_at="2026-10-11T00:00:00Z")})
+        result = M.growth_collection(report, self.state(report), self.NOW)
+        self.assertTrue(result["collection_complete"])
+
+    def test_only_fresh_official_numeric_measurements_count_and_real_zero_is_kept(self):
+        for fields in [{"followers": None}, {"followers": False}, {"followers": "6000"},
+                       {"source": "twitch"}, {"at": "2026-10-10T15:00:00Z"},
+                       {"at": "2026-10-11T02:00:00Z"}]:
+            with self.subTest(fields=fields):
+                report = self.report()
+                report["measurements"][0].update(fields)
+                result = M.growth_collection(report, self.state(report), self.NOW)
+                self.assertFalse(result["collection_complete"])
+                self.assertEqual(result["coverage"]["measured"], 0)
+                self.assertEqual(result["coverage"]["pending"], 1)
+        report = self.report(unavailable=[], measurement_complete=True, measurements=[
+            {"appid": aid, "at": "2026-10-10T23:16:00Z", "followers": count, "source": "steam_community"}
+            for aid, count in [(1, 6200), (2, 0)]])
+        state = self.state(report)
+        result = M.growth_collection(report, state, self.NOW)
+        self.assertTrue(result["collection_complete"])
+        self.assertTrue(result["measurement_complete"])
+        self.assertEqual(result["coverage"], {"eligible": 2, "measured": 2, "unavailable": 0, "pending": 0})
+        self.assertEqual(state["records"]["2"]["history"][-1]["followers"], 0)
 
 
 class NintendoInsightTests(unittest.TestCase):

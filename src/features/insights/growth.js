@@ -1,3 +1,23 @@
+export function growthCollectionNotice(run) {
+  if (!run) return "";
+  const coverage = run.coverage;
+  if (coverage && Number.isSafeInteger(coverage.eligible) && Number.isSafeInteger(coverage.measured)
+      && Number.isSafeInteger(coverage.unavailable) && Number.isSafeInteger(coverage.pending)
+      && [coverage.eligible, coverage.measured, coverage.unavailable, coverage.pending].every(count => count >= 0)
+      && coverage.measured + coverage.unavailable + coverage.pending === coverage.eligible
+      && (coverage.unavailable > 0 || coverage.pending > 0)) {
+    const gaps = [];
+    if (coverage.unavailable) gaps.push(`${coverage.unavailable} 款暫無官方 GroupID 可供量測`);
+    if (coverage.pending) gaps.push(`${coverage.pending} 款等待後續重試`);
+    return `本輪已量測 ${coverage.measured}／${coverage.eligible} 款；${gaps.join("，")}。已保留有效歷史；缺漏不會計為零成長。`;
+  }
+  if (run.status === "rate_limited") return "Steam 本次查詢受到限流，已保留前次量測，等待下一次排程更新。";
+  if (["source_unavailable", "interrupted", "awaiting_group_resolution", "bounded_run", "incomplete_coverage"].includes(run.status)) {
+    return "本次未能完成量測，已保留有效歷史；缺漏不會計為零成長。";
+  }
+  return "";
+}
+
 export function createGrowthView(ctx, presentation) {
   const { $, node, I, state, document, today, number, signed, percent, dateText, statusText } = ctx;
   const { history, cover, gameLink, sparkline, empty } = presentation;
@@ -49,8 +69,8 @@ export function createGrowthView(ctx, presentation) {
     if (!state.growthData) {
       $("growthNotice").textContent = "成長紀錄暫時無法讀取，已保留目前收錄的遊戲清單。";
       $("growthNotice").hidden = false;
-    } else if (run && ["rate_limited", "source_unavailable", "interrupted"].includes(run.status)) {
-      $("growthNotice").textContent = run.status === "rate_limited" ? "Steam 本次查詢受到限流，已保留前次量測，等待下一次排程更新。" : "本次未能完成量測，已保留有效歷史；缺漏不會計為零成長。";
+    } else if (growthCollectionNotice(run)) {
+      $("growthNotice").textContent = growthCollectionNotice(run);
       $("growthNotice").hidden = false;
     }
     $("growthUpdated").textContent = "以各遊戲最新實測日回看 · 超過 2 天未更新暫不排名";
