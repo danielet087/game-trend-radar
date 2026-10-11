@@ -50,6 +50,42 @@ class InsightsPublicationClockTests(unittest.TestCase):
             state = json.loads((root / "insights-state.json").read_text())
             self.assertTrue(state["started_at"].endswith("Z"))
 
+    def test_terminal_group_gap_metadata_is_published_without_zeroing_historical_followers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            rows = [{"appid": aid, "name": f"Game {aid}", "followers": 6000,
+                     "release_start": "2026-11-01", "release_precision": "day",
+                     "follower_checked_at": "2026-10-09T01:00:00Z"} for aid in [1, 2]]
+            (root / "catalog.json").write_text(json.dumps({"count": 2, "games": rows}))
+            first = self.invoke(root, "--observed-at", "2026-10-10T01:00:00Z")
+            self.assertEqual(first.returncode, 0, first.stderr)
+            history = json.loads((root / "growth.json").read_text())["games"][1]["history"]
+            report = {"coverage_schema_version": 2, "generated_at": "2026-10-11T00:00:00Z",
+                      "collection_date_taipei": "2026-10-11", "eligible": 2, "eligible_appids": [1, 2],
+                      "published_eligible_appids": [1, 2], "published_resolvable_appids": [1],
+                      "reason": "completed", "errors": [], "pending": [],
+                      "measurement_complete": False, "collection_complete": True,
+                      "measurements": [{"appid": 1, "at": "2026-10-11T00:00:00Z",
+                                        "followers": 6100, "source": "steam_community"}],
+                      "unavailable": [{"appid": 2, "reason": "official_group_not_found", "group_resolution": {
+                          "source": "Steam ISteamUser/ResolveVanityURL", "status": "not_found", "http": 200,
+                          "api_result": 42, "attempted": True, "checked_at": "2026-10-10T23:00:00Z",
+                          "retry_at": "2026-10-12T23:00:00Z"}}]}
+            (root / "report.json").write_text(json.dumps(report))
+            result = self.invoke(root, "--measurements", str(root / "report.json"),
+                                 "--observed-at", "2026-10-11T01:00:00Z")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            growth = json.loads((root / "growth.json").read_text())
+            collection = growth["collection"]
+            self.assertEqual(collection["coverage"], {"eligible": 2, "measured": 1, "unavailable": 1, "pending": 0})
+            self.assertTrue(collection["collection_complete"])
+            self.assertFalse(collection["measurement_complete"])
+            self.assertEqual(growth["games"][1]["history"], history)
+            self.assertEqual(json.loads((root / "insights-state.json").read_text())["collection"], collection)
+            again = self.invoke(root, "--observed-at", "2026-10-11T02:00:00Z")
+            self.assertEqual(again.returncode, 0, again.stderr)
+            self.assertEqual(json.loads((root / "growth.json").read_text())["collection"], collection)
+
 
 if __name__ == "__main__":
     unittest.main()
