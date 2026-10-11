@@ -431,14 +431,27 @@ def projections(state, today):
     return activity, growth
 
 
-def growth_collection(run, state, now):
+def growth_collection(run, state, now, *, publication_now=None):
     """Project coverage separately from Followers; unavailable never is a point.
 
     Use the catalog actually being published, not just the collector's frozen
     cohort. Publication retries may have introduced games or a usable GroupID.
     Completion remains conservative even when that latest catalog has changed.
+    Coverage is checked at delivery time; the caller's frozen observation clock
+    still owns events and historical measurement timestamps.
     """
-    today = now.astimezone(TAIPEI).date()
+    generated = stamp(run.get("generated_at"))
+    coverage_at = now
+    coverage_clock_valid = True
+    if "coverage_checked_at" in run:
+        candidate = stamp(run["coverage_checked_at"])
+        actual = publication_now if publication_now is not None else now
+        coverage_clock_valid = (candidate is not None and generated is not None
+                                and actual.tzinfo is not None and actual.utcoffset() is not None
+                                and generated <= candidate <= actual)
+        if coverage_clock_valid:
+            coverage_at = candidate
+    today = coverage_at.astimezone(TAIPEI).date()
     current = {int(aid) for aid, row in state["records"].items() if row.get("active")
                and today - timedelta(days=POST_RELEASE_DAYS) <= day(row["release_date"])
                <= today + timedelta(days=365)}
@@ -453,12 +466,12 @@ def growth_collection(run, state, now):
         if not isinstance(receipt, dict):
             return False
         checked, retry = stamp(receipt.get("checked_at")), stamp(receipt.get("retry_at"))
-        return (receipt.get("source") == "Steam ISteamUser/ResolveVanityURL"
+        return (coverage_clock_valid and receipt.get("source") == "Steam ISteamUser/ResolveVanityURL"
                 and receipt.get("status") == "not_found" and receipt.get("attempted") is True
                 and type(receipt.get("http")) is int and receipt["http"] == 200
                 and type(receipt.get("api_result")) is int and receipt["api_result"] == 42
-                and checked is not None and checked <= now and retry is not None
-                and retry > now and retry > checked)
+                and checked is not None and checked <= coverage_at and retry is not None
+                and retry > coverage_at and retry > checked)
 
     original = appids(run.get("eligible_appids"))
     versioned = "coverage_schema_version" in run
@@ -468,17 +481,16 @@ def growth_collection(run, state, now):
     resolvable = appids(run.get("published_resolvable_appids")) if "published_resolvable_appids" in run else set()
     checkpoint_resolvable = appids(run.get("checkpoint_resolvable_appids")) if "checkpoint_resolvable_appids" in run else set()
     checkpoint_resolutions = run.get("checkpoint_group_resolutions", {})
-    valid = (original == current and published == current and resolvable is not None
+    valid = (coverage_clock_valid and original == current and published == current and resolvable is not None
              and checkpoint_resolvable is not None and isinstance(checkpoint_resolutions, dict))
     if "eligible" in run:
         valid = valid and type(run["eligible"]) is int and original is not None and run["eligible"] == len(original)
     if resolvable is not None:
         valid = valid and resolvable <= current
-    generated = stamp(run.get("generated_at"))
     if versioned:
         valid = (valid and type(run.get("coverage_schema_version")) is int and run["coverage_schema_version"] == 2
                  and run.get("collection_date_taipei") == today.isoformat()
-                 and generated is not None and generated <= now
+                 and generated is not None and generated <= coverage_at
                  and generated.astimezone(TAIPEI).date() == today)
     measured = set()
     for point in run.get("measurements", []):
@@ -509,7 +521,7 @@ def growth_collection(run, state, now):
         latest_receipt = checkpoint_resolutions.get(str(aid)) if isinstance(checkpoint_resolutions, dict) else None
         latest_checked = stamp(latest_receipt.get("checked_at")) if isinstance(latest_receipt, dict) else None
         latest_changed = latest_receipt is not None and (
-            latest_checked is None or latest_checked > now or checked is None
+            latest_checked is None or latest_checked > coverage_at or checked is None
             or (latest_checked >= checked and not unavailable_receipt(latest_receipt)))
         evidenced = (entry.get("reason") == "official_group_not_found"
                      and "followers" not in entry and "at" not in entry
@@ -549,7 +561,7 @@ def growth_collection(run, state, now):
                   "pending": [pending_by_id[aid] for aid in sorted(pending_by_id)],
                   "coverage": {"eligible": len(current), "measured": len(measured),
                                "unavailable": len(unavailable_ids), "pending": len(missing)}}
-    for key in ("coverage_schema_version", "eligible", "eligible_appids", "collection_date_taipei",
+    for key in ("coverage_schema_version", "coverage_checked_at", "eligible", "eligible_appids", "collection_date_taipei",
                 "published_eligible_appids", "published_resolvable_appids", "requests", "reused",
                 "checkpoint_resolvable_appids", "checkpoint_group_resolutions",
                 "errors", "next_request_after_taipei", "group_resolution_requests"):
@@ -590,7 +602,7 @@ def main():
                    nintendo_catalog=load(args.data_dir / "nintendo_upcoming.json"),
                    nintendo_receipt=load(args.data_dir / "nintendo_refresh_status.json"))
     if args.measurements:
-        state["collection"] = growth_collection(run, state, now)
+        state["collection"] = growth_collection(run, state, now, publication_now=datetime.now(timezone.utc))
     activity, growth = projections(state, now.astimezone(TAIPEI).date())
     write(path, state)
     write(args.data_dir / "activity.json", activity)

@@ -333,6 +333,56 @@ class GrowthCoverageTests(unittest.TestCase):
         result = M.growth_collection(report, self.state(report), self.NOW)
         self.assertTrue(result["collection_complete"])
 
+    def test_delivery_clock_accepts_newer_canonical_receipt_without_rewriting_history(self):
+        frozen = M.stamp("2026-10-11T01:20:00Z")
+        delivery = M.stamp("2026-10-11T01:40:00Z")
+        receipt = self.receipt(checked_at="2026-10-11T01:30:00Z", retry_at="2026-10-12T01:00:00Z")
+        report = self.report(generated_at=frozen.isoformat(), coverage_checked_at=delivery.isoformat(),
+                             checkpoint_group_resolutions={"2": receipt})
+        state = self.state(report)
+        before = deepcopy(state)
+        result = M.growth_collection(report, state, frozen, publication_now=delivery)
+        self.assertTrue(result["collection_complete"])
+        self.assertFalse(result["measurement_complete"])
+        self.assertEqual(result["coverage"], {"eligible": 2, "measured": 1, "unavailable": 1, "pending": 0})
+        self.assertEqual(result["coverage_checked_at"], delivery.isoformat())
+        self.assertEqual(state, before)
+        self.assertEqual(state["records"]["1"]["history"][-1]["at"], report["measurements"][0]["at"])
+        legacy = {key: value for key, value in report.items() if key != "coverage_checked_at"}
+        self.assertFalse(M.growth_collection(legacy, state, frozen)["collection_complete"])
+
+    def test_expired_receipt_at_delivery_remains_pending_even_when_frozen_clock_was_earlier(self):
+        frozen = M.stamp("2026-10-11T01:20:00Z")
+        delivery = M.stamp("2026-10-11T01:40:00Z")
+        report = self.report(generated_at=frozen.isoformat(), coverage_checked_at=delivery.isoformat(),
+                             checkpoint_group_resolutions={"2": self.receipt(
+                                 checked_at="2026-10-11T01:30:00Z", retry_at="2026-10-11T01:35:00Z")})
+        result = M.growth_collection(report, self.state(report), frozen, publication_now=delivery)
+        self.assertFalse(result["collection_complete"])
+        self.assertEqual(result["coverage"]["unavailable"], 0)
+        self.assertEqual(result["coverage"]["pending"], 1)
+
+    def test_explicit_coverage_clock_must_be_aware_bounded_and_after_collection(self):
+        delivery = M.stamp("2026-10-11T01:40:00Z")
+        for value in [None, "bad-time", "2026-10-11T01:40:00", "2026-10-10T23:16:59Z",
+                      "2026-10-11T01:40:01Z"]:
+            with self.subTest(clock=value):
+                report = self.report(coverage_checked_at=value)
+                result = M.growth_collection(report, self.state(report), self.NOW, publication_now=delivery)
+                self.assertFalse(result["collection_complete"])
+                self.assertFalse(result["measurement_complete"])
+                self.assertEqual(result["coverage"]["unavailable"], 0)
+                self.assertEqual(result["coverage"]["pending"], 1)
+        report = self.report(coverage_checked_at=delivery.isoformat())
+        self.assertFalse(M.growth_collection(report, self.state(report), self.NOW)["collection_complete"])
+
+    def test_delivery_crossing_taiwan_midnight_cannot_complete_yesterdays_coverage(self):
+        delivery = M.stamp("2026-10-11T16:00:00Z")
+        report = self.report(coverage_checked_at=delivery.isoformat())
+        result = M.growth_collection(report, self.state(report), self.NOW, publication_now=delivery)
+        self.assertFalse(result["collection_complete"])
+        self.assertEqual(result["coverage"]["measured"], 0)
+
     def test_only_fresh_official_numeric_measurements_count_and_real_zero_is_kept(self):
         for fields in [{"followers": None}, {"followers": False}, {"followers": "6000"},
                        {"source": "twitch"}, {"at": "2026-10-10T15:00:00Z"},
