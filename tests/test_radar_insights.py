@@ -305,7 +305,7 @@ class GrowthCoverageTests(unittest.TestCase):
 
     def test_inconsistent_report_flags_and_declared_counts_do_not_claim_success(self):
         for fields in [{"eligible": 999}, {"measurement_complete": True},
-                       {"coverage_schema_version": 2.0}, {"errors": [2]},
+                       {"coverage_schema_version": 2.0}, {"coverage_schema_version": None}, {"errors": [2]},
                        {"pending": [{"appid": 2, "reason": "network_error"}]}]:
             with self.subTest(fields=fields):
                 report = self.report(**fields)

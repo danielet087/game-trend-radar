@@ -461,7 +461,7 @@ def growth_collection(run, state, now):
                 and retry > now and retry > checked)
 
     original = appids(run.get("eligible_appids"))
-    versioned = run.get("coverage_schema_version") is not None
+    versioned = "coverage_schema_version" in run
     if original is None and not versioned and "eligible_appids" not in run:
         original = current
     published = appids(run.get("published_eligible_appids")) if "published_eligible_appids" in run else current
