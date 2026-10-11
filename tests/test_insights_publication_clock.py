@@ -86,6 +86,45 @@ class InsightsPublicationClockTests(unittest.TestCase):
             self.assertEqual(again.returncode, 0, again.stderr)
             self.assertEqual(json.loads((root / "growth.json").read_text())["collection"], collection)
 
+    def test_newer_canonical_receipt_uses_delivery_clock_while_events_and_history_stay_frozen(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            frozen, delivery = "2026-10-02T01:20:00Z", "2026-10-02T01:40:00Z"
+            (root / "catalog.json").write_text('{"count":0,"games":[]}')
+            baseline = self.invoke(root, "--observed-at", "2026-10-01T01:00:00Z")
+            self.assertEqual(baseline.returncode, 0, baseline.stderr)
+            rows = [{"appid": aid, "name": f"Game {aid}", "followers": 6000,
+                     "release_start": "2026-11-01", "release_precision": "day",
+                     "follower_checked_at": "2026-09-29T01:00:00Z"} for aid in [1, 2]]
+            (root / "catalog.json").write_text(json.dumps({"count": 2, "games": rows}))
+            original = {"source": "Steam ISteamUser/ResolveVanityURL", "status": "not_found", "http": 200,
+                        "api_result": 42, "attempted": True, "checked_at": "2026-10-02T01:10:00Z",
+                        "retry_at": "2026-10-03T01:00:00Z"}
+            canonical = {**original, "checked_at": "2026-10-02T01:30:00Z"}
+            report = {"coverage_schema_version": 2, "generated_at": frozen, "coverage_checked_at": delivery,
+                      "collection_date_taipei": "2026-10-02", "eligible": 2, "eligible_appids": [1, 2],
+                      "published_eligible_appids": [1, 2], "published_resolvable_appids": [1],
+                      "checkpoint_group_resolutions": {"2": canonical},
+                      "reason": "completed", "errors": [], "pending": [],
+                      "measurement_complete": False, "collection_complete": True,
+                      "measurements": [{"appid": 1, "at": "2026-10-02T01:19:00Z",
+                                        "followers": 6100, "source": "steam_community"}],
+                      "unavailable": [{"appid": 2, "reason": "official_group_not_found", "group_resolution": original}]}
+            (root / "report.json").write_text(json.dumps(report))
+            result = self.invoke(root, "--measurements", str(root / "report.json"), "--observed-at", frozen)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            state = json.loads((root / "insights-state.json").read_text())
+            growth = json.loads((root / "growth.json").read_text())
+            activity = json.loads((root / "activity.json").read_text())
+            self.assertTrue(growth["collection"]["collection_complete"])
+            self.assertEqual(growth["collection"]["coverage"], {"eligible": 2, "measured": 1, "unavailable": 1, "pending": 0})
+            self.assertEqual(growth["collection"]["coverage_checked_at"], delivery)
+            self.assertEqual(state["updated_at"], frozen)
+            self.assertTrue(all(row["first_seen_at"] == frozen for row in state["records"].values()))
+            self.assertTrue(all(event["at"] == frozen for event in activity["events"]))
+            self.assertEqual(growth["games"][0]["history"][-1]["at"], "2026-10-02T01:19:00Z")
+            self.assertEqual(growth["games"][1]["history"][-1]["at"], "2026-09-29T01:00:00Z")
+
 
 if __name__ == "__main__":
     unittest.main()
