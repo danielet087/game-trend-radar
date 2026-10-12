@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "generated_at": "2026-10-12T17:10:24.108291+00:00",
   "month": "2026-11",
+  "count": 16,
   "games": [
     {
       "appid": 1892100,
@@ -2150,7 +2152,6 @@
       "display_name": "Flick",
       "display_name_source": "english",
       "name_en": "Flick",
-      "name_en_traditional": "Flick",
       "language_support": {
         "tchinese": false,
         "schinese": false,
@@ -2297,14 +2298,15 @@
         "checked_at": "2026-10-11T21:12:32Z",
         "source_frontend_commit": "b062a53b361f2c1e0c070d0ca30c9bb27d0c7845",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-11T21:12:32Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 17078
+          "observed_at": "2026-10-11T21:12:32Z",
+          "viewer_count": 17078,
+          "min_viewers": 7000
         }
       },
       "content_enrichment_signature": "4450660:232:2026-11-19",
-      "storage_version": 2
+      "storage_version": 2,
+      "community_url": "https://steamcommunity.com/app/4450660/"
     },
     {
       "appid": 3224600,
@@ -2449,7 +2451,5 @@
       "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
       "categories_checked_at": "2026-10-05T07:17:08Z"
     }
-  ],
-  "generated_at": "2026-10-12T02:04:02+00:00",
-  "count": 16
+  ]
 }

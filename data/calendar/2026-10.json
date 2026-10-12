@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "generated_at": "2026-10-12T17:10:24.108291+00:00",
   "month": "2026-10",
+  "count": 49,
   "games": [
     {
       "appid": 2067820,
@@ -4774,7 +4776,6 @@
       "display_name": "Scam With Your Friends",
       "display_name_source": "english",
       "name_en": "Scam With Your Friends",
-      "name_en_traditional": "Scam With Your Friends",
       "language_support": {
         "tchinese": false,
         "schinese": true,
@@ -4933,14 +4934,15 @@
         "checked_at": "2026-10-10T21:13:28Z",
         "source_frontend_commit": "580ab7ae1f0ac52850a1a896b6d191bed1dc91db",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-07T20:12:43Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 21659
+          "observed_at": "2026-10-07T20:12:43Z",
+          "viewer_count": 21659,
+          "min_viewers": 7000
         }
       },
       "content_enrichment_signature": "4954910:1613:2026-10-16",
-      "storage_version": 2
+      "storage_version": 2,
+      "community_url": "https://steamcommunity.com/app/4954910/"
     },
     {
       "appid": 2295060,
@@ -7671,7 +7673,5 @@
       "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
       "categories_checked_at": "2026-10-05T07:17:08Z"
     }
-  ],
-  "generated_at": "2026-10-11T22:03:17+00:00",
-  "count": 49
+  ]
 }
