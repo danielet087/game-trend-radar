@@ -51,16 +51,14 @@ for (const route of routes) {
     if (route.startsWith('games') || route.startsWith('discover')) await expect(page.locator('#gamesGrid .game-card')).toHaveCount(36);
     if (route.startsWith('index')) {
       if (readData('activity.json').events.length) {
-        await expect(page.locator('#activityTrack .activity-platform').first()).toHaveText(/^(Steam|NS|NS2|PS5)(／(NS|NS2|PS5))*$/);
+        const reasonPattern = /^(每日 Steam 搜尋|Twitch 排行榜|IGDB 更新|Steam 官方驗證|Steam 資料更新|Steam 清單同步|Steam 新上市補入|更新來源未記錄)$/;
+        await expect(page.locator('#activityTrack .activity-origin').first()).toHaveText(reasonPattern);
         await page.locator('#activityMore').click();
         await expect(page.locator('#activityDialog')).toBeVisible();
         const activityRows = page.locator('#activityList .activity-item');
-        const platformLabels = page.locator('#activityList .activity-platform');
-        await expect(platformLabels).toHaveCount(await activityRows.count());
-        for (const label of await platformLabels.allTextContents()) expect(label).toMatch(/^(Steam|NS|NS2|PS5)(／(NS|NS2|PS5))*$/);
-        if (readData('activity.json').events.some((event: any) => !event.source || event.source === 'steam')) {
-          expect(await platformLabels.allTextContents()).toContain('Steam');
-        }
+        const reasonLabels = page.locator('#activityList .activity-origin');
+        await expect(reasonLabels).toHaveCount(await activityRows.count());
+        for (const label of await reasonLabels.allTextContents()) expect(label).toMatch(reasonPattern);
         await page.locator('#activityClose').click();
       }
       await expect(page.locator('#calendarGrid .calendar-day')).toHaveCount(calendarCells);
@@ -73,6 +71,34 @@ for (const route of routes) {
     expect(failures).toEqual([]);
   });
 }
+
+test('ticker shows collector reasons for Twitch-discovered Steam, daily Steam changes and IGDB native updates', async ({ page }) => {
+  const payload = { version: 1, events: [
+    { source: 'steam', appid: steam.appid, name: 'Twitch-discovered Steam game', type: 'added',
+      date: '2026-11-05', at: '2026-10-13T07:30:00Z', update_reason: 'twitch_rankings' },
+    { source: 'steam', appid: steam.appid, name: 'Daily Steam date change', type: 'release_date',
+      date: '2026-11-06', previous_date: '2026-11-05', at: '2026-10-13T07:20:00Z', update_reason: 'steam_daily_search' },
+    { source: 'nintendo', igdb_id: native.igdbId, game_id: `igdb:${native.igdbId}`, platforms: ['PS5'],
+      name: 'IGDB platform addition', type: 'platform_added', date: '2026-11-05',
+      at: '2026-10-13T07:10:00Z', update_reason: 'igdb_update' },
+    { source: 'steam', appid: steam.appid, name: 'Legacy Steam event', type: 'added',
+      date: '2026-11-05', at: '2026-10-12T07:00:00Z' },
+  ] };
+  await page.route('**/data/activity.json', route => route.fulfill({ json: payload }));
+  await page.goto(`index.html?month=${month}`);
+  await expect(page.locator('#activityTrack .activity-origin').first()).toHaveText('Twitch 排行榜');
+  await expect(page.locator('#activityTrack .activity-item')).toHaveAttribute('href', `./game.html?appid=${steam.appid}`);
+  await expect(page.locator('#activityTrack .activity-origin').first()).toHaveAttribute('title', '更新原因：Twitch 排行榜；平台：Steam');
+  await page.locator('#activityMore').click();
+  await expect(page.locator('#activityList .activity-origin')).toHaveText(['Twitch 排行榜', '每日 Steam 搜尋', 'IGDB 更新', '更新來源未記錄']);
+  const changed = page.locator('#activityList .activity-item').nth(1);
+  await expect(changed).toContainText('2026/11/05 → 2026/11/06');
+  await expect(changed).toHaveAttribute('aria-label', /更新原因：每日 Steam 搜尋；平台：Steam/);
+  const igdb = page.locator('#activityList .activity-item').nth(2);
+  await expect(igdb).toHaveAttribute('href', `./game.html?igdb=${native.igdbId}&date=2026-11-05`);
+  await expect(igdb.locator('.activity-origin')).toHaveAttribute('title', '更新原因：IGDB 更新；平台：PS5');
+  await expect(page.locator('#activityList .activity-platform')).toHaveCount(0);
+});
 
 test('search, card reuse, collection and filtered return remain usable', async ({ page }) => {
   await page.goto('games.html');
