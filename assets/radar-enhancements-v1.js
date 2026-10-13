@@ -178,7 +178,9 @@
     const type = make("span", "activity-kind " + (event.type === "added" ? "is-new" : "is-date"),
       event.type === "added" ? "新收錄" : event.type === "platform_added" ? "新增平台" : "日期更新");
     a.append(added, type);
-    if (event.source === "nintendo") a.append(make("span", "activity-kind", I.activityPlatform(event)));
+    const platform = make("span", "activity-kind activity-platform", I.activityPlatform(event));
+    platform.title = "本次動態的平台來源";
+    a.append(platform);
     a.append(make("span", "activity-name", event.name));
     if (event.type === "release_date") a.append(make("span", "activity-change", `${dateLabel(event.previous_date)} → ${dateLabel(event.date)}`));
     else a.append(make("span", "activity-change", dateLabel(event.date) + " 上市"));
