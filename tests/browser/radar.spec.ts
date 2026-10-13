@@ -50,6 +50,19 @@ for (const route of routes) {
     }
     if (route.startsWith('games') || route.startsWith('discover')) await expect(page.locator('#gamesGrid .game-card')).toHaveCount(36);
     if (route.startsWith('index')) {
+      if (readData('activity.json').events.length) {
+        await expect(page.locator('#activityTrack .activity-platform').first()).toHaveText(/^(Steam|NS|NS2|PS5)(／(NS|NS2|PS5))*$/);
+        await page.locator('#activityMore').click();
+        await expect(page.locator('#activityDialog')).toBeVisible();
+        const activityRows = page.locator('#activityList .activity-item');
+        const platformLabels = page.locator('#activityList .activity-platform');
+        await expect(platformLabels).toHaveCount(await activityRows.count());
+        for (const label of await platformLabels.allTextContents()) expect(label).toMatch(/^(Steam|NS|NS2|PS5)(／(NS|NS2|PS5))*$/);
+        if (readData('activity.json').events.some((event: any) => !event.source || event.source === 'steam')) {
+          expect(await platformLabels.allTextContents()).toContain('Steam');
+        }
+        await page.locator('#activityClose').click();
+      }
       await expect(page.locator('#calendarGrid .calendar-day')).toHaveCount(calendarCells);
       const maximum = await page.locator('#calendarGrid .calendar-day').evaluateAll(days => Math.max(...days.map(day => day.querySelectorAll('.day-game').length)));
       expect(maximum).toBeGreaterThan(0);

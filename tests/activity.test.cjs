@@ -144,6 +144,9 @@ test('actual ticker and history render safe mixed-source names with Taipei date 
   assert.equal(rows[1].attributes['aria-label'], rows[1].title);
   assert.equal(rows[2].href, './game.html?appid=42');
   assert.equal(rows[2].children[0].textContent, '2026/10/04');
+  assert.equal(rows[2].children[2].textContent, 'Steam');
+  assert.equal(rows[2].children[2].className, 'activity-kind activity-platform');
+  assert.match(rows[2].attributes['aria-label'], /Steam/);
   assert.equal(e.get('activityTrack').children[0].href, rows[0].href);
   assert.equal(e.get('activityMore').disabled, false);
 });
