@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-13T17:01:16.358086Z",
+  "generated_at": "2026-10-13T19:03:03.341406Z",
   "today_taipei": "2026-10-14",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-10-13T15:03:15.566927Z",
+    "checkpoint_updated_at": "2026-10-13T19:02:53.853826Z",
     "group_resolution_updated_at": "2026-10-12T21:02:22.113547Z",
     "candidate_state_updated_at": "2026-10-13T16:59:02.569145Z",
     "prefilter_updated_at": "2026-10-13T16:59:02.553248Z",
     "eligible_screened_at": "2026-10-12T17:10:07.996706Z",
-    "twitch_import_updated_at": "2026-10-13T15:03:27.638336Z",
-    "last_official_success_at": "2026-10-13T07:03:38.760356Z",
+    "twitch_import_updated_at": "2026-10-13T19:02:41.910045Z",
+    "last_official_success_at": "2026-10-13T18:26:47.737874Z",
     "queue_projection": "official_collector_make_queue"
   },
   "source_status": {
@@ -49,23 +49,23 @@
     "active": false,
     "until": null,
     "reason": null,
-    "next_eligible_slot": "2026-10-13T19:00:00Z",
+    "next_eligible_slot": "2026-10-13T20:00:00Z",
     "schedule_taipei": "03:00–23:00 hourly"
   },
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-10-13T23:03:15.221619+08:00",
-    "last_updated_at": "2026-10-13T23:03:15.566927+08:00",
-    "finished_at": "2026-10-13T23:03:15.566927+08:00",
+    "started_at": "2026-10-14T03:02:53.615598+08:00",
+    "last_updated_at": "2026-10-14T03:02:53.853826+08:00",
+    "finished_at": "2026-10-14T03:02:53.853826+08:00",
     "stop_reason": "awaiting_group_resolution_no_request",
     "requests_this_run": 0,
     "official_new_this_run": 0,
     "http_429_this_run": 0,
     "manual_cooldown_override": false,
     "request_limit": 250,
-    "run_id": "38418510677",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38418510677"
+    "run_id": "38451560767",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38451560767"
   },
   "queue": [
     {
