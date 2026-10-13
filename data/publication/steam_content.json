@@ -1,12 +1,13 @@
 {
   "schema_version": 1,
-  "operation": "enrichment",
-  "input_revision": "65c3d1cd9f203928bdbd83c9108cda3fb8ad24908f5a1d3a2d8874c5ebcc3eb5",
-  "payload_revision": "1f3865ad750b9810aefb868e0db27f4d7606db2ae85d427509985be66e8bb193",
+  "operation": "reconciliation",
+  "input_revision": "93624e6be0d8883b330503c4b6f3f055ca18e163ada060b2819565907f9d5b87",
+  "payload_revision": "2503de0938e8212bb0001fd403a538a16cc4f69b9cf6100f4077eb35d0ea780b",
   "source_revisions": {
-    "frontend": "320b27baa76295055b48a333cbfaa388644b5677"
+    "frontend": "ab1bf6ea73561db9f76057a6d52fff4f0cf03ae3",
+    "master": "bf3bfb0b48c191b05814211993633d2dfe15138e"
   },
-  "dataset_revision": "2779a92fa395260ce1dfb339c26e194090b26bb6d93623e2aabd4bc091c6d9af",
-  "collection_complete": true,
+  "dataset_revision": "fd7164dc798226c9ba20b43177dfcaa5d39ba277fd139b1f06b9aa8c6a292ad8",
+  "collection_complete": false,
   "superseded_appids": []
 }
