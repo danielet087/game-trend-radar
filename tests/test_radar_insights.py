@@ -838,5 +838,69 @@ class NintendoInsightTests(unittest.TestCase):
                 "platform": "PS5", "date": "2026-12-01", "precision": "day", "source": "IGDB"}])))
 
 
+class ActivityOriginTests(unittest.TestCase):
+    def baseline(self):
+        return M.update(None, catalog(game()), observed_at="2026-09-27T00:00:00Z")
+
+    def test_daily_search_receipt_describes_the_actual_change_and_is_frozen(self):
+        row = game(3)
+        ledger = {"schema_version": 1, "events": [{
+            "appid": 3, "type": "added", "date": row["release_start"],
+            "update_reason": "steam_daily_search", "at": "2026-09-28T00:00:00Z"}]}
+        state = M.update(self.baseline(), catalog(game(), row), observed_at="2026-09-28T01:00:00Z",
+                         origin_ledger=ledger)
+        event = state["events"][0]
+        self.assertEqual(event["update_reason"], "steam_daily_search")
+        self.assertEqual(event["update_context"]["basis"], "publication_receipt")
+        again = M.update(state, catalog(game(), row), observed_at="2026-09-28T02:00:00Z",
+                         origin_ledger={"schema_version": 1, "events": [{**ledger["events"][0],
+                             "update_reason": "steam_catalog_sync", "at": "2026-09-28T01:30:00Z"}]})
+        self.assertEqual(again, state)
+
+    def test_twitch_added_event_remains_twitch_after_a_later_steam_date_update(self):
+        row = twitch_game()
+        state = M.update(self.baseline(), catalog(game(), row), observed_at="2026-09-28T01:00:00Z")
+        self.assertEqual(state["events"][0]["update_reason"], "twitch_rankings")
+        changed = {**row, "release_start": "2026-09-02", "release_end": "2026-09-02",
+                   "release_time_utc": "2026-09-01T17:00:00Z", "release_timestamp_taipei_date": "2026-09-02"}
+        later = M.update(state, catalog(game(), changed), observed_at="2026-09-29T01:00:00Z")
+        self.assertEqual([event["update_reason"] for event in later["events"]],
+                         ["twitch_rankings", "steam_metadata_refresh"])
+        self.assertEqual(later["events"][0], state["events"][0])
+
+    def test_historical_addition_can_recover_twitch_but_future_admission_is_not_evidence(self):
+        row = twitch_game()
+        state = M.update(self.baseline(), catalog(game(), row), observed_at="2026-09-28T01:00:00Z")
+        original_id = state["events"][0]["id"]
+        state["events"][0].pop("update_reason")
+        state["events"][0].pop("update_context")
+        repaired = M.update(state, catalog(game(), row), observed_at="2026-09-29T01:00:00Z")
+        self.assertEqual(repaired["events"][0]["id"], original_id)
+        self.assertEqual(repaired["events"][0]["update_reason"], "twitch_rankings")
+        later_admission = {**row, "twitch_admission": {**row["twitch_admission"],
+                            "checked_at": "2026-09-29T00:00:00Z"}}
+        not_evidenced = M.update(state, catalog(game(), later_admission), observed_at="2026-09-29T01:00:00Z")
+        self.assertEqual(not_evidenced["events"][0]["update_reason"], "legacy_unrecorded")
+
+    def test_missing_daily_search_evidence_and_malformed_or_future_receipts_do_not_invent_causes(self):
+        row = game(3)
+        for ledger in [None, {"schema_version": 2, "events": []},
+                {"schema_version": 1, "events": [{"appid": 3, "type": "added", "date": row["release_start"],
+                    "update_reason": "steam_daily_search", "at": "2026-09-29T00:00:00Z"}]},
+                {"schema_version": 1, "events": [{"appid": 3, "type": "added", "date": row["release_start"],
+                    "update_reason": "unknown", "at": "2026-09-27T00:00:00Z"}]}]:
+            state = M.update(self.baseline(), catalog(game(), row), observed_at="2026-09-28T01:00:00Z",
+                             origin_ledger=ledger)
+            self.assertEqual(state["events"][0]["update_reason"], "legacy_unrecorded")
+
+    def test_igdb_console_flow_keeps_its_reason_even_when_the_job_uses_twitch_credentials(self):
+        state = M.update(self.baseline(), catalog(game()), observed_at="2026-10-04T00:00:00Z",
+                         nintendo_catalog=nintendo_catalog(nintendo_game()))
+        event = state["events"][0]
+        self.assertEqual(event["source"], "nintendo")
+        self.assertEqual(event["update_reason"], "igdb_update")
+        self.assertEqual(event["update_context"]["catalog_at"], "2026-10-03T16:40:12Z")
+
+
 if __name__ == "__main__":
     unittest.main()

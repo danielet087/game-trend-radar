@@ -23,13 +23,25 @@ function activityTime(value) {
 }
 const activityId = value => Number.isSafeInteger(value) && value > 0 && /^[1-9]\d{0,9}$/.test(String(value));
 const IGDB_ACTIVITY_PLATFORMS = ["NS", "NS2", "PS5"];
+const ACTIVITY_REASONS = {
+  steam_daily_search: "每日 Steam 搜尋",
+  twitch_rankings: "Twitch 排行榜",
+  igdb_update: "IGDB 更新",
+  steam_official_verification: "Steam 官方驗證",
+  steam_metadata_refresh: "Steam 資料更新",
+  steam_catalog_sync: "Steam 清單同步",
+  steam_recent_release: "Steam 新上市補入",
+  legacy_unrecorded: "更新來源未記錄",
+};
 function activityEvent(value) {
   if (!value || typeof value !== "object" || Array.isArray(value) ||
       typeof value.name !== "string" || !value.name.trim() || !day(value.date) || activityTime(value.at) === null) return null;
   const source = value.source === undefined ? "steam" : value.source;
   if (!["steam", "nintendo"].includes(source) || !["added", "release_date", "platform_added"].includes(value.type)) return null;
   if (value.type === "release_date" && (!day(value.previous_date) || value.previous_date === value.date)) return null;
-  const event = { source, type: value.type, name: value.name.trim(), date: value.date, at: value.at };
+  const update_reason = typeof value.update_reason === "string" && Object.hasOwn(ACTIVITY_REASONS, value.update_reason)
+    ? value.update_reason : value.update_reason === undefined && source === "nintendo" ? "igdb_update" : "legacy_unrecorded";
+  const event = { source, type: value.type, name: value.name.trim(), date: value.date, at: value.at, update_reason };
   if (value.type === "release_date") event.previous_date = value.previous_date;
   if (source === "nintendo") {
     if (!activityId(value.igdb_id) || value.game_id !== "igdb:" + value.igdb_id || value.appid !== undefined ||
@@ -63,6 +75,10 @@ function activityURL(value) {
 function activityPlatform(value) {
   const event = activityEvent(value);
   return !event ? null : event.source === "nintendo" ? event.platforms.join("／") : "Steam";
+}
+function activityReason(value) {
+  const event = activityEvent(value);
+  return event ? ACTIVITY_REASONS[event.update_reason] : null;
 }
 function points(history, today) {
   const days = new Map();
@@ -133,7 +149,7 @@ function comparisonWindow(games, span = 30, end, today) {
   });
   return { start, end, days, span, series };
 }
-const RadarInsights = { day, offset, taipeiDay, activityEvent, activityEvents, activityURL, activityPlatform,
+const RadarInsights = { day, offset, taipeiDay, activityEvent, activityEvents, activityURL, activityPlatform, activityReason,
   points, metric, tracking, comparisonIds, comparisonWindow };
 export { RadarInsights };
 export default RadarInsights;

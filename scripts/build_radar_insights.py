@@ -27,6 +27,11 @@ NINTENDO_GAME_TYPES = {"main_game", "standalone_expansion", "remake", "remaster"
 NINTENDO_OFFICIAL_DATE_DOMAINS = {"nintendo.com", "nintendo.com.hk", "nintendo.co.jp",
                                   "sega.com", "konami.com", "playtombraider.com"}
 PS5_PRODUCT_ID = r"[A-Z]{2}[0-9]{4}-[A-Z0-9]{9}_[A-Z0-9]{2}-[A-Z0-9]{16}"
+ACTIVITY_REASONS = {
+    "steam_daily_search", "twitch_rankings", "igdb_update",
+    "steam_official_verification", "steam_metadata_refresh", "steam_catalog_sync",
+    "steam_recent_release", "legacy_unrecorded",
+}
 
 
 def stamp(value):
@@ -354,7 +359,76 @@ def merge_nintendo(state, catalog, now, receipt=None):
     state["nintendo_source_digest"] = digest
 
 
-def update(previous, catalog, *, observed_at, measurements=None, nintendo_catalog=None, nintendo_receipt=None):
+def annotate_activity_origins(state, current, origin_ledger=None, nintendo_catalog=None):
+    """Freeze an event's collection cause, independently of its game platform.
+
+    Publisher receipts describe the actual input that changed the public catalog.
+    Historical Twitch admission proves additions only; it is not evidence for a
+    later release-date change. Missing old pipeline evidence stays explicit.
+    """
+    receipts = []
+    if (isinstance(origin_ledger, dict) and type(origin_ledger.get("schema_version")) is int
+            and origin_ledger["schema_version"] == 1
+            and isinstance(origin_ledger.get("events"), list)):
+        receipts = [row for row in origin_ledger["events"] if isinstance(row, dict)
+                    and type(row.get("appid")) is int and row["appid"] > 0
+                    and row.get("type") in {"added", "release_date"}
+                    and day(row.get("date")) and stamp(row.get("at"))
+                    and row.get("update_reason") in ACTIVITY_REASONS
+                    and row.get("update_reason") not in {"igdb_update", "legacy_unrecorded"}
+                    and (row["type"] != "release_date" or day(row.get("previous_date")))]
+    consumed = {event.get("update_context", {}).get("receipt_id") for event in state["events"]
+                if isinstance(event.get("update_context"), dict)} - {None}
+    for event in state["events"]:
+        context = event.get("update_context")
+        tentative = isinstance(context, dict) and context.get("basis") in {
+            "missing_publication_receipt", "steam_catalog_date_change"}
+        if event.get("update_reason") in ACTIVITY_REASONS and not tentative:
+            continue  # Later admissions or publishers cannot rewrite proven causes.
+        at = stamp(event.get("at"))
+        if not at:
+            continue
+        if event.get("source") == "nintendo":
+            event["update_reason"] = "igdb_update"
+            event["update_context"] = {"basis": "igdb_catalog"}
+            if (isinstance(nintendo_catalog, dict) and stamp(nintendo_catalog.get("generated_at"))
+                    and stamp(nintendo_catalog["generated_at"]) <= at):
+                event["update_context"]["catalog_at"] = nintendo_catalog["generated_at"]
+            continue
+        matches = []
+        for receipt in receipts:
+            if (receipt["appid"] != event.get("appid") or receipt["type"] != event.get("type")
+                    or receipt["date"] != event.get("date")
+                    or receipt.get("previous_date") != event.get("previous_date")
+                    or stamp(receipt["at"]) > at + timedelta(minutes=5)):
+                continue
+            identity = hashlib.sha256(json.dumps(receipt, sort_keys=True).encode()).hexdigest()[:20]
+            if identity not in consumed:
+                matches.append((stamp(receipt["at"]), identity, receipt))
+        if matches:
+            _, identity, receipt = max(matches, key=lambda item: item[0])
+            event["update_reason"] = receipt["update_reason"]
+            event["update_context"] = {"basis": "publication_receipt", "receipt_id": identity,
+                                       "at": receipt["at"]}
+            consumed.add(identity)
+            continue
+        row = current.get(str(event.get("appid")), {})
+        admission = row.get("twitch_admission")
+        checked = stamp(admission.get("checked_at")) if isinstance(admission, dict) else None
+        if (event.get("type") == "added" and checked and checked <= at
+                and is_twitch_qualified(row)):
+            event["update_reason"] = "twitch_rankings"
+            event["update_context"] = {"basis": "twitch_admission", "checked_at": admission["checked_at"]}
+        elif event.get("type") == "release_date":
+            event["update_reason"] = "steam_metadata_refresh"
+            event["update_context"] = {"basis": "steam_catalog_date_change"}
+        else:
+            event["update_reason"] = "legacy_unrecorded"
+            event["update_context"] = {"basis": "missing_publication_receipt"}
+
+
+def update(previous, catalog, *, observed_at, measurements=None, nintendo_catalog=None, nintendo_receipt=None,
+           origin_ledger=None):
     now = stamp(observed_at)
     if not now:
         raise ValueError("Timezone-aware observation time required")
@@ -396,6 +470,7 @@ def update(previous, catalog, *, observed_at, measurements=None, nintendo_catalo
     state["events"] = sorted({event["id"]: event for event in state["events"]
                               if stamp(event.get("at"))}.values(),
                              key=lambda event: stamp(event["at"]))[-250:]
+    annotate_activity_origins(state, current, origin_ledger, nintendo_catalog)
     # Do not rewrite files merely because an identical catalog was polled again.
     if state != previous:
         state["updated_at"] = observed_at
@@ -600,7 +675,8 @@ def main():
     state = update(load(path), load(args.data_dir / "catalog.json"),
                    observed_at=observed, measurements=measurements,
                    nintendo_catalog=load(args.data_dir / "nintendo_upcoming.json"),
-                   nintendo_receipt=load(args.data_dir / "nintendo_refresh_status.json"))
+                   nintendo_receipt=load(args.data_dir / "nintendo_refresh_status.json"),
+                   origin_ledger=load(args.data_dir / "publication/activity_origins.json"))
     if args.measurements:
         state["collection"] = growth_collection(run, state, now, publication_now=datetime.now(timezone.utc))
     activity, growth = projections(state, now.astimezone(TAIPEI).date())

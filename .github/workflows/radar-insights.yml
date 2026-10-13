@@ -19,6 +19,7 @@ on:
     paths:
       - 'data/catalog.json'
       - 'data/nintendo_upcoming.json'
+      - 'data/publication/activity_origins.json'
       - 'scripts/build_radar_insights.py'
       - 'tests/test_radar_insights.py'
       - 'scripts/sync_scheduler_queue_status.py'

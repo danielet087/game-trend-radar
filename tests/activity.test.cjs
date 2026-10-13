@@ -26,6 +26,47 @@ test('Nintendo native platform labels use only the platforms involved in an even
   assert.equal(I.activityEvent(steam({ type: 'platform_added' })), null);
 });
 
+test('activity reasons describe the triggering collector independently of platform identity', () => {
+  const examples = [
+    [steam({ update_reason: 'steam_daily_search' }), '每日 Steam 搜尋'],
+    [steam({ update_reason: 'twitch_rankings' }), 'Twitch 排行榜'],
+    [steam({ type: 'release_date', previous_date: '2026-10-30', update_reason: 'steam_official_verification' }), 'Steam 官方驗證'],
+    [steam({ update_reason: 'steam_metadata_refresh' }), 'Steam 資料更新'],
+    [steam({ update_reason: 'steam_catalog_sync' }), 'Steam 清單同步'],
+    [steam({ update_reason: 'steam_recent_release' }), 'Steam 新上市補入'],
+    [nintendo({ platforms: ['PS5'], update_reason: 'igdb_update' }), 'IGDB 更新'],
+  ];
+  for (const [event, label] of examples) {
+    assert.equal(I.activityEvent(event).update_reason, event.update_reason);
+    assert.equal(I.activityReason(event), label);
+    assert.equal(I.activityEvent(event).source, event.source || 'steam');
+  }
+  assert.equal(I.activityPlatform(examples[1][0]), 'Steam');
+  assert.equal(I.activityURL(examples[1][0]), './game.html?appid=42');
+  assert.equal(I.activityReason(steam({ source: 'twitch' })), null);
+});
+
+test('missing or unknown activity reasons preserve valid history without guessing a Steam collector', () => {
+  assert.equal(I.activityReason(steam()), '更新來源未記錄');
+  assert.equal(I.activityReason(nintendo()), 'IGDB 更新');
+  for (const update_reason of ['unknown', 'toString', '<img src=x onerror=alert(1)>', null, 7, {}]) {
+    for (const factory of [steam, nintendo]) {
+      const event = factory({ update_reason });
+      assert.equal(I.activityEvent(event).update_reason, 'legacy_unrecorded');
+      assert.equal(I.activityReason(event), '更新來源未記錄');
+      assert.ok(I.activityURL(event));
+    }
+  }
+  const context = vm.createContext({});
+  const source = readFileSync(join(__dirname, '..', 'src/features/insights/metrics.js'), 'utf8')
+    .replace(/export \{ RadarInsights \};\s*export default RadarInsights;/, 'globalThis.insights = RadarInsights;');
+  vm.runInContext(source, context);
+  for (const event of [steam(), steam({ update_reason: 'twitch_rankings' }), nintendo(), nintendo({ update_reason: 'unknown' })]) {
+    assert.equal(context.insights.activityReason(event), I.activityReason(event));
+    assert.deepEqual(JSON.parse(JSON.stringify(context.insights.activityEvent(event))), I.activityEvent(event));
+  }
+});
+
 test('PS5 activity shares stable IGDB identity while distinguishing native platform additions', () => {
   const original = nintendo();
   const port = nintendo({ platforms: ['PS5'], type: 'platform_added', date: '2026-12-01', at: '2026-10-04T03:00:00Z' });
@@ -132,36 +173,47 @@ async function display(events, animated = false, payloadOverrides = {}) {
 
 test('actual ticker and history render safe mixed-source names with Taipei date first and correct detail routes', async () => {
   const name = '<img src=x onerror=alert(1)> & Nintendo';
-  const { elements: e } = await display([steam(), nintendo({ name }), nintendo({ type: 'release_date', previous_date: '2026-10-30', at: '2026-10-04T02:31:00Z' })]);
+  const { elements: e } = await display([steam({ update_reason: 'twitch_rankings' }), nintendo({ name }), nintendo({ type: 'release_date', previous_date: '2026-10-30', at: '2026-10-04T02:31:00Z' })]);
   const rows = e.get('activityList').children.map(item => item.children[0]);
   assert.equal(rows.length, 3);
   assert.equal(rows[0].children[0].tagName, 'time');
   assert.equal(rows[0].children[0].textContent, '2026/10/04');
   assert.equal(rows[0].children[0].dateTime, '2026-10-04');
   assert.equal(rows[0].href, './game.html?igdb=42&date=2026-11-05');
-  assert.match(rows[0].textContent, /日期更新NS2Nintendo game2026\/10\/30 → 2026\/11\/05/);
+  assert.match(rows[0].textContent, /日期更新IGDB 更新Nintendo game2026\/10\/30 → 2026\/11\/05/);
   assert.equal(rows[1].children[3].textContent, name);
   assert.equal(rows[1].attributes['aria-label'], rows[1].title);
   assert.equal(rows[2].href, './game.html?appid=42');
   assert.equal(rows[2].children[0].textContent, '2026/10/04');
-  assert.equal(rows[2].children[2].textContent, 'Steam');
-  assert.equal(rows[2].children[2].className, 'activity-kind activity-platform');
-  assert.match(rows[2].attributes['aria-label'], /Steam/);
+  assert.equal(rows[2].children[2].textContent, 'Twitch 排行榜');
+  assert.equal(rows[2].children[2].className, 'activity-kind activity-origin');
+  assert.equal(rows[2].children[2].title, '更新原因：Twitch 排行榜；平台：Steam');
+  assert.match(rows[2].attributes['aria-label'], /更新原因：Twitch 排行榜；平台：Steam/);
   assert.equal(e.get('activityTrack').children[0].href, rows[0].href);
   assert.equal(e.get('activityMore').disabled, false);
 });
 
-test('platform additions identify the newly available native platform in ticker and dialog', async () => {
+test('platform additions show their IGDB trigger and retain native platform context in accessible titles', async () => {
   for (const platform of ['NS', 'PS5']) {
     const { elements: e } = await display([nintendo({ type: 'platform_added', platforms: [platform], name: 'Native port' })]);
     const link = e.get('activityTrack').children[0];
-    assert.ok(link.textContent.includes('新增平台' + platform + 'Native port2026/11/05 上市'));
+    assert.ok(link.textContent.includes('新增平台IGDB 更新Native port2026/11/05 上市'));
+    assert.equal(link.children[2].title, '更新原因：IGDB 更新；平台：' + platform);
     assert.equal(link.children[0].textContent, '2026/10/04');
     assert.doesNotMatch(link.textContent, /NS2/);
     e.get('activityMore').listeners.click();
     assert.equal(e.get('activityDialog').open, true);
     assert.equal(e.get('activityList').children[0].children[0].textContent, link.textContent);
   }
+});
+
+test('daily Steam date changes retain the recorded cause rather than inferring it from event type', async () => {
+  const { elements: e } = await display([steam({ type: 'release_date', previous_date: '2026-10-30', update_reason: 'steam_daily_search' })]);
+  const link = e.get('activityTrack').children[0];
+  assert.match(link.textContent, /日期更新每日 Steam 搜尋Steam game2026\/10\/30 → 2026\/11\/05/);
+  assert.equal(link.children[2].title, '更新原因：每日 Steam 搜尋；平台：Steam');
+  const { elements: legacy } = await display([steam({ type: 'release_date', previous_date: '2026-10-30' })]);
+  assert.equal(legacy.get('activityTrack').children[0].children[2].textContent, '更新來源未記錄');
 });
 
 test('vertical ticker still flips upward through only the latest eight valid mixed events', async () => {
