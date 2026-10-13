@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "generated_at": "2026-10-13T22:13:55.932592+00:00",
   "month": "2026-10",
+  "count": 50,
   "games": [
     {
       "appid": 2067820,
@@ -889,7 +891,6 @@
       "display_name": "Gridlords",
       "display_name_source": "english",
       "name_en": "Gridlords",
-      "name_en_traditional": "Gridlords",
       "language_support": {
         "tchinese": true,
         "schinese": true,
@@ -1030,14 +1031,15 @@
         "checked_at": "2026-10-12T20:14:50Z",
         "source_frontend_commit": "fa1990124ef16e5a8f9c68b145f441c592fcb08d",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-12T20:14:50Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 7362
+          "observed_at": "2026-10-12T20:14:50Z",
+          "viewer_count": 7362,
+          "min_viewers": 7000
         }
       },
       "content_enrichment_signature": "3768400:1450:2026-10-07",
-      "storage_version": 2
+      "storage_version": 2,
+      "community_url": "https://steamcommunity.com/app/3768400/"
     },
     {
       "appid": 1551980,
@@ -2965,7 +2967,7 @@
       "release_precision": "day",
       "followers": 28246,
       "follower_checked_at": "2026-09-22T16:03:00.586325+08:00",
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3219030/d42390b547a06884e2b7cbf9bd1b0ae927b9bb46/capsule_616x353.jpg?t=1791901018",
+      "capsule_image": "d4ea06b2e49dbf8c9b3b2f96540613de960b48e1/capsule_231x87.jpg",
       "store_url": "https://store.steampowered.com/app/3219030/",
       "community_url": "https://steamcommunity.com/app/3219030/",
       "name_en": "Planet Zoo 2",
@@ -3102,7 +3104,6 @@
       ],
       "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
       "categories_checked_at": "2026-10-13T15:04:04Z",
-      "name_en_traditional": "Planet Zoo 2",
       "steam_type": "game",
       "release_store_date": "2026-10-13",
       "release_date_normalization": "steam_store_date_matches_taipei",
@@ -3116,10 +3117,10 @@
         "checked_at": "2026-10-13T14:13:01Z",
         "source_frontend_commit": "28d48621c1a33df93016b8e8247ac2d32d285de2",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-13T14:13:01Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 53990
+          "observed_at": "2026-10-13T14:13:01Z",
+          "viewer_count": 53990,
+          "min_viewers": 7000
         }
       }
     },
@@ -3458,7 +3459,7 @@
       "release_precision": "day",
       "followers": 37089,
       "follower_checked_at": "2026-09-22T16:02:11.575833+08:00",
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2828710/5f97602e3b39b9ec219f94469529404cdb19d66d/capsule_616x353.jpg?t=1791829283",
+      "capsule_image": "c845c26a71524fa38b25c3b3da23a384de7d1436/capsule_231x87.jpg",
       "store_url": "https://store.steampowered.com/app/2828710/",
       "community_url": "https://steamcommunity.com/app/2828710/",
       "name_en": "Valor Mortis",
@@ -3595,7 +3596,6 @@
       ],
       "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
       "categories_checked_at": "2026-10-13T14:03:51Z",
-      "name_en_traditional": "Valor Mortis",
       "steam_type": "game",
       "content_descriptorids": [
         2,
@@ -3610,10 +3610,10 @@
         "checked_at": "2026-10-13T13:11:14Z",
         "source_frontend_commit": "d5cf7e6e28c027fedfb3bef2c1adcb73883e72ca",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-13T13:11:14Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 9549
+          "observed_at": "2026-10-13T13:11:14Z",
+          "viewer_count": 9549,
+          "min_viewers": 7000
         }
       }
     },
@@ -7868,7 +7868,5 @@
       "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
       "categories_checked_at": "2026-10-05T07:17:08Z"
     }
-  ],
-  "generated_at": "2026-10-13T15:04:05+00:00",
-  "count": 50
+  ]
 }
