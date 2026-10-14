@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-14T22:02:30.133903Z",
+  "generated_at": "2026-10-14T23:02:36.286300Z",
   "today_taipei": "2026-10-15",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-10-14T22:02:17.025161Z",
+    "checkpoint_updated_at": "2026-10-14T23:02:22.312376Z",
     "group_resolution_updated_at": "2026-10-14T21:02:23.617340Z",
     "candidate_state_updated_at": "2026-10-14T17:12:17.362458Z",
     "prefilter_updated_at": "2026-10-14T17:12:17.340916Z",
     "eligible_screened_at": "2026-10-14T17:12:18.013308Z",
-    "twitch_import_updated_at": "2026-10-14T22:02:22.636699Z",
+    "twitch_import_updated_at": "2026-10-14T23:02:35.889082Z",
     "last_official_success_at": "2026-10-14T19:12:47.732378Z",
     "queue_projection": "official_collector_make_queue"
   },
@@ -34,9 +34,9 @@
     "followers_ready_pending": 158,
     "awaiting_group_pending": 1,
     "total_pending": 159,
-    "today_attempts": 3,
+    "today_attempts": 4,
     "today_successes": 0,
-    "today_429": 3
+    "today_429": 4
   },
   "group_resolution_api_cooldown": {
     "status": "available",
@@ -47,17 +47,17 @@
   },
   "cooldown": {
     "active": true,
-    "until": "2026-10-14T23:02:13.534722Z",
+    "until": "2026-10-15T01:02:18.680589Z",
     "reason": "steam_http_429",
-    "next_eligible_slot": "2026-10-15T00:00:00Z",
+    "next_eligible_slot": "2026-10-15T02:00:00Z",
     "schedule_taipei": "03:00–23:00 hourly"
   },
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-10-15T06:02:13.056264+08:00",
-    "last_updated_at": "2026-10-15T06:02:17.025161+08:00",
-    "finished_at": "2026-10-15T06:02:17.025161+08:00",
+    "started_at": "2026-10-15T07:02:18.206044+08:00",
+    "last_updated_at": "2026-10-15T07:02:22.312376+08:00",
+    "finished_at": "2026-10-15T07:02:22.312376+08:00",
     "stop_reason": "first_http_429",
     "last_appid": 4218620,
     "last_name": "Double Dealers",
@@ -66,8 +66,8 @@
     "http_429_this_run": 1,
     "manual_cooldown_override": false,
     "request_limit": 250,
-    "run_id": "38644602499",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38644602499"
+    "run_id": "38651444758",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38651444758"
   },
   "queue": [
     {
@@ -110,7 +110,7 @@
         "http": 200,
         "api_result": 1
       },
-      "last_attempt_at": "2026-10-14T22:02:13.271944Z",
+      "last_attempt_at": "2026-10-14T23:02:18.401496Z",
       "last_attempt_status": "rate_limited"
     },
     {
@@ -2315,19 +2315,6 @@
   "parked": [],
   "events": [
     {
-      "at": "2026-10-11T19:09:56.711745Z",
-      "kind": "official_attempt",
-      "appid": 5308960,
-      "name": "Ace of Jianghu",
-      "status": "ok",
-      "http": 200,
-      "source": "fresh_daily_prefilter_unresolved",
-      "official_followers": 3,
-      "retry_at": null,
-      "run_id": "38166271405",
-      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38166271405"
-    },
-    {
       "at": "2026-10-11T19:10:04.711895Z",
       "kind": "official_attempt",
       "appid": 5385530,
@@ -3613,6 +3600,19 @@
       "retry_at": "2026-10-14T23:02:13.534722Z",
       "run_id": "38644602499",
       "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38644602499"
+    },
+    {
+      "at": "2026-10-14T23:02:18.401496Z",
+      "kind": "official_attempt",
+      "appid": 4218620,
+      "name": "Double Dealers",
+      "status": "rate_limited",
+      "http": 429,
+      "source": "twitch_steam_discovery",
+      "official_followers": null,
+      "retry_at": "2026-10-15T01:02:18.680589Z",
+      "run_id": "38651444758",
+      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38651444758"
     }
   ],
   "events_limit": 100
