@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-14T20:02:57.725566Z",
+  "generated_at": "2026-10-14T21:02:51.364026Z",
   "today_taipei": "2026-10-15",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-10-14T20:02:41.035610Z",
-    "group_resolution_updated_at": "2026-10-14T20:02:31.025672Z",
+    "checkpoint_updated_at": "2026-10-14T21:02:33.858574Z",
+    "group_resolution_updated_at": "2026-10-14T21:02:23.617340Z",
     "candidate_state_updated_at": "2026-10-14T17:12:17.362458Z",
     "prefilter_updated_at": "2026-10-14T17:12:17.340916Z",
     "eligible_screened_at": "2026-10-14T17:12:18.013308Z",
-    "twitch_import_updated_at": "2026-10-14T20:02:49.001473Z",
+    "twitch_import_updated_at": "2026-10-14T21:02:42.061312Z",
     "last_official_success_at": "2026-10-14T19:12:47.732378Z",
     "queue_projection": "official_collector_make_queue"
   },
@@ -24,40 +24,40 @@
     "combined_pending_now": 159,
     "completed_legacy": 384,
     "completed_new": 2435,
-    "twitch_priority_pending": 1
+    "twitch_priority_pending": 2
   },
   "summary": {
-    "normal_pending": 158,
-    "twitch_priority_pending": 1,
+    "normal_pending": 157,
+    "twitch_priority_pending": 2,
     "parked": 0,
     "ready_pending": 159,
     "followers_ready_pending": 158,
     "awaiting_group_pending": 1,
     "total_pending": 159,
-    "today_attempts": 1,
+    "today_attempts": 2,
     "today_successes": 0,
-    "today_429": 1
+    "today_429": 2
   },
   "group_resolution_api_cooldown": {
     "status": "available",
     "retry_at": null,
-    "observed_at": "2026-10-14T20:02:31.025672Z",
+    "observed_at": "2026-10-14T21:02:23.617340Z",
     "attempts": 0,
     "source": "Steam ISteamUser/ResolveVanityURL"
   },
   "cooldown": {
     "active": true,
-    "until": "2026-10-14T20:17:35.958922Z",
+    "until": "2026-10-14T21:32:27.986007Z",
     "reason": "steam_http_429",
-    "next_eligible_slot": "2026-10-14T21:00:00Z",
+    "next_eligible_slot": "2026-10-14T22:00:00Z",
     "schedule_taipei": "03:00–23:00 hourly"
   },
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-10-15T04:02:35.378847+08:00",
-    "last_updated_at": "2026-10-15T04:02:41.035610+08:00",
-    "finished_at": "2026-10-15T04:02:41.035610+08:00",
+    "started_at": "2026-10-15T05:02:27.476051+08:00",
+    "last_updated_at": "2026-10-15T05:02:33.858574+08:00",
+    "finished_at": "2026-10-15T05:02:33.858574+08:00",
     "stop_reason": "first_http_429",
     "last_appid": 4218620,
     "last_name": "Double Dealers",
@@ -66,12 +66,34 @@
     "http_429_this_run": 1,
     "manual_cooldown_override": false,
     "request_limit": 250,
-    "run_id": "38628482072",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38628482072"
+    "run_id": "38636887940",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38636887940"
   },
   "queue": [
     {
       "position": 1,
+      "appid": 4435490,
+      "name": "Call of Duty®: Modern Warfare® 4",
+      "steam_url": "https://store.steampowered.com/app/4435490/",
+      "release_date": "2026-10-22",
+      "source": "twitch_steam_discovery",
+      "priority": true,
+      "state": "awaiting_group",
+      "group_id64": null,
+      "group_resolution": {
+        "status": "not_found",
+        "checked_at": "2026-10-14T21:02:23.441234Z",
+        "source": "Steam ISteamUser/ResolveVanityURL",
+        "attempted": true,
+        "http": 200,
+        "retry_at": "2026-10-15T00:02:23.441234Z",
+        "api_result": 42
+      },
+      "last_attempt_at": null,
+      "last_attempt_status": null
+    },
+    {
+      "position": 2,
       "appid": 4218620,
       "name": "Double Dealers",
       "steam_url": "https://store.steampowered.com/app/4218620/",
@@ -88,11 +110,11 @@
         "http": 200,
         "api_result": 1
       },
-      "last_attempt_at": "2026-10-14T20:02:35.726279Z",
+      "last_attempt_at": "2026-10-14T21:02:27.822063Z",
       "last_attempt_status": "rate_limited"
     },
     {
-      "position": 2,
+      "position": 3,
       "appid": 4944320,
       "name": "Twin Drive",
       "steam_url": "https://store.steampowered.com/app/4944320/",
@@ -106,7 +128,7 @@
       "last_attempt_status": "rate_limited"
     },
     {
-      "position": 3,
+      "position": 4,
       "appid": 5224520,
       "name": "Vocabug",
       "steam_url": "https://store.steampowered.com/app/5224520/",
@@ -120,7 +142,7 @@
       "last_attempt_status": null
     },
     {
-      "position": 4,
+      "position": 5,
       "appid": 5180330,
       "name": "Amanojaku Nightmare",
       "steam_url": "https://store.steampowered.com/app/5180330/",
@@ -134,7 +156,7 @@
       "last_attempt_status": null
     },
     {
-      "position": 5,
+      "position": 6,
       "appid": 5290600,
       "name": "Fresh Market Simulator",
       "steam_url": "https://store.steampowered.com/app/5290600/",
@@ -148,7 +170,7 @@
       "last_attempt_status": null
     },
     {
-      "position": 6,
+      "position": 7,
       "appid": 5208900,
       "name": "Homegrown: Sports Agent Empire",
       "steam_url": "https://store.steampowered.com/app/5208900/",
@@ -162,7 +184,7 @@
       "last_attempt_status": null
     },
     {
-      "position": 7,
+      "position": 8,
       "appid": 5294600,
       "name": "SHOGITOON",
       "steam_url": "https://store.steampowered.com/app/5294600/",
@@ -176,7 +198,7 @@
       "last_attempt_status": null
     },
     {
-      "position": 8,
+      "position": 9,
       "appid": 5329410,
       "name": "Shark Tales: Reef Rogues",
       "steam_url": "https://store.steampowered.com/app/5329410/",
@@ -190,7 +212,7 @@
       "last_attempt_status": null
     },
     {
-      "position": 9,
+      "position": 10,
       "appid": 5352620,
       "name": "SPLACHESS",
       "steam_url": "https://store.steampowered.com/app/5352620/",
@@ -204,7 +226,7 @@
       "last_attempt_status": null
     },
     {
-      "position": 10,
+      "position": 11,
       "appid": 5355820,
       "name": "Beatrice",
       "steam_url": "https://store.steampowered.com/app/5355820/",
@@ -218,7 +240,7 @@
       "last_attempt_status": null
     },
     {
-      "position": 11,
+      "position": 12,
       "appid": 5360610,
       "name": "MOVETOON",
       "steam_url": "https://store.steampowered.com/app/5360610/",
@@ -232,7 +254,7 @@
       "last_attempt_status": null
     },
     {
-      "position": 12,
+      "position": 13,
       "appid": 4578740,
       "name": "Remain Seated",
       "steam_url": "https://store.steampowered.com/app/4578740/",
@@ -246,7 +268,7 @@
       "last_attempt_status": null
     },
     {
-      "position": 13,
+      "position": 14,
       "appid": 5306880,
       "name": "Gross Survivors",
       "steam_url": "https://store.steampowered.com/app/5306880/",
@@ -260,7 +282,7 @@
       "last_attempt_status": null
     },
     {
-      "position": 14,
+      "position": 15,
       "appid": 3841050,
       "name": "Sacrifice Sanctuary: The Ritual Maiden's Life With Monsters",
       "steam_url": "https://store.steampowered.com/app/3841050/",
@@ -270,28 +292,6 @@
       "state": "cooldown",
       "group_id64": "103582791475819289",
       "group_resolution": null,
-      "last_attempt_at": null,
-      "last_attempt_status": null
-    },
-    {
-      "position": 15,
-      "appid": 4435490,
-      "name": "Call of Duty®: Modern Warfare® 4",
-      "steam_url": "https://store.steampowered.com/app/4435490/",
-      "release_date": "2026-10-23",
-      "source": "fresh_daily_prefilter_unresolved",
-      "priority": false,
-      "state": "awaiting_group",
-      "group_id64": null,
-      "group_resolution": {
-        "status": "not_found",
-        "checked_at": "2026-10-13T20:02:49.724575Z",
-        "source": "Steam ISteamUser/ResolveVanityURL",
-        "attempted": true,
-        "http": 200,
-        "retry_at": "2026-10-14T20:02:49.724575Z",
-        "api_result": 42
-      },
       "last_attempt_at": null,
       "last_attempt_status": null
     },
@@ -2315,19 +2315,6 @@
   "parked": [],
   "events": [
     {
-      "at": "2026-10-11T19:09:40.711463Z",
-      "kind": "official_attempt",
-      "appid": 5180740,
-      "name": "Oh Shear!",
-      "status": "ok",
-      "http": 200,
-      "source": "fresh_daily_prefilter_unresolved",
-      "official_followers": 5,
-      "retry_at": null,
-      "run_id": "38166271405",
-      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38166271405"
-    },
-    {
       "at": "2026-10-11T19:09:48.711612Z",
       "kind": "official_attempt",
       "appid": 5343380,
@@ -3613,6 +3600,19 @@
       "retry_at": "2026-10-14T20:17:35.958922Z",
       "run_id": "38628482072",
       "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38628482072"
+    },
+    {
+      "at": "2026-10-14T21:02:27.822063Z",
+      "kind": "official_attempt",
+      "appid": 4218620,
+      "name": "Double Dealers",
+      "status": "rate_limited",
+      "http": 429,
+      "source": "twitch_steam_discovery",
+      "official_followers": null,
+      "retry_at": "2026-10-14T21:32:27.986007Z",
+      "run_id": "38636887940",
+      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38636887940"
     }
   ],
   "events_limit": 100
