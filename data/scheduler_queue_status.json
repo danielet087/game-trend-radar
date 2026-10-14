@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-13T23:02:57.913766Z",
+  "generated_at": "2026-10-14T00:03:08.453721Z",
   "today_taipei": "2026-10-14",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-10-13T23:02:46.603982Z",
+    "checkpoint_updated_at": "2026-10-14T00:02:57.583783Z",
     "group_resolution_updated_at": "2026-10-13T20:02:49.830975Z",
     "candidate_state_updated_at": "2026-10-13T22:13:36.292025Z",
     "prefilter_updated_at": "2026-10-13T22:13:36.274860Z",
@@ -34,9 +34,9 @@
     "followers_ready_pending": 65,
     "awaiting_group_pending": 1,
     "total_pending": 66,
-    "today_attempts": 1,
+    "today_attempts": 2,
     "today_successes": 0,
-    "today_429": 1
+    "today_429": 2
   },
   "group_resolution_api_cooldown": {
     "status": "available",
@@ -47,17 +47,17 @@
   },
   "cooldown": {
     "active": true,
-    "until": "2026-10-13T23:17:41.880134Z",
+    "until": "2026-10-14T00:32:52.874248Z",
     "reason": "steam_http_429",
-    "next_eligible_slot": "2026-10-14T00:00:00Z",
+    "next_eligible_slot": "2026-10-14T01:00:00Z",
     "schedule_taipei": "03:00–23:00 hourly"
   },
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-10-14T07:02:41.347266+08:00",
-    "last_updated_at": "2026-10-14T07:02:46.603982+08:00",
-    "finished_at": "2026-10-14T07:02:46.603982+08:00",
+    "started_at": "2026-10-14T08:02:52.305620+08:00",
+    "last_updated_at": "2026-10-14T08:02:57.583783+08:00",
+    "finished_at": "2026-10-14T08:02:57.583783+08:00",
     "stop_reason": "first_http_429",
     "last_appid": 4944320,
     "last_name": "Twin Drive",
@@ -66,8 +66,8 @@
     "http_429_this_run": 1,
     "manual_cooldown_override": false,
     "request_limit": 250,
-    "run_id": "38481600718",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38481600718"
+    "run_id": "38487739410",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38487739410"
   },
   "queue": [
     {
@@ -81,7 +81,7 @@
       "state": "cooldown",
       "group_id64": "103582791475789392",
       "group_resolution": null,
-      "last_attempt_at": "2026-10-13T23:02:41.686902Z",
+      "last_attempt_at": "2026-10-14T00:02:52.656280Z",
       "last_attempt_status": "rate_limited"
     },
     {
@@ -1005,19 +1005,6 @@
   ],
   "parked": [],
   "events": [
-    {
-      "at": "2026-10-11T19:08:52.710186Z",
-      "kind": "official_attempt",
-      "appid": 5381820,
-      "name": "Tidy Up Me Eggs!",
-      "status": "ok",
-      "http": 200,
-      "source": "fresh_daily_prefilter_unresolved",
-      "official_followers": 6,
-      "retry_at": null,
-      "run_id": "38166271405",
-      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38166271405"
-    },
     {
       "at": "2026-10-11T19:09:00.710273Z",
       "kind": "official_attempt",
@@ -2304,6 +2291,19 @@
       "retry_at": "2026-10-13T23:17:41.880134Z",
       "run_id": "38481600718",
       "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38481600718"
+    },
+    {
+      "at": "2026-10-14T00:02:52.656280Z",
+      "kind": "official_attempt",
+      "appid": 4944320,
+      "name": "Twin Drive",
+      "status": "rate_limited",
+      "http": 429,
+      "source": "fresh_daily_prefilter_unresolved",
+      "official_followers": null,
+      "retry_at": "2026-10-14T00:32:52.874248Z",
+      "run_id": "38487739410",
+      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/38487739410"
     }
   ],
   "events_limit": 100
