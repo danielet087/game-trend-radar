@@ -21,6 +21,7 @@ on:
       - 'data/nintendo_upcoming.json'
       - 'data/publication/activity_origins.json'
       - 'scripts/build_radar_insights.py'
+      - 'scripts/publish_radar_insights.py'
       - 'tests/test_radar_insights.py'
       - 'scripts/sync_scheduler_queue_status.py'
       - 'tests/test_scheduler_queue_sync.py'
@@ -36,8 +37,9 @@ concurrency:
 
 jobs:
   snapshot:
+    if: vars.RADAR_DATABASE_MIGRATION_PAUSE != '1'
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -51,29 +53,13 @@ jobs:
         run: python -m unittest discover -s tests -p test_scheduler_queue_sync.py
       - name: Derive current activity without calling Steam
         id: publish
+        env:
+          RADAR_DATABASE_PRIMARY: ${{ vars.RADAR_DATABASE_PRIMARY || '0' }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: |
           set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          observed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          for attempt in 1 2 3 4 5; do
-            git fetch origin main
-            git reset --hard origin/main
-            python scripts/build_radar_insights.py --observed-at "$observed_at"
-            python scripts/sync_scheduler_queue_status.py
-            git add data/insights-state.json data/activity.json data/growth.json data/scheduler_queue_status.json
-            if git diff --cached --quiet; then
-              echo 'changed=false' >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            git commit -m 'data: record public activity, growth and queue status'
-            if git push origin HEAD:main; then
-              echo 'changed=true' >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          done
-          echo '::error::Concurrent publication did not settle; existing data was preserved.'
-          exit 1
+          python -m scripts.publish_radar_insights
       - name: Request Pages rebuild for the data commit
         if: steps.publish.outputs.changed == 'true'
         env:

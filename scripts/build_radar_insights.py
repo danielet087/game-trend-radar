@@ -308,11 +308,30 @@ def accepted_nintendo(catalog, now):
 def nintendo_event_time(instant, receipt, now):
     if (isinstance(receipt, dict) and type(receipt.get("schema_version")) is int
             and receipt.get("schema_version") == 1 and receipt.get("complete") is True
-            and receipt.get("status") == "published"
             and stamp(receipt.get("generated_at")) == instant):
-        published = stamp(receipt.get("published_at"))
-        if published and instant <= published <= now:
-            return published
+        if receipt.get("status") == "published":
+            published = stamp(receipt.get("published_at"))
+            if published and instant <= published <= now:
+                return published
+        elif receipt.get("status") == "persisted":
+            # The collection's durable commit is its activity time. Git delivery
+            # is acknowledged independently and must not be inferred here.
+            source = receipt.get("source")
+            platforms = source.get("platform_ids_verified") if isinstance(source, dict) else None
+            run_id = receipt.get("run_id")
+            dates = [receipt.get(key) for key in ("target_slot", "generated_at", "committed_at")]
+            if (receipt.get("storage_backend") == "turso" and receipt.get("state_persisted") is True
+                    and isinstance(run_id, str) and re.fullmatch(r"[0-9]+", run_id)
+                    and isinstance(source, dict) and source.get("provider") == "IGDB"
+                    and source.get("complete") is True and isinstance(platforms, list)
+                    and all(type(value) is int for value in platforms)
+                    and len(platforms) == len(set(platforms))
+                    and set(platforms) in ({130, 508}, {130, 508, 167})
+                    and all(isinstance(value, str) and re.fullmatch(
+                        r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", value) for value in dates)):
+                target, _, committed = map(stamp, dates)
+                if target and committed and target <= instant <= committed <= now:
+                    return committed
     return instant
 
 
