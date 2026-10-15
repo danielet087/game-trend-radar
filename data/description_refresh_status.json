@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-15T11:31:02Z",
+  "generated_at": "2026-10-15T15:41:25Z",
   "checkpoints": {
     "1167820": {
       "attempted_at": "2026-10-15T03:50:14Z",
@@ -646,22 +646,39 @@
       "attempted_at": "2026-10-15T11:31:02Z",
       "outcome": "success",
       "next_check_at": "2026-10-16T11:31:02Z"
+    },
+    "1798230": {
+      "attempted_at": "2026-10-15T15:41:25Z",
+      "outcome": "success",
+      "next_check_at": "2026-10-22T15:41:25Z"
+    },
+    "1551980": {
+      "attempted_at": "2026-10-15T15:41:25Z",
+      "outcome": "success",
+      "next_check_at": "2026-10-22T15:41:25Z"
+    },
+    "3883570": {
+      "attempted_at": "2026-10-15T15:41:25Z",
+      "outcome": "success",
+      "next_check_at": "2026-10-22T15:41:25Z"
     }
   },
-  "due_count": 1,
-  "attempted": 1,
-  "refreshed": 1,
+  "due_count": 3,
+  "attempted": 3,
+  "refreshed": 3,
   "updated_appids": [
-    5155360
+    1798230,
+    1551980,
+    3883570
   ],
   "failed_appids": [],
   "sources": {
-    "steam_english": 1
+    "steam_tchinese": 3
   },
   "pending_count": 0,
   "retry_pending_appids": [],
   "complete": true,
   "stop_reason": "",
-  "next_due_at": "2026-10-15T12:11:17Z",
+  "next_due_at": "2026-10-15T19:05:16Z",
   "superseded_appids": []
 }
