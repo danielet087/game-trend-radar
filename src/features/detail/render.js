@@ -1,3 +1,5 @@
+import { renderDescriptionSource } from '../../domain/descriptions.mjs';
+
 export function createDetailRenderer(ctx, policy, release, metadata, artwork, favorites, related) {
   const { $, node, D, R, state, today, number, isNativeConsole, document } = ctx;
   const { publicSourceURL } = policy;
@@ -25,10 +27,10 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     $("gameTitle").textContent = displayNames.name;
     $("gameEnglish").hidden = !displayNames.nameEn || displayNames.nameEn === displayNames.name;
     $("gameEnglish").textContent = displayNames.nameEn === displayNames.name ? "" : displayNames.nameEn;
-    $("gameDescription").textContent = game.description || "繁體中文遊戲介紹整理中。";
+    $("gameDescription").textContent = game.description || "簡介尚未公開，後續將持續更新。";
     $("gameDescription").hidden = false;
-    $("gameDescription").lang = "zh-Hant";
-    $("descriptionSource").hidden = !game.description || game.descriptionSource !== "editorial_zh_tw";
+    $("gameDescription").lang = game.descriptionLanguage === 'en' ? 'en' : 'zh-Hant';
+    renderDescriptionSource($("descriptionSource"), game, node);
     $("gameGenres").replaceChildren(
       node("small", "game-genres-label", "遊戲類型"),
       ...game.genres

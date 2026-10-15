@@ -1,3 +1,5 @@
+import { chooseDescription, renderDescriptionSource } from '../../domain/descriptions.mjs';
+
 export function createComparisonView(ctx, presentation, comparisonHistory) {
   const { $, node, D, R, I, state, document, today, number, dateText, compare, storage } = ctx;
   const { cover, gameLink, badges } = presentation;
@@ -72,7 +74,7 @@ export function createComparisonView(ctx, presentation, comparisonHistory) {
     };
     addRow("共同 TAG", () => common.length ? tagLinks(common.slice(0, 8)) : "目前沒有共同 TAG");
     addRow("其他 TAG", game => tagLinks(game.tags.filter(tag => !common.some(value => R.key(value) === R.key(tag))).slice(0, 8)));
-    addRow("繁中簡介", game => { const p = node("p", "comparison-description", "正在讀取繁體中文介紹…"); p.dataset.descriptionFor = game.appid; return p; });
+    addRow("遊戲簡介", game => { const p = node("div", "comparison-description", "正在讀取遊戲介紹…"); p.dataset.descriptionFor = game.appid; return p; });
     let descriptionsStarted = false;
     state.loadComparisonDescriptions = () => {
       if (descriptionsStarted) return;
@@ -82,7 +84,12 @@ export function createComparisonView(ctx, presentation, comparisonHistory) {
         if (ctx.disposed || generation !== state.analysisGeneration) return;
         const cell = body.querySelector(`[data-description-for="${game.appid}"]`);
         if (!cell) return;
-        cell.textContent = raw?.short_description_language === "zh-TW" && typeof raw.short_description === "string" ? raw.short_description : "繁體中文遊戲介紹整理中。";
+        const description = chooseDescription(raw, game);
+        const copy = node('p', '', description.description || '簡介尚未公開，後續將持續更新。');
+        copy.lang = description.descriptionLanguage === 'en' ? 'en' : 'zh-Hant';
+        const source = node('p', 'description-source');
+        renderDescriptionSource(source, description, node);
+        cell.replaceChildren(copy, source);
       }));
     };
     if (document.querySelector('.comparison-reference').open) state.loadComparisonDescriptions();

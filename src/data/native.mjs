@@ -9,6 +9,7 @@ import { normalizeKnownPlatforms, knownPlatformCompleteness } from '../domain/pl
 import { nativeMultiplayer } from '../domain/multiplayer.mjs';
 import { nintendoReleaseAudited } from '../domain/release-audit.mjs';
 import { unique } from '../domain/collections.mjs';
+import { descriptionRecord } from '../domain/descriptions.mjs';
 
 export function nintendoGames(payload) {
   if (!payload || payload.schema_version !== 1 || !Array.isArray(payload.games)) return [];
@@ -104,8 +105,7 @@ export function nintendoGames(payload) {
         updated: raw.checked_at || payload.generated_at || null, exclusivity: exclusive,
         tags: Array.isArray(raw.tags) ? raw.tags.filter(tag => typeof tag === "string") : [],
         genres: Array.isArray(raw.genres) ? raw.genres.filter(genre => typeof genre === "string") : [],
-        description: raw.short_description_language === "zh-TW" && typeof raw.short_description === "string" ? raw.short_description : "",
-        descriptionSource: raw.short_description_source || "",
+        ...descriptionRecord({ ...raw, steamAppid }),
       });
     }
   }

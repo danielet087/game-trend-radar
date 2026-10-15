@@ -25,6 +25,7 @@
 - date-only 保留原日；時間戳依已發布的日期政策驗證。台灣時區不等於台灣官方上市確認，缺值不補零或虛構時刻。
 - storage Result 區分 fresh、cached、stale、unavailable、invalid，保留來源、查核版本及原發布時間；快取60秒、請求去重、超時與備援集中管理。
 - 部分單款紀錄尚未提供 revision。詳情合併時以已讀取的 catalog 為收錄與欄位權威，單款舊紀錄僅補允許的詳情欄位；不能以 generated_at 相同假定所有檔案同版。
+- 簡介文字、語言、來源及原文網址由 descriptions.mjs 一起選取，跨平台共用 Steam 官方繁中 → Steam 官方簡中轉繁 → 其他官方中文 → 既有人工 editorial → Steam 英文 → IGDB 英文的順序。尚無中文時直接顯示英文，不自動翻譯；舊快照的 steam_machine_zh_tw／igdb_machine_zh_tw 不採用其中文，改讀已保存的 short_description_en。enrich 不會以英文覆蓋官方或人工中文；catalog 已提供簡介欄位時，不混入單款檔的舊來源標記。簡介語言不推定遊戲語言支援。
 - FilterState 管理篩選，URL 保存可分享的月份、日期、TAG、搜尋與排序。收藏與動態偏好沿用既有 localStorage keys，保留 IGDB／Steam aliases 與跨分頁同步。
 - 主 CSS 按原規則順序拆分為17個樣式模組；頁面樣式存放於對應 features。修改時注意 cascade、focus 及 reduced motion。
 

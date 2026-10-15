@@ -3,6 +3,7 @@ import { validDate, todayInTaipei, awareTime } from '../domain/dates.mjs';
 import { decimalID } from '../domain/identity.mjs';
 import { normalizeKnownPlatforms, knownPlatformCompleteness } from '../domain/platforms.mjs';
 import { steamMultiplayer } from '../domain/multiplayer.mjs';
+import { descriptionRecord } from '../domain/descriptions.mjs';
 
 export function imageURL(value, appid) {
   if (typeof value !== "string" || !value.trim()) return "";
@@ -227,6 +228,7 @@ export function normalize(raw, recent = false, translated = null) {
     }
   }
   return {
+    ...descriptionRecord(Object.hasOwn(raw, 'short_description') ? raw : translated || raw),
     appid,
     source: "steam",
     name,

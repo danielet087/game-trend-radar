@@ -1,4 +1,5 @@
 /* Shared, local-only discovery over the already-published Steam dataset. */
+import { chooseDescription } from '../../domain/descriptions.mjs';
 const names = {
   Action: "動作",
   Adventure: "冒險",
@@ -265,17 +266,11 @@ function enrich(data, official, preview) {
     registerStoreLabels(field("tag_labels_zh_tw"), storeLabels);
     registerStoreLabels(field("genre_labels_zh_tw"), storeGenreLabels);
     const descriptionRecord = source && Object.hasOwn(source, "short_description") ? source : backup;
-    const description = descriptionRecord?.short_description;
-    const isTraditional = descriptionRecord?.short_description_language === "zh-TW";
     return {
       ...game,
       tags: labels(field("tags")),
       genres: labels(field("genres")),
-      description:
-        isTraditional && typeof description === "string"
-          ? description.trim().slice(0, 4000)
-          : "",
-      descriptionSource: isTraditional ? descriptionRecord.short_description_source || "" : "",
+      ...chooseDescription(descriptionRecord, game),
     };
   };
   return {

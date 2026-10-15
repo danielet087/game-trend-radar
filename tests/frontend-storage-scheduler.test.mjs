@@ -43,7 +43,7 @@ test('queued workflow has no actual start and large run IDs retain canonical lin
 test('Twitch whole-hour batch maps to the :05 scheduled point, without inventing other successes', () => {
   const observed = run('collect.yml', 'game-trend-radar-twitch-backend', { run_started_at: '2026-10-03T07:06:00Z' });
   const lanes = buildSlots('2026-10-03', [observed], queue(), null, now);
-  assert.equal(lanes.flatMap(l => l.slots).length, 80);
+  assert.equal(lanes.flatMap(l => l.slots).length, 84);
   const twitch = lanes.find(l => l.job.id === 'twitch');
   assert.equal(twitch.slots[15].state, 'success');
   assert.equal(twitch.slots[15].at, Date.parse('2026-10-03T07:05:00Z'));
@@ -63,6 +63,19 @@ test('daily candidate and growth schedules retry at six-hour intervals after fai
     assert.deepEqual(lane.slots.map(slot => slot.state), ['interrupted', 'unknown', 'unknown', 'planned']);
     assert.match(lane.job.note, /今日成功後略過/);
   }
+});
+
+test('description refresh has independent six-hour slots and never skips after earlier daily success', () => {
+  const observed = run('steam-description-refresh.yml', 'game-trend-radar-content-backend', {
+    display_title: 'Refresh game descriptions | slot=2026-10-02T17:30:00Z | source=cloudflare',
+    created_at: '2026-10-02T17:30:20Z', run_started_at: '2026-10-02T17:31:00Z', updated_at: '2026-10-02T17:40:00Z',
+  });
+  assert.equal(observed.job_id, 'steam_descriptions');
+  const lane = buildSlots('2026-10-03', [observed], queue(), null, now).find(row => row.job.id === 'steam_descriptions');
+  assert.deepEqual(lane.slots.map(slot => [slot.hour, slot.minute]), [[1, 30], [7, 30], [13, 30], [19, 30]]);
+  assert.deepEqual(lane.slots.map(slot => slot.state), ['success', 'unknown', 'unknown', 'planned']);
+  assert.equal(lane.job.oncePerDay, undefined);
+  assert.match(eventHistory(queue(), [observed], null, now)[0].title, /遊戲簡介更新/);
 });
 
 test('candidate retry success skips later checks and keeps the original failure and actual later failure', () => {
