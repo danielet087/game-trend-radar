@@ -13,6 +13,8 @@ concurrency:
 
 jobs:
   localize:
+    # Legacy one-off mutations are unavailable after the database cutover.
+    if: vars.RADAR_DATABASE_PRIMARY != '1' && vars.RADAR_DATABASE_MIGRATION_PAUSE != '1'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:

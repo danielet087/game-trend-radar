@@ -606,6 +606,41 @@ class NintendoInsightTests(unittest.TestCase):
                 state = self.update(document=source, nintendo_receipt={**good, **fields})
                 self.assertEqual(state["events"][0]["at"], source["generated_at"])
 
+    def test_durable_database_receipt_sets_activity_time_across_midnight(self):
+        source = nintendo_catalog(nintendo_game(), at="2026-10-03T15:59:59Z")
+        receipt = {"schema_version": 1, "complete": True, "status": "persisted",
+                   "storage_backend": "turso", "state_persisted": True, "run_id": "37105223144",
+                   "target_slot": "2026-10-03T00:30:00Z", "source": source["source"],
+                   "generated_at": source["generated_at"], "committed_at": "2026-10-03T16:00:03Z"}
+        state = self.update(document=source, nintendo_receipt=receipt)
+        self.assertEqual(state["events"][0]["at"], receipt["committed_at"])
+        self.assertEqual(state["nintendo_source_at"], source["generated_at"])
+        self.assertEqual(M.stamp(state["events"][0]["at"]).astimezone(M.TAIPEI).date(), date(2026, 10, 4))
+        self.assertNotIn("published_at", receipt)
+        self.assertEqual(state, self.update(state, source, nintendo_receipt=receipt))
+
+    def test_unverified_database_receipts_cannot_change_activity_time(self):
+        source = nintendo_catalog(nintendo_game())
+        receipt = {"schema_version": 1, "complete": True, "status": "persisted",
+                   "storage_backend": "turso", "state_persisted": True, "run_id": "37105223144",
+                   "target_slot": "2026-10-03T00:30:00Z", "source": source["source"],
+                   "generated_at": source["generated_at"], "committed_at": "2026-10-03T16:40:19Z"}
+        for changes in [{"schema_version": True}, {"complete": False}, {"storage_backend": "git"},
+                        {"state_persisted": "true"}, {"state_persisted": False}, {"run_id": None},
+                        {"run_id": 37105223144}, {"run_id": ""}, {"run_id": "manual"},
+                        {"source": None}, {"source": {**source["source"], "provider": "other"}},
+                        {"source": {**source["source"], "complete": False}},
+                        {"source": {**source["source"], "platform_ids_verified": [130, 508, 508]}},
+                        {"source": {**source["source"], "platform_ids_verified": [130, 508, 169]}},
+                        {"target_slot": None}, {"target_slot": "2026-10-03T16:40:13Z"},
+                        {"generated_at": "2026-10-03T16:40:13Z"}, {"committed_at": None},
+                        {"committed_at": "2026-10-03T16:40:11Z"}, {"committed_at": "2026-10-04T04:00:01Z"},
+                        {"committed_at": "2026-10-03T16:40:19"}, {"committed_at": "2026-10-04T00:40:19+08:00"},
+                        {"target_slot": "2026-09-31T00:30:00Z"}]:
+            with self.subTest(changes=changes):
+                state = self.update(document=source, nintendo_receipt={**receipt, **changes})
+                self.assertEqual(state["events"][0]["at"], source["generated_at"])
+
     def test_dual_platform_same_date_is_one_event_and_distinct_dates_are_separate(self):
         first = self.update(document=nintendo_catalog(nintendo_game(releases={"NS2": "2026-11-05", "NS": "2026-11-05"})))
         self.assertEqual(len(first["events"]), 1)

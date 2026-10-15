@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { validateQueue, normalizeRun, runState, buildSlots, dashboardState, eventHistory, queueGameState, groupQueueCounts, igdbReceiptSummary } from '../src/features/scheduler/data.js';
+import { createSchedulerRenderer } from '../src/features/scheduler/render.js';
+import { createSchedulerState } from '../src/features/scheduler/state.js';
 
 const now = Date.parse('2026-10-03T07:30:00Z');
 function queue() {
@@ -179,6 +181,52 @@ test('IGDB publication counts come from valid receipts and missing or partial re
     assert.equal(igdbReceiptSummary({ ...receipt, ...fields }), null);
   }
   assert.equal(igdbReceiptSummary(null), null);
+});
+
+function persistedIgdbReceipt() {
+  return { schema_version: 1, generated_at: '2026-10-03T00:31:00Z', committed_at: '2026-10-03T00:34:00Z',
+    target_slot: '2026-10-03T00:30:00Z', run_id: '37105223144', storage_backend: 'turso', state_persisted: true,
+    complete: true, status: 'persisted', candidate_count: 6000, public_count: 23, pending_count: 0,
+    source: { provider: 'IGDB', complete: true, platform_ids_verified: [130, 167, 508] } };
+}
+
+test('IGDB durable collection receipts do not claim a Git publication', () => {
+  const receipt = persistedIgdbReceipt();
+  const summary = igdbReceiptSummary(receipt, now);
+  assert.equal(summary.persisted, true);
+  assert.equal(summary.committedAt, Date.parse(receipt.committed_at));
+  assert.equal(summary.published, false);
+  assert.equal(summary.publishedAt, null);
+  for (const fields of [{ storage_backend: 'git' }, { state_persisted: 'true' }, { state_persisted: false },
+    { status: 'prepared' }, { complete: false }, { run_id: 37105223144 }, { run_id: 'manual' }, { run_id: '' },
+    { source: { ...receipt.source, complete: false } }, { target_slot: null },
+    { target_slot: '2026-10-03T00:32:00Z' }, { committed_at: '2026-10-03T00:30:59Z' },
+    { committed_at: '2026-10-03T07:30:01Z' }, { committed_at: '2026-10-03T00:34:00' },
+    { committed_at: '2026-10-03T08:34:00+08:00' }, { target_slot: '2026-09-31T00:30:00Z' }]) {
+    const invalid = igdbReceiptSummary({ ...receipt, ...fields }, now);
+    assert.equal(invalid.persisted, false, JSON.stringify(fields));
+    assert.equal(invalid.committedAt, null);
+    assert.equal(invalid.published, false);
+  }
+});
+
+test('IGDB saved data is rendered as saved without a Git publication claim', context => {
+  context.mock.method(Date, 'now', () => now);
+  const state = createSchedulerState();
+  state.igdb = persistedIgdbReceipt();
+  const nodes = new Map();
+  const $ = id => {
+    if (!nodes.has(id)) nodes.set(id, { innerHTML: '', textContent: '', value: '', closest: () => null });
+    return nodes.get(id);
+  };
+  const renderer = createSchedulerRenderer(state, $);
+  renderer.render();
+  assert.match($('sourcesDetails').innerHTML, /資料已保存於/);
+  assert.doesNotMatch($('sourcesDetails').innerHTML, /完整發布於/);
+  state.igdb.state_persisted = false;
+  renderer.render();
+  assert.match($('sourcesDetails').innerHTML, /最近回報尚未確認完成/);
+  assert.doesNotMatch($('sourcesDetails').innerHTML, /資料已保存於/);
 });
 
 test('successful Actions workflow is interrupted when its actual Steam attempt gets 429', () => {

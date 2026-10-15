@@ -36,7 +36,7 @@ function groupQueueCounts(snapshot) {
   if (ready === null || awaiting === null || ready + awaiting !== num(summary?.ready_pending)) return null;
   return { followersReady: ready, awaitingGroup: awaiting };
 }
-function igdbReceiptSummary(receipt) {
+function igdbReceiptSummary(receipt, now = Date.now()) {
   const platforms = receipt?.source?.platform_ids_verified;
   if (receipt?.schema_version !== 1 || receipt.source?.provider !== "IGDB" ||
       !Array.isArray(platforms) || ![[130, 508], [130, 508, 167]].some(ids =>
@@ -45,8 +45,21 @@ function igdbReceiptSummary(receipt) {
       num(receipt.public_count) === null || num(receipt.pending_count) === null) return null;
   const published = receipt.complete === true && receipt.status === "published" && receipt.source.complete === true &&
     instant(receipt.published_at) !== null && instant(receipt.published_at) >= instant(receipt.generated_at);
-  return { platforms: platforms.includes(167) ? "NS／NS2／PS5" : "NS／NS2", published,
+  // A durable database receipt confirms collection, independently of Git delivery.
+  const utc = value => {
+    const parsed = instant(value);
+    return typeof value === "string" && /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$/.test(value) &&
+      parsed !== null && new Date(parsed).toISOString().replace(".000Z", "Z") === value ? parsed : null;
+  };
+  const targetAt = utc(receipt.target_slot), generatedAt = utc(receipt.generated_at), committedAt = utc(receipt.committed_at);
+  const persisted = receipt.complete === true && receipt.source.complete === true && receipt.status === "persisted" &&
+    receipt.storage_backend === "turso" && receipt.state_persisted === true &&
+    typeof receipt.run_id === "string" && /^[0-9]+$/.test(receipt.run_id) &&
+    targetAt !== null && generatedAt !== null && committedAt !== null &&
+    targetAt <= generatedAt && generatedAt <= committedAt && committedAt <= now;
+  return { platforms: platforms.includes(167) ? "NS／NS2／PS5" : "NS／NS2", published, persisted,
     generatedAt: instant(receipt.generated_at), publishedAt: published ? instant(receipt.published_at) : null,
+    committedAt: persisted ? committedAt : null,
     candidateCount: receipt.candidate_count, publicCount: receipt.public_count, pendingCount: receipt.pending_count };
 }
 
