@@ -5,6 +5,7 @@ import { normalizeKnownPlatforms } from './platforms.mjs';
 import { unknownMultiplayer, mergeMultiplayerEvidence } from './multiplayer.mjs';
 import { platformLanguageSupport } from './languages.mjs';
 import { unique } from './collections.mjs';
+import { chooseDescription } from './descriptions.mjs';
 
 export function uniqueReleases(releases) {
   const result = new Map();
@@ -49,6 +50,7 @@ export function mergePlatformGames(steamRows, nintendoRows, steamReference = ste
       ? true : completeness.every(value => value === false) ? false : null;
     const metadata = {
       ...steam,
+      ...chooseDescription(steam, ...rows),
       ...(translated ? { name: nintendo.name, nameTw: nintendo.nameTw, nameCn: nintendo.nameCn } : {}),
       nameOriginalTw: steam.nameOriginalTw || nintendo.nameOriginalTw,
       nameOriginalCn: steam.nameOriginalCn || nintendo.nameOriginalCn,

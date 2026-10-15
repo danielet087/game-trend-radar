@@ -33,9 +33,13 @@ test('ES modules preserve the public adapter API and current published datasets'
   const official = read('steam_upcoming.json');
   const preview = read('steam_preview.json');
   const consolePayload = read('nintendo_upcoming.json');
+  // Description selection intentionally changed; the frozen adapter remains
+  // a reference for admission, dates, identities, languages and all other data.
+  const withoutDescriptions = value => JSON.parse(JSON.stringify(value, (field, item) =>
+    ['description', 'descriptionSource', 'descriptionLanguage', 'descriptionSourceUrl', 'descriptionEn'].includes(field) ? undefined : item));
   for (const args of [[official, preview, consolePayload], [null, preview, consolePayload],
     [official, null, null], [null, null, consolePayload], [null, null, null]]) {
-    assert.deepEqual(modular.datasets(...args), baseline.datasets(...args));
+    assert.deepEqual(withoutDescriptions(modular.datasets(...args)), withoutDescriptions(baseline.datasets(...args)));
   }
 });
 

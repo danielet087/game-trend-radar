@@ -21,6 +21,35 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+for (const scenario of [
+  { source: 'steam_tchinese', language: 'zh-TW', copy: '這是官方繁體中文介紹。', english: '', label: 'Steam 官方繁中', lang: 'zh-Hant' },
+  { source: 'steam_machine_zh_tw', language: 'zh-TW', copy: '不再顯示的舊自動翻譯。', english: 'Original English summary.', expected: 'Original English summary.', label: 'Steam 英文原文', lang: 'en' },
+  { source: 'steam_english', language: 'en', copy: 'English summary from Steam.', english: '', label: 'Steam 英文原文', lang: 'en' },
+]) {
+  test(`detail displays description provenance and a safe original link: ${scenario.source || 'English fallback'}`, async ({ page }) => {
+    const catalog = readData('catalog.json');
+    const fields = { short_description: scenario.copy, short_description_en: scenario.english,
+      short_description_source: scenario.source, short_description_language: scenario.language,
+      language_support: { english: true, tchinese: false, schinese: false },
+      description_source_url: `https://store.steampowered.com/app/${steam.appid}/` };
+    catalog.games = catalog.games.map((row: any) => row.appid === steam.appid ? { ...row, ...fields } : row);
+    await page.route('**/data/catalog.json', route => route.fulfill({ json: catalog }));
+    await page.route(`**/data/games/${steam.appid}.json`, route => route.fulfill({ json: { ...readData(`games/${steam.appid}.json`), ...fields } }));
+    await page.route('**/data/nintendo_upcoming.json', route => route.fulfill({ json: { schema_version: 1, generated_at: catalog.generated_at, games: [] } }));
+    await page.goto(steamRoute);
+    await expect(page.locator('#detailPage')).toBeVisible();
+    await expect(page.locator('#gameDescription')).toHaveText(scenario.expected || scenario.copy || scenario.english);
+    await expect(page.locator('#gameDescription')).toHaveAttribute('lang', scenario.lang);
+    await expect(page.locator('#descriptionSource')).toContainText(scenario.label);
+    await expect(page.locator('#descriptionSource')).not.toContainText('機器翻譯');
+    const original = page.locator('#descriptionSource a');
+    await expect(original).toHaveAttribute('href', `https://store.steampowered.com/app/${steam.appid}/`);
+    await expect(original).toHaveAttribute('target', '_blank');
+    await expect(original).toHaveAttribute('rel', 'noopener noreferrer');
+    await expect(page.locator('#gameLanguageBadge')).toHaveText('支援英文');
+  });
+}
+
 const routes = [
   `index.html?month=${month}`, 'games.html', 'upcoming.html', 'released.html',
   'saved.html', `date.html?date=${dataset.games[0].date}`, 'explore.html',

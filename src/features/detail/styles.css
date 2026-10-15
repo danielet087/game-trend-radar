@@ -1317,11 +1317,15 @@ body.motion-on .art-dialog[open] {
   text-decoration: none;
 }
 .description-source {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
   margin: 8px 0 0;
   color: var(--game-accent);
   font-size: 11px;
   line-height: 1.6;
 }
+.description-source a { color: inherit; text-underline-offset: 3px; }
 
 /* Native console editions retain their own dates, languages and store links. */
 .game-platform-badges { display: flex; flex-wrap: wrap; gap: 8px; }

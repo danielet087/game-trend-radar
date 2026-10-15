@@ -185,6 +185,9 @@ body[data-page="analysis"] { --page-wash:#e2dcf4; --page-wash-soft:#f5e8ed; --pa
 .comparison-tags a { padding:4px 7px; border:1px solid #d9d8c5; border-radius:6px; color:#60704d; background:#f5f6e8; font-size:10px; }
 .comparison-tags a:hover { background:#e8efda; border-color:#a7bd91; }
 .comparison-description { margin:0; font-size:12px; line-height:2; color:#586175; }
+.comparison-description > p { margin: 0; }
+.comparison-description .description-source { display:flex; flex-wrap:wrap; gap:4px 12px; margin-top:8px; font-size:11px; }
+.comparison-description .description-source a { color:inherit; text-underline-offset:3px; }
 .comparison-chart { margin-top:26px; }
 .comparison-chart h3 { margin:0 0 8px; font-size:18px; }
 .comparison-chart > p { margin:0 0 15px; color:var(--muted); font-size:11px; line-height:1.9; }

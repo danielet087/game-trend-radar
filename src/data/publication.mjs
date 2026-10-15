@@ -1,16 +1,20 @@
 import { decimalID } from '../domain/identity.mjs';
 
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
+const descriptionFields = new Set(['short_description', 'short_description_en',
+  'short_description_language', 'short_description_source', 'description_source_url', 'description_checked_at',
+  'description_translation_engine', 'description_translation_version', 'description_source_sha256']);
 
 // These fields enrich the detail view without changing catalog membership,
 // release dates, follower admission, platform evidence or language evidence.
 const detailFields = new Set([
   'short_description', 'short_description_en', 'short_description_language',
-  'short_description_source', 'description_checked_at', 'detailed_description',
+  'short_description_source', 'description_source_url', 'description_checked_at', 'detailed_description',
   'about_the_game', 'screenshots', 'movies', 'videos', 'developers', 'publishers',
   'pc_requirements', 'mac_requirements', 'linux_requirements', 'support_info',
   'header_image', 'header_image_2x', 'main_capsule_image', 'main_capsule_image_2x',
   'small_capsule_image', 'capsule_image', 'artwork_checked_at',
+  'description_translation_engine', 'description_translation_version', 'description_source_sha256',
 ]);
 
 export function publicationRevision(value) {
@@ -49,6 +53,11 @@ export function detailCatalog(catalog, rawGame, appid) {
   const index = catalog.games.findIndex(row => decimalID(row?.appid) === id);
   if (index < 0) return catalog;
   const supplements = Object.fromEntries(Object.entries(raw).filter(([field]) => detailFields.has(field)));
+  // Partial catalog copy must never inherit a different description's language,
+  // source or URL from an older per-AppID file.
+  if ([...descriptionFields].some(field => field !== 'description_checked_at' && Object.hasOwn(catalog.games[index], field))) {
+    for (const field of descriptionFields) delete supplements[field];
+  }
   const games = [...catalog.games];
   games[index] = { ...supplements, ...catalog.games[index] };
   return { ...catalog, games };
