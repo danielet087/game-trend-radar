@@ -17,6 +17,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'requirements-core.txt'
       - 'data/catalog.json'
       - 'data/nintendo_upcoming.json'
       - 'data/publication/activity_origins.json'
