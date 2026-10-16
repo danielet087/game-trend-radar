@@ -144,19 +144,19 @@
   "steam_type": "game",
   "content_descriptorids": [],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 4078430,
-    "twitch_game_id": "474709880",
-    "igdb_id": "381248",
     "checked_at": "2026-10-02T09:57:54Z",
-    "source_frontend_commit": "1552b84f0f00d2eaca4285885ea25ad0bead6e5d",
+    "igdb_id": "381248",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_enrollment": {
-      "source": "igdb_first_release_date",
+      "min_viewers": 7000,
       "observed_at": "2026-09-30T19:15:32Z",
-      "viewer_count": 9897,
-      "min_viewers": 7000
-    }
+      "source": "igdb_first_release_date",
+      "viewer_count": 9897
+    },
+    "source_frontend_commit": "1552b84f0f00d2eaca4285885ea25ad0bead6e5d",
+    "twitch_game_id": "474709880"
   },
   "categories": [
     {

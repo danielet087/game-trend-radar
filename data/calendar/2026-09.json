@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "generated_at": "2026-10-16T17:10:08.723569+00:00",
   "month": "2026-09",
+  "count": 56,
   "games": [
     {
       "appid": 2638890,
@@ -144,20 +146,20 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 2638890,
-        "twitch_game_id": "327598602",
-        "igdb_id": "325602",
         "checked_at": "2026-10-03T10:10:30Z",
-        "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
+        "igdb_id": "325602",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-30T00:56:47Z",
-          "viewer_count": 11331,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-30T00:56:47Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 11331
+        },
+        "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
+        "twitch_game_id": "327598602"
       },
       "content_enrichment_signature": "2638890:82455:2026-09-03",
       "storage_version": 2,
@@ -304,20 +306,20 @@
       "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4356430,
-        "twitch_game_id": "602040818",
-        "igdb_id": "408823",
         "checked_at": "2026-10-03T10:10:30Z",
-        "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
+        "igdb_id": "408823",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-29T15:19:47Z",
-          "viewer_count": 7705,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-29T15:19:47Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 7705
+        },
+        "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
+        "twitch_game_id": "602040818"
       },
       "content_enrichment_signature": "4356430:10451:2026-09-03",
       "storage_version": 2,
@@ -504,19 +506,19 @@
       "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3669570,
-        "twitch_game_id": "666506999",
-        "igdb_id": "342686",
         "checked_at": "2026-10-03T10:10:30Z",
-        "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
+        "igdb_id": "342686",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-09-30T21:14:58Z",
-          "viewer_count": 10306,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 10306
+        },
+        "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
+        "twitch_game_id": "666506999"
       },
       "content_enrichment_signature": "3669570:27091:2026-09-07",
       "storage_version": 2,
@@ -694,19 +696,19 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4047270,
-        "twitch_game_id": "332076082",
-        "igdb_id": "399030",
         "checked_at": "2026-10-06T18:16:09Z",
-        "source_frontend_commit": "8633eac537c7759399e10431fef3dadebbf8b348",
+        "igdb_id": "399030",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-06T18:16:09Z",
-          "viewer_count": 8344,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 8344
+        },
+        "source_frontend_commit": "8633eac537c7759399e10431fef3dadebbf8b348",
+        "twitch_game_id": "332076082"
       },
       "content_enrichment_signature": "4047270:3859:2026-09-08",
       "storage_version": 2,
@@ -852,20 +854,20 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 892970,
-        "twitch_game_id": "508455",
-        "igdb_id": "104967",
         "checked_at": "2026-10-03T10:10:30Z",
-        "source_frontend_commit": "d1015875e1d2b1374ef412446b89ea18f25751af",
+        "igdb_id": "104967",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-29T14:28:32Z",
-          "viewer_count": 9675,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-29T14:28:32Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 9675
+        },
+        "source_frontend_commit": "d1015875e1d2b1374ef412446b89ea18f25751af",
+        "twitch_game_id": "508455"
       },
       "content_enrichment_signature": "892970:536496:2026-09-09",
       "storage_version": 2,
@@ -1027,19 +1029,19 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3219630,
-        "twitch_game_id": "902998079",
-        "igdb_id": "362096",
         "checked_at": "2026-10-03T10:10:30Z",
-        "source_frontend_commit": "ae9d2b02f7b98de235dbffc1d693b969c1fb75ba",
+        "igdb_id": "362096",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-02T01:13:11Z",
-          "viewer_count": 7619,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 7619
+        },
+        "source_frontend_commit": "ae9d2b02f7b98de235dbffc1d693b969c1fb75ba",
+        "twitch_game_id": "902998079"
       },
       "content_enrichment_signature": "3219630:50176:2026-09-09",
       "storage_version": 2,
@@ -1215,20 +1217,20 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 1867240,
-        "twitch_game_id": "743893402",
-        "igdb_id": "388285",
         "checked_at": "2026-10-02T09:57:54Z",
-        "source_frontend_commit": "6955aa5ce695357475d62c6ad5b0844613db0e26",
+        "igdb_id": "388285",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-29T14:28:32Z",
-          "viewer_count": 35755,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-29T14:28:32Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 35755
+        },
+        "source_frontend_commit": "6955aa5ce695357475d62c6ad5b0844613db0e26",
+        "twitch_game_id": "743893402"
       },
       "content_enrichment_signature": "1867240:226998:2026-09-10",
       "storage_version": 2,
@@ -1394,19 +1396,19 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3195440,
-        "twitch_game_id": "866287127",
-        "igdb_id": "319629",
         "checked_at": "2026-10-04T17:14:24Z",
-        "source_frontend_commit": "e8985949d96008a156675f6beee978668030e1c2",
+        "igdb_id": "319629",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-04T17:14:24Z",
-          "viewer_count": 8213,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 8213
+        },
+        "source_frontend_commit": "e8985949d96008a156675f6beee978668030e1c2",
+        "twitch_game_id": "866287127"
       },
       "content_enrichment_signature": "3195440:24229:2026-09-10",
       "storage_version": 2,
@@ -1565,19 +1567,19 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4412320,
-        "twitch_game_id": "590993568",
-        "igdb_id": "414526",
         "checked_at": "2026-10-07T21:14:30Z",
-        "source_frontend_commit": "98950b4b36d28aa4c42ca41d72cbab29ddb698e6",
+        "igdb_id": "414526",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-07T21:14:30Z",
-          "viewer_count": 27397,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 27397
+        },
+        "source_frontend_commit": "98950b4b36d28aa4c42ca41d72cbab29ddb698e6",
+        "twitch_game_id": "590993568"
       },
       "content_enrichment_signature": "4412320:4528:2026-09-10",
       "storage_version": 2,
@@ -1723,19 +1725,19 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4538140,
-        "twitch_game_id": "1661671460",
-        "igdb_id": "410924",
         "checked_at": "2026-10-07T20:12:43Z",
-        "source_frontend_commit": "2a35794c5bbaed9b39eb8a808af0d81aec8e7cf5",
+        "igdb_id": "410924",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-07T20:12:43Z",
-          "viewer_count": 14753,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 14753
+        },
+        "source_frontend_commit": "2a35794c5bbaed9b39eb8a808af0d81aec8e7cf5",
+        "twitch_game_id": "1661671460"
       },
       "content_enrichment_signature": "4538140:3413:2026-09-14",
       "storage_version": 2,
@@ -1890,20 +1892,20 @@
       "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4126040,
-        "twitch_game_id": "1267582829",
-        "igdb_id": "348202",
         "checked_at": "2026-10-03T10:10:30Z",
-        "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
+        "igdb_id": "348202",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-29T14:28:32Z",
-          "viewer_count": 11721,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-29T14:28:32Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 11721
+        },
+        "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
+        "twitch_game_id": "1267582829"
       },
       "content_enrichment_signature": "4126040:91070:2026-09-15",
       "storage_version": 2,
@@ -2077,19 +2079,19 @@
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3070070,
-        "twitch_game_id": "1230742965",
-        "igdb_id": "309862",
         "checked_at": "2026-10-03T12:10:47Z",
-        "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
+        "igdb_id": "309862",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-03T12:10:47Z",
-          "viewer_count": 13830,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 13830
+        },
+        "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
+        "twitch_game_id": "1230742965"
       },
       "content_enrichment_signature": "3070070:78541:2026-09-15",
       "storage_version": 2,
@@ -2242,19 +2244,19 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 2887580,
-        "twitch_game_id": "1413930024",
-        "igdb_id": "322158",
         "checked_at": "2026-10-02T16:13:26Z",
-        "source_frontend_commit": "d1015875e1d2b1374ef412446b89ea18f25751af",
+        "igdb_id": "322158",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-02T16:13:26Z",
-          "viewer_count": 19497,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 19497
+        },
+        "source_frontend_commit": "d1015875e1d2b1374ef412446b89ea18f25751af",
+        "twitch_game_id": "1413930024"
       },
       "content_enrichment_signature": "2887580:49763:2026-09-15",
       "storage_version": 2,
@@ -2428,20 +2430,20 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4557380,
-        "twitch_game_id": "903469103",
-        "igdb_id": "398645",
         "checked_at": "2026-10-02T09:57:54Z",
-        "source_frontend_commit": "6955aa5ce695357475d62c6ad5b0844613db0e26",
+        "igdb_id": "398645",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-29T21:17:08Z",
-          "viewer_count": 9448,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-29T21:17:08Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 9448
+        },
+        "source_frontend_commit": "6955aa5ce695357475d62c6ad5b0844613db0e26",
+        "twitch_game_id": "903469103"
       },
       "content_enrichment_signature": "4557380:4571:2026-09-15",
       "storage_version": 2,
@@ -2600,19 +2602,19 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4182430,
-        "twitch_game_id": "1919304985",
-        "igdb_id": "401555",
         "checked_at": "2026-10-04T02:10:36Z",
-        "source_frontend_commit": "93a1383465105a26b30d508be0483d61968a19dd",
+        "igdb_id": "401555",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-04T02:10:36Z",
-          "viewer_count": 13557,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 13557
+        },
+        "source_frontend_commit": "93a1383465105a26b30d508be0483d61968a19dd",
+        "twitch_game_id": "1919304985"
       },
       "content_enrichment_signature": "4182430:751:2026-09-16",
       "storage_version": 2,
@@ -2766,19 +2768,19 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3560670,
-        "twitch_game_id": "1896092709",
-        "igdb_id": "333095",
         "checked_at": "2026-10-02T09:57:54Z",
-        "source_frontend_commit": "6955aa5ce695357475d62c6ad5b0844613db0e26",
+        "igdb_id": "333095",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-09-30T21:14:58Z",
-          "viewer_count": 9587,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 9587
+        },
+        "source_frontend_commit": "6955aa5ce695357475d62c6ad5b0844613db0e26",
+        "twitch_game_id": "1896092709"
       },
       "content_enrichment_signature": "3560670:12839:2026-09-17",
       "storage_version": 2,
@@ -2968,19 +2970,19 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 2938460,
-        "twitch_game_id": "1378292380",
-        "igdb_id": "398226",
         "checked_at": "2026-10-06T04:09:46Z",
-        "source_frontend_commit": "dc793847fe2d8a5f3d4eef3982c61d7dd2b31d03",
+        "igdb_id": "398226",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-06T04:09:46Z",
-          "viewer_count": 53438,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 53438
+        },
+        "source_frontend_commit": "dc793847fe2d8a5f3d4eef3982c61d7dd2b31d03",
+        "twitch_game_id": "1378292380"
       },
       "content_enrichment_signature": "2938460:7233:2026-09-17",
       "storage_version": 2,
@@ -3128,19 +3130,19 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3195580,
-        "twitch_game_id": "1642629214",
-        "igdb_id": "323462",
         "checked_at": "2026-10-05T04:08:55Z",
-        "source_frontend_commit": "712126149c6eb8720fc080399c5c4b7818c47002",
+        "igdb_id": "323462",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-05T04:08:55Z",
-          "viewer_count": 13016,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 13016
+        },
+        "source_frontend_commit": "712126149c6eb8720fc080399c5c4b7818c47002",
+        "twitch_game_id": "1642629214"
       },
       "content_enrichment_signature": "3195580:6395:2026-09-17",
       "storage_version": 2,
@@ -3302,19 +3304,19 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4140530,
-        "twitch_game_id": "600069925",
-        "igdb_id": "381089",
         "checked_at": "2026-10-05T21:27:53Z",
-        "source_frontend_commit": "98be4ec3b09a77611dc8412b659edce586f1a4a2",
+        "igdb_id": "381089",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-05T21:27:53Z",
-          "viewer_count": 15404,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 15404
+        },
+        "source_frontend_commit": "98be4ec3b09a77611dc8412b659edce586f1a4a2",
+        "twitch_game_id": "600069925"
       },
       "content_enrichment_signature": "4140530:831:2026-09-17",
       "storage_version": 2,
@@ -3446,20 +3448,20 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3640200,
-        "twitch_game_id": "1217522406",
-        "igdb_id": "408337",
         "checked_at": "2026-10-02T09:57:54Z",
-        "source_frontend_commit": "6955aa5ce695357475d62c6ad5b0844613db0e26",
+        "igdb_id": "408337",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-30T05:10:10Z",
-          "viewer_count": 33187,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-30T05:10:10Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 33187
+        },
+        "source_frontend_commit": "6955aa5ce695357475d62c6ad5b0844613db0e26",
+        "twitch_game_id": "1217522406"
       },
       "content_enrichment_signature": "3640200:5082:2026-09-18",
       "storage_version": 2,
@@ -3639,19 +3641,19 @@
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3926930,
-        "twitch_game_id": "1748345515",
-        "igdb_id": "418643",
         "checked_at": "2026-10-06T05:08:43Z",
-        "source_frontend_commit": "98e5eb532da2179013baa5ec9407dfe3d5b31a52",
+        "igdb_id": "418643",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-06T05:08:43Z",
-          "viewer_count": 54753,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 54753
+        },
+        "source_frontend_commit": "98e5eb532da2179013baa5ec9407dfe3d5b31a52",
+        "twitch_game_id": "1748345515"
       },
       "content_enrichment_signature": "3926930:334:2026-09-19",
       "storage_version": 2,
@@ -3958,19 +3960,19 @@
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4652040,
-        "twitch_game_id": "1748094675",
-        "igdb_id": "405696",
         "checked_at": "2026-10-10T20:13:50Z",
-        "source_frontend_commit": "28bae1c65538ef2db30a7938af4aa11ba062dbb9",
+        "igdb_id": "405696",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-10T20:13:50Z",
-          "viewer_count": 17069,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 17069
+        },
+        "source_frontend_commit": "28bae1c65538ef2db30a7938af4aa11ba062dbb9",
+        "twitch_game_id": "1748094675"
       },
       "content_enrichment_signature": "4652040:343:2026-09-20",
       "storage_version": 2,
@@ -4115,19 +4117,19 @@
       "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4019220,
-        "twitch_game_id": "1288749557",
-        "igdb_id": "365465",
         "checked_at": "2026-10-03T14:57:28Z",
-        "source_frontend_commit": "624543cadf23595069614dece31bf25aa8594e4c",
+        "igdb_id": "365465",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-09-30T18:14:34Z",
-          "viewer_count": 7220,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 7220
+        },
+        "source_frontend_commit": "624543cadf23595069614dece31bf25aa8594e4c",
+        "twitch_game_id": "1288749557"
       },
       "categories": [
         {
@@ -4402,19 +4404,19 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3510740,
-        "twitch_game_id": "421472783",
-        "igdb_id": "355571",
         "checked_at": "2026-10-08T20:14:40Z",
-        "source_frontend_commit": "1bb5d1a5184fe02d5bbb1b910d42e3e4dfd61714",
+        "igdb_id": "355571",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-08T20:14:40Z",
-          "viewer_count": 9890,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 9890
+        },
+        "source_frontend_commit": "1bb5d1a5184fe02d5bbb1b910d42e3e4dfd61714",
+        "twitch_game_id": "421472783"
       },
       "content_enrichment_signature": "3510740:1731:2026-09-21",
       "storage_version": 2,
@@ -5281,19 +5283,19 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4287460,
-        "twitch_game_id": "1851360928",
-        "igdb_id": "392596",
         "checked_at": "2026-10-09T03:11:41Z",
-        "source_frontend_commit": "09d2e1d2a8d1ed23656e70f112a634f55aaead0b",
+        "igdb_id": "392596",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-09T03:11:41Z",
-          "viewer_count": 14207,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 14207
+        },
+        "source_frontend_commit": "09d2e1d2a8d1ed23656e70f112a634f55aaead0b",
+        "twitch_game_id": "1851360928"
       },
       "content_enrichment_signature": "4287460:149:2026-09-22",
       "storage_version": 2,
@@ -5587,20 +5589,20 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 1636440,
-        "twitch_game_id": "1960720223",
-        "igdb_id": "222342",
         "checked_at": "2026-10-03T10:10:30Z",
-        "source_frontend_commit": "d5deed9d580d49b6d59d23b6459a4ca8b8e33e47",
+        "igdb_id": "222342",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-29T14:28:32Z",
-          "viewer_count": 9290,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-29T14:28:32Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 9290
+        },
+        "source_frontend_commit": "d5deed9d580d49b6d59d23b6459a4ca8b8e33e47",
+        "twitch_game_id": "1960720223"
       },
       "categories": [
         {
@@ -5762,7 +5764,6 @@
       "display_name": "Echoes in Darkness",
       "display_name_source": "english",
       "name_en": "Echoes in Darkness",
-      "name_en_traditional": "Echoes in Darkness",
       "language_support": {
         "tchinese": false,
         "schinese": true,
@@ -5898,22 +5899,23 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4945790,
-        "twitch_game_id": "1200701553",
-        "igdb_id": "419465",
         "checked_at": "2026-10-16T02:10:58Z",
-        "source_frontend_commit": "e9124148a18e5ca044ab56c9b300cd13c873b588",
+        "igdb_id": "419465",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
           "min_viewers": 7000,
           "observed_at": "2026-10-16T02:10:58Z",
           "source": "igdb_first_release_date",
           "viewer_count": 12272
-        }
+        },
+        "source_frontend_commit": "e9124148a18e5ca044ab56c9b300cd13c873b588",
+        "twitch_game_id": "1200701553"
       },
       "content_enrichment_signature": "4945790:29:2026-09-23",
-      "storage_version": 2
+      "storage_version": 2,
+      "community_url": "https://steamcommunity.com/app/4945790/"
     },
     {
       "appid": 3669870,
@@ -6058,20 +6060,20 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3669870,
-        "twitch_game_id": "1338428218",
-        "igdb_id": "225582",
         "checked_at": "2026-10-02T09:57:54Z",
-        "source_frontend_commit": "3626a86cdf93ed3c45072b81f49e622f568ffdce",
+        "igdb_id": "225582",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-29T16:02:55Z",
-          "viewer_count": 7117,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-29T16:02:55Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 7117
+        },
+        "source_frontend_commit": "3626a86cdf93ed3c45072b81f49e622f568ffdce",
+        "twitch_game_id": "1338428218"
       },
       "categories": [
         {
@@ -6791,20 +6793,20 @@
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4080220,
-        "twitch_game_id": "123184772",
-        "igdb_id": "408819",
         "checked_at": "2026-10-02T09:57:54Z",
-        "source_frontend_commit": "138196519ef2810aee21b1359a634c76b7e5ba39",
+        "igdb_id": "408819",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-29T14:28:32Z",
-          "viewer_count": 40496,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-29T14:28:32Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 40496
+        },
+        "source_frontend_commit": "138196519ef2810aee21b1359a634c76b7e5ba39",
+        "twitch_game_id": "123184772"
       },
       "categories": [
         {
@@ -7013,7 +7015,7 @@
       "release_precision": "day",
       "followers": 8968,
       "follower_checked_at": "2026-09-19T00:50:10Z",
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2712590/ee1b3261168699b0a520f06fe5285ec02690c89d/capsule_616x353.jpg?t=1790354685",
+      "capsule_image": "bf635300fe2ea760101d71df4c47dd85a7339db8/capsule_231x87.jpg",
       "store_url": "https://store.steampowered.com/app/2712590/",
       "community_url": "https://steamcommunity.com/app/2712590/",
       "name_en": "Dragon Shelter",
@@ -7148,8 +7150,7 @@
       ],
       "categories_source": "Steam IStoreBrowseService/GetItems supported_player_categoryids",
       "categories_checked_at": "2026-10-16T11:31:12Z",
-      "description_source_url": "https://store.steampowered.com/app/2712590/",
-      "name_en_traditional": "Dragon Shelter"
+      "description_source_url": "https://store.steampowered.com/app/2712590/"
     },
     {
       "appid": 4072240,
@@ -7295,19 +7296,19 @@
       "steam_type": "game",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4072240,
-        "twitch_game_id": "610706148",
-        "igdb_id": "378548",
         "checked_at": "2026-10-02T09:57:54Z",
-        "source_frontend_commit": "3626a86cdf93ed3c45072b81f49e622f568ffdce",
+        "igdb_id": "378548",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-01T17:17:15Z",
-          "viewer_count": 13772,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 13772
+        },
+        "source_frontend_commit": "3626a86cdf93ed3c45072b81f49e622f568ffdce",
+        "twitch_game_id": "610706148"
       },
       "categories": [
         {
@@ -7442,19 +7443,19 @@
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4694270,
-        "twitch_game_id": "336484893",
-        "igdb_id": "416594",
         "checked_at": "2026-10-02T09:57:54Z",
-        "source_frontend_commit": "138196519ef2810aee21b1359a634c76b7e5ba39",
+        "igdb_id": "416594",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-01T04:12:34Z",
-          "viewer_count": 61731,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 61731
+        },
+        "source_frontend_commit": "138196519ef2810aee21b1359a634c76b7e5ba39",
+        "twitch_game_id": "336484893"
       },
       "content_enrichment_signature": "4694270:1413:2026-09-26",
       "storage_version": 2,
@@ -7599,19 +7600,19 @@
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4247840,
-        "twitch_game_id": "828915555",
-        "igdb_id": "418760",
         "checked_at": "2026-10-04T05:09:26Z",
-        "source_frontend_commit": "4e59fa84573f9bb4816eed7318e3dc05cf4669a1",
+        "igdb_id": "418760",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-04T05:09:26Z",
-          "viewer_count": 11244,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 11244
+        },
+        "source_frontend_commit": "4e59fa84573f9bb4816eed7318e3dc05cf4669a1",
+        "twitch_game_id": "828915555"
       },
       "content_enrichment_signature": "4247840:139:2026-09-26",
       "storage_version": 2,
@@ -7773,19 +7774,19 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3832490,
-        "twitch_game_id": "1653894072",
-        "igdb_id": "384325",
         "checked_at": "2026-10-04T21:12:21Z",
-        "source_frontend_commit": "025819f066339cc336d23e41f75513e94806c5c3",
+        "igdb_id": "384325",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-04T21:12:21Z",
-          "viewer_count": 14400,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 14400
+        },
+        "source_frontend_commit": "025819f066339cc336d23e41f75513e94806c5c3",
+        "twitch_game_id": "1653894072"
       },
       "content_enrichment_signature": "3832490:2395:2026-09-28",
       "storage_version": 2,
@@ -7948,20 +7949,20 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 1488490,
-        "twitch_game_id": "897166081",
-        "igdb_id": "203301",
         "checked_at": "2026-10-02T09:57:54Z",
-        "source_frontend_commit": "3626a86cdf93ed3c45072b81f49e622f568ffdce",
+        "igdb_id": "203301",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-29T15:19:47Z",
-          "viewer_count": 7756,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-29T15:19:47Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 7756
+        },
+        "source_frontend_commit": "3626a86cdf93ed3c45072b81f49e622f568ffdce",
+        "twitch_game_id": "897166081"
       },
       "categories": [
         {
@@ -8113,20 +8114,20 @@
       "steam_type": "game",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3493540,
-        "twitch_game_id": "1979693660",
-        "igdb_id": "344466",
         "checked_at": "2026-10-02T09:57:54Z",
-        "source_frontend_commit": "3626a86cdf93ed3c45072b81f49e622f568ffdce",
+        "igdb_id": "344466",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-29T21:17:08Z",
-          "viewer_count": 7434,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-29T21:17:08Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 7434
+        },
+        "source_frontend_commit": "3626a86cdf93ed3c45072b81f49e622f568ffdce",
+        "twitch_game_id": "1979693660"
       },
       "categories": [
         {
@@ -8278,20 +8279,20 @@
       "steam_type": "game",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 1912410,
-        "twitch_game_id": "2042681592",
-        "igdb_id": "395525",
         "checked_at": "2026-10-02T09:57:54Z",
-        "source_frontend_commit": "3626a86cdf93ed3c45072b81f49e622f568ffdce",
+        "igdb_id": "395525",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
-          "observed_at": "2026-09-29T14:28:32Z",
-          "viewer_count": 25153,
+          "kind": "history_recovery",
           "min_viewers": 7000,
-          "kind": "history_recovery"
-        }
+          "observed_at": "2026-09-29T14:28:32Z",
+          "source": "igdb_first_release_date",
+          "viewer_count": 25153
+        },
+        "source_frontend_commit": "3626a86cdf93ed3c45072b81f49e622f568ffdce",
+        "twitch_game_id": "2042681592"
       },
       "categories": [
         {
@@ -8482,19 +8483,19 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 2543830,
-        "twitch_game_id": "2095006742",
-        "igdb_id": "383019",
         "checked_at": "2026-10-05T21:27:53Z",
-        "source_frontend_commit": "98be4ec3b09a77611dc8412b659edce586f1a4a2",
+        "igdb_id": "383019",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-05T21:27:53Z",
-          "viewer_count": 37169,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 37169
+        },
+        "source_frontend_commit": "98be4ec3b09a77611dc8412b659edce586f1a4a2",
+        "twitch_game_id": "2095006742"
       },
       "content_enrichment_signature": "2543830:14412:2026-09-29",
       "storage_version": 2,
@@ -8636,19 +8637,19 @@
       "steam_type": "game",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3917700,
-        "twitch_game_id": "738080442",
-        "igdb_id": "386448",
         "checked_at": "2026-10-02T09:57:54Z",
-        "source_frontend_commit": "3626a86cdf93ed3c45072b81f49e622f568ffdce",
+        "igdb_id": "386448",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-09-30T17:14:43Z",
-          "viewer_count": 9770,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 9770
+        },
+        "source_frontend_commit": "3626a86cdf93ed3c45072b81f49e622f568ffdce",
+        "twitch_game_id": "738080442"
       },
       "content_enrichment_signature": "3917700:1513:2026-09-29",
       "storage_version": 2,
@@ -8820,19 +8821,19 @@
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 1732430,
-        "twitch_game_id": "914381364",
-        "igdb_id": "207595",
         "checked_at": "2026-10-08T21:11:43Z",
-        "source_frontend_commit": "98c16366147f726c4071e68d28e30b9dd6b6865a",
+        "igdb_id": "207595",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-08T21:11:43Z",
-          "viewer_count": 37144,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 37144
+        },
+        "source_frontend_commit": "98c16366147f726c4071e68d28e30b9dd6b6865a",
+        "twitch_game_id": "914381364"
       },
       "content_enrichment_signature": "1732430:24662:2026-09-30",
       "storage_version": 2,
@@ -9137,25 +9138,23 @@
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 5085740,
-        "twitch_game_id": "819191775",
-        "igdb_id": "417115",
         "checked_at": "2026-10-11T20:14:28Z",
-        "source_frontend_commit": "bcdb69219a20f34a72a524ca35cdfaf95b9eaf2a",
+        "igdb_id": "417115",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-11T20:14:28Z",
-          "viewer_count": 18858,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 18858
+        },
+        "source_frontend_commit": "bcdb69219a20f34a72a524ca35cdfaf95b9eaf2a",
+        "twitch_game_id": "819191775"
       },
       "content_enrichment_signature": "5085740:217:2026-09-30",
       "storage_version": 2,
       "community_url": "https://steamcommunity.com/app/5085740/"
     }
-  ],
-  "generated_at": "2026-10-16T11:31:25+00:00",
-  "count": 56
+  ]
 }

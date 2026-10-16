@@ -145,20 +145,20 @@
   "release_display_provider": "Steam Store appdetails cc=TW l=tchinese",
   "content_descriptorids": [],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 4126040,
-    "twitch_game_id": "1267582829",
-    "igdb_id": "348202",
     "checked_at": "2026-10-03T10:10:30Z",
-    "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
+    "igdb_id": "348202",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_enrollment": {
-      "source": "igdb_first_release_date",
-      "observed_at": "2026-09-29T14:28:32Z",
-      "viewer_count": 11721,
+      "kind": "history_recovery",
       "min_viewers": 7000,
-      "kind": "history_recovery"
-    }
+      "observed_at": "2026-09-29T14:28:32Z",
+      "source": "igdb_first_release_date",
+      "viewer_count": 11721
+    },
+    "source_frontend_commit": "38239a15050deb2331ede8ef2ea2e23e9beb2d64",
+    "twitch_game_id": "1267582829"
   },
   "content_enrichment_signature": "4126040:91070:2026-09-15",
   "storage_version": 2,

@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "generated_at": "2026-10-16T17:10:08.723569+00:00",
   "month": "2026-11",
+  "count": 17,
   "games": [
     {
       "appid": 1892100,
@@ -1553,7 +1555,6 @@
       "display_name": "Ashes of the Singularity II",
       "display_name_source": "english",
       "name_en": "Ashes of the Singularity II",
-      "name_en_traditional": "Ashes of the Singularity II",
       "language_support": {
         "tchinese": false,
         "schinese": true,
@@ -2478,19 +2479,19 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4450660,
-        "twitch_game_id": "70001252",
-        "igdb_id": "409649",
         "checked_at": "2026-10-11T21:12:32Z",
-        "source_frontend_commit": "b062a53b361f2c1e0c070d0ca30c9bb27d0c7845",
+        "igdb_id": "409649",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-11T21:12:32Z",
-          "viewer_count": 17078,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 17078
+        },
+        "source_frontend_commit": "b062a53b361f2c1e0c070d0ca30c9bb27d0c7845",
+        "twitch_game_id": "70001252"
       },
       "content_enrichment_signature": "4450660:232:2026-11-19",
       "storage_version": 2,
@@ -2641,7 +2642,5 @@
       "description_source_url": "https://store.steampowered.com/app/3224600/",
       "description_next_check_at": "2026-10-22T03:50:14Z"
     }
-  ],
-  "generated_at": "2026-10-16T11:12:14+00:00",
-  "count": 17
+  ]
 }

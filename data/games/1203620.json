@@ -8,7 +8,6 @@
   "name_zh_cn": "雾锁王国 (Enshrouded)",
   "name_zh_tw_traditional": "霧鎖王國 (Enshrouded)",
   "name_zh_cn_traditional": "霧鎖王國 (Enshrouded)",
-  "name_en_traditional": "Enshrouded",
   "language_support": {
     "tchinese": true,
     "schinese": true,
@@ -160,22 +159,23 @@
   "release_date_normalization": "steam_store_date_matches_taipei",
   "content_descriptorids": [],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 1203620,
-    "twitch_game_id": "737987407",
-    "igdb_id": "248643",
     "checked_at": "2026-10-16T08:10:10Z",
-    "source_database_revision": "69b4e3baadb0d4329b2f1fe8e5eeb386b3edcd72f7499c22109fed0c0babbae3",
+    "igdb_id": "248643",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 31,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "69b4e3baadb0d4329b2f1fe8e5eeb386b3edcd72f7499c22109fed0c0babbae3",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-10-15T08:09:22Z",
       "source": "igdb_first_release_date",
       "viewer_count": 8375
-    }
+    },
+    "twitch_game_id": "737987407"
   },
   "content_enrichment_signature": "1203620:396361:2026-10-15",
-  "storage_version": 2
+  "storage_version": 2,
+  "community_url": "https://steamcommunity.com/app/1203620/"
 }

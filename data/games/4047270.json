@@ -144,19 +144,19 @@
   "release_date_normalization": "steam_store_date_matches_taipei",
   "content_descriptorids": [],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 4047270,
-    "twitch_game_id": "332076082",
-    "igdb_id": "399030",
     "checked_at": "2026-10-06T18:16:09Z",
-    "source_frontend_commit": "8633eac537c7759399e10431fef3dadebbf8b348",
+    "igdb_id": "399030",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_enrollment": {
-      "source": "igdb_first_release_date",
+      "min_viewers": 7000,
       "observed_at": "2026-10-06T18:16:09Z",
-      "viewer_count": 8344,
-      "min_viewers": 7000
-    }
+      "source": "igdb_first_release_date",
+      "viewer_count": 8344
+    },
+    "source_frontend_commit": "8633eac537c7759399e10431fef3dadebbf8b348",
+    "twitch_game_id": "332076082"
   },
   "content_enrichment_signature": "4047270:3859:2026-09-08",
   "storage_version": 2,

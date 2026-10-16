@@ -4,7 +4,6 @@
   "display_name": "Refund This Game",
   "display_name_source": "english",
   "name_en": "Refund This Game",
-  "name_en_traditional": "Refund This Game",
   "language_support": {
     "tchinese": false,
     "schinese": true,
@@ -140,20 +139,21 @@
   "release_date_normalization": "steam_utc_date_normalized_to_taipei",
   "content_descriptorids": [],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 5070190,
-    "twitch_game_id": "366868770",
-    "igdb_id": "423133",
     "checked_at": "2026-10-15T23:12:23Z",
-    "source_frontend_commit": "64fd49fe2e8d7a8b33d3474071e52a31cffc13db",
+    "igdb_id": "423133",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-10-15T23:12:23Z",
       "source": "igdb_first_release_date",
       "viewer_count": 7740
-    }
+    },
+    "source_frontend_commit": "64fd49fe2e8d7a8b33d3474071e52a31cffc13db",
+    "twitch_game_id": "366868770"
   },
   "content_enrichment_signature": "5070190:152:2026-10-13",
-  "storage_version": 2
+  "storage_version": 2,
+  "community_url": "https://steamcommunity.com/app/5070190/"
 }

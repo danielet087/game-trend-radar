@@ -149,19 +149,19 @@
     5
   ],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 5155360,
-    "twitch_game_id": "685872227",
-    "igdb_id": "423121",
     "checked_at": "2026-10-14T07:09:54Z",
-    "source_frontend_commit": "95538d1932c84ac61feb84969d2ffd0c9833f25a",
+    "igdb_id": "423121",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_enrollment": {
-      "source": "igdb_first_release_date",
+      "min_viewers": 7000,
       "observed_at": "2026-10-14T07:09:54Z",
-      "viewer_count": 8753,
-      "min_viewers": 7000
-    }
+      "source": "igdb_first_release_date",
+      "viewer_count": 8753
+    },
+    "source_frontend_commit": "95538d1932c84ac61feb84969d2ffd0c9833f25a",
+    "twitch_game_id": "685872227"
   },
   "content_enrichment_signature": "5155360:18:2026-10-09",
   "storage_version": 2,
