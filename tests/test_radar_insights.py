@@ -73,6 +73,27 @@ def igdb_catalog(*rows, **fields):
     return document
 
 
+def partial_igdb_catalog(*rows, **fields):
+    document = igdb_catalog(*rows, **fields)
+    document["source"].update(complete=False, ledger_complete=True, lookup_complete=False, public_complete=True,
+        game_lookup={"initial_missing_count": 1, "recovered_count": 0,
+            "recovery_requests": 2, "max_recovery_requests": 20, "unavailable_ids": [415392],
+            "unavailable": [{"igdb_id": 415392, "reason": "missing_after_bounded_recovery",
+                "last_checked_at": "2026-10-02T00:40:12Z", "request_attempts": 3}]})
+    return document
+
+
+def partial_igdb_receipt(document, **fields):
+    return {"schema_version": 1, "complete": False, "collection_status": "partial",
+            "status": "persisted_partial", "ledger_complete": True,
+            "lookup_complete": False, "public_complete": True,
+            "pending_count": 1, "unavailable_count": 1, "storage_backend": "turso", "state_persisted": True,
+            "authoritative_source": "danielet087/game-trend-radar@main", "backend_mirror": "not_required",
+            "run_id": "37105223144", "trigger_source": "manual",
+            "target_slot": document["generated_at"], "source": deepcopy(document["source"]),
+            "generated_at": document["generated_at"], "committed_at": "2026-10-03T16:40:19Z", **fields}
+
+
 def audited_nintendo_release(release="2026-10-08", **fields):
     return {"platform": "NS2", "date": release, "precision": "day", "region": "worldwide",
             "source": "IGDB", "date_basis": "regional_calendar_day", "source_date": release,
@@ -411,6 +432,120 @@ class NintendoInsightTests(unittest.TestCase):
     def update(self, previous=None, document=None, **kwargs):
         return M.update(previous, catalog(game()), observed_at=self.NOW,
                         nintendo_catalog=document, **kwargs)
+
+    def test_verified_partial_lookup_updates_only_fresh_qualified_public_games(self):
+        document = partial_igdb_catalog(nintendo_game())
+        before = deepcopy(document)
+        state = self.update(document=document)
+        self.assertEqual(set(state["nintendo_records"]), {"igdb:1"})
+        self.assertEqual(state["nintendo_source_at"], document["generated_at"])
+        self.assertEqual(state["events"][0]["at"], document["generated_at"])
+        self.assertFalse(document["source"]["complete"])
+        self.assertEqual(document, before)
+        self.assertEqual(state, self.update(state, document))
+
+    def test_partial_lookup_cannot_publish_a_retained_unavailable_row(self):
+        document = partial_igdb_catalog(nintendo_game(415392))
+        first = self.update(document=igdb_catalog(nintendo_game()))
+        before = deepcopy(first)
+        with self.assertRaises(ValueError):
+            self.update(first, document)
+        self.assertEqual(first, before)
+
+    def test_partial_lookup_evidence_is_strict_and_never_mutates_previous_state(self):
+        changes = [
+            (("source", "complete"), None), (("source", "ledger_complete"), False),
+            (("source", "lookup_complete"), True), (("source", "public_complete"), False),
+            (("source", "game_lookup"), None),
+            (("source", "game_lookup", "unavailable_ids"), []),
+            (("source", "game_lookup", "unavailable_ids"), [415392, 415392]),
+            (("source", "game_lookup", "unavailable_ids"), [415392, 23]),
+            (("source", "game_lookup", "unavailable_ids"), ["415392"]),
+            (("source", "game_lookup", "unavailable_ids"), [True]),
+            (("source", "game_lookup", "unavailable"), []),
+            (("source", "game_lookup", "unavailable", 0, "igdb_id"), 23),
+            (("source", "game_lookup", "unavailable", 0, "reason"), "http_error"),
+            (("source", "game_lookup", "unavailable", 0, "request_attempts"), 2),
+            (("source", "game_lookup", "unavailable", 0, "request_attempts"), True),
+            (("source", "game_lookup", "unavailable", 0, "last_checked_at"), "2026-10-04T01:00:00Z"),
+            (("source", "game_lookup", "unavailable", 0, "last_checked_at"), "2026-09-31T00:00:00Z"),
+            (("source", "game_lookup", "unavailable", 0, "last_checked_at"), "2026-10-02T00:00:00"),
+            (("source", "game_lookup", "initial_missing_count"), 0),
+            (("source", "game_lookup", "initial_missing_count"), True),
+            (("source", "game_lookup", "recovered_count"), -1),
+            (("source", "game_lookup", "recovery_requests"), 1),
+            (("source", "game_lookup", "recovery_requests"), 21),
+            (("source", "game_lookup", "max_recovery_requests"), 21),
+            (("generated_at",), "2026-10-04T00:40:12+08:00"),
+        ]
+        first = self.update(document=igdb_catalog(nintendo_game()))
+        for path, value in changes:
+            with self.subTest(path=path, value=value):
+                document = partial_igdb_catalog(nintendo_game())
+                target = document
+                for key in path[:-1]:
+                    target = target[key]
+                target[path[-1]] = value
+                before = deepcopy(first)
+                with self.assertRaises(ValueError):
+                    self.update(first, document)
+                self.assertEqual(first, before)
+        for key in ("ledger_complete", "lookup_complete", "public_complete"):
+            document = partial_igdb_catalog(nintendo_game())
+            del document["source"][key]
+            with self.subTest(missing=key), self.assertRaises(ValueError):
+                self.update(first, document)
+        document = partial_igdb_catalog(nintendo_game())
+        document["source"]["game_lookup"]["unavailable"][0]["response_body"] = "unsafe"
+        with self.assertRaises(ValueError):
+            self.update(first, document)
+
+    def test_complete_source_rejects_explicit_contradictory_completeness_flags(self):
+        for changes in ({"ledger_complete": False}, {"lookup_complete": False}, {"public_complete": False},
+                        {"game_lookup": {"unavailable_ids": [415392], "unavailable": []}}):
+            document = igdb_catalog(nintendo_game())
+            document["source"].update(changes)
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                self.update(document=document)
+
+    def test_partial_database_receipt_dates_fresh_public_activity_without_claiming_complete_lookup(self):
+        document = partial_igdb_catalog(nintendo_game())
+        receipt = partial_igdb_receipt(document)
+        before = deepcopy(receipt)
+        state = self.update(document=document, nintendo_receipt=receipt)
+        self.assertEqual(state["events"][0]["at"], receipt["committed_at"])
+        self.assertEqual(state["nintendo_source_at"], document["generated_at"])
+        self.assertNotIn("igdb:415392", state["nintendo_records"])
+        self.assertFalse(receipt["complete"])
+        self.assertFalse(receipt["source"]["lookup_complete"])
+        self.assertEqual(receipt, before)
+        self.assertEqual(state, self.update(state, document, nintendo_receipt=receipt))
+
+    def test_partial_cloudflare_receipt_preserves_valid_daily_slot_and_commit_time(self):
+        document = partial_igdb_catalog(nintendo_game(), at="2026-10-04T00:40:12Z")
+        receipt = partial_igdb_receipt(document, target_slot="2026-10-04T00:30:00Z",
+            trigger_source="cloudflare", committed_at="2026-10-04T00:40:19Z")
+        state = self.update(document=document, nintendo_receipt=receipt)
+        self.assertEqual(state["events"][0]["at"], receipt["committed_at"])
+        self.assertEqual(state["nintendo_source_at"], document["generated_at"])
+
+    def test_unverified_or_mismatched_partial_receipt_cannot_change_activity_time(self):
+        document = partial_igdb_catalog(nintendo_game())
+        receipt = partial_igdb_receipt(document)
+        mismatch = {**deepcopy(document["source"]), "candidate_scope": "different-source"}
+        changes = [{"schema_version": True}, {"status": "persisted"}, {"complete": True},
+            {"collection_status": "complete"}, {"ledger_complete": False}, {"lookup_complete": True},
+            {"public_complete": False}, {"pending_count": 0}, {"unavailable_count": True},
+            {"source": mismatch}, {"source": None}, {"storage_backend": "git"}, {"state_persisted": False},
+            {"run_id": "manual"}, {"authoritative_source": "other@main"}, {"backend_mirror": "published"},
+            {"trigger_source": "unknown"}, {"trigger_source": "cloudflare"},
+            {"target_slot": "2026-10-02T00:30:00Z"}, {"target_slot": "2026-10-03T16:40:13Z"},
+            {"generated_at": "2026-10-03T16:40:13Z"}, {"committed_at": "2026-10-03T16:40:11Z"},
+            {"committed_at": "2026-10-04T04:00:01Z"}, {"committed_at": "2026-10-04T00:40:19+08:00"}]
+        for fields in changes:
+            with self.subTest(fields=fields):
+                state = self.update(document=document, nintendo_receipt={**receipt, **fields})
+                self.assertEqual(state["events"][0]["at"], document["generated_at"])
 
     def test_official_taiwan_correction_generates_the_existing_date_change_event_without_mutation(self):
         original = nintendo_game(381222, releases={"NS2": "2026-10-08"}, display_name="沉星之序")

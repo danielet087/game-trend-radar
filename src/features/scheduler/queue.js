@@ -52,12 +52,29 @@ function igdbReceiptSummary(receipt, now = Date.now()) {
       parsed !== null && new Date(parsed).toISOString().replace(".000Z", "Z") === value ? parsed : null;
   };
   const targetAt = utc(receipt.target_slot), generatedAt = utc(receipt.generated_at), committedAt = utc(receipt.committed_at);
-  const persisted = receipt.complete === true && receipt.source.complete === true && receipt.status === "persisted" &&
+  const lookup = receipt.source.game_lookup;
+  const unavailable = lookup?.unavailable_ids;
+  const partial = receipt.complete === false && receipt.collection_status === "partial" && receipt.source.complete === false &&
+    [receipt, receipt.source].every(value => value.ledger_complete === true && value.lookup_complete === false && value.public_complete === true) &&
+    receipt.source.hypes_threshold === 30 && Array.isArray(unavailable) && unavailable.length > 0 &&
+    unavailable.every((id, index) => Number.isSafeInteger(id) && id > 0 && (index === 0 || id > unavailable[index - 1])) &&
+    receipt.pending_count === unavailable.length && receipt.unavailable_count === unavailable.length &&
+    unavailable.length <= receipt.candidate_count - receipt.public_count &&
+    ["initial_missing_count", "recovered_count", "recovery_requests", "max_recovery_requests"].every(key => Number.isSafeInteger(lookup[key]) && lookup[key] >= 0) &&
+    lookup.initial_missing_count === lookup.recovered_count + unavailable.length &&
+    lookup.recovery_requests >= 2 && lookup.recovery_requests <= lookup.max_recovery_requests && lookup.max_recovery_requests <= 20 &&
+    Array.isArray(lookup.unavailable) && lookup.unavailable.length === unavailable.length &&
+    lookup.unavailable.every((detail, index) => detail && typeof detail === "object" &&
+      Object.keys(detail).sort().join(",") === "igdb_id,last_checked_at,reason,request_attempts" &&
+      detail.igdb_id === unavailable[index] && detail.reason === "missing_after_bounded_recovery" && detail.request_attempts === 3 &&
+      utc(detail.last_checked_at) !== null && generatedAt !== null && utc(detail.last_checked_at) <= generatedAt);
+  const persisted = ((receipt.complete === true && receipt.source.complete === true && receipt.status === "persisted") ||
+    (partial && receipt.status === "persisted_partial" && receipt.authoritative_source === "danielet087/game-trend-radar@main" && receipt.backend_mirror === "not_required")) &&
     receipt.storage_backend === "turso" && receipt.state_persisted === true &&
     typeof receipt.run_id === "string" && /^[0-9]+$/.test(receipt.run_id) &&
     targetAt !== null && generatedAt !== null && committedAt !== null &&
     targetAt <= generatedAt && generatedAt <= committedAt && committedAt <= now;
-  return { platforms: platforms.includes(167) ? "NS／NS2／PS5" : "NS／NS2", published, persisted,
+  return { platforms: platforms.includes(167) ? "NS／NS2／PS5" : "NS／NS2", published, persisted, partial: partial && persisted,
     generatedAt: instant(receipt.generated_at), publishedAt: published ? instant(receipt.published_at) : null,
     committedAt: persisted ? committedAt : null,
     candidateCount: receipt.candidate_count, publicCount: receipt.public_count, pendingCount: receipt.pending_count };

@@ -229,6 +229,55 @@ test('IGDB saved data is rendered as saved without a Git publication claim', con
   assert.doesNotMatch($('sourcesDetails').innerHTML, /資料已保存於/);
 });
 
+function partialIgdbReceipt() {
+  const receipt = persistedIgdbReceipt();
+  const flags = { ledger_complete: true, lookup_complete: false, public_complete: true };
+  return { ...receipt, ...flags, complete: false, status: 'persisted_partial', collection_status: 'partial',
+    pending_count: 1, unavailable_count: 1, backend_mirror: 'not_required',
+    authoritative_source: 'danielet087/game-trend-radar@main',
+    source: { ...receipt.source, ...flags, complete: false, hypes_threshold: 30,
+      game_lookup: { initial_missing_count: 1, recovered_count: 0, recovery_requests: 2, max_recovery_requests: 20,
+        unavailable_ids: [415392], unavailable: [{ igdb_id: 415392, reason: 'missing_after_bounded_recovery',
+          last_checked_at: '2026-10-02T00:32:16Z', request_attempts: 3 }] } } };
+}
+
+test('IGDB partial receipts confirm saved public data without claiming full lookup completion', () => {
+  const receipt = partialIgdbReceipt();
+  const result = igdbReceiptSummary(receipt, now);
+  assert.equal(result.partial, true);
+  assert.equal(result.persisted, true);
+  assert.equal(result.published, false);
+  assert.equal(result.pendingCount, 1);
+  for (const mutate of [
+    r => { r.source.public_complete = false; }, r => { r.lookup_complete = true; },
+    r => { r.pending_count = 0; }, r => { r.source.game_lookup.unavailable_ids = [415392, 415392]; },
+    r => { r.source.game_lookup.recovery_requests = 21; },
+    r => { r.source.game_lookup.initial_missing_count = 2; },
+    r => { r.source.game_lookup.unavailable[0].request_attempts = 1; },
+    r => { r.source.game_lookup.unavailable[0].last_checked_at = '2026-10-04T00:32:16Z'; },
+    r => { r.authoritative_source = 'unknown'; }, r => { r.state_persisted = false; },
+  ]) {
+    const invalid = structuredClone(receipt); mutate(invalid);
+    assert.equal(igdbReceiptSummary(invalid, now).partial, false);
+    assert.equal(igdbReceiptSummary(invalid, now).persisted, false);
+  }
+});
+
+test('IGDB partial retention is visible as a retryable historical lookup', context => {
+  context.mock.method(Date, 'now', () => now);
+  const state = createSchedulerState(); state.igdb = partialIgdbReceipt();
+  const nodes = new Map();
+  const $ = id => {
+    if (!nodes.has(id)) nodes.set(id, { innerHTML: '', textContent: '', value: '', closest: () => null });
+    return nodes.get(id);
+  };
+  createSchedulerRenderer(state, $).render();
+  assert.match($('sourcesDetails').innerHTML, /公開資料已保存於/);
+  assert.match($('sourcesDetails').innerHTML, /歷史候選待查/);
+  assert.match($('sourcesDetails').innerHTML, /保留原查詢時間，下次排程再試/);
+  assert.doesNotMatch($('sourcesDetails').innerHTML, /完整發布於/);
+});
+
 test('successful Actions workflow is interrupted when its actual Steam attempt gets 429', () => {
   const q = queue(); q.events.push({ at: '2026-10-03T07:02:00Z', http: 429, status: 'rate_limited', appid: 1, name: 'Game' });
   assert.equal(runState(run(), q, null).state, 'interrupted');
