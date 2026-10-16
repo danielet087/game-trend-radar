@@ -237,10 +237,58 @@ def accepted_nintendo_release_source(release):
                  or (status == "date_only" and timestamp is None)))
 
 
+def nintendo_unavailable_ids(source, generated_at):
+    """Validate a complete public projection without refreshing retained rows.
+
+    Older complete sources do not carry the three explicit completeness flags.
+    The retention exception requires all of them and bounded lookup evidence.
+    """
+    if source.get("complete") is True:
+        if any(key in source and source[key] is not True
+               for key in ("ledger_complete", "lookup_complete", "public_complete")):
+            raise ValueError("Inconsistent IGDB source completeness")
+        lookup = source.get("game_lookup", {})
+        if isinstance(lookup, dict) and (lookup.get("unavailable_ids") or lookup.get("unavailable")):
+            raise ValueError("Inconsistent IGDB source completeness")
+        return frozenset()
+    if (source.get("complete") is not False or source.get("ledger_complete") is not True
+            or source.get("lookup_complete") is not False or source.get("public_complete") is not True):
+        raise ValueError("Complete IGDB public projection required")
+    lookup = source.get("game_lookup")
+    ids = lookup.get("unavailable_ids") if isinstance(lookup, dict) else None
+    details = lookup.get("unavailable") if isinstance(lookup, dict) else None
+    if (not isinstance(ids, list) or not ids or any(type(value) is not int or value <= 0 for value in ids)
+            or ids != sorted(set(ids)) or not isinstance(details, list) or len(details) != len(ids)):
+        raise ValueError("Invalid IGDB retained lookup evidence")
+    for key in ("initial_missing_count", "recovered_count", "recovery_requests", "max_recovery_requests"):
+        if type(lookup.get(key)) is not int or lookup[key] < 0:
+            raise ValueError("Invalid IGDB retained lookup evidence")
+    if (lookup["initial_missing_count"] != lookup["recovered_count"] + len(ids)
+            or not 2 <= lookup["recovery_requests"] <= lookup["max_recovery_requests"] <= 20):
+        raise ValueError("Invalid IGDB retained lookup evidence")
+    if (not isinstance(generated_at, str) or not re.fullmatch(
+            r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", generated_at)
+            or not (generated := stamp(generated_at))):
+        raise ValueError("Invalid IGDB retained lookup timestamp")
+    for igdb_id, detail in zip(ids, details):
+        checked_at = detail.get("last_checked_at") if isinstance(detail, dict) else None
+        if (not isinstance(detail, dict)
+                or set(detail) != {"igdb_id", "reason", "last_checked_at", "request_attempts"}
+                or type(detail.get("igdb_id")) is not int or detail["igdb_id"] != igdb_id
+                or detail.get("reason") != "missing_after_bounded_recovery"
+                or type(detail.get("request_attempts")) is not int or detail["request_attempts"] != 3
+                or not isinstance(checked_at, str) or not re.fullmatch(
+                    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", checked_at)
+                or not (checked := stamp(checked_at)) or checked > generated):
+            raise ValueError("Invalid IGDB retained lookup evidence")
+    return frozenset(ids)
+
+
 def accepted_nintendo(catalog, now):
     """Validate public qualifications before changing optional native IGDB state.
 
-    A broken or partial catalog must not deactivate previously accepted games.
+    A broken public catalog must not deactivate previously accepted games.
+    A retained, nonpublic lookup may be stale while every public row is fresh.
     Content screening is performed by the publisher; this consumer checks its
     explicit result rather than inventing a second adult-keyword policy.
     """
@@ -252,7 +300,7 @@ def accepted_nintendo(catalog, now):
     if (not isinstance(catalog, dict) or type(catalog.get("schema_version")) is not int
             or catalog.get("schema_version") != 1
             or not isinstance(source, dict) or source.get("provider") != "IGDB"
-            or source.get("complete") is not True or type(source.get("hypes_threshold")) is not int
+            or type(source.get("hypes_threshold")) is not int
             or source.get("hypes_threshold") != 30 or not isinstance(verified_platforms, list)
             or any(type(value) is not int for value in verified_platforms)
             or len(verified_platforms) != len(set(verified_platforms))
@@ -265,6 +313,7 @@ def accepted_nintendo(catalog, now):
             or day(window["start"]) != instant.astimezone(TAIPEI).date()
             or not isinstance(rows, list)):
         raise ValueError("Complete IGDB catalog with a valid source timestamp required")
+    unavailable = nintendo_unavailable_ids(source, catalog.get("generated_at"))
     start, end = day(window["start"]), day(window["end"])
     result = {}
     for row in rows:
@@ -273,7 +322,7 @@ def accepted_nintendo(catalog, now):
         igdb_id, hypes = row.get("igdb_id"), row.get("hypes")
         key = f"igdb:{igdb_id}"
         if (not isinstance(igdb_id, int) or isinstance(igdb_id, bool) or igdb_id <= 0
-                or row.get("id") != key or key in result
+                or row.get("id") != key or key in result or igdb_id in unavailable
                 or not isinstance(hypes, int) or isinstance(hypes, bool) or hypes < 30
                 or row.get("hypes_status") != "available" or row.get("popularity_status") != "qualified"
                 or row.get("calendar_eligible") is not True or row.get("sexual_content_screened") is not True
@@ -305,7 +354,42 @@ def accepted_nintendo(catalog, now):
     return instant, result
 
 
-def nintendo_event_time(instant, receipt, now):
+def nintendo_event_time(instant, receipt, now, source=None):
+    if (isinstance(receipt, dict) and type(receipt.get("schema_version")) is int
+            and receipt["schema_version"] == 1 and receipt.get("status") == "persisted_partial"
+            and receipt.get("complete") is False and receipt.get("collection_status") == "partial"
+            and stamp(receipt.get("generated_at")) == instant):
+        provenance = receipt.get("source")
+        platforms = provenance.get("platform_ids_verified") if isinstance(provenance, dict) else None
+        try:
+            unavailable = nintendo_unavailable_ids(provenance, receipt.get("generated_at"))
+        except (ValueError, AttributeError):
+            unavailable = frozenset()
+        dates = [receipt.get(key) for key in ("target_slot", "generated_at", "committed_at")]
+        run_id = receipt.get("run_id")
+        trigger = receipt.get("trigger_source")
+        if (unavailable and (source is None or provenance == source)
+                and receipt.get("ledger_complete") is True and receipt.get("lookup_complete") is False
+                and receipt.get("public_complete") is True
+                and all(type(receipt.get(key)) is int and receipt[key] == len(unavailable)
+                        for key in ("pending_count", "unavailable_count"))
+                and receipt.get("storage_backend") == "turso" and receipt.get("state_persisted") is True
+                and receipt.get("authoritative_source") == "danielet087/game-trend-radar@main"
+                and receipt.get("backend_mirror") == "not_required"
+                and isinstance(run_id, str) and re.fullmatch(r"[0-9]+", run_id)
+                and isinstance(trigger, str) and trigger in {"manual", "cloudflare", "schedule"}
+                and provenance.get("provider") == "IGDB" and type(provenance.get("hypes_threshold")) is int
+                and provenance["hypes_threshold"] == 30 and isinstance(platforms, list)
+                and all(type(value) is int for value in platforms)
+                and len(platforms) == len(set(platforms))
+                and set(platforms) in ({130, 508}, {130, 508, 167})
+                and all(isinstance(value, str) and re.fullmatch(
+                    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", value) for value in dates)):
+            target, _, committed = map(stamp, dates)
+            if (target and committed and target <= instant <= committed <= now
+                    and target.astimezone(TAIPEI).date() == instant.astimezone(TAIPEI).date()
+                    and (trigger == "manual" or (target.hour, target.minute, target.second) == (0, 30, 0))):
+                return committed
     if (isinstance(receipt, dict) and type(receipt.get("schema_version")) is int
             and receipt.get("schema_version") == 1 and receipt.get("complete") is True
             and stamp(receipt.get("generated_at")) == instant):
@@ -345,7 +429,7 @@ def merge_nintendo(state, catalog, now, receipt=None):
     digest = hashlib.sha256(json.dumps(current, sort_keys=True).encode()).hexdigest()
     if previous_time and instant == previous_time and state.get("nintendo_source_digest") not in {None, digest}:
         raise ValueError("Conflicting IGDB catalogs share a source timestamp")
-    at = nintendo_event_time(instant, receipt, now).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    at = nintendo_event_time(instant, receipt, now, source=catalog["source"]).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
     records = state.setdefault("nintendo_records", {})
     for record in records.values():
         record["active"] = False
