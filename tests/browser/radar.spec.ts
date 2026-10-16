@@ -21,6 +21,47 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+for (const accepted of [true, false]) {
+  test(`database-backed Twitch admission ${accepted ? 'opens' : 'rejects an unrelated source on'} Haunted Heist detail`, async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-10-16T13:00:00Z') });
+    const row = {
+      appid: 4024440, name: 'Haunted Heist', name_en: 'Haunted Heist', display_name: '鬧鬼大劫掠',
+      followers: 2043, follower_checked_at: '2026-10-16T07:02:39Z',
+      release_start: '2026-10-13', release_end: '2026-10-13', release_precision: 'day',
+      release_display_precision: 'date_full', release_date_timezone: 'Asia/Taipei',
+      release_time_utc: '2026-10-12T17:00:30Z', release_timestamp_taipei_date: '2026-10-13',
+      release_date_conflict: false, steam_type: 'game', sexual_content_screened: true,
+      twitch_admission: {
+        schema_version: 1, method: 'twitch_igdb_external_steam_v1', appid: 4024440,
+        twitch_game_id: '2056280692', igdb_id: '391023', checked_at: '2026-10-15T20:15:14Z',
+        source_database_revision: 'b9680e2df2a94188330b6d5745ee0a900f33d88f71bed858aeccf150b1002393',
+        source_database_generation: 22,
+        source_database_namespace: accepted ? 'danielet087/game-trend-radar@main' : 'unrelated/source@main',
+        source_enrollment: { source: 'igdb_first_release_date', observed_at: '2026-10-15T20:15:14Z',
+          viewer_count: 10729, min_viewers: 7000 },
+      },
+    };
+    const catalog = { version: 3, revision: 'database-admission-regression',
+      generated_at: '2026-10-16T11:31:25Z', count: 1, games: [row] };
+    await page.route('**/data/catalog.json', route => route.fulfill({ json: catalog }));
+    await page.route('**/data/games/4024440.json', route => route.fulfill({ json: row }));
+    await page.route('**/data/nintendo_upcoming.json', route => route.fulfill({
+      json: { schema_version: 1, generated_at: catalog.generated_at, games: [] },
+    }));
+    await page.goto('game.html?appid=4024440');
+    if (accepted) {
+      await expect(page.locator('#detailPage')).toBeVisible();
+      await expect(page.locator('#gameTitle')).toHaveText('鬧鬼大劫掠');
+      await expect(page.locator('#gameFollowers')).toHaveText('2,043');
+      await expect(page.locator('#gameSteam')).toHaveAttribute('href', 'https://store.steampowered.com/app/4024440/');
+      await expect(page.locator('#detailStatus')).toBeHidden();
+    } else {
+      await expect(page.locator('#detailStatusTitle')).toHaveText('這款遊戲目前不在公開清單中');
+      await expect(page.locator('#detailPage')).toBeHidden();
+    }
+  });
+}
+
 for (const scenario of [
   { source: 'steam_tchinese', language: 'zh-TW', copy: '這是官方繁體中文介紹。', english: '', label: 'Steam 官方繁中', lang: 'zh-Hant' },
   { source: 'steam_machine_zh_tw', language: 'zh-TW', copy: '不再顯示的舊自動翻譯。', english: 'Original English summary.', expected: 'Original English summary.', label: 'Steam 英文原文', lang: 'en' },

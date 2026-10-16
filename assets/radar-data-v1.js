@@ -66,6 +66,20 @@
   }
   // Followers exceptions require the complete importer proof and verified Steam
   // row. A source name or an unverified manual Twitch entry cannot admit a game.
+  function validTwitchSource(proof) {
+    const fields = ['source_database_revision', 'source_database_generation', 'source_database_namespace'];
+    // Database evidence and legacy Git evidence are distinct immutable identities.
+    // A partial or mixed database locator must never fall back to a Git commit.
+    if (fields.some(field => Object.hasOwn(proof, field))) {
+      return !Object.hasOwn(proof, 'source_frontend_commit') &&
+        typeof proof.source_database_revision === 'string' &&
+        /^[0-9a-f]{64}$/.test(proof.source_database_revision) &&
+        Number.isSafeInteger(proof.source_database_generation) && proof.source_database_generation > 0 &&
+        proof.source_database_namespace === 'danielet087/game-trend-radar@main';
+    }
+    return typeof proof.source_frontend_commit === 'string' &&
+      /^[0-9a-f]{40}$/.test(proof.source_frontend_commit);
+  }
   function hasTwitchAdmission(raw) {
     const proof = raw?.twitch_admission;
     const evidence = proof?.source_enrollment;
@@ -76,8 +90,7 @@
       decimalID(raw.appid) !== null && decimalID(proof.appid) === decimalID(raw.appid) &&
       decimalID(proof.twitch_game_id) !== null && decimalID(proof.igdb_id) !== null &&
       checked !== null && observed !== null && observed <= checked &&
-      typeof proof.source_frontend_commit === "string" &&
-      /^[0-9a-f]{40}$/.test(proof.source_frontend_commit) &&
+      validTwitchSource(proof) &&
       ["igdb_first_release_date", "twitch_original_release_date", "twitch_directory_dom"].includes(evidence.source) &&
       Number.isSafeInteger(evidence.viewer_count) && evidence.viewer_count >= 7000 &&
       evidence.min_viewers === 7000 && evidence.qualification !== "unverified";
