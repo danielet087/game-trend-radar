@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "generated_at": "2026-10-17T17:11:43.452603+00:00",
   "month": "2026-10",
+  "count": 57,
   "games": [
     {
       "appid": 2067820,
@@ -3513,7 +3515,6 @@
       "display_name": "Double Dealers",
       "display_name_source": "english",
       "name_en": "Double Dealers",
-      "name_en_traditional": "Double Dealers",
       "language_support": {
         "tchinese": false,
         "schinese": true,
@@ -3681,14 +3682,15 @@
         "source_database_generation": 83,
         "source_database_namespace": "danielet087/game-trend-radar@main",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-14T18:14:48Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 18290
+          "observed_at": "2026-10-14T18:14:48Z",
+          "viewer_count": 18290,
+          "min_viewers": 7000
         }
       },
       "content_enrichment_signature": "4218620:3366:2026-10-13",
-      "storage_version": 2
+      "storage_version": 2,
+      "community_url": "https://steamcommunity.com/app/4218620/"
     },
     {
       "appid": 4024440,
@@ -5293,7 +5295,6 @@
       "name_zh_cn": "千面人在此 Legion Was Here",
       "name_zh_tw_traditional": "千面人在此 Legion Was Here",
       "name_zh_cn_traditional": "千面人在此 Legion Was Here",
-      "name_en_traditional": "Legion Was Here",
       "language_support": {
         "tchinese": false,
         "schinese": true,
@@ -5443,14 +5444,15 @@
         "source_database_generation": 83,
         "source_database_namespace": "danielet087/game-trend-radar@main",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-16T19:23:15Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 9067
+          "observed_at": "2026-10-16T19:23:15Z",
+          "viewer_count": 9067,
+          "min_viewers": 7000
         }
       },
       "content_enrichment_signature": "3492120:1598:2026-10-14",
-      "storage_version": 2
+      "storage_version": 2,
+      "community_url": "https://steamcommunity.com/app/3492120/"
     },
     {
       "appid": 1203620,
@@ -6429,7 +6431,7 @@
       "release_precision": "day",
       "followers": 13547,
       "follower_checked_at": "2026-09-22T16:04:43.568469+08:00",
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2121510/56351355999365f7ba16062731331c51c72c7d7a/capsule_616x353.jpg?t=1792175122",
+      "capsule_image": "03a5c65bccf278414a7111265b6b4b1b2fac564c/capsule_231x87.jpg",
       "store_url": "https://store.steampowered.com/app/2121510/",
       "community_url": "https://steamcommunity.com/app/2121510/",
       "name_en": "Tenebris Somnia",
@@ -6564,27 +6566,26 @@
       "categories_checked_at": "2026-10-16T19:39:54Z",
       "description_source_url": "https://store.steampowered.com/app/2121510/",
       "description_next_check_at": "2026-10-22T03:50:14Z",
-      "name_en_traditional": "Tenebris Somnia",
       "steam_type": "game",
       "release_store_date": "2026-10-16",
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 2121510,
-        "twitch_game_id": "31355766",
-        "igdb_id": "216692",
         "checked_at": "2026-10-16T18:26:22Z",
-        "source_database_revision": "440cdeffb21bb4306a1b4eab6b76f5a770cd165a7268e32f49b00fd43e350a3e",
+        "igdb_id": "216692",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 59,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "440cdeffb21bb4306a1b4eab6b76f5a770cd165a7268e32f49b00fd43e350a3e",
         "source_enrollment": {
           "min_viewers": 7000,
           "observed_at": "2026-10-16T18:26:22Z",
           "source": "igdb_first_release_date",
           "viewer_count": 10176
-        }
+        },
+        "twitch_game_id": "31355766"
       }
     },
     {
@@ -9204,7 +9205,5 @@
       "description_source_url": "https://store.steampowered.com/app/1799840/",
       "description_next_check_at": "2026-10-22T03:50:14Z"
     }
-  ],
-  "generated_at": "2026-10-17T11:31:04Z",
-  "count": 57
+  ]
 }
