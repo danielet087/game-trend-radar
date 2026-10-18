@@ -1,41 +1,41 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-18T05:31:00Z",
+  "generated_at": "2026-10-18T11:31:03Z",
   "checkpoints": {
     "1167820": {
-      "attempted_at": "2026-10-17T05:31:04Z",
+      "attempted_at": "2026-10-18T11:31:03Z",
       "outcome": "success",
-      "next_check_at": "2026-10-18T05:31:04Z"
+      "next_check_at": "2026-10-19T11:31:03Z"
     },
     "1374860": {
-      "attempted_at": "2026-10-17T05:31:04Z",
+      "attempted_at": "2026-10-18T11:31:03Z",
       "outcome": "success",
-      "next_check_at": "2026-10-18T05:31:04Z"
+      "next_check_at": "2026-10-19T11:31:03Z"
     },
     "2411200": {
-      "attempted_at": "2026-10-17T05:31:04Z",
+      "attempted_at": "2026-10-18T11:31:03Z",
       "outcome": "success",
-      "next_check_at": "2026-10-18T05:31:04Z"
+      "next_check_at": "2026-10-19T11:31:03Z"
     },
     "4705510": {
-      "attempted_at": "2026-10-17T05:31:04Z",
+      "attempted_at": "2026-10-18T11:31:03Z",
       "outcome": "success",
-      "next_check_at": "2026-10-18T05:31:04Z"
+      "next_check_at": "2026-10-19T11:31:03Z"
     },
     "4739040": {
-      "attempted_at": "2026-10-17T05:31:04Z",
+      "attempted_at": "2026-10-18T11:31:03Z",
       "outcome": "success",
-      "next_check_at": "2026-10-18T05:31:04Z"
+      "next_check_at": "2026-10-19T11:31:03Z"
     },
     "4694270": {
-      "attempted_at": "2026-10-17T05:31:04Z",
+      "attempted_at": "2026-10-18T11:31:03Z",
       "outcome": "success",
-      "next_check_at": "2026-10-18T05:31:04Z"
+      "next_check_at": "2026-10-19T11:31:03Z"
     },
     "3640200": {
-      "attempted_at": "2026-10-17T05:31:04Z",
+      "attempted_at": "2026-10-18T11:31:03Z",
       "outcome": "success",
-      "next_check_at": "2026-10-18T05:31:04Z"
+      "next_check_at": "2026-10-19T11:31:03Z"
     },
     "4182430": {
       "attempted_at": "2026-10-17T05:31:04Z",
@@ -423,14 +423,14 @@
       "next_check_at": "2026-10-22T03:50:14Z"
     },
     "3832490": {
-      "attempted_at": "2026-10-17T05:31:04Z",
+      "attempted_at": "2026-10-18T11:31:03Z",
       "outcome": "success",
-      "next_check_at": "2026-10-18T05:31:04Z"
+      "next_check_at": "2026-10-19T11:31:03Z"
     },
     "2938460": {
-      "attempted_at": "2026-10-17T05:31:04Z",
+      "attempted_at": "2026-10-18T11:31:03Z",
       "outcome": "success",
-      "next_check_at": "2026-10-18T05:31:04Z"
+      "next_check_at": "2026-11-17T11:31:03Z"
     },
     "1799840": {
       "attempted_at": "2026-10-15T03:50:14Z",
@@ -438,9 +438,9 @@
       "next_check_at": "2026-10-22T03:50:14Z"
     },
     "2902720": {
-      "attempted_at": "2026-10-17T05:31:04Z",
+      "attempted_at": "2026-10-18T11:31:03Z",
       "outcome": "success",
-      "next_check_at": "2026-10-18T05:31:04Z"
+      "next_check_at": "2026-10-19T11:31:03Z"
     },
     "2487190": {
       "attempted_at": "2026-10-15T03:50:14Z",
@@ -513,9 +513,9 @@
       "next_check_at": "2026-11-14T03:52:01Z"
     },
     "3510740": {
-      "attempted_at": "2026-10-17T05:31:04Z",
+      "attempted_at": "2026-10-18T11:31:03Z",
       "outcome": "success",
-      "next_check_at": "2026-10-18T05:31:04Z"
+      "next_check_at": "2026-10-19T11:31:03Z"
     },
     "2223980": {
       "attempted_at": "2026-10-15T03:52:01Z",
@@ -698,9 +698,9 @@
       "next_check_at": "2026-10-23T23:30:59Z"
     },
     "3370490": {
-      "attempted_at": "2026-10-17T11:31:00Z",
+      "attempted_at": "2026-10-18T11:31:03Z",
       "outcome": "success",
-      "next_check_at": "2026-10-18T11:31:00Z"
+      "next_check_at": "2026-10-19T11:31:03Z"
     },
     "1215940": {
       "attempted_at": "2026-10-17T23:31:03Z",
@@ -713,16 +713,32 @@
       "next_check_at": "2026-10-24T23:31:03Z"
     }
   },
-  "due_count": 0,
-  "attempted": 0,
-  "refreshed": 0,
-  "updated_appids": [],
+  "due_count": 12,
+  "attempted": 12,
+  "refreshed": 12,
+  "updated_appids": [
+    1167820,
+    1374860,
+    2411200,
+    2902720,
+    2938460,
+    3510740,
+    3640200,
+    3832490,
+    4694270,
+    4705510,
+    4739040,
+    3370490
+  ],
   "failed_appids": [],
-  "sources": {},
+  "sources": {
+    "editorial_zh_tw": 5,
+    "steam_english": 7
+  },
   "pending_count": 0,
   "retry_pending_appids": [],
   "complete": true,
   "stop_reason": "",
-  "next_due_at": "2026-10-18T05:31:04Z",
+  "next_due_at": "2026-10-18T17:31:01Z",
   "superseded_appids": []
 }
