@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-19T08:04:34.425517Z",
+  "generated_at": "2026-10-19T09:04:07.371768Z",
   "today_taipei": "2026-10-19",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-10-19T08:03:09.001446Z",
+    "checkpoint_updated_at": "2026-10-19T09:02:49.575401Z",
     "group_resolution_updated_at": "2026-10-19T06:02:25.517979Z",
     "candidate_state_updated_at": "2026-10-18T17:08:03.679721Z",
     "prefilter_updated_at": "2026-10-18T17:08:03.660691Z",
     "eligible_screened_at": "2026-10-18T17:08:04.267748Z",
-    "twitch_import_updated_at": "2026-10-19T08:03:58.125439Z",
+    "twitch_import_updated_at": "2026-10-19T09:03:34.666665Z",
     "last_official_success_at": "2026-10-18T21:32:06.200427Z",
     "queue_projection": "official_collector_make_queue"
   },
@@ -49,23 +49,23 @@
     "active": false,
     "until": null,
     "reason": null,
-    "next_eligible_slot": "2026-10-19T09:00:00Z",
+    "next_eligible_slot": "2026-10-19T10:00:00Z",
     "schedule_taipei": "03:00–23:00 hourly"
   },
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-10-19T16:03:08.706405+08:00",
-    "last_updated_at": "2026-10-19T16:03:09.001446+08:00",
-    "finished_at": "2026-10-19T16:03:09.001446+08:00",
+    "started_at": "2026-10-19T17:02:49.215318+08:00",
+    "last_updated_at": "2026-10-19T17:02:49.575401+08:00",
+    "finished_at": "2026-10-19T17:02:49.575401+08:00",
     "stop_reason": "awaiting_group_resolution_no_request",
     "requests_this_run": 0,
     "official_new_this_run": 0,
     "http_429_this_run": 0,
     "manual_cooldown_override": false,
     "request_limit": 90,
-    "run_id": "39219688422",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/39219688422"
+    "run_id": "39226818112",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/39226818112"
   },
   "queue": [
     {
