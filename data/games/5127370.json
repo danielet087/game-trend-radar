@@ -151,21 +151,21 @@
   "release_date_normalization": "steam_utc_date_normalized_to_taipei",
   "content_descriptorids": [],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 5127370,
-    "twitch_game_id": "1936119417",
-    "igdb_id": "424083",
     "checked_at": "2026-10-18T04:11:59Z",
-    "source_database_revision": "2d533b294924da52e765c54cafa3061152ef2a5fd5d189d99f89615050eec821",
+    "igdb_id": "424083",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 147,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "2d533b294924da52e765c54cafa3061152ef2a5fd5d189d99f89615050eec821",
     "source_enrollment": {
-      "source": "igdb_first_release_date",
+      "min_viewers": 7000,
       "observed_at": "2026-10-18T04:11:59Z",
-      "viewer_count": 50364,
-      "min_viewers": 7000
-    }
+      "source": "igdb_first_release_date",
+      "viewer_count": 50364
+    },
+    "twitch_game_id": "1936119417"
   },
   "content_enrichment_signature": "5127370:257:2026-10-17",
   "storage_version": 2,
