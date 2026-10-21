@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-21T16:21:07Z",
+  "updated_at": "2026-10-21T17:23:00Z",
   "games": {
     "1046135592": {
       "twitch_game_id": "1046135592",
@@ -31,11 +31,48 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "5037510"
       ],
       "missing_public_appids": [],
+      "lookup_policy_version": 2,
+      "reason": "authoritative_id_chain"
+    },
+    "1153282184": {
+      "twitch_game_id": "1153282184",
+      "twitch_name": "just volleyball",
+      "igdb_id": "419607",
+      "status": "matched",
+      "method": "twitch_igdb_external_steam_v1",
+      "steam_appids": [
+        "5037200"
+      ],
+      "links": [
+        {
+          "external_game_id": "3204972",
+          "external_game_source": "1",
+          "uid": "5037200",
+          "game": "419607",
+          "steam_appid": "5037200",
+          "url": "https://store.steampowered.com/app/5037200/"
+        }
+      ],
+      "first_seen_at": "2026-10-21T17:23:00Z",
+      "checked_at": "2026-10-21T17:23:00Z",
+      "retry_at": "2026-10-22T17:23:00Z",
+      "twitch_enrollment": {
+        "source": "igdb_first_release_date",
+        "observed_at": "2026-10-21T17:23:00Z",
+        "viewer_count": 10941,
+        "min_viewers": 7000
+      },
+      "active": true,
+      "updated_at": "2026-10-21T17:23:00Z",
+      "public_steam_appids": [],
+      "missing_public_appids": [
+        "5037200"
+      ],
       "lookup_policy_version": 2,
       "reason": "authoritative_id_chain"
     },
@@ -68,7 +105,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2902720"
       ],
@@ -105,7 +142,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3768400"
       ],
@@ -142,7 +179,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4945790"
       ],
@@ -180,7 +217,7 @@
         "kind": "history_recovery"
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3640200"
       ],
@@ -217,7 +254,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3070070"
       ],
@@ -255,7 +292,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4080220"
       ],
@@ -283,8 +320,8 @@
         }
       ],
       "first_seen_at": "2026-10-05T08:09:32Z",
-      "checked_at": "2026-10-20T16:23:01Z",
-      "retry_at": "2026-10-21T16:23:01Z",
+      "checked_at": "2026-10-21T17:23:00Z",
+      "retry_at": "2026-10-22T17:23:00Z",
       "twitch_enrollment": {
         "source": "igdb_first_release_date",
         "observed_at": "2026-10-05T08:09:32Z",
@@ -292,7 +329,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4968640"
       ],
@@ -319,7 +356,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [],
       "reason": "missing_twitch_igdb_identity",
@@ -355,7 +392,7 @@
         "kind": "history_recovery"
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4126040"
       ],
@@ -392,7 +429,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4019220"
       ],
@@ -415,6 +452,43 @@
         ]
       }
     },
+    "1299143577": {
+      "twitch_game_id": "1299143577",
+      "twitch_name": "Cozy Game Restoration",
+      "igdb_id": "394023",
+      "status": "matched",
+      "method": "twitch_igdb_external_steam_v1",
+      "steam_appids": [
+        "3581230"
+      ],
+      "links": [
+        {
+          "external_game_id": "3023822",
+          "external_game_source": "1",
+          "uid": "3581230",
+          "game": "394023",
+          "steam_appid": "3581230",
+          "url": "https://store.steampowered.com/app/3581230/"
+        }
+      ],
+      "first_seen_at": "2026-10-21T17:23:00Z",
+      "checked_at": "2026-10-21T17:23:00Z",
+      "retry_at": "2026-10-22T17:23:00Z",
+      "twitch_enrollment": {
+        "source": "igdb_first_release_date",
+        "observed_at": "2026-10-21T17:23:00Z",
+        "viewer_count": 9683,
+        "min_viewers": 7000
+      },
+      "active": true,
+      "updated_at": "2026-10-21T17:23:00Z",
+      "public_steam_appids": [
+        "3581230"
+      ],
+      "missing_public_appids": [],
+      "lookup_policy_version": 2,
+      "reason": "authoritative_id_chain"
+    },
     "1312907092": {
       "twitch_game_id": "1312907092",
       "twitch_name": "ArcheAge Chronicles",
@@ -435,8 +509,8 @@
         }
       ],
       "first_seen_at": "2026-10-19T17:22:18Z",
-      "checked_at": "2026-10-20T17:22:32Z",
-      "retry_at": "2026-10-21T17:22:32Z",
+      "checked_at": "2026-10-21T17:23:00Z",
+      "retry_at": "2026-10-22T17:23:00Z",
       "twitch_enrollment": {
         "source": "igdb_first_release_date",
         "observed_at": "2026-10-19T17:22:18Z",
@@ -444,7 +518,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "3218230"
@@ -481,7 +555,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3569420"
       ],
@@ -519,7 +593,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3669870"
       ],
@@ -556,7 +630,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2938460"
       ],
@@ -593,7 +667,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2887580"
       ],
@@ -630,7 +704,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "4437650"
@@ -667,7 +741,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "5160800"
@@ -704,7 +778,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "4435490"
@@ -741,7 +815,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3219030"
       ],
@@ -778,7 +852,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2223980"
       ],
@@ -815,7 +889,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2659410"
       ],
@@ -852,7 +926,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3195580"
       ],
@@ -889,7 +963,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3832490"
       ],
@@ -926,7 +1000,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4538140"
       ],
@@ -963,7 +1037,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3010850"
       ],
@@ -1000,7 +1074,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4231820"
       ],
@@ -1037,7 +1111,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4652040"
       ],
@@ -1074,7 +1148,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3926930"
       ],
@@ -1111,7 +1185,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "4071650"
@@ -1137,7 +1211,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [],
       "reason": "no_igdb_steam_link",
@@ -1175,7 +1249,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4287460"
       ],
@@ -1212,7 +1286,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "1215940"
       ],
@@ -1249,7 +1323,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2920220"
       ],
@@ -1286,7 +1360,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3560670"
       ],
@@ -1323,7 +1397,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4182430"
       ],
@@ -1360,7 +1434,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "5127370"
       ],
@@ -1397,7 +1471,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2254990"
       ],
@@ -1435,7 +1509,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "1636440"
       ],
@@ -1473,7 +1547,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3493540"
       ],
@@ -1510,7 +1584,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3883570"
       ],
@@ -1527,8 +1601,8 @@
       "steam_appids": [],
       "links": [],
       "first_seen_at": "2026-10-16T15:17:50Z",
-      "checked_at": "2026-10-20T16:23:01Z",
-      "retry_at": "2026-10-21T16:23:01Z",
+      "checked_at": "2026-10-21T17:23:00Z",
+      "retry_at": "2026-10-22T17:23:00Z",
       "twitch_enrollment": {
         "source": "igdb_first_release_date",
         "observed_at": "2026-10-16T15:17:50Z",
@@ -1536,14 +1610,14 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [],
       "lookup_policy_version": 2,
       "reason": "no_igdb_steam_link",
       "related_lookup_status": "no_steam_website",
-      "related_checked_at": "2026-10-20T16:23:01Z",
-      "related_retry_at": "2026-10-21T16:23:01Z"
+      "related_checked_at": "2026-10-21T17:23:00Z",
+      "related_retry_at": "2026-10-22T17:23:00Z"
     },
     "2042681592": {
       "twitch_game_id": "2042681592",
@@ -1575,7 +1649,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "1912410"
       ],
@@ -1612,7 +1686,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4024440"
       ],
@@ -1649,7 +1723,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "5000040"
       ],
@@ -1675,7 +1749,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [],
       "lookup_policy_version": 2,
@@ -1713,7 +1787,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2929250"
       ],
@@ -1750,7 +1824,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2543830"
       ],
@@ -1787,7 +1861,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3031880"
       ],
@@ -1824,7 +1898,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2333000"
       ],
@@ -1861,7 +1935,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "1551980"
       ],
@@ -1898,7 +1972,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3492120"
       ],
@@ -1935,7 +2009,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "4997850"
@@ -1972,7 +2046,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "3826670"
@@ -2000,8 +2074,8 @@
         }
       ],
       "first_seen_at": "2026-10-18T16:16:15Z",
-      "checked_at": "2026-10-20T16:23:01Z",
-      "retry_at": "2026-10-21T16:23:01Z",
+      "checked_at": "2026-10-21T17:23:00Z",
+      "retry_at": "2026-10-22T17:23:00Z",
       "twitch_enrollment": {
         "source": "igdb_first_release_date",
         "observed_at": "2026-10-18T16:16:15Z",
@@ -2009,7 +2083,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "5258340"
       ],
@@ -2046,7 +2120,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2121510"
       ],
@@ -2084,7 +2158,7 @@
         "kind": "history_recovery"
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2638890"
       ],
@@ -2120,7 +2194,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4047270"
       ],
@@ -2157,7 +2231,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4694270"
       ],
@@ -2194,7 +2268,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "5070190"
       ],
@@ -2231,7 +2305,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4218620"
       ],
@@ -2269,7 +2343,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2288340"
       ],
@@ -2306,7 +2380,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3510740"
       ],
@@ -2343,7 +2417,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4078430"
       ],
@@ -2369,7 +2443,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [],
       "lookup_policy_version": 2,
@@ -2407,7 +2481,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3314580"
       ],
@@ -2444,7 +2518,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "3948460"
@@ -2482,7 +2556,7 @@
         "kind": "history_recovery"
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "892970"
       ],
@@ -2519,7 +2593,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4412320"
       ],
@@ -2556,7 +2630,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4140530"
       ],
@@ -2594,7 +2668,7 @@
         "kind": "history_recovery"
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4356430"
       ],
@@ -2630,7 +2704,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4072240"
       ],
@@ -2667,7 +2741,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3669570"
       ],
@@ -2704,7 +2778,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "5155360"
       ],
@@ -2741,7 +2815,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4450660"
       ],
@@ -2778,7 +2852,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4954910"
       ],
@@ -2815,7 +2889,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "1203620"
       ],
@@ -2852,7 +2926,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3917700"
       ],
@@ -2890,7 +2964,7 @@
         "kind": "history_recovery"
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "1867240"
       ],
@@ -2927,7 +3001,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "4253570"
@@ -2954,7 +3028,7 @@
         "kind": "history_recovery"
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [],
       "reason": "no_igdb_steam_link",
@@ -2992,7 +3066,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2315050"
       ],
@@ -3029,7 +3103,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "5085740"
       ],
@@ -3066,7 +3140,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4247840"
       ],
@@ -3094,8 +3168,8 @@
         }
       ],
       "first_seen_at": "2026-10-13T13:11:14Z",
-      "checked_at": "2026-10-20T16:23:01Z",
-      "retry_at": "2026-10-21T16:23:01Z",
+      "checked_at": "2026-10-21T17:23:00Z",
+      "retry_at": "2026-10-22T17:23:00Z",
       "twitch_enrollment": {
         "source": "igdb_first_release_date",
         "observed_at": "2026-10-13T13:11:14Z",
@@ -3103,7 +3177,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2828710"
       ],
@@ -3140,7 +3214,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "2871520"
       ],
@@ -3177,7 +3251,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3195440"
       ],
@@ -3214,7 +3288,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "4418080"
@@ -3252,7 +3326,7 @@
         "kind": "history_recovery"
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "1488490"
       ],
@@ -3289,7 +3363,7 @@
         "min_viewers": 7000
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "3219630"
       ],
@@ -3327,7 +3401,7 @@
         "kind": "history_recovery"
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "4557380"
       ],
@@ -3364,7 +3438,7 @@
         "min_viewers": 7000
       },
       "active": true,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [
         "1732430"
       ],
@@ -3402,7 +3476,7 @@
         "kind": "history_recovery"
       },
       "active": false,
-      "updated_at": "2026-10-21T16:21:07Z",
+      "updated_at": "2026-10-21T17:23:00Z",
       "public_steam_appids": [],
       "missing_public_appids": [
         "2776270"
@@ -3584,15 +3658,15 @@
   },
   "report": {
     "status": "ok",
-    "active_twitch_games": 67,
-    "lookup_count": 2,
+    "active_twitch_games": 69,
+    "lookup_count": 7,
     "counts": {
-      "matched": 62,
+      "matched": 64,
       "pending": 1,
       "no_steam_link": 4
     },
     "errors": [],
-    "related_lookup_count": 0,
+    "related_lookup_count": 1,
     "deadline_exhausted": false,
     "missing_public_appids": [
       "3218230",
@@ -3604,6 +3678,7 @@
       "4435490",
       "4437650",
       "4997850",
+      "5037200",
       "5160800"
     ]
   },
