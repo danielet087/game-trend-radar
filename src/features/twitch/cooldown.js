@@ -98,9 +98,10 @@ export function createCooldown(root) {
       return;
     }
     const point = episode?.candidateAt, label = dayHint(point);
-    releaseSummary.append(el('strong', '', point ? `${label}${episode.confirmedAt ? '開始退潮' : '出現疑似退潮'}` : '以上市日 Day 0 對齊觀測'));
-    releaseSummary.append(el('p', '', `上市日 ${date.replaceAll('-', '/')}（${context.releaseReference.source || '已保存的上市日期'}）`));
     const firstDay = releaseDayIndex(data.firstHour, date);
+    const finding = firstDay > 0 ? episode?.confirmedAt ? '觀測到持續退潮' : '觀測到疑似退潮' : episode?.confirmedAt ? '開始退潮' : '出現疑似退潮';
+    releaseSummary.append(el('strong', '', point ? `${label}${finding}` : '以上市日 Day 0 對齊觀測'));
+    releaseSummary.append(el('p', '', `上市日 ${date.replaceAll('-', '/')}（${context.releaseReference.source || '已保存的上市日期'}）`));
     if (firstDay > 0) releaseSummary.append(el('p', 'tw-cooldown-coverage-warning', `上市後第 ${firstDay} 天才開始觀測，無法確認上市至收集前的熱度持續時間。`));
   }
 

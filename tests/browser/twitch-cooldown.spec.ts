@@ -38,6 +38,7 @@ test('the full-history cooldown onset and confirmation survive date changes with
   await expect(page.locator('#cooldownSummary')).toContainText('2026/10/01 23:00');
   await expect(page.locator('#cooldownRange')).toContainText('2026/09/29');
   await expect(page.locator('#cooldownReleaseSummary')).toContainText('上市後第 7 天');
+  await expect(page.locator('#cooldownReleaseSummary')).toContainText('觀測到持續退潮');
   await expect(page.locator('#cooldownReleaseSummary')).toContainText('第 6 天才開始觀測');
   await expect(page.locator('#cooldownChart svg')).toBeVisible();
   await expect(page.locator('#historyChart .tw-chart')).toHaveAttribute('data-range', '24');
