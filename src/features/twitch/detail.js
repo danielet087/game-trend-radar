@@ -11,6 +11,7 @@ export function initTwitchDetail() {
   let index, game, window, rows = [], disposeChart, page = 0, descending = true, request = 0;
   const back = overviewQuery(params.get('back') || '');
   $('historyBack').href = `./twitch.html${back ? `?${back}` : ''}`;
+  if (new URLSearchParams(back).get('view') === 'archive') $('historyBack').textContent = '← 歷史資料庫';
   function message(text, error = false) {
     $('historyStatus').textContent = text;
     $('historyStatus').dataset.error = String(error);
@@ -76,7 +77,7 @@ export function initTwitchDetail() {
       if (token !== request) return;
       game = index.games[id];
       if (!game || !Array.isArray(game.months)) throw new Error('這款遊戲尚無已發布的歷史紀錄，請返回清單或稍後重新載入。');
-      window = windowFor(params, index);
+      window = windowFor(params, index, game);
       const chunks = {};
       await Promise.all(monthsFor(window.start, window.end).filter(month => game.months.includes(month)).map(async month => {
         if (!cache.has(month)) cache.set(month, read(`./data/twitch_series/${id}/${month}.json`, value => validChunk(value, id, month)));
@@ -84,18 +85,19 @@ export function initTwitchDetail() {
       }));
       if (token !== request) return;
       rows = seriesRows(index, chunks, id, window.start, window.end); page = 0;
-      document.title = `${game.name} · Twitch 歷史趨勢｜Game Trend Radar`;
-      $('pageTitle').textContent = game.name;
+      const name = game.display_name || game.name;
+      document.title = `${name} · Twitch 歷史趨勢｜Game Trend Radar`;
+      $('pageTitle').textContent = name;
       $('historyCategory').textContent = `TWITCH CATEGORY ${id} · 全球觀測`;
-      $('historySpan').textContent = `已保存 ${time(game.first_hour)} 至 ${time(game.last_hour)} 的觀測紀錄（台灣時間）`;
+      $('historySpan').textContent = `${game.tracking_status === 'ended' ? '已結束追蹤 · ' : ''}已保存 ${time(game.first_hour)} 至 ${time(game.last_hour)} 的觀測紀錄（台灣時間）`;
       $('historyUpdated').textContent = `資料更新 ${time(index.generated_at)}（台灣）`;
       $('historyStart').value = dayOf(window.start); $('historyEnd').value = dayOf(window.end);
       $('historyStart').max = $('historyEnd').max = dayOf(window.latest);
       document.querySelectorAll('[data-history-range]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.historyRange === window.range)));
-      $('historyRangeLabel').textContent = `${time(new Date(window.start).toISOString())} — ${time(new Date(window.end).toISOString())} · 台灣時間`;
+      $('historyRangeLabel').textContent = `${time(new Date(window.start).toISOString())} — ${time(new Date(window.end).toISOString())} · 台灣時間${window.range !== 'custom' ? ' · 以本遊戲最後觀測時段為基準' : ''}`;
       $('historyContent').hidden = false;
       disposeChart?.();
-      disposeChart = mount($('historyChart'), { rows, gameName: game.name, rangeOptions: [], initialRange: rows.length, initialMetric: metric,
+      disposeChart = mount($('historyChart'), { rows, gameName: name, rangeOptions: [], initialRange: rows.length, initialMetric: metric,
         onMetricChange(value) { metric = value; syncURL(); summary(); table(); } });
       summary(); table(); syncURL();
       $('historyExport').disabled = false;

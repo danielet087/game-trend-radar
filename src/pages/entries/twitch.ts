@@ -1,6 +1,7 @@
 import '../../shared/styles/play.css';
 import '../../features/twitch/styles.css';
 import '../../features/twitch/igdb.css';
+import '../../features/twitch/archive.css';
 import { bootstrap } from '../../app/bootstrap.ts';
 bootstrap('twitch').catch(error => {
   console.error('Unable to initialize game radar:', error);

@@ -20,13 +20,18 @@
         <h1 id="pageTitle">Twitch 新作觀測 <span class="tw-experimental">實驗</span></h1>
         <p class="tw-intro">哪些新遊戲，正在直播間裡被看見？</p>
       </div>
-      <div class="tw-stamp">
+      <div class="tw-stamp" id="currentSnapshot">
         <span class="tw-stamp-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><rect x="12" y="21" width="40" height="30" rx="9"/><path d="m24 11 8 10 8-10M23 59h18M25 32v7m14-7v7m-13 5h12M4 29v11m56-11v11"/></svg></span>
         <div><span>資料快照・台灣時間</span><time id="snapshotTime">正在讀取…</time></div>
         <button class="tw-refresh" id="snapshotRefresh" type="button" aria-label="重新讀取最新資料" title="重新讀取最新資料"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1"/></svg></button>
       </div>
     </section>
 
+    <div class="tw-view-tabs" role="tablist" aria-label="Twitch 觀測資料">
+      <button id="currentTab" type="button" role="tab" data-twitch-view="current" aria-selected="true" aria-controls="currentObservation">目前觀測</button>
+      <button id="archiveTab" type="button" role="tab" data-twitch-view="archive" aria-selected="false" aria-controls="historyArchive" tabindex="-1">歷史資料庫</button>
+    </div>
+    <div id="currentObservation" role="tabpanel" aria-labelledby="currentTab">
     <div id="snapshotNotice" class="tw-notice" role="status" hidden><span class="tw-notice-mark" aria-hidden="true">i</span><div><strong id="noticeTitle"></strong><p id="noticeText"></p></div></div>
     <p id="freshnessNote" class="tw-freshness" hidden></p>
 
@@ -53,6 +58,7 @@
       </details>
       <p id="viewNotice" class="tw-view-notice" hidden></p>
       <div class="tw-results-bar"><p id="resultsStatus" role="status" aria-live="polite">正在讀取 Twitch 資料…</p><button id="resetFilters" class="tw-text-button" type="button" hidden>清除篩選 ×</button><a href="#readingGuide">怎麼看這些結果？ ↓</a></div>
+      <a id="archiveSearchHint" class="tw-archive-hint" href="./twitch.html?view=archive" hidden></a>
       <div class="tw-column-head" aria-hidden="true"><span>遊戲 / Twitch 類別</span><span data-metric-label="viewers">總觀眾人數</span><span data-metric-label="streamers">總開台數</span><span>篩選後中位數</span><span>IGDB 日期推算</span><span></span></div>
       <div id="gameResults" class="tw-results" aria-busy="true"><div class="tw-loading"><span aria-hidden="true">◎</span><p>正在打開觀測筆記…</p></div></div>
       <div class="tw-load-more"><button id="loadMore" type="button" hidden>再看 24 款 ↓</button></div>
@@ -73,6 +79,23 @@
         <article class="tw-guide-card tw-tone-igdb"><span class="tw-guide-index">IGDB / RELEASE DATE</span><h3>IGDB 日期・30 天推算</h3><p id="igdbDateGuide">以距 IGDB 首次發售未滿 30 天推算；各筆仍以快照記錄的規則為準。缺少有效日期時保持未知。</p></article>
       </div>
       <details class="tw-method"><summary>量測範圍與判讀細節 <span aria-hidden="true">＋</span></summary><div><p>Twitch 熱門新作涵蓋不同平台，以 7,000 名觀眾與新作依據首次收錄。Steam 近期上市則取本站已收錄、台灣上市未滿 30 天且成功配對的遊戲，不受觀眾門檻限制。兩種來源分別計算期限，任一來源有效便繼續追蹤；同一 Twitch 類別只量測一次。</p><p>Steam 配對補充名稱、TAG、關注度與該版本上市日；封面沿用 Twitch，直播數據涵蓋整個 Twitch 類別。Steam 台灣上市日與 IGDB 首次發售日分開保存；未配對的遊戲不計為零觀眾。不同類別依序抓取，並非同一秒的全球排名。</p><p>篩選後中位數只納入免費追隨者超過 1,000 人、且當次觀眾至少 10 人的頻道。追隨數最多使用 24 小時內的紀錄；未知不當成 0，有待查頻道時暫不顯示中位數。原始總觀眾與總開台仍涵蓋全體頻道；舊歷史無法回算新條件。</p><p>IGDB 推算採後端快照當下的結果，以距首次發售未滿 30 天為範圍，恰好滿 30 天不命中；尚未發售仍命中並另標「未上市」。歷史快照保留當時規則，不用瀏覽器時間重算。資料過期或缺少日期時保持未知。</p><p>從歷史補回而尚未重新量測的遊戲，會註明「上次觀測」與保存時間；舊值不列入本輪排名，也不寫成新的逐時資料。目前觀測範圍為全球。直播語言不等於主播所在地，因此不推定台灣或亞洲歸屬。逐時紀錄保留缺測，沒有出現在清單不代表零觀眾。</p></div></details>
+    </section>
+    </div>
+    <section id="historyArchive" class="tw-workspace tw-archive" role="tabpanel" aria-labelledby="archiveTab" hidden>
+      <div class="tw-workspace-head">
+        <div><span class="tw-section-no" aria-hidden="true">02</span><h2 id="archiveTitle" tabindex="-1">歷史資料庫</h2></div>
+        <div><span id="archiveUpdated"></span><button id="archiveRefresh" class="tw-archive-refresh" type="button">重新載入 ↻</button></div>
+      </div>
+      <p class="tw-archive-intro">每款遊戲留下的觀測，都能在這裡找到。包含追蹤中與已結束的遊戲，停止追蹤後仍保留既有資料。<br>點選遊戲查看逐時曲線、切換日期或下載 CSV；時間皆為台灣時間。</p>
+      <div class="tw-tools">
+        <label class="tw-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="sr-only">搜尋歷史遊戲中文、英文名稱或 ID</span><input id="archiveSearch" type="search" placeholder="搜尋中文、英文名稱或 ID…" autocomplete="off" maxlength="160"><kbd aria-hidden="true">/</kbd></label>
+        <label class="tw-sort">狀態<select id="archiveState"><option value="all">全部狀態</option><option value="active">追蹤中</option><option value="ended">已結束追蹤</option><option value="untracked">歷史紀錄</option><option value="unknown">狀態未確認</option></select></label>
+        <label class="tw-sort">排序<select id="archiveSort"><option value="recent">最後觀測時間</option><option value="peak">最高觀眾</option><option value="records">紀錄筆數</option><option value="name">遊戲名稱</option></select></label>
+      </div>
+      <div class="tw-results-bar"><p id="archiveStatus" role="status" aria-live="polite">正在讀取歷史資料庫…</p><button id="archiveReset" class="tw-text-button" type="button" hidden>清除篩選 ×</button></div>
+      <div id="archiveResults" aria-busy="false"></div>
+      <div id="archivePagination" class="tw-archive-pagination" hidden><button id="archivePrevious" type="button">← 上一頁</button><span id="archivePage"></span><button id="archiveNext" type="button">下一頁 →</button></div>
+      <p class="tw-table-note">紀錄筆數為實際保存的遊戲觀測時段；最高觀眾取自這些紀錄。缺測不當成 0，也不把停止追蹤後的時段補成 0。</p>
     </section>
     <noscript><p class="tw-notice">請啟用 JavaScript 以讀取已公開的靜態 Twitch 資料。<a href="./data/twitch_live.json">開啟原始資料 ↗</a></p></noscript>
   </main>

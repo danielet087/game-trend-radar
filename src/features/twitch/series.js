@@ -19,7 +19,7 @@ export function dateStart(value) {
   const at = Date.parse(`${value}T00:00:00+08:00`);
   return Number.isFinite(at) && dayOf(at) === value ? at : NaN;
 }
-export function windowFor(params, index) {
+export function windowFor(params, index, game = null) {
   const times = Object.values(index.months).flatMap(hours => Object.keys(hours).map(Date.parse));
   if (!times.length) throw new Error('目前尚無歷史紀錄。');
   const latest = Math.max(...times);
@@ -30,7 +30,9 @@ export function windowFor(params, index) {
       throw new Error('請選擇有效日期：結束不早於開始，範圍最多 31 天，且開始不得晚於最新紀錄。');
     return { range, start, end: Math.min(end, latest), latest };
   }
-  return { range, start: latest - ({ '24h': 24, '7d': 168, '30d': 720 }[range] - 1) * HOUR, end: latest, latest };
+  const lastObserved = timestamp(game?.last_hour) ? Date.parse(game.last_hour) : latest;
+  const end = Math.min(latest, lastObserved);
+  return { range, start: end - ({ '24h': 24, '7d': 168, '30d': 720 }[range] - 1) * HOUR, end, latest };
 }
 export function monthsFor(start, end) {
   const months = new Set();
@@ -56,6 +58,11 @@ export function overviewQuery(search) {
   if (q) output.set('q', q);
   if (['signals', 'twitch_new', 'steam_recent', 'igdb', 'all'].includes(input.get('state'))) output.set('state', input.get('state'));
   if (['median', 'viewers', 'streamers'].includes(input.get('sort'))) output.set('sort', input.get('sort'));
+  if (input.get('view') === 'archive') output.set('view', 'archive');
+  if (['active', 'ended', 'untracked', 'unknown'].includes(input.get('archive_state'))) output.set('archive_state', input.get('archive_state'));
+  if (['peak', 'records', 'name'].includes(input.get('archive_sort'))) output.set('archive_sort', input.get('archive_sort'));
+  const page = Number(input.get('archive_page'));
+  if (Number.isSafeInteger(page) && page > 1 && page <= 100000) output.set('archive_page', String(page));
   return output.toString();
 }
 export function detailHref(id, search = '') {
