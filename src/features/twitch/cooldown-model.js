@@ -27,16 +27,18 @@ export function analyzeCooldown(rows, { dropFraction = .5, confirmHours = 24 } =
   const slots = normalize(rows), points = [], episodes = [];
   let buffer = [], previousAt = null, peak = null, peakAt = null, candidate = null, active = null;
   let recoveryStart = null, recoveryPeak = null, recoveryPeakAt = null;
+  let suspended = false, recheckStart = null;
   let status = 'insufficient', sawSmooth = false, recovered = false, valid = 0;
 
   function interrupt(hour) {
     if (active) {
-      active.interruptedAt = hour;
+      active.interruptedAt ||= hour;
       // An incomplete recovery is not evidence of a completed return.
       active.recoveryAt = null;
-      active = null;
+      suspended = true;
     }
     candidate = null; recoveryStart = null; recoveryPeak = null; recoveryPeakAt = null;
+    recheckStart = null;
     buffer = []; recovered = false; status = sawSmooth ? 'gap' : 'insufficient';
   }
 
@@ -52,6 +54,7 @@ export function analyzeCooldown(rows, { dropFraction = .5, confirmHours = 24 } =
         smooth = median(buffer); sawSmooth = true;
         if (active) {
           if (smooth >= active.baselineValue * recoveryFraction) {
+            recheckStart = null;
             if (recoveryStart === null) {
               recoveryStart = slot.at; recoveryPeak = smooth; recoveryPeakAt = slot.hour;
               active.recoveryAt = slot.hour;
@@ -62,12 +65,22 @@ export function analyzeCooldown(rows, { dropFraction = .5, confirmHours = 24 } =
               active.recoveryConfirmedAt = slot.hour;
               active = null; peak = recoveryPeak; peakAt = recoveryPeakAt;
               recoveryStart = null; recoveryPeak = null; recoveryPeakAt = null;
+              suspended = false;
               recovered = true; status = 'recovered';
             }
           } else {
             active.recoveryAt = null;
             recoveryStart = null; recoveryPeak = null; recoveryPeakAt = null;
-            status = 'cooled';
+            if (suspended) {
+              if (smooth <= active.thresholdValue) {
+                recheckStart ??= slot.at;
+                status = 'suspected';
+                if (slot.at - recheckStart >= confirmHours * HOUR) {
+                  (active.reconfirmations ||= []).push({ startedAt: iso(recheckStart), confirmedAt: slot.hour });
+                  suspended = false; recheckStart = null; status = 'cooled';
+                }
+              } else { recheckStart = null; status = 'gap'; }
+            } else status = 'cooled';
           }
         } else {
           if (peak === null || smooth > peak) { peak = smooth; peakAt = slot.hour; }
@@ -81,7 +94,7 @@ export function analyzeCooldown(rows, { dropFraction = .5, confirmHours = 24 } =
             status = 'suspected';
             if (slot.at - Date.parse(candidate.candidateAt) >= confirmHours * HOUR) {
               candidate.confirmedAt = slot.hour; episodes.push(candidate); active = candidate;
-              candidate = null; recovered = false; status = 'cooled';
+              candidate = null; recovered = false; suspended = false; status = 'cooled';
             }
           } else status = peak > 0 ? recovered ? 'recovered' : 'watching' : 'insufficient';
         }
@@ -97,6 +110,11 @@ export function analyzeCooldown(rows, { dropFraction = .5, confirmHours = 24 } =
     declineFraction: last?.baseline > 0 && last.smooth !== null ? (last.baseline - last.smooth) / last.baseline : null,
     candidateElapsedHours: candidate && last ? (Date.parse(last.hour) - Date.parse(candidate.candidateAt)) / HOUR : 0,
     recoveryElapsedHours: recoveryStart !== null && last ? (Date.parse(last.hour) - recoveryStart) / HOUR : 0 };
+  const pendingRecheck = suspended && active ? {
+    startedAt: recheckStart === null ? null : iso(recheckStart),
+    elapsedHours: recheckStart !== null && last ? (Date.parse(last.hour) - recheckStart) / HOUR : 0,
+    requiredHours: confirmHours, baselineValue: active.baselineValue, thresholdValue: active.thresholdValue,
+  } : null;
   return { settings, status, points, episodes, candidate, latest, coverage: { valid, total: slots.length },
-    firstHour: points[0]?.hour ?? null, lastHour: last?.hour ?? null };
+    firstHour: points[0]?.hour ?? null, lastHour: last?.hour ?? null, pendingRecheck };
 }

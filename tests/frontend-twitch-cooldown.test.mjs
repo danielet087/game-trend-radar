@@ -61,6 +61,29 @@ test('gaps preserve an earlier confirmed event but invalidate a claim of uninter
   assert.equal(result.candidate, null);
 });
 
+test('low observations after a gap reconfirm the same historical cycle without moving its onset', () => {
+  const data = rows(sequence([48, 10000], [120, 1000])); data[100].status = 'missing';
+  const prefix = analyzeCooldown(data.slice(0, 120));
+  assert.equal(prefix.status, 'suspected'); assert.equal(prefix.candidate, null);
+  assert.equal(prefix.episodes.length, 1); assert.equal(prefix.pendingRecheck.startedAt, hour(106));
+  const result = analyzeCooldown(data);
+  assert.equal(result.episodes.length, 1); assert.equal(result.status, 'cooled');
+  assert.equal(result.episodes[0].candidateAt, hour(51)); assert.equal(result.episodes[0].confirmedAt, hour(75));
+  assert.deepEqual(result.episodes[0].reconfirmations, [{ startedAt: hour(106), confirmedAt: hour(130) }]);
+  assert.equal(result.pendingRecheck, null);
+});
+
+test('a real recovery across a gap stays attached to the original cycle before a second decline', () => {
+  const data = rows(sequence([48, 10000], [48, 1000], [36, 8000], [50, 500])); data[90].status = 'missing';
+  const recovered = analyzeCooldown(data.slice(0, 125));
+  assert.equal(recovered.status, 'recovered'); assert.equal(recovered.episodes.length, 1);
+  assert.equal(recovered.episodes[0].candidateAt, hour(51)); assert.equal(recovered.episodes[0].confirmedAt, hour(75));
+  assert.equal(recovered.episodes[0].recoveryAt, hour(99)); assert.equal(recovered.episodes[0].recoveryConfirmedAt, hour(111));
+  const result = analyzeCooldown(data);
+  assert.equal(result.episodes.length, 2); assert.equal(result.status, 'cooled');
+  assert.equal(result.episodes[1].candidateAt, hour(135)); assert.equal(result.episodes[1].confirmedAt, hour(159));
+});
+
 test('recovery requires elapsed evidence, then a new wave uses its own causal baseline', () => {
   const data = rows(sequence([48, 10000], [48, 1000], [36, 8000], [50, 500]));
   const result = analyzeCooldown(data);

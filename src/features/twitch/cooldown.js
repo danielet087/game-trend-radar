@@ -116,6 +116,8 @@ export function createCooldown(root) {
       if (episode.recoveryAt) result.push({ at: episode.recoveryAt, label: episode.recoveryConfirmedAt ? '回升起點' : '疑似回升起點', type: 'recovery' });
       if (episode.recoveryConfirmedAt) result.push({ at: episode.recoveryConfirmedAt, label: '回升確認', type: 'recovered' });
       if (episode.interruptedAt) result.push({ at: episode.interruptedAt, label: '觀測中斷，需重新確認', type: 'gap' });
+      for (const confirmation of episode.reconfirmations || [])
+        result.push({ at: confirmation.confirmedAt, label: `第 ${index + 1} 波中斷後再次確認`, type: 'confirmed' });
     }
     if (data?.candidate) result.push({ at: data.candidate.candidateAt, label: '疑似退潮起點（尚未確認）', type: 'candidate' });
     return result.filter(item => item.at).sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
@@ -239,11 +241,13 @@ export function createCooldown(root) {
       const prefix = historical ? `歷史判定，截至 ${at(context.lastHour || data.lastHour)}。` : `追蹤中，截至 ${at(context.lastHour || data.lastHour)}。`;
       let detail = '';
       if (stale) detail = '近期觀測尚未更新，保留既有事件；目前是否仍在退潮需等待新資料。';
-      else if (data.status === 'suspected') detail = `已跨過退潮門檻，尚未持續滿 ${confirmHours} 小時。${historical ? '已保存的後續資料不足，暫不確認。' : '持續收集後再確認。'}`;
+      else if (data.status === 'suspected') detail = data.pendingRecheck
+        ? `歷史退潮點已確認；觀測中斷後正重新累積低熱度證據，尚未滿 ${confirmHours} 小時，保留原退潮起點。`
+        : `已跨過退潮門檻，尚未持續滿 ${confirmHours} 小時。${historical ? '已保存的後續資料不足，暫不確認。' : '持續收集後再確認。'}`;
       else if (data.status === 'cooled') detail = `平滑熱度下降至少 ${percent(dropFraction)}，並持續滿 ${confirmHours} 小時；後續仍可能回升。`;
       else if (data.status === 'recovering') detail = '平滑熱度已回到回升門檻，等待持續滿 12 小時確認。';
       else if (data.status === 'recovered') detail = '先前退潮後，平滑熱度已持續回升，請查看圖上的回升標記。';
-      else if (data.status === 'gap') detail = '尾段資料不連續，需重新累積有效觀測；中斷不視為熱度歸零。';
+      else if (data.status === 'gap') detail = '觀測曾中斷，最新狀態仍需重新確認；中斷不視為熱度歸零，也不改寫已確認的退潮起點。';
       else if (data.status === 'insufficient') detail = '需要完整連續 6 小時觀眾資料，並建立正值的平滑高峰。';
       else detail = '尚未觀察到符合目前降幅與持續時間的退潮。';
       stateDetail.textContent = `${prefix} ${detail}`;
