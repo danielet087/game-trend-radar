@@ -45,7 +45,7 @@ test('the full-history cooldown onset and confirmation survive date changes with
   const summary = await page.locator('#cooldownSummary').innerText();
   await page.getByRole('button', { name: '7 天', exact: true }).click();
   await expect(panel).toHaveAttribute('data-cooldown-status', 'cooled');
-  await expect(page.locator('#cooldownSummary')).toHaveText(summary);
+  await expect(page.locator('#cooldownSummary')).toHaveText(summary, { useInnerText: true });
   await page.locator('[name="cooldownHold"]').selectOption('48');
   await expect(page.locator('#cooldownSummary')).toContainText('2026/10/02 23:00');
   await expect(page.locator('#historyChart .tw-chart')).toHaveAttribute('data-range', '168');
