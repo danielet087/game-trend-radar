@@ -3,12 +3,13 @@ import { canonicalID } from './metrics.js';
 import { mount, valueOf, statusOf } from './chart.js';
 import { node, fmt, time } from './presentation.js';
 import { validIndex, validChunk, windowFor, monthsFor, seriesRows, overviewQuery, dayOf, metrics, csvRows } from './series.js';
+import { createStatistics } from './statistics.js';
 
 export function initTwitchDetail() {
   const $ = id => document.getElementById(id);
   let params = new URLSearchParams(location.search), metric = Object.hasOwn(metrics, params.get('metric')) ? params.get('metric') : 'viewers';
   const id = canonicalID(params.get('game')), cache = new Map();
-  let index, game, window, rows = [], disposeChart, page = 0, descending = true, request = 0;
+  let index, game, window, rows = [], disposeChart, statistics, page = 0, descending = true, request = 0;
   const back = overviewQuery(params.get('back') || '');
   $('historyBack').href = `./twitch.html${back ? `?${back}` : ''}`;
   if (new URLSearchParams(back).get('view') === 'archive') $('historyBack').textContent = '← 歷史資料庫';
@@ -64,6 +65,9 @@ export function initTwitchDetail() {
   }
   async function load(refresh = false) {
     const token = ++request;
+    $('historyStatisticsJump').hidden = true;
+    if (statistics) statistics.hide();
+    else $('historyStatistics').hidden = true;
     $('historyContent').hidden = true; $('historyPanel').setAttribute('aria-busy', 'true');
     $('historyExport').disabled = true; message('正在讀取逐時歷史…');
     try {
@@ -104,6 +108,16 @@ export function initTwitchDetail() {
       $('historyExport').disabled = false;
       const count = rows.filter(row => row.status === 'observed').length;
       message(`已載入 ${rows.length} 個時段，其中 ${count} 個有本遊戲的觀測紀錄。`);
+      try {
+        statistics ||= createStatistics($('historyStatistics'));
+        statistics.update(rows, { gameName: name, rangeLabel: $('historyRangeLabel').textContent });
+        $('historyStatisticsJump').hidden = false;
+      } catch (error) {
+        console.warn('Unable to display supplementary Twitch statistics:', error);
+        statistics?.destroy(); statistics = null;
+        $('historyStatistics').hidden = false;
+        $('historyStatistics').replaceChildren(node('p', 'tw-detail-note', '統計分析暫時無法顯示，請重新載入再試。'));
+      }
     } catch (error) {
       if (token === request) message(error.message || '歷史資料暫時無法載入。', true);
     } finally {
@@ -128,5 +142,5 @@ export function initTwitchDetail() {
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   load();
-  return () => { request++; disposeChart?.(); };
+  return () => { request++; disposeChart?.(); statistics?.destroy(); };
 }
