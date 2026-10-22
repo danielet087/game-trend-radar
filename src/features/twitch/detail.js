@@ -4,12 +4,13 @@ import { mount, valueOf, statusOf } from './chart.js';
 import { node, fmt, time } from './presentation.js';
 import { validIndex, validChunk, windowFor, monthsFor, seriesRows, overviewQuery, dayOf, metrics, csvRows } from './series.js';
 import { createStatistics } from './statistics.js';
+import { createCooldown } from './cooldown.js';
 
 export function initTwitchDetail() {
   const $ = id => document.getElementById(id);
   let params = new URLSearchParams(location.search), metric = Object.hasOwn(metrics, params.get('metric')) ? params.get('metric') : 'viewers';
   const id = canonicalID(params.get('game')), cache = new Map();
-  let index, game, window, rows = [], disposeChart, statistics, page = 0, descending = true, request = 0;
+  let index, game, window, rows = [], disposeChart, statistics, cooldown, fullHistoryLoader, page = 0, descending = true, request = 0;
   const back = overviewQuery(params.get('back') || '');
   $('historyBack').href = `./twitch.html${back ? `?${back}` : ''}`;
   if (new URLSearchParams(back).get('view') === 'archive') $('historyBack').textContent = '← 歷史資料庫';
@@ -65,6 +66,9 @@ export function initTwitchDetail() {
   }
   async function load(refresh = false) {
     const token = ++request;
+    $('historyCooldownJump').hidden = true;
+    if (cooldown) cooldown.hide();
+    else $('historyCooldown').hidden = true;
     $('historyStatisticsJump').hidden = true;
     if (statistics) statistics.hide();
     else $('historyStatistics').hidden = true;
@@ -73,6 +77,7 @@ export function initTwitchDetail() {
     try {
       if (!id) throw new Error('缺少有效的遊戲 ID，請返回 Twitch 新作觀測選擇遊戲。');
       if (!index || refresh) {
+        fullHistoryLoader = null;
         cache.clear();
         const nextIndex = await read('./data/twitch_series/index.json', validIndex);
         if (token !== request) return;
@@ -82,11 +87,33 @@ export function initTwitchDetail() {
       game = index.games[id];
       if (!game || game.archive_eligible !== true) throw new Error('這款遊戲未列入正式收錄的歷史資料庫，請返回清單選擇遊戲。');
       if (!Array.isArray(game.months)) throw new Error('這款遊戲尚無已發布的歷史紀錄，請返回清單或稍後重新載入。');
+      if (!fullHistoryLoader) {
+        const sourceIndex = index, sourceGame = game;
+        let pendingHistory;
+        fullHistoryLoader = () => {
+          if (pendingHistory) return pendingHistory;
+          pendingHistory = (async () => {
+            const start = Date.parse(sourceGame.first_hour), end = Date.parse(sourceGame.last_hour);
+            if (!Number.isFinite(start) || !Number.isFinite(end) || start > end)
+              throw new Error('這款遊戲的完整觀測期間尚無法確認。');
+            const historyChunks = {};
+            await Promise.all(sourceGame.months.map(async month => {
+              if (!cache.has(month)) cache.set(month, read(`./data/twitch_series/${id}/${month}.json`, value => validChunk(value, id, month)));
+              const pendingMonth = cache.get(month);
+              try { historyChunks[month] = await pendingMonth; }
+              catch (error) { if (cache.get(month) === pendingMonth) cache.delete(month); throw error; }
+            }));
+            return seriesRows(sourceIndex, historyChunks, id, start, end);
+          })().catch(error => { pendingHistory = null; throw error; });
+          return pendingHistory;
+        };
+      }
       window = windowFor(params, index, game);
       const chunks = {};
       await Promise.all(monthsFor(window.start, window.end).filter(month => game.months.includes(month)).map(async month => {
         if (!cache.has(month)) cache.set(month, read(`./data/twitch_series/${id}/${month}.json`, value => validChunk(value, id, month)));
-        try { chunks[month] = await cache.get(month); } catch (error) { cache.delete(month); throw error; }
+        const pendingMonth = cache.get(month);
+        try { chunks[month] = await pendingMonth; } catch (error) { if (cache.get(month) === pendingMonth) cache.delete(month); throw error; }
       }));
       if (token !== request) return;
       rows = seriesRows(index, chunks, id, window.start, window.end); page = 0;
@@ -118,6 +145,18 @@ export function initTwitchDetail() {
         $('historyStatistics').hidden = false;
         $('historyStatistics').replaceChildren(node('p', 'tw-detail-note', '統計分析暫時無法顯示，請重新載入再試。'));
       }
+      try {
+        cooldown ||= createCooldown($('historyCooldown'));
+        cooldown.update({ gameName: name, trackingStatus: game.tracking_status, lastHour: game.last_hour,
+          latestHour: new Date(window.latest).toISOString(), generatedAt: index.generated_at,
+          releaseReference: game.release_reference, loadHistory: fullHistoryLoader });
+        $('historyCooldownJump').hidden = false;
+      } catch (error) {
+        console.warn('Unable to display Twitch cooldown analysis:', error);
+        cooldown?.destroy(); cooldown = null;
+        $('historyCooldown').hidden = false;
+        $('historyCooldown').replaceChildren(node('p', 'tw-detail-note', '退潮觀測暫時無法顯示，請重新載入再試。'));
+      }
     } catch (error) {
       if (token === request) message(error.message || '歷史資料暫時無法載入。', true);
     } finally {
@@ -142,5 +181,5 @@ export function initTwitchDetail() {
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   load();
-  return () => { request++; disposeChart?.(); statistics?.destroy(); };
+  return () => { request++; disposeChart?.(); statistics?.destroy(); cooldown?.destroy(); };
 }

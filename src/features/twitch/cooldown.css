@@ -1,0 +1,76 @@
+.tw-cooldown { margin-top:28px; scroll-margin-top:105px; }
+.tw-cooldown [hidden] { display:none !important; }
+.tw-cooldown .tw-workspace-head { gap:12px; }
+.tw-cooldown-scope { border:1px solid #d9cce7; border-radius:999px; padding:5px 10px; color:#76608d; font-size:10px; white-space:nowrap; }
+.tw-cooldown-intro,.tw-cooldown-range { margin:0; padding:20px 25px 0; color:#746780; font-size:12px; line-height:1.8; }
+.tw-cooldown-range { padding-top:5px; font-size:11px; }
+.tw-cooldown-release { margin:16px 25px 0; padding:14px 16px; border:1px solid #dfd2e9; border-radius:10px; background:#f7f2fc; color:#68517c; }
+.tw-cooldown-release > strong { font-size:19px; line-height:1.5; }
+.tw-cooldown-release > p { margin:6px 0 0; font-size:11px; line-height:1.8; }
+.tw-cooldown-release > p:first-child { margin-top:0; }
+.tw-cooldown-coverage-warning { color:#95653f; }
+.tw-cooldown-controls { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px; padding:20px 25px; }
+.tw-cooldown-controls label { display:grid; gap:5px; color:#746780; font-size:11px; }
+.tw-cooldown-controls select { min-width:160px; max-width:100%; border:1px solid #d2c4df; border-radius:9px; background:#fffdf9; color:#59436f; padding:9px 13px; min-height:40px; font-family:inherit; font-size:12px; line-height:1.5; }
+.tw-cooldown-retry { margin-left:auto; }
+.tw-cooldown-state-line { padding:0 25px 18px; }
+.tw-cooldown-status { display:inline-block; padding:9px 13px; border-radius:9px; color:#655374; background:#eee8f5; font-size:16px; line-height:1.6; }
+.tw-cooldown-status[data-tone="cooling"] { color:#8a5234; background:#f7e7db; }
+.tw-cooldown-status[data-tone="recovery"] { color:#426f60; background:#e4f0e9; }
+.tw-cooldown-state-detail { margin:10px 0 0; color:#746780; font-size:11px; line-height:1.9; }
+.tw-cooldown-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; padding:0 25px 20px; }
+.tw-cooldown-stat { min-width:0; display:grid; align-content:start; gap:8px; padding:16px; border:1px solid #ded3e8; border-radius:12px; background:#f7f3fb; }
+.tw-cooldown-stat > span { color:#746780; font-size:11px; }
+.tw-cooldown-stat strong { color:#503b6b; font-size:clamp(18px,2vw,26px); line-height:1.4; letter-spacing:-.025em; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+.tw-cooldown-stat:nth-child(-n+2) strong { font-size:clamp(16px,1.55vw,21px); }
+.tw-cooldown-stat small { color:#897793; font-size:10px; line-height:1.7; }
+.tw-cooldown-figure { margin:0 25px; padding:16px 12px 12px; border:1px solid #ded3e8; border-radius:14px; background:#fffdfb; min-width:0; }
+.tw-cooldown-chart { width:100%; min-width:0; }
+.tw-cooldown-chart svg { display:block; width:100%; height:auto; overflow:visible; }
+.tw-cooldown-grid { stroke:#ece5f0; stroke-width:1; }
+.tw-cooldown-axis,.tw-cooldown-axis-label { fill:#87758f; font-family:inherit; font-size:11px; font-variant-numeric:tabular-nums; }
+.tw-cooldown-axis-label { fill:#68517c; }
+.tw-cooldown-raw { stroke:#c6b9d7; stroke-width:1.4; }
+.tw-cooldown-smooth { stroke:#70518f; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+.tw-cooldown-threshold { stroke:#bb8056; stroke-width:1.8; stroke-dasharray:6 4; }
+.tw-cooldown-band { fill:#efd6bf; opacity:.3; }
+.tw-cooldown-dot { fill:#70518f; }
+.tw-cooldown-dot[data-selected="true"] { r:4; fill:#ba7045; stroke:#fffdfb; stroke-width:1.5; }
+.tw-cooldown-marker { stroke:#c27e50; stroke-width:1.6; }
+.tw-cooldown-marker-candidate { stroke-dasharray:4 4; }
+.tw-cooldown-marker-recovery { stroke:#5a907b; }
+.tw-cooldown-marker-gap { stroke:#9c929f; stroke-dasharray:3 5; }
+.tw-cooldown-event-mark circle { fill:#bb8056; stroke:#fffdfb; stroke-width:1.5; }
+.tw-cooldown-event-mark text { fill:white; font-family:inherit; font-size:10px; }
+.tw-cooldown-event-mark-recovery circle { fill:#5a907b; }
+.tw-cooldown-event-mark-gap circle { fill:#9c929f; }
+.tw-cooldown-chart [data-cooldown-hour] { cursor:crosshair; }
+.tw-cooldown-cursor { stroke:#b4a2c8; stroke-width:1; stroke-dasharray:3 4; pointer-events:none; }
+.tw-cooldown-legend { padding:9px 8px 0; color:#87758f; font-size:10px; line-height:1.9; }
+.tw-cooldown-reader { display:grid; gap:9px; padding:14px 25px; }
+.tw-cooldown-reader label { color:#746780; font-size:10px; }
+.tw-cooldown-reader input { width:100%; margin:0; min-height:26px; accent-color:#70518f; cursor:pointer; }
+.tw-cooldown-readout { display:block; border-radius:8px; padding:11px 13px; background:#f4edf9; color:#68517c; font-size:11px; line-height:1.8; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+.tw-cooldown-events { padding:2px 25px 18px; }
+.tw-cooldown-events h3 { margin:10px 0; color:#68517c; font-size:13px; }
+.tw-cooldown-events > p { color:#87758f; font-size:11px; line-height:1.9; }
+.tw-cooldown-event-list { margin:0; padding:0; list-style:none; display:grid; gap:7px; }
+.tw-cooldown-event-list li { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 16px; padding:8px 12px; border-left:3px solid #c68c65; border-radius:5px; background:#faf5ef; }
+.tw-cooldown-event-list li[data-kind="recovery"],.tw-cooldown-event-list li[data-kind="recovered"] { border-left-color:#6c9a83; background:#f0f7f2; }
+.tw-cooldown-event-list li[data-kind="gap"] { border-left-color:#a99baa; background:#f5f2f5; }
+.tw-cooldown-event-list button { border:0; background:transparent; min-height:32px; padding:2px; text-align:left; color:#6f4f76; text-decoration:underline; text-underline-offset:3px; }
+.tw-cooldown-event-list time { color:#87758f; font-size:11px; font-variant-numeric:tabular-nums; }
+.tw-cooldown-method { margin:0; padding:16px 25px; border-top:1px solid #e5dceb; background:#faf7fc; color:#87758f; font-size:10px; line-height:1.9; }
+.tw-cooldown-empty { margin:0; padding:70px 15px; text-align:center; color:#87758f; font-size:13px; line-height:1.8; }
+@media(max-width:760px) {
+  .tw-cooldown { scroll-margin-top:135px; }
+  .tw-cooldown-intro,.tw-cooldown-range,.tw-cooldown-controls,.tw-cooldown-state-line,.tw-cooldown-summary,.tw-cooldown-reader,.tw-cooldown-events,.tw-cooldown-method { padding-left:16px; padding-right:16px; }
+  .tw-cooldown-controls { gap:10px; }
+  .tw-cooldown-controls label { flex:1; min-width:120px; }
+  .tw-cooldown-controls select { min-width:0; width:100%; }
+  .tw-cooldown-retry { margin:0; }
+  .tw-cooldown-summary { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .tw-cooldown-stat { padding:12px; }
+  .tw-cooldown-figure { margin-left:16px; margin-right:16px; padding:12px 5px; }
+  .tw-cooldown-release { margin-left:16px; margin-right:16px; }
+}

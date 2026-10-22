@@ -38,7 +38,7 @@ export function createStatistics(root) {
   root.setAttribute('aria-labelledby', 'statisticsTitle');
   const head = el('div', 'tw-workspace-head');
   const heading = el('div');
-  const sectionNumber = el('span', 'tw-section-no', '02'); sectionNumber.setAttribute('aria-hidden', 'true');
+  const sectionNumber = el('span', 'tw-section-no', '03'); sectionNumber.setAttribute('aria-hidden', 'true');
   const title = el('h2', '', '統計分析'); title.id = 'statisticsTitle';
   heading.append(sectionNumber, title); head.append(heading, el('span', 'tw-statistics-independent', '獨立圖表'));
   const intro = el('p', 'tw-statistics-intro', '從常態、趨勢與時段分布，讀懂這款遊戲的歷史熱度。上方日期範圍會同步套用。');
