@@ -8,10 +8,10 @@
   <meta name="description" content="Twitch 熱門新作與 Steam 近期上市遊戲的直播觀測，查看全球觀眾、開台數、中位數與互動逐時曲線。">
   <title>Twitch 新作觀測・實驗｜Game Trend Radar</title>
   <link rel="icon" id="siteFavicon" type="image/svg+xml">
-  <script type="module" crossorigin src="/game-trend-radar/assets/app/twitch-CijWU_Wb.js"></script>
+  <script type="module" crossorigin src="/game-trend-radar/assets/app/twitch-DceSaFqg.js"></script>
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/contracts-CXfvy2kB.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/storage-BfizImGa.js">
-  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-DkDzX3HB.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-Gu0YP2dA.js">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/bootstrap-oTuMO7h7.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/twitch-CNPvqXQf.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-C_gCAust.css">
@@ -93,10 +93,10 @@
         <div><span class="tw-section-no" aria-hidden="true">02</span><h2 id="archiveTitle" tabindex="-1">歷史資料庫</h2></div>
         <div><span id="archiveUpdated"></span><button id="archiveRefresh" class="tw-archive-refresh" type="button">重新載入 ↻</button></div>
       </div>
-      <p class="tw-archive-intro">每款遊戲留下的觀測，都能在這裡找到。包含追蹤中與已結束的遊戲，停止追蹤後仍保留既有資料。<br>點選遊戲查看逐時曲線、切換日期或下載 CSV；時間皆為台灣時間。</p>
+      <p class="tw-archive-intro">保留曾符合 Twitch 新作或 Steam 近期上市收錄條件的遊戲，包含追蹤中與已結束的觀測。僅出現在早期排行榜、未通過收錄條件的項目不列入。<br>點選遊戲查看逐時曲線、切換日期或下載 CSV；時間皆為台灣時間。</p>
       <div class="tw-tools">
         <label class="tw-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="sr-only">搜尋歷史遊戲中文、英文名稱或 ID</span><input id="archiveSearch" type="search" placeholder="搜尋中文、英文名稱或 ID…" autocomplete="off" maxlength="160"><kbd aria-hidden="true">/</kbd></label>
-        <label class="tw-sort">狀態<select id="archiveState"><option value="all">全部狀態</option><option value="active">追蹤中</option><option value="ended">已結束追蹤</option><option value="untracked">歷史紀錄</option><option value="unknown">狀態未確認</option></select></label>
+        <label class="tw-sort">狀態<select id="archiveState"><option value="all">全部狀態</option><option value="active">追蹤中</option><option value="ended">已結束追蹤</option></select></label>
         <label class="tw-sort">排序<select id="archiveSort"><option value="recent">最後觀測時間</option><option value="peak">最高觀眾</option><option value="records">紀錄筆數</option><option value="name">遊戲名稱</option></select></label>
       </div>
       <div class="tw-results-bar"><p id="archiveStatus" role="status" aria-live="polite">正在讀取歷史資料庫…</p><button id="archiveReset" class="tw-text-button" type="button" hidden>清除篩選 ×</button></div>
