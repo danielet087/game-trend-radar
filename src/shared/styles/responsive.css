@@ -42,13 +42,15 @@
     margin-right: auto;
   }
   .main-nav {
+    position: relative;
     order: 3;
     width: 100%;
     justify-content: center;
     gap: 6px;
     padding-bottom: 14px;
   }
-  .explore-nav { flex: 1; min-width: 0; }
+  .explore-nav { position: static; flex: 1; min-width: 0; }
+  .explore-menu { top: calc(100% - 2px); }
   .explore-toggle { width: 100%; justify-content: center; }
   .main-nav > a,
   .explore-toggle {
@@ -157,6 +159,7 @@
     padding: 10px 5px;
     border-radius: 10px;
   }
+  .explore-toggle { gap: 4px; }
   .saved-count {
     min-width: 16px;
     height: 17px;
@@ -444,6 +447,8 @@
   }
 }
 @media (max-width: 420px) {
+  .explore-toggle { gap: 3px; }
+  .explore-chevron { width: 12px; height: 12px; }
   .workspace-shortcut {
     display: none;
   }

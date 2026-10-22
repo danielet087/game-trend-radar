@@ -5,47 +5,65 @@ import { savedCount, subscribeSaved } from '../state/favorites';
 import { readMotion, subscribeMotion, toggleMotion } from '../state/motion';
 
 const props = withDefaults(defineProps<{ page?: string }>(), { page: 'home' });
-const disclosure = ref<HTMLDetailsElement>();
+const exploreDisclosure = ref<HTMLDetailsElement>();
+const analysisDisclosure = ref<HTMLDetailsElement>();
 const count = ref(savedCount());
 const motion = ref(readMotion());
-const exploreActive = computed(() => ['all', 'games', 'upcoming', 'released', 'explore', 'growth', 'analysis', 'twitch'].includes(props.page));
+const exploreActive = computed(() => ['all', 'games', 'upcoming', 'released', 'explore'].includes(props.page));
+const analysisActive = computed(() => ['growth', 'analysis', 'twitch'].includes(props.page));
 const motionLabel = computed(() => motion.value.reduced
   ? '裝置已設定減少動態效果'
   : motion.value.enabled ? '關閉動態效果' : '開啟動態效果');
 const unsubscribeSaved = subscribeSaved(value => { count.value = value.count; });
 const unsubscribeMotion = subscribeMotion(value => { motion.value = value; });
 
-function closeMenu(): void {
-  if (disclosure.value) disclosure.value.open = false;
+function menus(): HTMLDetailsElement[] {
+  return [exploreDisclosure.value, analysisDisclosure.value].filter((menu): menu is HTMLDetailsElement => !!menu);
+}
+
+function closeMenus(): void {
+  menus().forEach(menu => { menu.open = false; });
+}
+
+function openMenu(menu: HTMLDetailsElement): void {
+  menus().forEach(other => { other.open = other === menu; });
+}
+
+function menuToggle(event: Event): void {
+  const menu = event.currentTarget as HTMLDetailsElement;
+  if (menu.open) openMenu(menu);
 }
 
 function outsidePointer(event: PointerEvent): void {
-  if (event.target instanceof Node && !disclosure.value?.contains(event.target)) closeMenu();
+  const target = event.target;
+  if (!(target instanceof Node)) return;
+  menus().forEach(menu => { if (!menu.contains(target)) menu.open = false; });
 }
 
 function focusOut(event: FocusEvent): void {
+  const menu = event.currentTarget as HTMLDetailsElement;
   if (event.relatedTarget instanceof Node) {
-    if (!disclosure.value?.contains(event.relatedTarget)) closeMenu();
+    if (!menu.contains(event.relatedTarget)) menu.open = false;
     return;
   }
   // Wait for the destination focus; closing on blur can swallow a link click.
   requestAnimationFrame(() => {
-    if (!disclosure.value?.contains(document.activeElement)) closeMenu();
+    if (!menu.contains(document.activeElement)) menu.open = false;
   });
 }
 
 function escapeMenu(event: KeyboardEvent): void {
-  if (event.key !== 'Escape' || !disclosure.value?.open) return;
+  const menu = menus().find(menu => menu.open);
+  if (event.key !== 'Escape' || !menu) return;
   event.preventDefault();
   event.stopPropagation();
-  closeMenu();
-  disclosure.value.querySelector('summary')?.focus();
+  closeMenus();
+  menu.querySelector('summary')?.focus();
 }
 
 function moveMenuFocus(event: KeyboardEvent): void {
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-  const menu = disclosure.value;
-  if (!menu) return;
+  const menu = event.currentTarget as HTMLDetailsElement;
   const links = [...menu.querySelectorAll<HTMLAnchorElement>('.explore-route')];
   const index = links.findIndex(link => link === document.activeElement);
   let next: number;
@@ -55,14 +73,14 @@ function moveMenuFocus(event: KeyboardEvent): void {
   else if (index >= 0 && event.key === 'End') next = links.length - 1;
   else return;
   event.preventDefault();
-  menu.open = true;
+  openMenu(menu);
   links[next]?.focus();
 }
 
 onMounted(() => {
   document.addEventListener('pointerdown', outsidePointer);
   document.addEventListener('keydown', escapeMenu, true);
-  window.addEventListener('pageshow', closeMenu);
+  window.addEventListener('pageshow', closeMenus);
 });
 
 onBeforeUnmount(() => {
@@ -70,7 +88,7 @@ onBeforeUnmount(() => {
   unsubscribeMotion();
   document.removeEventListener('pointerdown', outsidePointer);
   document.removeEventListener('keydown', escapeMenu, true);
-  window.removeEventListener('pageshow', closeMenu);
+  window.removeEventListener('pageshow', closeMenus);
 });
 </script>
 
@@ -83,7 +101,7 @@ onBeforeUnmount(() => {
       </a>
       <nav class="main-nav" aria-label="主要導覽">
         <a href="./index.html" :aria-current="page === 'home' ? 'page' : undefined">發售月曆</a>
-        <details ref="disclosure" class="explore-nav" :data-active="exploreActive ? '' : undefined" @focusout="focusOut" @keydown="moveMenuFocus">
+        <details ref="exploreDisclosure" class="explore-nav" :data-active="exploreActive ? '' : undefined" @toggle="menuToggle" @focusout="focusOut" @keydown="moveMenuFocus">
           <summary class="explore-toggle" aria-controls="exploreMenu">遊戲探索<svg class="explore-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></summary>
           <div id="exploreMenu" class="explore-menu">
             <a class="explore-route explore-route-all" href="./games.html" :aria-current="['all', 'games'].includes(page) ? 'page' : undefined">
@@ -106,7 +124,11 @@ onBeforeUnmount(() => {
               <span class="explore-route-copy"><span class="explore-route-title">TAG 探索</span><span class="explore-route-note">依照喜好找新作</span></span>
               <span class="explore-route-arrow" aria-hidden="true">{{ page === 'explore' ? '✓' : '↗' }}</span>
             </a>
-            <p class="explore-menu-label">觀察與分析</p>
+          </div>
+        </details>
+        <details ref="analysisDisclosure" class="explore-nav analysis-nav" :data-active="analysisActive ? '' : undefined" @toggle="menuToggle" @focusout="focusOut" @keydown="moveMenuFocus">
+          <summary class="explore-toggle" aria-controls="analysisMenu">趨勢分析<svg class="explore-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></summary>
+          <div id="analysisMenu" class="explore-menu">
             <a class="explore-route explore-route-growth" href="./growth.html" :aria-current="page === 'growth' ? 'page' : undefined">
               <span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M15 16v48h52M22 50l15-16 12 7 16-22M53 19h12v13" /><circle cx="37" cy="34" r="4" /></svg></span>
               <span class="explore-route-copy"><span class="explore-route-title">關注成長榜</span><span class="explore-route-note">找出正在上升的新作</span></span>
