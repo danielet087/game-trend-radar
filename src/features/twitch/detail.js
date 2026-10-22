@@ -76,7 +76,8 @@ export function initTwitchDetail() {
       }
       if (token !== request) return;
       game = index.games[id];
-      if (!game || !Array.isArray(game.months)) throw new Error('這款遊戲尚無已發布的歷史紀錄，請返回清單或稍後重新載入。');
+      if (!game || game.archive_eligible !== true) throw new Error('這款遊戲未列入正式收錄的歷史資料庫，請返回清單選擇遊戲。');
+      if (!Array.isArray(game.months)) throw new Error('這款遊戲尚無已發布的歷史紀錄，請返回清單或稍後重新載入。');
       window = windowFor(params, index, game);
       const chunks = {};
       await Promise.all(monthsFor(window.start, window.end).filter(month => game.months.includes(month)).map(async month => {

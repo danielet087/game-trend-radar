@@ -17,7 +17,7 @@ function fixtures() {
   }
   return {
     index: { schema_version: 1, timezone: 'Asia/Taipei', generated_at: hours['2026-10-22T07:00:00Z'], months: { '2026-10': hours },
-      games: { '42': { name: '測試遊戲', months: ['2026-10'], first_hour: Object.keys(rows).at(-1), last_hour: Object.keys(rows)[0] } } },
+      games: { '42': { name: '測試遊戲', archive_eligible: true, months: ['2026-10'], first_hour: Object.keys(rows).at(-1), last_hour: Object.keys(rows)[0] } } },
     chunk: { schema_version: 1, timezone: 'Asia/Taipei', game_id: '42', month: '2026-10', hours: rows },
   };
 }

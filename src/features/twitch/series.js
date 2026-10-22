@@ -59,7 +59,7 @@ export function overviewQuery(search) {
   if (['signals', 'twitch_new', 'steam_recent', 'igdb', 'all'].includes(input.get('state'))) output.set('state', input.get('state'));
   if (['median', 'viewers', 'streamers'].includes(input.get('sort'))) output.set('sort', input.get('sort'));
   if (input.get('view') === 'archive') output.set('view', 'archive');
-  if (['active', 'ended', 'untracked', 'unknown'].includes(input.get('archive_state'))) output.set('archive_state', input.get('archive_state'));
+  if (['active', 'ended'].includes(input.get('archive_state'))) output.set('archive_state', input.get('archive_state'));
   if (['peak', 'records', 'name'].includes(input.get('archive_sort'))) output.set('archive_sort', input.get('archive_sort'));
   const page = Number(input.get('archive_page'));
   if (Number.isSafeInteger(page) && page > 1 && page <= 100000) output.set('archive_page', String(page));

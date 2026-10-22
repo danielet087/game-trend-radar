@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 const first = '2026-09-30T00:00:00Z', last = '2026-10-03T23:00:00Z', latest = '2026-10-22T07:00:00Z';
 function fixtures() {
   const game = { name: 'Onimusha: Way of the Sword', display_name: '鬼武者 Way of the Sword', aliases: ['鬼武者', 'Onimusha'],
-    steam_appids: ['2638890'], tracking_status: 'ended', sample_count: 95, peak_viewer_count: 14066,
+    steam_appids: ['2638890'], tracking_status: 'ended', archive_eligible: true, sample_count: 95, peak_viewer_count: 14066,
     first_hour: first, last_hour: last, months: ['2026-09', '2026-10'], box_art_url: 'https://static-cdn.jtvnw.net/ttv-boxart/42_IGDB-{width}x{height}.jpg' };
   const hours: Record<string, Record<string, string>> = { '2026-09': {}, '2026-10': { [latest]: latest } };
   const rows: Record<string, Record<string, any>> = { '2026-09': {}, '2026-10': {} };
@@ -13,6 +13,7 @@ function fixtures() {
     hours[month][hour] = hour; rows[month][hour] = { generated_at: hour, viewer_count: n ? 100 : 14066, streamer_count: 20 };
   }
   const games: Record<string, any> = { '42': game };
+  games['32982'] = { ...game, name: 'Grand Theft Auto V', display_name: 'Grand Theft Auto V', aliases: [], steam_appids: [], archive_eligible: false };
   for (let i = 100; i < 127; i++) games[String(i)] = { ...game, name: `Archive ${i}`, display_name: `Archive ${i}`, aliases: [], steam_appids: [], tracking_status: 'active' };
   return { index: { schema_version: 1, timezone: 'Asia/Taipei', archive_version: 1, generated_at: latest, months: hours, games }, rows };
 }
@@ -93,4 +94,17 @@ test('archive failure is retryable and mobile search has no horizontal overflow'
   await expect(page.locator('#archiveResults')).toContainText('沒有符合的歷史紀錄');
   await page.locator('#archiveReset').click();
   await expect(page.locator('.tw-archive-card')).toHaveCount(24);
+});
+
+test('unqualified raw games cannot appear in archive search or open through a direct history URL', async ({ page }) => {
+  let monthlyRequest = false;
+  page.on('request', request => { if (request.url().includes('/twitch_series/32982/')) monthlyRequest = true; });
+  await page.goto('twitch.html?view=archive&q=Grand+Theft+Auto+V');
+  await expect(page.locator('#archiveResults')).toContainText('沒有符合的歷史紀錄');
+  await expect(page.locator('.tw-archive-card')).toHaveCount(0);
+  await page.goto('twitch-game.html?game=32982');
+  await expect(page.locator('#historyStatus')).toContainText('未列入正式收錄');
+  await expect(page.locator('#historyContent')).toBeHidden();
+  await expect(page.locator('#historyExport')).toBeDisabled();
+  expect(monthlyRequest).toBe(false);
 });
