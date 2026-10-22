@@ -16,11 +16,11 @@ function time(value, seconds) {
   if (!validTime(value)) return "時間未提供";
   return (seconds ? snapshotTime : bucketTime).format(new Date(value));
 }
-function tickTime(value) {
+function tickTime(value, includeDate = false) {
   if (!validTime(value)) return "—";
   const parts = tickFormat.formatToParts(new Date(value));
   const get = name => parts.find(part => part.type === name)?.value || "";
-  return get("hour") === "00" ? `${get("month")}/${get("day")} 00時` : `${get("hour")}時`;
+  return includeDate || get("hour") === "00" ? `${get("month")}/${get("day")} ${get("hour")}時` : `${get("hour")}時`;
 }
 function valueOf(row, metric) {
   if (!row || row.status !== "observed") return null;
@@ -57,7 +57,9 @@ function mount(container, options) {
   const settings = options || {};
   const rows = Array.isArray(settings.rows) ? settings.rows.slice() : [];
   const gameName = String(settings.gameName || "遊戲");
-  let metric = "viewers", range = 24, disposed = false, geometry = null;
+  let metric = Object.hasOwn(METRICS, settings.initialMetric) ? settings.initialMetric : "viewers";
+  let range = Number.isSafeInteger(settings.initialRange) && settings.initialRange > 0 ? settings.initialRange : 24;
+  let disposed = false, geometry = null;
   let selected = rows.length - 1;
   for (let index = rows.length - 1; index >= 0; index--) {
     if (rows[index]?.status === "observed") { selected = index; break; }
@@ -73,12 +75,12 @@ function mount(container, options) {
   const metricButtons = Object.entries(METRICS).map(([key, config]) => {
     const button = element("button", "tw-chart-metric", config.label);
     button.type = "button"; button.dataset.metric = key;
-    on(button, "click", () => { metric = key; draw(); announce(); });
+    on(button, "click", () => { metric = key; draw(); announce(); settings.onMetricChange?.(key); });
     metrics.append(button); return button;
   });
   const ranges = element("div", "tw-chart-ranges");
   ranges.setAttribute("role", "group"); ranges.setAttribute("aria-label", "選擇顯示時間範圍");
-  const rangeButtons = [24, 6].map(hours => {
+  const rangeButtons = (settings.rangeOptions || [24, 6]).map(hours => {
     const button = element("button", "tw-chart-range", `${hours} 小時`);
     button.type = "button"; button.dataset.range = String(hours);
     on(button, "click", () => { range = hours; selected = Math.max(startIndex(), selected); draw(); announce(); });
@@ -187,7 +189,7 @@ function mount(container, options) {
     const tickCount = Math.min(labelCount, visible.length);
     const ticks = new Set(Array.from({ length: tickCount }, (_, index) => Math.round(index * (visible.length - 1) / Math.max(1, tickCount - 1))));
     for (const index of ticks) {
-      svg.append(svgElement("text", { class: "tw-chart-axis", x: x(index), y: height - 12, "text-anchor": index === 0 ? "start" : index === visible.length - 1 ? "end" : "middle", "font-size": 11, fill: "var(--tw-chart-ink, #59677d)" }, tickTime(visible[index]?.hour)));
+      svg.append(svgElement("text", { class: "tw-chart-axis", x: x(index), y: height - 12, "text-anchor": index === 0 ? "start" : index === visible.length - 1 ? "end" : "middle", "font-size": 11, fill: "var(--tw-chart-ink, #59677d)" }, tickTime(visible[index]?.hour, range > 24)));
     }
     let segment = [], previous = null;
     function line(points, bridge = false) {
@@ -231,10 +233,12 @@ function mount(container, options) {
     });
     observer.observe(plot);
   } else on(window, "resize", draw);
-  return function cleanup() {
+  function cleanup() {
     if (disposed) return;
     disposed = true; observer?.disconnect(); listeners.forEach(remove => remove());
-  };
+  }
+  cleanup.select = index => { if (!disposed) choose(index, true); };
+  return cleanup;
 }
 export const RadarTwitchChart = { mount };
 export { mount, valueOf, statusOf };

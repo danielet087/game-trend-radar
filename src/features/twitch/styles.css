@@ -1,6 +1,10 @@
 /* An original observation notebook, using the site's paper and orbital palette. */
 body[data-page="twitch"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; --page-orbit:#c3b5e0; --page-orbit-line:#a18abb; }
 .twitch-shell { --tw-purple:#67518f; --tw-soft:#f1edf9; --tw-edge:#d9d0e7; }
+.tw-detail-link { display:block; color:inherit; border-radius:4px; }
+.tw-detail-link > span { display:inline-block; margin:5px 0 1px; color:#7651a2; font-size:10px; text-decoration:underline; text-underline-offset:3px; }
+.tw-detail-link:hover h3 { color:#7651a2; }
+.tw-detail-link:focus-visible { outline:3px solid #9c7fc0; outline-offset:4px; }
 .tw-heading { display:flex; justify-content:space-between; align-items:center; gap:24px; margin:2px 0 26px; }
 .tw-eyebrow { display:flex; align-items:center; gap:7px; color:#62517e; font:750 10px/1.5 Arial,sans-serif; letter-spacing:.15em; }
 .tw-eyebrow > span { font-size:20px; line-height:1; }

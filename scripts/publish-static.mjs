@@ -7,7 +7,7 @@ const repository = resolve(import.meta.dirname, '..');
 const built = resolve(repository, 'dist');
 if (!existsSync(resolve(built, 'index.html'))) throw new Error('Run npm run build before publishing static files.');
 const htmlFiles = readdirSync(built).filter(file => file.endsWith('.html'));
-if (htmlFiles.length !== 13) throw new Error('Incomplete multi-page build: expected 13 HTML entry points.');
+if (htmlFiles.length !== 14) throw new Error('Incomplete multi-page build: expected 14 HTML entry points.');
 for (const file of htmlFiles) copyFileSync(resolve(built, file), resolve(repository, file));
 const appAssets = resolve(repository, 'assets/app');
 mkdirSync(appAssets, { recursive: true });

@@ -1,5 +1,6 @@
 import { RadarTwitch as D } from "./data.js";
 import { node, fmt, time, IGDB_SOURCE, audienceNote, pendingLegacyMeasurement } from "./presentation.js";
+import { detailHref } from "./series.js";
 export function createTwitchCards({ state, historyPanel, signal: eventSignal }) {
 function badge(text, tone = "unknown") {
   const el = node("span","tw-state",text); el.dataset.tone = tone; return el;
@@ -41,7 +42,14 @@ function gameCard(g) {
     const image = node("img"); image.src = g.box_art_url; image.alt = ""; image.width = 144; image.height = 192; image.loading = "lazy"; image.decoding = "async";
     image.addEventListener("error",() => image.remove(),{ once:true, signal: eventSignal }); cover.append(image);
   }
-  const title = node("div","tw-game-title"); title.append(node("h3","",g.game_name),node("p","",`${g.twitch_name !== g.game_name ? g.twitch_name + " · " : ""}CATEGORY ${g.game_id}`));
+  const title = node("div","tw-game-title");
+  const historyLink = node("a","tw-detail-link");
+  const updateLink = () => { historyLink.href = detailHref(g.game_id, globalThis.location?.search || ''); };
+  updateLink();
+  historyLink.append(node("h3","",g.game_name),node("span","","查看歷史與趨勢 ↗"));
+  historyLink.setAttribute("aria-label",`${g.game_name}：查看歷史與趨勢`);
+  for (const event of ['pointerdown', 'focus', 'click']) historyLink.addEventListener(event, updateLink, { signal:eventSignal });
+  title.append(historyLink,node("p","",`${g.twitch_name !== g.game_name ? g.twitch_name + " · " : ""}CATEGORY ${g.game_id}`));
   const labels = node("div","tw-source-labels");
   if (D.matches(g,"twitch_new")) labels.append(node("span","tw-tracking-label","Twitch 熱門新作"));
   if (g.is_steam_recent) labels.append(node("span","tw-tracking-label tw-steam-label","Steam 近期上市"));

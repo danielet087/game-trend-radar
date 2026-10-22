@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 
 const repository = resolve(import.meta.dirname, '..');
-const pages = ['index', 'games', 'upcoming', 'released', 'saved', 'date', 'explore', 'game', 'growth', 'analysis', 'twitch', 'scheduler', 'discover'];
+const pages = ['index', 'games', 'upcoming', 'released', 'saved', 'date', 'explore', 'game', 'growth', 'analysis', 'twitch', 'twitch-game', 'scheduler', 'discover'];
 
 test('every published entry references existing compiled assets within the project base', () => {
   for (const page of pages) {
@@ -43,7 +43,7 @@ test('static publication preserves collector data and the previous built release
     const snapshot = readFileSync(join(directory, 'assets/app/releases.json'), 'utf8');
     assert.equal(run().status, 0);
     assert.equal(readFileSync(join(directory, 'assets/app/releases.json'), 'utf8'), snapshot);
-    assert.equal(readdirSync(directory).filter(file => file.endsWith('.html')).length, 13);
+    assert.equal(readdirSync(directory).filter(file => file.endsWith('.html')).length, 14);
     // A partial build must not replace an existing live entry.
     rmSync(join(directory, 'dist/date.html'));
     writeFileSync(join(directory, 'dist/index.html'), 'partial');

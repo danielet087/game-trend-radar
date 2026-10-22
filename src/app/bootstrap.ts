@@ -9,7 +9,7 @@ import { initInteractions } from '../shared/interactions/index.js';
 import '../shared/styles/index.css';
 import radarMark from '../../assets/radar-mark.svg';
 
-export type RadarPage = 'home' | 'all' | 'upcoming' | 'released' | 'saved' | 'date' | 'explore' | 'game' | 'growth' | 'analysis' | 'twitch' | 'scheduler';
+export type RadarPage = 'home' | 'all' | 'upcoming' | 'released' | 'saved' | 'date' | 'explore' | 'game' | 'growth' | 'analysis' | 'twitch' | 'twitch-game' | 'scheduler';
 
 // A single compatibility boundary supports the existing native SVG/lifecycle
 // renderers while new feature code imports its dependencies explicitly.
@@ -25,7 +25,7 @@ export async function bootstrap(page: RadarPage) {
   await nextTick();
   const motion = (window as unknown as { RadarMotion: { enabled: boolean } }).RadarMotion;
   let interactions;
-  if (!['twitch', 'scheduler'].includes(page)) {
+  if (!['twitch', 'twitch-game', 'scheduler'].includes(page)) {
     interactions = initInteractions({ insights: RadarInsights, storage: RadarStorage, motion });
     installBoundary(interactions);
   }
@@ -40,6 +40,10 @@ export async function bootstrap(page: RadarPage) {
   if (page === 'growth' || page === 'analysis') {
     const { initInsightsPage } = await import('../features/insights/index.js');
     return initInsightsPage({ enhancements: interactions?.RadarEnhancements, compare: interactions?.RadarCompare });
+  }
+  if (page === 'twitch-game') {
+    const { initTwitchDetail } = await import('../features/twitch/detail.js');
+    return initTwitchDetail();
   }
   if (page === 'twitch') {
     const { initTwitchPage } = await import('../features/twitch/index.js');

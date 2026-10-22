@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import { resolve } from 'node:path';
 import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
 
-const pages = ['index', 'games', 'upcoming', 'released', 'saved', 'date', 'explore', 'game', 'growth', 'analysis', 'twitch', 'scheduler', 'discover'];
+const pages = ['index', 'games', 'upcoming', 'released', 'saved', 'date', 'explore', 'game', 'growth', 'analysis', 'twitch', 'twitch-game', 'scheduler', 'discover'];
 const root = resolve(import.meta.dirname, 'src/pages');
 
 export default defineConfig({
