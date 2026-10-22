@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#e4dcf7">
+  <meta name="description" content="查看單款遊戲的 Twitch 歷史觀眾、開台數與篩選中位數，自訂日期、操作逐時趨勢並下載明細。">
+  <title>Twitch 歷史趨勢｜Game Trend Radar</title>
+  <link rel="icon" id="siteFavicon" type="image/svg+xml">
+  <script type="module" crossorigin src="/game-trend-radar/assets/app/twitch-game-C2BO9E36.js"></script>
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/contracts-CXfvy2kB.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/storage-BfizImGa.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-CDgGr8wL.js">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/bootstrap-oTuMO7h7.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/twitch-game-BoSM4Unv.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-C_gCAust.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/styles-YSx5EFqb.css">
+</head>
+<body data-page="twitch-game">
+  <a class="skip-link" href="#mainContent">跳到主要內容</a>
+  <div id="siteHeader"></div>
+  <main class="page-shell twitch-shell tw-detail-shell" id="mainContent">
+    <a class="tw-back" id="historyBack" href="./twitch.html">← Twitch 新作觀測</a>
+    <section class="tw-heading" aria-labelledby="pageTitle">
+      <div>
+        <p class="tw-eyebrow">THE OBSERVATION ROOM / HISTORY</p>
+        <h1 id="pageTitle">遊戲歷史趨勢</h1>
+        <p class="tw-intro" id="historyCategory">全球直播熱度 · 逐時觀測</p>
+        <p class="tw-intro" id="historySpan">選擇時間範圍，追蹤一款遊戲被看見的過程。</p>
+      </div>
+      <div class="tw-history-updated"><span id="historyUpdated"></span><button id="historyRefresh" type="button">重新載入 ↻</button></div>
+    </section>
+    <section class="tw-workspace" id="historyPanel" aria-labelledby="historyTitle" aria-busy="true">
+      <div class="tw-workspace-head"><div><span class="tw-section-no" aria-hidden="true">01</span><h2 id="historyTitle">歷史趨勢</h2></div><button id="historyExport" type="button" disabled>下載此區間 CSV ↓</button></div>
+      <div class="tw-history-controls">
+        <div class="tw-history-presets" role="group" aria-label="歷史時間範圍">
+          <button type="button" data-history-range="24h" aria-pressed="false">24 小時</button>
+          <button type="button" data-history-range="7d" aria-pressed="true">7 天</button>
+          <button type="button" data-history-range="30d" aria-pressed="false">30 天</button>
+        </div>
+        <form id="historyDates" class="tw-history-dates">
+          <label>開始日期<input id="historyStart" type="date" required></label>
+          <span aria-hidden="true">—</span>
+          <label>結束日期<input id="historyEnd" type="date" required></label>
+          <button type="submit">套用日期</button>
+        </form>
+      </div>
+      <p id="historyStatus" class="tw-detail-status" role="status" aria-live="polite">正在讀取逐時歷史…</p>
+      <div id="historyContent" hidden>
+        <p id="historyRangeLabel" class="tw-history-range-label"></p>
+        <div id="historySummary" class="tw-history-stats" aria-label="目前指標的區間統計"></div>
+        <div id="historyChart" class="tw-detail-chart"></div>
+        <p class="tw-detail-note">平均值僅計有效時段。無收集紀錄、未列入觀測與中位數待補均保留空白；未列入不代表觀眾為 0。自訂日期最多 31 天，可查詢更早的已保存紀錄。</p>
+        <details class="tw-hourly" open>
+          <summary>逐時明細 <span>查看數值與缺測狀態</span></summary>
+          <div class="tw-hourly-tools"><p>點選時間可在圖表查看該時段。</p><label>時間排序 <select id="historyOrder"><option value="desc">由新到舊</option><option value="asc">由舊到新</option></select></label></div>
+          <div class="tw-hourly-scroll" tabindex="0" role="region" aria-label="可橫向捲動的逐時明細表">
+            <table><thead><tr><th scope="col">時段（台灣）</th><th scope="col">總觀眾</th><th scope="col">開台數</th><th scope="col">篩選中位數</th><th scope="col">目前指標狀態</th></tr></thead><tbody id="historyTableBody"></tbody></table>
+          </div>
+          <div class="tw-history-pagination"><button id="historyPrevious" type="button">← 上一頁</button><span id="historyPagination"></span><button id="historyNext" type="button">下一頁 →</button></div>
+        </details>
+      </div>
+    </section>
+    <p class="tw-detail-method">總觀眾與開台數涵蓋全部頻道。篩選中位數只計免費追隨者 &gt; 1,000 且觀眾 ≥ 10 的頻道；追隨數待查時不顯示中位數，舊紀錄不回算新規則。所有時間以台灣時間顯示。</p>
+    <noscript>請啟用 JavaScript 以查看和操作歷史資料。</noscript>
+  </main>
+  <div id="siteFooter"></div>
+</body>
+</html>
