@@ -4,7 +4,7 @@ const first = '2026-09-30T00:00:00Z', last = '2026-10-03T23:00:00Z', latest = '2
 function fixtures() {
   const game = { name: 'Onimusha: Way of the Sword', display_name: '鬼武者 Way of the Sword', aliases: ['鬼武者', 'Onimusha'],
     steam_appids: ['2638890'], tracking_status: 'ended', sample_count: 95, peak_viewer_count: 14066,
-    first_hour: first, last_hour: last, months: ['2026-09', '2026-10'] };
+    first_hour: first, last_hour: last, months: ['2026-09', '2026-10'], box_art_url: 'https://static-cdn.jtvnw.net/ttv-boxart/42_IGDB-{width}x{height}.jpg' };
   const hours: Record<string, Record<string, string>> = { '2026-09': {}, '2026-10': { [latest]: latest } };
   const rows: Record<string, Record<string, any>> = { '2026-09': {}, '2026-10': {} };
   for (let n = 0; n < 95; n++) {
@@ -20,6 +20,7 @@ test.beforeEach(async ({ page }) => {
   const data = fixtures();
   await page.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
   await page.route('**/data/twitch_series/index.json', route => route.fulfill({ json: data.index }));
+  await page.route('https://static-cdn.jtvnw.net/ttv-boxart/42_IGDB-144x192.jpg', route => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="144" height="192"><rect width="144" height="192" fill="purple"/></svg>' }));
   for (const month of ['2026-09', '2026-10']) await page.route(`**/data/twitch_series/42/${month}.json`, route => route.fulfill({ json: {
     schema_version: 1, timezone: 'Asia/Taipei', game_id: '42', month, hours: data.rows[month],
   } }));
@@ -39,6 +40,8 @@ test('Chinese archive search opens retained history and returns with filters int
   await expect(card).toContainText('已結束追蹤');
   await expect(card).toContainText('95');
   await expect(card).toContainText('14,066');
+  await expect(card.locator('img')).toHaveAttribute('src', 'https://static-cdn.jtvnw.net/ttv-boxart/42_IGDB-144x192.jpg');
+  await expect.poll(() => card.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(144);
   await card.click();
   await expect(page.locator('#pageTitle')).toHaveText('鬼武者 Way of the Sword');
   await expect(page.locator('#historyEnd')).toHaveValue('2026-10-04');

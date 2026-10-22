@@ -22,10 +22,20 @@ export function createTwitchArchive({ $, signal }) {
   function card(game) {
     const link = node('a', 'tw-archive-card'); link.href = detailHref(game.id, location.search);
     const identity = node('div', 'tw-archive-identity');
+    const cover = node('span', 'tw-cover tw-archive-cover', game.displayName.charAt(0).toUpperCase());
+    cover.setAttribute('aria-hidden', 'true');
+    if (game.cover) {
+      const image = node('img'); image.alt = ''; image.width = 144; image.height = 192;
+      image.loading = 'lazy'; image.decoding = 'async';
+      image.addEventListener('error', () => image.remove(), { once: true, signal });
+      image.src = game.cover; cover.append(image);
+    }
+    const info = node('div', 'tw-archive-info');
     const badge = node('span', 'tw-state', archiveStates[game.status]);
     badge.dataset.tone = game.status === 'active' ? 'yes' : 'official';
     const title = node('h3', '', game.displayName); title.title = game.displayName;
-    identity.append(badge, title, node('p', '', game.name === game.displayName ? `TWITCH CATEGORY ${game.id}` : game.name));
+    info.append(badge, title, node('p', '', game.name === game.displayName ? `TWITCH CATEGORY ${game.id}` : game.name));
+    identity.append(cover, info);
     const period = node('div', 'tw-archive-period');
     period.append(node('span', '', '已保存觀測期間'), node('time', '', time(game.first)), node('time', '', `至 ${time(game.last)}`));
     const stats = node('dl', 'tw-archive-stats');

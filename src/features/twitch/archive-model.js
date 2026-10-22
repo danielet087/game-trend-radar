@@ -1,4 +1,4 @@
-import { canonicalID, count, timestamp } from './metrics.js';
+import { canonicalID, count, timestamp, safeURL } from './metrics.js';
 
 export const archiveStates = { all: '全部狀態', active: '追蹤中', ended: '已結束追蹤', untracked: '歷史紀錄', unknown: '狀態未確認' };
 export const archiveSorts = ['recent', 'peak', 'records', 'name'];
@@ -18,7 +18,9 @@ export function archiveGames(index) {
     if (!canonicalID(id) || !game || !timestamp(game.first_hour) || !timestamp(game.last_hour) || game.sample_count === 0) return [];
     const name = typeof game.name === 'string' ? game.name : id;
     const displayName = typeof game.display_name === 'string' && game.display_name.trim() ? game.display_name : name;
+    const cover = typeof game.box_art_url === 'string' ? game.box_art_url.replaceAll('{width}', '144').replaceAll('{height}', '192') : '';
     return [{ id, name, displayName, first: game.first_hour, last: game.last_hour,
+      cover: safeURL(cover, 'static-cdn.jtvnw.net'),
       status: Object.hasOwn(archiveStates, game.tracking_status) && game.tracking_status !== 'all' ? game.tracking_status : 'unknown',
       samples: count(game.sample_count), peak: count(game.peak_viewer_count),
       search: normalize([id, name, displayName, ...(Array.isArray(game.aliases) ? game.aliases : []),

@@ -12,7 +12,9 @@
 .tw-archive #archiveResults { border-top:1px solid #e8e0ee; }
 .tw-archive-card { display:grid; grid-template-columns:minmax(180px,1.6fr) minmax(165px,1fr) minmax(150px,1fr) 82px; gap:20px; align-items:center; color:inherit; padding:23px 25px; border-bottom:1px solid #e8e0ee; transition:background .15s; }
 .tw-archive-card:hover { background:#f7f2fc; }
-.tw-archive-identity { min-width:0; }
+.tw-archive-identity { display:flex; align-items:center; gap:14px; min-width:0; }
+.tw-archive-info { min-width:0; }
+.tw-archive-cover { width:60px; height:80px; }
 .tw-archive-identity h3 { margin:8px 0 4px; font-size:15px; line-height:1.5; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .tw-archive-identity p { font-size:10px; line-height:1.6; color:#8b7c96; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .tw-archive-period { display:grid; gap:4px; color:#6b5e77; font-size:11px; font-variant-numeric:tabular-nums; }
@@ -44,6 +46,7 @@
   .tw-archive-intro { padding:17px 18px 0; }
   .tw-archive-card { padding:20px 18px; }
   .tw-archive-identity { grid-column:1/-1; }
+  .tw-archive-cover { width:54px; height:72px; }
   .tw-archive-period { text-align:left; }
   .tw-archive-stats { text-align:right; gap:10px; }
   .tw-archive-open { grid-column:1/-1; }
