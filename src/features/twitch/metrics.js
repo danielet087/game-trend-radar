@@ -3,6 +3,7 @@ const HOUR = 3600000;
 const DEFAULT_FILTER = "signals";
 const DEFAULT_SORT = "median";
 const VIEWER_PRIORITY_THRESHOLD = 10000;
+const VIEWER_SECONDARY_THRESHOLD = 1000;
 const STREAMER_PRIORITY_THRESHOLD = 40;
 const AUDIENCE_RULE = "followers_gt_1000_viewers_gte_10_v1";
 function timestamp(value) {
@@ -32,4 +33,4 @@ function canonicalID(value) {
   return (typeof value === "string" || typeof value === "number") && /^[1-9]\d{0,15}$/.test(String(value)) ? String(value) : null;
 }
 
-export { SOURCES, HOUR, DEFAULT_FILTER, DEFAULT_SORT, VIEWER_PRIORITY_THRESHOLD, STREAMER_PRIORITY_THRESHOLD, AUDIENCE_RULE, timestamp, count, filteredAudience, safeURL, canonicalID };
+export { SOURCES, HOUR, DEFAULT_FILTER, DEFAULT_SORT, VIEWER_PRIORITY_THRESHOLD, VIEWER_SECONDARY_THRESHOLD, STREAMER_PRIORITY_THRESHOLD, AUDIENCE_RULE, timestamp, count, filteredAudience, safeURL, canonicalID };

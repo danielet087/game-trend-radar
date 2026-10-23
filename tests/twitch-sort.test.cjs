@@ -65,7 +65,7 @@ test('UI defaults, URL fallback, reset and HTML selection use the new default', 
   assert.match(ui,/state\.sort = D\.DEFAULT_SORT/);
   assert.match(ui,/\$\("gameSort"\)\.value = D\.DEFAULT_SORT/);
   assert.match(ui,/state\.sort === D\.DEFAULT_SORT/);
-  assert.match(html,/<option value="median" selected>篩選後中位數（萬人→40 台優先）<\/option>/);
+  assert.match(html,/<option value="median" selected>篩選後中位數（萬人／千人分組）<\/option>/);
 });
 
 
@@ -128,5 +128,5 @@ test('threshold groups do not change explicit total-viewer or total-streamer sor
 test('HTML refreshes the data asset and describes both inclusive thresholds', () => {
   const html = fs.readFileSync(path.join(__dirname,'../twitch.html'),'utf8');
   assert.match(html,/<script type="module"[^>]*src="\/game-trend-radar\/assets\/app\/twitch-/);
-  assert.match(html,/總觀眾 ≥ 10,000 人優先，再總開台 ≥ 40 台優先/);
+  assert.match(html,/總觀眾依 ≥ 10,000、1,000～9,999、＜ 1,000 人分組；每組再以總開台 ≥ 40 台優先/);
 });
