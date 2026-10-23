@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "generated_at": "2026-10-23T17:17:12.540482+00:00",
   "month": "2026-10",
+  "count": 68,
   "games": [
     {
       "appid": 2067820,
@@ -1159,21 +1161,21 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 5000040,
-        "twitch_game_id": "2065446830",
-        "igdb_id": "414866",
         "checked_at": "2026-10-20T03:15:02Z",
-        "source_database_revision": "135be3a76cda816a0d763411568f302e436e615ccc9709af9ef3052db85b3ed6",
+        "igdb_id": "414866",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 266,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "135be3a76cda816a0d763411568f302e436e615ccc9709af9ef3052db85b3ed6",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-20T03:15:02Z",
-          "viewer_count": 50903,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 50903
+        },
+        "twitch_game_id": "2065446830"
       },
       "content_enrichment_signature": "5000040:28:2026-10-07",
       "storage_version": 2,
@@ -5633,7 +5635,6 @@
       "display_name": "Shipping Store Simulator 2037",
       "display_name_source": "english",
       "name_en": "Shipping Store Simulator 2037",
-      "name_en_traditional": "Shipping Store Simulator 2037",
       "language_support": {
         "tchinese": false,
         "schinese": true,
@@ -5781,14 +5782,15 @@
         "source_database_generation": 450,
         "source_database_namespace": "danielet087/game-trend-radar@main",
         "source_enrollment": {
-          "min_viewers": 7000,
-          "observed_at": "2026-10-22T19:21:50Z",
           "source": "igdb_first_release_date",
-          "viewer_count": 8406
+          "observed_at": "2026-10-22T19:21:50Z",
+          "viewer_count": 8406,
+          "min_viewers": 7000
         }
       },
       "content_enrichment_signature": "4098030:3220:2026-10-14",
-      "storage_version": 2
+      "storage_version": 2,
+      "community_url": "https://steamcommunity.com/app/4098030/"
     },
     {
       "appid": 3492120,
@@ -6956,21 +6958,21 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4071650,
-        "twitch_game_id": "1757053009",
-        "igdb_id": "410341",
         "checked_at": "2026-10-21T21:19:25Z",
-        "source_database_revision": "2a84ee1559066452f55653072a195f2c04e894dce7886549a38b757b68032ee6",
+        "igdb_id": "410341",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 380,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "2a84ee1559066452f55653072a195f2c04e894dce7886549a38b757b68032ee6",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-20T21:16:58Z",
-          "viewer_count": 10427,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 10427
+        },
+        "twitch_game_id": "1757053009"
       },
       "content_enrichment_signature": "4071650:1225:2026-10-16",
       "storage_version": 2,
@@ -7613,21 +7615,21 @@
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3826670,
-        "twitch_game_id": "258824392",
-        "igdb_id": "351111",
         "checked_at": "2026-10-21T19:23:16Z",
-        "source_database_revision": "2a84ee1559066452f55653072a195f2c04e894dce7886549a38b757b68032ee6",
+        "igdb_id": "351111",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 380,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "2a84ee1559066452f55653072a195f2c04e894dce7886549a38b757b68032ee6",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-20T18:27:34Z",
-          "viewer_count": 20545,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 20545
+        },
+        "twitch_game_id": "258824392"
       },
       "content_enrichment_signature": "3826670:2475:2026-10-17",
       "storage_version": 2,
@@ -7957,21 +7959,21 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 1761910,
-        "twitch_game_id": "1680828407",
-        "igdb_id": "202129",
         "checked_at": "2026-10-21T23:18:23Z",
-        "source_database_revision": "2a84ee1559066452f55653072a195f2c04e894dce7886549a38b757b68032ee6",
+        "igdb_id": "202129",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 380,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "2a84ee1559066452f55653072a195f2c04e894dce7886549a38b757b68032ee6",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-21T23:18:23Z",
-          "viewer_count": 8761,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 8761
+        },
+        "twitch_game_id": "1680828407"
       },
       "content_enrichment_signature": "1761910:4051:2026-10-19",
       "storage_version": 2,
@@ -8326,21 +8328,21 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 2315050,
-        "twitch_game_id": "803237359",
-        "igdb_id": "393015",
         "checked_at": "2026-10-20T15:24:17Z",
-        "source_database_revision": "ceb63aac2f42cf0689bf61cf398a5ae530e3b2b76adbbd8d311441a0790d449e",
+        "igdb_id": "393015",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 301,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "ceb63aac2f42cf0689bf61cf398a5ae530e3b2b76adbbd8d311441a0790d449e",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-20T15:24:17Z",
-          "viewer_count": 7592,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 7592
+        },
+        "twitch_game_id": "803237359"
       }
     },
     {
@@ -8645,21 +8647,21 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 2087540,
-        "twitch_game_id": "764710809",
-        "igdb_id": "415180",
         "checked_at": "2026-10-21T21:19:25Z",
-        "source_database_revision": "f9bec56ff4dd613fddb2260769c76817bc9bdbc86a03bf00ffe0e776f1be4ddf",
+        "igdb_id": "415180",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 368,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "f9bec56ff4dd613fddb2260769c76817bc9bdbc86a03bf00ffe0e776f1be4ddf",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-21T21:19:25Z",
-          "viewer_count": 35658,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 35658
+        },
+        "twitch_game_id": "764710809"
       },
       "community_url": "https://steamcommunity.com/app/2087540/"
     },
@@ -8808,21 +8810,21 @@
       "release_date_normalization": "steam_store_date_matches_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 5341070,
-        "twitch_game_id": "698857838",
-        "igdb_id": "424513",
         "checked_at": "2026-10-21T20:16:49Z",
-        "source_database_revision": "8771a4e90429a04c2fdd4ef588c1308a12caab22cf948ee92e3f1f720abac772",
+        "igdb_id": "424513",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 366,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "8771a4e90429a04c2fdd4ef588c1308a12caab22cf948ee92e3f1f720abac772",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-21T20:16:49Z",
-          "viewer_count": 11264,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 11264
+        },
+        "twitch_game_id": "698857838"
       },
       "content_enrichment_signature": "5341070:79:2026-10-21",
       "storage_version": 2,
@@ -8838,7 +8840,7 @@
       "release_precision": "day",
       "followers": 10091,
       "follower_checked_at": "2026-09-22T16:14:24.547567+08:00",
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3486530/705ce263956aa328b857ec05e6c9e0bb20091ee1/capsule_616x353.jpg?t=1792627941",
+      "capsule_image": "6ecaf52004ceb92cc994f3c0d452688056f7a231/capsule_231x87.jpg",
       "store_url": "https://store.steampowered.com/app/3486530/",
       "community_url": "https://steamcommunity.com/app/3486530/",
       "name_en": "Stupid Never Dies",
@@ -8979,27 +8981,26 @@
       "categories_checked_at": "2026-10-22T19:40:42Z",
       "description_source_url": "https://store.steampowered.com/app/3486530/",
       "description_next_check_at": "2026-10-29T05:31:06Z",
-      "name_en_traditional": "Stupid Never Dies",
       "steam_type": "game",
       "release_store_date": "2026-10-21",
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3486530,
-        "twitch_game_id": "723030544",
-        "igdb_id": "381212",
         "checked_at": "2026-10-22T16:22:32Z",
-        "source_database_revision": "54af9249a4d42577d9130abf898158c8c3144bcbb0a48098f4db9af5ad0b1958",
+        "igdb_id": "381212",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 435,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "54af9249a4d42577d9130abf898158c8c3144bcbb0a48098f4db9af5ad0b1958",
         "source_enrollment": {
           "min_viewers": 7000,
           "observed_at": "2026-10-22T16:22:32Z",
           "source": "igdb_first_release_date",
           "viewer_count": 9439
-        }
+        },
+        "twitch_game_id": "723030544"
       }
     },
     {
@@ -9137,21 +9138,21 @@
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 5279620,
-        "twitch_game_id": "344271712",
-        "igdb_id": "423620",
         "checked_at": "2026-10-22T03:14:29Z",
-        "source_database_revision": "8c8bdd3f4b88fd64448b8d40cbbb61ac617ab90ced40bf592577f8ed3cf8f780",
+        "igdb_id": "423620",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 394,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "8c8bdd3f4b88fd64448b8d40cbbb61ac617ab90ced40bf592577f8ed3cf8f780",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-22T03:14:29Z",
-          "viewer_count": 52610,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 52610
+        },
+        "twitch_game_id": "344271712"
       },
       "content_enrichment_signature": "5279620:10:2026-10-22",
       "storage_version": 2,
@@ -9167,7 +9168,7 @@
       "release_precision": "day",
       "followers": 27031,
       "follower_checked_at": "2026-09-22T16:03:43.577345+08:00",
-      "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3259780/6591a4998a16491b6a7f1d3ad2b948f3da15b52e/capsule_616x353.jpg?t=1792685446",
+      "capsule_image": "6861c59eb09396b7370536d494c1c1f33f684f14/capsule_231x87.jpg",
       "store_url": "https://store.steampowered.com/app/3259780/",
       "community_url": "https://steamcommunity.com/app/3259780/",
       "name_en": "FINAL FANTASY RESONANCE",
@@ -9297,27 +9298,26 @@
       "categories_checked_at": "2026-10-22T19:40:22Z",
       "description_source_url": "https://store.steampowered.com/app/3259780/",
       "description_next_check_at": "2026-10-29T05:31:06Z",
-      "name_en_traditional": "FINAL FANTASY RESONANCE",
       "steam_type": "game",
       "release_store_date": "2026-10-22",
       "release_date_normalization": "steam_utc_date_normalized_to_taipei",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3259780,
-        "twitch_game_id": "1954784138",
-        "igdb_id": "405454",
         "checked_at": "2026-10-22T17:24:35Z",
-        "source_database_revision": "54af9249a4d42577d9130abf898158c8c3144bcbb0a48098f4db9af5ad0b1958",
+        "igdb_id": "405454",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 435,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "54af9249a4d42577d9130abf898158c8c3144bcbb0a48098f4db9af5ad0b1958",
         "source_enrollment": {
           "min_viewers": 7000,
           "observed_at": "2026-10-22T17:24:35Z",
           "source": "igdb_first_release_date",
           "viewer_count": 9235
-        }
+        },
+        "twitch_game_id": "1954784138"
       }
     },
     {
@@ -9326,7 +9326,6 @@
       "display_name": "ALYSSA",
       "display_name_source": "english",
       "name_en": "ALYSSA",
-      "name_en_traditional": "ALYSSA",
       "language_support": {
         "tchinese": false,
         "schinese": false,
@@ -9465,24 +9464,25 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 2420580,
-        "twitch_game_id": "1167018256",
-        "igdb_id": "271659",
         "checked_at": "2026-10-22T18:22:54Z",
-        "source_database_revision": "1b58f38976348fd50d125407f20534fc3a5fbe2a8448eac47a6b0bbafc44a839",
+        "igdb_id": "271659",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 437,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "1b58f38976348fd50d125407f20534fc3a5fbe2a8448eac47a6b0bbafc44a839",
         "source_enrollment": {
           "min_viewers": 7000,
           "observed_at": "2026-10-22T18:22:54Z",
           "source": "igdb_first_release_date",
           "viewer_count": 11593
-        }
+        },
+        "twitch_game_id": "1167018256"
       },
       "content_enrichment_signature": "2420580:631:2026-10-23",
-      "storage_version": 2
+      "storage_version": 2,
+      "community_url": "https://steamcommunity.com/app/2420580/"
     },
     {
       "appid": 3960600,
@@ -10679,21 +10679,21 @@
         5
       ],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 5037510,
-        "twitch_game_id": "1046135592",
-        "igdb_id": "423125",
         "checked_at": "2026-10-20T20:18:02Z",
-        "source_database_revision": "bef05d1db233ab4cfa5bcc2b6985e9987ae44120f9558ada0e7357858d3f6d7d",
+        "igdb_id": "423125",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 306,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "bef05d1db233ab4cfa5bcc2b6985e9987ae44120f9558ada0e7357858d3f6d7d",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-20T20:18:02Z",
-          "viewer_count": 11558,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 11558
+        },
+        "twitch_game_id": "1046135592"
       },
       "content_enrichment_signature": "5037510:28:2026-10-29",
       "storage_version": 2,
@@ -11168,7 +11168,5 @@
       "description_source_url": "https://store.steampowered.com/app/1799840/",
       "description_next_check_at": "2026-10-29T05:31:06Z"
     }
-  ],
-  "generated_at": "2026-10-23T11:31:14Z",
-  "count": 68
+  ]
 }

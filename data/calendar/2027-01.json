@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "generated_at": "2026-10-23T17:17:12.540482+00:00",
   "month": "2027-01",
+  "count": 6,
   "games": [
     {
       "appid": 3660710,
@@ -159,7 +161,6 @@
       "name_zh_cn": "超级枪弹辩驳２×２",
       "name_zh_tw_traditional": "超級槍彈辯駁２×２",
       "name_zh_cn_traditional": "超級槍彈辯駁２×２",
-      "name_en_traditional": "Danganronpa 2x2",
       "language_support": {
         "tchinese": true,
         "schinese": true,
@@ -904,24 +905,22 @@
       "steam_type": "game",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 1853440,
-        "twitch_game_id": "92098527",
-        "igdb_id": "362040",
         "checked_at": "2026-10-21T18:20:59Z",
-        "source_database_revision": "ac5673db2eb10d226eb3feaf2649771ee02c6d508c6f6317897f1dc0781a5313",
+        "igdb_id": "362040",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 359,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "ac5673db2eb10d226eb3feaf2649771ee02c6d508c6f6317897f1dc0781a5313",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-21T18:20:59Z",
-          "viewer_count": 11375,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 11375
+        },
+        "twitch_game_id": "92098527"
       }
     }
-  ],
-  "generated_at": "2026-10-22T23:19:23+00:00",
-  "count": 6
+  ]
 }
