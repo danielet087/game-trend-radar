@@ -38,6 +38,8 @@ concurrency:
 
 jobs:
   snapshot:
+    # Keep the real job/step failures; the notification job owns the email threshold.
+    continue-on-error: true
     if: vars.RADAR_DATABASE_MIGRATION_PAUSE != '1'
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -66,3 +68,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds" --silent
+
+  notification:
+    needs: [snapshot]
+    if: always() && !cancelled() && vars.RADAR_DATABASE_MIGRATION_PAUSE != '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: danielet087/game-trend-radar-backend/.github/actions/scheduled-failure-notice@202d8a9945c5cb0a2f182a327dd533ac98d8178e
+        with:
+          workflow-key: radar-insights.yml
+          job-name: snapshot
+          completion-step: "Derive current activity without calling Steam"
