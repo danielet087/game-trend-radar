@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-26T19:04:40.367107Z",
+  "generated_at": "2026-10-26T20:05:33.435689Z",
   "today_taipei": "2026-10-27",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-10-26T19:03:19.134056Z",
-    "group_resolution_updated_at": "2026-10-26T19:02:21.584084Z",
+    "checkpoint_updated_at": "2026-10-26T20:03:57.678877Z",
+    "group_resolution_updated_at": "2026-10-26T20:02:53.526051Z",
     "candidate_state_updated_at": "2026-10-26T17:15:59.647388Z",
     "prefilter_updated_at": "2026-10-26T17:15:59.621986Z",
     "eligible_screened_at": "2026-10-26T17:16:00.391958Z",
-    "twitch_import_updated_at": "2026-10-26T19:04:39.838791Z",
+    "twitch_import_updated_at": "2026-10-26T20:04:49.420935Z",
     "last_official_success_at": "2026-10-26T18:28:04.836741Z",
     "queue_projection": "official_collector_make_queue"
   },
@@ -21,53 +21,53 @@
     "added_from_daily": 0,
     "eligible_count": 4822,
     "parked_group_xml_appids": [],
-    "combined_pending_now": 56,
+    "combined_pending_now": 57,
     "completed_legacy": 408,
     "completed_new": 3684,
-    "twitch_priority_pending": 2
+    "twitch_priority_pending": 3
   },
   "summary": {
     "normal_pending": 54,
-    "twitch_priority_pending": 2,
+    "twitch_priority_pending": 3,
     "parked": 0,
-    "ready_pending": 56,
-    "followers_ready_pending": 55,
+    "ready_pending": 57,
+    "followers_ready_pending": 56,
     "awaiting_group_pending": 1,
-    "total_pending": 56,
-    "today_attempts": 1,
+    "total_pending": 57,
+    "today_attempts": 2,
     "today_successes": 0,
-    "today_429": 1
+    "today_429": 2
   },
   "group_resolution_api_cooldown": {
     "status": "available",
     "retry_at": null,
-    "observed_at": "2026-10-26T19:02:21.584084Z",
+    "observed_at": "2026-10-26T20:02:53.526051Z",
     "attempts": 0,
     "source": "Steam ISteamUser/ResolveVanityURL"
   },
   "cooldown": {
     "active": true,
-    "until": "2026-10-26T19:17:50.138434Z",
+    "until": "2026-10-26T20:33:25.454132Z",
     "reason": "steam_http_429",
-    "next_eligible_slot": "2026-10-26T20:00:00Z",
+    "next_eligible_slot": "2026-10-26T21:00:00Z",
     "schedule_taipei": "03:00–23:00 hourly"
   },
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-10-27T03:02:49.682930+08:00",
-    "last_updated_at": "2026-10-27T03:03:19.134056+08:00",
-    "finished_at": "2026-10-27T03:03:19.134056+08:00",
+    "started_at": "2026-10-27T04:03:24.758971+08:00",
+    "last_updated_at": "2026-10-27T04:03:57.678877+08:00",
+    "finished_at": "2026-10-27T04:03:57.678877+08:00",
     "stop_reason": "first_http_429",
-    "last_appid": 3310570,
-    "last_name": "Night Plane",
+    "last_appid": 1566200,
+    "last_name": "Tape to Tape",
     "requests_this_run": 1,
     "official_new_this_run": 0,
     "http_429_this_run": 1,
     "manual_cooldown_override": false,
     "request_limit": 90,
-    "run_id": "40382789732",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/40382789732"
+    "run_id": "40391755628",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/40391755628"
   },
   "queue": [
     {
@@ -868,23 +868,31 @@
       },
       "last_attempt_at": "2026-10-26T19:02:49.943296Z",
       "last_attempt_status": "rate_limited"
+    },
+    {
+      "position": 57,
+      "appid": 1566200,
+      "name": "Tape to Tape",
+      "steam_url": "https://store.steampowered.com/app/1566200/",
+      "release_date": "2026-10-24",
+      "source": "twitch_steam_discovery",
+      "priority": true,
+      "state": "cooldown",
+      "group_id64": "103582791470771768",
+      "group_resolution": {
+        "status": "resolved",
+        "checked_at": "2026-10-26T20:02:53.346532Z",
+        "source": "Steam ISteamUser/ResolveVanityURL",
+        "attempted": true,
+        "http": 200,
+        "api_result": 1
+      },
+      "last_attempt_at": "2026-10-26T20:03:25.199840Z",
+      "last_attempt_status": "rate_limited"
     }
   ],
   "parked": [],
   "events": [
-    {
-      "at": "2026-10-24T23:16:14.571249Z",
-      "kind": "official_attempt",
-      "appid": 5278380,
-      "name": "The Millionth Ticket",
-      "status": "ok",
-      "http": 200,
-      "source": "fresh_daily_prefilter_unresolved",
-      "official_followers": 1,
-      "retry_at": null,
-      "run_id": "40140910724",
-      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/40140910724"
-    },
     {
       "at": "2026-10-24T23:16:44.571375Z",
       "kind": "official_attempt",
@@ -2171,6 +2179,19 @@
       "retry_at": "2026-10-26T19:17:50.138434Z",
       "run_id": "40382789732",
       "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/40382789732"
+    },
+    {
+      "at": "2026-10-26T20:03:25.199840Z",
+      "kind": "official_attempt",
+      "appid": 1566200,
+      "name": "Tape to Tape",
+      "status": "rate_limited",
+      "http": 429,
+      "source": "twitch_steam_discovery",
+      "official_followers": null,
+      "retry_at": "2026-10-26T20:33:25.454132Z",
+      "run_id": "40391755628",
+      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/40391755628"
     }
   ],
   "events_limit": 100
