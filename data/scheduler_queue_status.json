@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-26T03:08:37.706703Z",
+  "generated_at": "2026-10-26T04:03:54.526102Z",
   "today_taipei": "2026-10-26",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-10-26T03:07:04.440754Z",
-    "group_resolution_updated_at": "2026-10-26T00:04:29.235239Z",
+    "checkpoint_updated_at": "2026-10-26T04:02:46.082169Z",
+    "group_resolution_updated_at": "2026-10-26T04:02:21.328895Z",
     "candidate_state_updated_at": "2026-10-25T23:13:18.012561Z",
     "prefilter_updated_at": "2026-10-25T23:13:17.987152Z",
     "eligible_screened_at": "2026-10-25T23:13:18.751965Z",
-    "twitch_import_updated_at": "2026-10-26T03:08:37.189368Z",
+    "twitch_import_updated_at": "2026-10-26T04:03:53.958661Z",
     "last_official_success_at": "2026-10-26T03:07:04.363966Z",
     "queue_projection": "official_collector_make_queue"
   },
@@ -41,7 +41,7 @@
   "group_resolution_api_cooldown": {
     "status": "available",
     "retry_at": null,
-    "observed_at": "2026-10-26T00:04:29.235239Z",
+    "observed_at": "2026-10-26T04:02:21.328895Z",
     "attempts": 0,
     "source": "Steam ISteamUser/ResolveVanityURL"
   },
@@ -49,25 +49,23 @@
     "active": false,
     "until": null,
     "reason": null,
-    "next_eligible_slot": "2026-10-26T04:00:00Z",
+    "next_eligible_slot": "2026-10-26T05:00:00Z",
     "schedule_taipei": "03:00–23:00 hourly"
   },
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-10-26T11:03:03.593636+08:00",
-    "last_updated_at": "2026-10-26T11:07:04.440754+08:00",
-    "finished_at": "2026-10-26T11:07:04.440754+08:00",
-    "stop_reason": "batch_request_limit",
-    "last_appid": 4876650,
-    "last_name": "Never Sort By Color",
-    "requests_this_run": 9,
-    "official_new_this_run": 9,
+    "started_at": "2026-10-26T12:02:45.666813+08:00",
+    "last_updated_at": "2026-10-26T12:02:46.082169+08:00",
+    "finished_at": "2026-10-26T12:02:46.082169+08:00",
+    "stop_reason": "awaiting_group_resolution_no_request",
+    "requests_this_run": 0,
+    "official_new_this_run": 0,
     "http_429_this_run": 0,
     "manual_cooldown_override": false,
     "request_limit": 90,
-    "run_id": "40261882033",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/40261882033"
+    "run_id": "40266819918",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/40266819918"
   },
   "queue": [
     {
@@ -82,11 +80,11 @@
       "group_id64": null,
       "group_resolution": {
         "status": "not_found",
-        "checked_at": "2026-10-26T00:04:28.964173Z",
+        "checked_at": "2026-10-26T04:02:21.107355Z",
         "source": "Steam ISteamUser/ResolveVanityURL",
         "attempted": true,
         "http": 200,
-        "retry_at": "2026-10-26T03:04:28.964173Z",
+        "retry_at": "2026-10-26T07:02:21.107355Z",
         "api_result": 42
       },
       "last_attempt_at": null,
