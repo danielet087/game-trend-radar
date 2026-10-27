@@ -34,7 +34,7 @@ test('the full-history cooldown onset and confirmation survive date changes with
   await page.goto('twitch-game.html?game=42&range=24h');
   const panel = page.locator('#historyCooldown');
   await expect(panel).toHaveAttribute('data-cooldown-status', 'cooled');
-  await expect(page.locator('#cooldownStatus')).toHaveText('已過氣（依雷達規則）');
+  await expect(page.locator('#cooldownStatus')).toHaveText('已退燒');
   await expect(page.locator('#cooldownSummary')).toContainText('2026/10/01 00:00');
   await expect(page.locator('#cooldownSummary')).toContainText('2026/10/04 00:00');
   await expect(page.locator('#cooldownRange')).toContainText('2026/09/29');
@@ -74,7 +74,7 @@ test('ending tracking is not interpreted as a decline', async ({ page }) => {
   await mock(page, fixtures(120, 'ended', false));
   await page.goto('twitch-game.html?game=42');
   await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'watching');
-  await expect(page.locator('#cooldownStatus')).not.toContainText('已過氣');
+  await expect(page.locator('#cooldownStatus')).not.toContainText('已退燒');
   await expect(page.locator('#cooldownSummary')).not.toContainText('2026/10/01 00:00');
 });
 
@@ -114,7 +114,7 @@ for (const missingHours of [12, 13]) {
     await page.goto('twitch-game.html?game=42');
     await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', missingHours === 12 ? 'cooled' : 'suspected');
     await expect(page.locator('#cooldownDailyEvidence')).toContainText(`${24 - missingHours} / 24`);
-    if (missingHours === 13) await expect(page.locator('#cooldownStatus')).not.toContainText('已過氣');
+    if (missingHours === 13) await expect(page.locator('#cooldownStatus')).not.toContainText('已退燒');
   });
 }
 
@@ -127,7 +127,7 @@ test('a 50 percent fall to 50,000 viewers stays above the fixed threshold', asyn
   await page.goto('twitch-game.html?game=42');
   await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'watching');
   await expect(page.locator('#cooldownSummary')).toContainText('50,000');
-  await expect(page.locator('#cooldownStatus')).not.toContainText('已過氣');
+  await expect(page.locator('#cooldownStatus')).not.toContainText('已退燒');
 });
 
 for (const elapsedHours of [5, 12, 13]) {
