@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "generated_at": "2026-10-28T23:19:51.512190+00:00",
+  "generated_at": "2026-10-29T23:17:16.148312+00:00",
   "month": "2026-11",
-  "count": 22,
+  "count": 24,
   "games": [
     {
       "appid": 1892100,
@@ -355,21 +355,21 @@
       "store_url": "https://store.steampowered.com/app/3218230/",
       "community_url": "https://steamcommunity.com/app/3218230/",
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 3218230,
-        "twitch_game_id": "1312907092",
-        "igdb_id": "317622",
         "checked_at": "2026-10-27T21:18:02Z",
-        "source_database_revision": "6d9042997a26d18a9fbc90420812c9459570e2ea23bf2c8ab6566e83a1839e29",
+        "igdb_id": "317622",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 737,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "6d9042997a26d18a9fbc90420812c9459570e2ea23bf2c8ab6566e83a1839e29",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-19T17:22:18Z",
-          "viewer_count": 45887,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 45887
+        },
+        "twitch_game_id": "1312907092"
       },
       "display_name": "ArcheAge Chronicles",
       "display_name_source": "english",
@@ -1501,6 +1501,59 @@
       "description_next_check_at": "2026-10-29T05:31:06Z"
     },
     {
+      "appid": 5160800,
+      "name": "Find The Needle",
+      "name_en": "Find The Needle",
+      "release_raw": "2026-11-06",
+      "release_start": "2026-11-06",
+      "release_end": "2026-11-06",
+      "release_precision": "day",
+      "release_display_precision": "date_full",
+      "release_display_provider": "Steam IStoreBrowseService/GetItems",
+      "release_date_basis": "steam_store_browse_verified_full_date",
+      "release_date_timezone": "Asia/Taipei",
+      "release_time_utc": "2026-11-06T15:47:00Z",
+      "release_time_source": "Steam IStoreBrowseService/GetItems",
+      "release_timestamp_taipei_date": "2026-11-06",
+      "release_date_conflict": false,
+      "release_store_date": "2026-11-06",
+      "release_date_normalization": "steam_store_date_matches_taipei",
+      "release_date_verified_at": "2026-10-29T01:37:42.743101Z",
+      "post_followers_store_verified": true,
+      "post_followers_store_verified_at": "2026-10-29T01:37:42.743101Z",
+      "followers": 8087,
+      "follower_checked_at": "2026-10-29T09:03:41.094052+08:00",
+      "follower_source": "Steam Community XML memberCount",
+      "official_ge5000": true,
+      "sexual_content_screened": true,
+      "steam_type": "game",
+      "content_descriptorids": [
+        5
+      ],
+      "store_url": "https://store.steampowered.com/app/5160800/",
+      "community_url": "https://steamcommunity.com/app/5160800/",
+      "twitch_admission": {
+        "schema_version": 1,
+        "method": "twitch_igdb_external_steam_v1",
+        "appid": 5160800,
+        "twitch_game_id": "1458901309",
+        "igdb_id": "415859",
+        "checked_at": "2026-10-28T05:13:55Z",
+        "source_database_revision": "57f05fc7e3ba904e7fcbdb87d9298feb3095daa5c9dc76aebc8a241e7b51f16e",
+        "source_database_generation": 798,
+        "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_enrollment": {
+          "source": "igdb_first_release_date",
+          "observed_at": "2026-10-03T16:12:05Z",
+          "viewer_count": 7542,
+          "min_viewers": 7000
+        }
+      },
+      "display_name": "Find The Needle",
+      "display_name_source": "english",
+      "storage_version": 2
+    },
+    {
       "appid": 2522120,
       "name": "Airframe Ultra",
       "release_raw": "2026-11-06",
@@ -1988,6 +2041,34 @@
       "description_next_check_at": "2026-10-30T11:31:10Z"
     },
     {
+      "appid": 3218570,
+      "follower_checked_at": "2026-10-29T09:33:24.473826+08:00",
+      "follower_source": "Steam Community XML memberCount",
+      "followers": 6569,
+      "name": "TANUKI: Pon's Summer",
+      "name_en": "TANUKI: Pon's Summer",
+      "official_ge5000": true,
+      "post_followers_store_verified": true,
+      "post_followers_store_verified_at": "2026-10-29T01:33:24.605282+00:00",
+      "release_date_basis": "steam_store_browse_verified_full_date",
+      "release_date_conflict": false,
+      "release_date_timezone": "Asia/Taipei",
+      "release_date_verified_at": "2026-10-29T01:33:24.605282+00:00",
+      "release_display_precision": "date_full",
+      "release_display_provider": "Steam IStoreBrowseService/GetItems",
+      "release_end": "2026-11-10",
+      "release_precision": "day",
+      "release_raw": "2026-11-10",
+      "release_start": "2026-11-10",
+      "release_time_source": "Steam IStoreBrowseService/GetItems",
+      "release_time_utc": "2026-11-10T10:00:00Z",
+      "release_timestamp_taipei_date": "2026-11-10",
+      "store_url": "https://store.steampowered.com/app/3218570/",
+      "display_name": "TANUKI: Pon's Summer",
+      "display_name_source": "english",
+      "storage_version": 2
+    },
+    {
       "appid": 2826790,
       "name": "Stormforge",
       "release_raw": "2026-11-11",
@@ -2188,21 +2269,21 @@
       "store_url": "https://store.steampowered.com/app/4530370/",
       "community_url": "https://steamcommunity.com/app/4530370/",
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4530370,
-        "twitch_game_id": "1000178598",
-        "igdb_id": "420884",
         "checked_at": "2026-10-28T19:18:27Z",
-        "source_database_revision": "0234744383f7215e4018b395ac4cde46ab19cbbb53dcf405899b4816f2093261",
+        "igdb_id": "420884",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 783,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "0234744383f7215e4018b395ac4cde46ab19cbbb53dcf405899b4816f2093261",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-28T19:18:27Z",
-          "viewer_count": 9056,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 9056
+        },
+        "twitch_game_id": "1000178598"
       },
       "display_name": "Football Manager 27",
       "display_name_source": "english",
@@ -2351,21 +2432,21 @@
       "steam_type": "game",
       "content_descriptorids": [],
       "twitch_admission": {
-        "schema_version": 1,
-        "method": "twitch_igdb_external_steam_v1",
         "appid": 4876650,
-        "twitch_game_id": "173822689",
-        "igdb_id": "411710",
         "checked_at": "2026-10-25T21:15:51Z",
-        "source_database_revision": "f7500d469769de9ca9fbbe2daa681641d7c1fb16afcbd2029bca102ca9955746",
+        "igdb_id": "411710",
+        "method": "twitch_igdb_external_steam_v1",
+        "schema_version": 1,
         "source_database_generation": 630,
         "source_database_namespace": "danielet087/game-trend-radar@main",
+        "source_database_revision": "f7500d469769de9ca9fbbe2daa681641d7c1fb16afcbd2029bca102ca9955746",
         "source_enrollment": {
-          "source": "igdb_first_release_date",
+          "min_viewers": 7000,
           "observed_at": "2026-10-25T21:15:51Z",
-          "viewer_count": 8065,
-          "min_viewers": 7000
-        }
+          "source": "igdb_first_release_date",
+          "viewer_count": 8065
+        },
+        "twitch_game_id": "173822689"
       },
       "content_enrichment_signature": "4876650:2277:2026-11-11",
       "storage_version": 2,

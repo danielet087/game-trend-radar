@@ -143,21 +143,21 @@
     5
   ],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 3310570,
-    "twitch_game_id": "999744789",
-    "igdb_id": "378426",
     "checked_at": "2026-10-26T18:18:38Z",
-    "source_database_revision": "004d740cc63e3d3d60315c3a70c6b6c7eef5b3a9b89743177b372cb0839343ff",
+    "igdb_id": "378426",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 681,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "004d740cc63e3d3d60315c3a70c6b6c7eef5b3a9b89743177b372cb0839343ff",
     "source_enrollment": {
-      "source": "igdb_first_release_date",
+      "min_viewers": 7000,
       "observed_at": "2026-10-26T18:18:38Z",
-      "viewer_count": 11953,
-      "min_viewers": 7000
-    }
+      "source": "igdb_first_release_date",
+      "viewer_count": 11953
+    },
+    "twitch_game_id": "999744789"
   },
   "content_enrichment_signature": "3310570:1156:2026-10-27",
   "storage_version": 2,
