@@ -1,1 +1,0 @@
-import{t as e}from"./bootstrap-B4KPw9Wp.js";/* empty css             *//* empty css               */e(`released`).catch(e=>{console.error(`Unable to initialize game radar:`,e);let t=document.getElementById(`notice`)||document.getElementById(`dataStatus`);t&&(t.hidden=!1,t.textContent=`網頁暫時無法載入，請重新整理後再試。`)});
