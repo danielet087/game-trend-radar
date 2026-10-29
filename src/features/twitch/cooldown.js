@@ -10,6 +10,7 @@ const at = value => value && Number.isFinite(Date.parse(value)) ? clock.format(n
 const shortAt = value => value && Number.isFinite(Date.parse(value)) ? shortClock.format(new Date(value)) : '—';
 const compact = value => value >= 10000 ? `${fmt(value / 10000)}萬` : fmt(value);
 const statuses = {
+  not_popular: '尚未達熱門門檻',
   insufficient: '資料不足，尚無法判定', watching: '尚未符合退燒條件', suspected: '低於門檻，等待滿 3 天',
   cooled: '已退燒', recovered: '已回到 3,000 人門檻', gap: '最新資料不足，狀態待確認',
 };
@@ -55,11 +56,11 @@ export function createCooldown(root) {
   const section = el('span', 'tw-section-no', '02'); section.setAttribute('aria-hidden', 'true');
   const title = el('h2', '', '熱度退潮時間點'); title.id = 'cooldownTitle';
   heading.append(section, title); head.append(heading, el('span', 'tw-cooldown-scope', '全期判定'));
-  const intro = el('p', 'tw-cooldown-intro', '每日觀眾中位數連續 3 天低於 3,000 人，即確認退燒。使用該遊戲的 Twitch 逐時總觀眾，依台灣時間統計已結束的日期；每天最多容許缺 12 小時，不補零。此圖使用全部已保存紀錄，不受上方日期範圍裁切。');
+  const intro = el('p', 'tw-cooldown-intro', '每日觀眾中位數曾達 3,000 人，才啟用退燒檢查；之後連續 3 天低於 3,000 人，即確認退燒。未曾達標時顯示「尚未達熱門門檻」，不累積退燒天數。使用該遊戲的 Twitch 逐時總觀眾，依台灣時間統計已結束的日期；每天最多容許缺 12 小時，不補零。此圖使用全部已保存紀錄，不受上方日期範圍裁切。');
   const range = el('p', 'tw-cooldown-range'); range.id = 'cooldownRange';
   const releaseSummary = el('div', 'tw-cooldown-release'); releaseSummary.id = 'cooldownReleaseSummary';
   const controls = el('div', 'tw-cooldown-controls');
-  const rule = el('p', 'tw-cooldown-rule', '固定規則：每日中位數 < 3,000 人 × 連續 3 天；每天至少 12 / 24 筆有效資料'); rule.id = 'cooldownRule';
+  const rule = el('p', 'tw-cooldown-rule', '固定規則：每日中位數曾達 3,000 人後，低於 3,000 人 × 連續 3 天；每天至少 12 / 24 筆有效資料'); rule.id = 'cooldownRule';
   const retry = el('button', 'tw-cooldown-retry', '重新讀取全期資料'); retry.type = 'button';
   controls.append(rule, retry);
   const stateLine = el('div', 'tw-cooldown-state-line');
@@ -259,7 +260,7 @@ export function createCooldown(root) {
       const item = el('div', 'tw-cooldown-day'); item.dataset.below = String(day.belowThreshold);
       item.append(el('span', '', day.date.replaceAll('-', '/')), el('strong', '', finite(day.median) ? `${fmt(day.median)} 人` : '資料不足'),
         el('small', '', `有效 ${day.validHours} / 24 筆 · 缺 ${day.missingHours ?? 24 - day.validHours} 小時`),
-        el('small', '', !day.complete ? '缺測超過 12 小時，中斷計數' : day.belowThreshold ? '低於 3,000 人' : '達到 3,000 人，低熱度計數歸零'));
+        el('small', '', !day.complete ? '缺測超過 12 小時，中斷計數' : day.status === 'not_popular' ? '尚未達熱門門檻，不累積退燒天數' : day.belowThreshold ? '低於 3,000 人' : '達到 3,000 人，低熱度計數歸零'));
       list.append(item);
     }
     evidence.append(list);
@@ -297,6 +298,7 @@ export function createCooldown(root) {
       let detail = '';
       const lowDays = data.pendingRecheck?.days ?? data.latest?.lowDays ?? data.candidate?.days ?? 0;
       if (stale) detail = '最新觀測已落後超過 12 小時，保留既有事件與日級計數；目前熱度狀態需等待新資料。';
+      else if (data.status === 'not_popular') detail = '在已保存的有效統計日中，每日觀眾中位數尚未達 3,000 人；目前不啟用連續 3 天退燒檢查。之後若達到門檻，會自動更新狀態並啟用後續退燒檢查。';
       else if (data.status === 'suspected') detail = data.pendingRecheck
         ? `歷史退燒事件保留；缺測超過 12 小時後重新累積，已有 ${lowDays} / 3 天低於 3,000 人，最新狀態尚待確認。`
         : `每日觀眾中位數已有 ${lowDays} / 3 天低於 3,000 人。${historical ? '已保存的後續有效統計日不足，暫不確認。' : '滿 3 個連續有效統計日後確認。'}`;
@@ -314,10 +316,10 @@ export function createCooldown(root) {
         card('連續低熱度起始日', episode?.candidateAt ? at(episode.candidateAt) : '尚未出現', episode?.candidateAt ? `${dayHint(episode.candidateAt) ? `${dayHint(episode.candidateAt)} · ` : ''}第一個低於門檻的統計日` : '依 3,000 人門檻觀察'),
         card('退燒確認時間', episode?.confirmedAt ? at(episode.confirmedAt) : '尚未確認', episode?.confirmedAt ? `${dayHint(episode.confirmedAt) ? `${dayHint(episode.confirmedAt)} · ` : ''}第三個連續有效統計日結束` : '連續 3 天每日中位數低於 3,000 人'),
         card('最新每日觀眾中位數', finite(data.latest?.median) ? `${fmt(data.latest.median)} 人` : '—', data.latest?.day ? `${data.latest.day} · 當日有效逐時總觀眾的中位數` : '尚無已結束的統計日'),
-        card('連續低於 3,000 人', lowDays >= 3 ? `${lowDays} 天` : `${lowDays} / 3 天`, data.pendingRecheck ? '缺測中斷後重新累積' : '每天最多容許缺 12 小時；未結束日不計'),
+        card('退燒檢查', !data.popularAt ? '尚未啟用' : lowDays >= 3 ? `${lowDays} 天` : `${lowDays} / 3 天`, !data.popularAt ? '每日中位數曾達 3,000 人後才啟用' : data.pendingRecheck ? '缺測中斷後重新累積' : '連續低於 3,000 人；每天最多容許缺 12 小時'),
       );
       range.textContent = `全期判定：${at(data.firstHour)} — ${at(data.lastHour)} · 有效 ${data.coverage.valid} / ${data.coverage.total} 個時段 · 可判定 ${data.coverage.completeDays} / ${data.coverage.totalDays} 天 · 台灣時間`;
-      method.textContent = '規則：以台灣時間 00:00 至次日 00:00 為一天。日期結束後，當天至少有 12 / 24 筆有效逐時總觀眾，就用有效數值計算每日中位數；缺測最多 12 小時仍可延續計數，超過 12 小時才中斷，缺值不補零。每日中位數連續 3 天嚴格低於 3,000 人即確認退燒；等於 3,000 人不符合。確認後，首個有效統計日中位數達 3,000 人就解除低熱度狀態。中位數是這款遊戲一天內的逐時總觀眾，不是各直播台觀眾的中位數。這是雷達自訂的 Twitch 觀看熱度規則，不代表永久退燒或銷量變化。';
+      method.textContent = '規則：已保存的有效統計日中，每日中位數須先達到 3,000 人（含），才啟用退燒檢查；達標前的低觀眾日不列入退燒計數，也不因後來爆紅而回溯標示退燒。以台灣時間 00:00 至次日 00:00 為一天。日期結束後，當天至少有 12 / 24 筆有效逐時總觀眾，就用有效數值計算每日中位數；缺測最多 12 小時仍可延續計數，超過 12 小時才中斷，缺值不補零。每日中位數連續 3 天嚴格低於 3,000 人即確認退燒；等於 3,000 人不符合。確認後，首個有效統計日中位數達 3,000 人就解除低熱度狀態。中位數是這款遊戲一天內的逐時總觀眾，不是各直播台觀眾的中位數。這是雷達自訂的 Twitch 觀看熱度規則，不代表永久退燒或銷量變化。';
       renderEvidence(); renderDecline(); renderEvents(); draw();
     } catch (error) { failure(error); }
   }
@@ -355,5 +357,6 @@ export function createCooldown(root) {
     destroy() { disposed = true; request++; listeners.abort(); observer?.disconnect(); root.replaceChildren(); root.hidden = true; },
   };
 }
+
 
 

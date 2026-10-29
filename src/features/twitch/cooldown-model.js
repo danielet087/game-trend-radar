@@ -47,6 +47,7 @@ export function analyzeCooldown(rows, { now = Date.now() } = {}) {
   const days = [], episodes = [];
   let status = 'insufficient', candidate = null, active = null, suspended = false;
   let recheckStart = null, lowDays = 0, sawCompleteDay = false, recovered = false;
+  let popularAt = null;
 
   if (slots.length) for (let at = dayStart(slots[0].at); at <= dayStart(slots.at(-1).at); at += DAY) {
     const values = Array.from({ length: 24 }, (_, index) => byHour.get(at + index * HOUR))
@@ -68,6 +69,7 @@ export function analyzeCooldown(rows, { now = Date.now() } = {}) {
     } else {
       sawCompleteDay = true;
       if (value >= THRESHOLD) {
+        popularAt ||= day.startAt;
         lowDays = 0; candidate = null; recheckStart = null;
         if (active) {
           // Returning above the fixed boundary ends this episode. It does not
@@ -76,6 +78,10 @@ export function analyzeCooldown(rows, { now = Date.now() } = {}) {
           active = null; suspended = false; recovered = true;
         }
         status = recovered ? 'recovered' : 'watching';
+      } else if (!popularAt) {
+        // Never-popular games do not start a cooldown countdown. Earlier low
+        // days cannot be retroactively classified after a later breakout.
+        lowDays = 0; candidate = null; status = 'not_popular';
       } else {
         lowDays++;
         if (active) {
@@ -108,9 +114,10 @@ export function analyzeCooldown(rows, { now = Date.now() } = {}) {
     missingHours: lastClosed?.missingHours ?? null, complete: lastClosed?.complete ?? false };
   const pendingRecheck = suspended && active ? { startedAt: recheckStart, days: lowDays,
     requiredDays: CONFIRM_DAYS, thresholdValue: THRESHOLD } : null;
-  return { settings, status, points, days, episodes, candidate, latest, relativeDecline: relativeDecline(days),
+  return { settings, status, points, days, episodes, candidate, latest, popularAt, relativeDecline: relativeDecline(days),
     coverage: { valid: slots.filter(slot => slot.raw !== null).length, total: slots.length,
       completeDays: days.filter(day => day.complete).length, totalDays: days.length },
     firstHour: points[0]?.hour ?? null, lastHour: last?.hour ?? null, pendingRecheck };
 }
+
 

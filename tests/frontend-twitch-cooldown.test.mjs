@@ -9,6 +9,10 @@ const hour = n => new Date(start + n * HOUR).toISOString().replace('.000Z', 'Z')
 const rows = values => values.map((viewer_count, n) => ({ hour: hour(n), status: 'observed', viewer_count }));
 const sequence = (...segments) => segments.flatMap(([length, value]) => Array(length).fill(value));
 const analyze = (data, now = start + 1000 * HOUR) => analyzeCooldown(data, { now });
+// A full earlier popular day establishes eligibility for cooldown-specific tests.
+const analyzeEstablished = (data, now) => analyze([
+  ...Array.from({ length: 24 }, (_, n) => ({ hour: hour(n - 24), status: 'observed', viewer_count: 10000 })), ...data,
+], now);
 const daily = (...values) => rows(values.flatMap(value => Array(24).fill(value)));
 const omitDayHours = (data, day, missing) => data.filter(row => {
   const n = (Date.parse(row.hour) - start) / HOUR;
@@ -62,14 +66,47 @@ test('three low Taipei days confirm at the third day end, distinct from the star
   assert.deepEqual(result.settings, { threshold: 3000, confirmDays: 3, timeZone: 'Asia/Taipei', maxMissingHours: 12, minValidHours: 12 });
 });
 
-test('one or two low days remain unconfirmed without requiring an earlier high peak', () => {
-  for (const length of [1, 2]) {
+test('never-popular games remain not popular and never accumulate cooldown days', () => {
+  for (const length of [1, 2, 3, 10]) {
     const result = analyze(daily(...Array(length).fill(1000)));
-    assert.equal(result.status, 'suspected'); assert.equal(result.episodes.length, 0);
-    assert.equal(result.candidate.candidateAt, hour(0)); assert.equal(result.candidate.days, length);
-    assert.equal(result.latest.lowDays, length);
+    assert.equal(result.status, 'not_popular'); assert.equal(result.episodes.length, 0);
+    assert.equal(result.candidate, null); assert.equal(result.latest.lowDays, 0);
+    assert.equal(result.popularAt, null);
+    assert.ok(result.days.every(day => day.lowDays === 0));
   }
-  assert.equal(analyze(daily(1000, 1000, 1000)).status, 'cooled');
+});
+
+test('a later breakout enables cooldown prospectively and does not count earlier low days', () => {
+  const data = daily(1000, 1000, 1000, 5000, 2000, 2000, 2000);
+  const before = analyze(data, start + 72 * HOUR);
+  assert.equal(before.status, 'not_popular'); assert.equal(before.latest.lowDays, 0);
+  const breakout = analyze(data, start + 96 * HOUR);
+  assert.equal(breakout.status, 'watching'); assert.equal(breakout.popularAt, hour(72));
+  const pending = analyze(data, start + 144 * HOUR);
+  assert.equal(pending.status, 'suspected'); assert.equal(pending.latest.lowDays, 2);
+  assert.equal(pending.episodes.length, 0); assert.equal(pending.candidate.candidateAt, hour(96));
+  const cooled = analyze(data);
+  assert.equal(cooled.status, 'cooled'); assert.equal(cooled.episodes.length, 1);
+  assert.equal(cooled.episodes[0].candidateAt, hour(96)); assert.equal(cooled.episodes[0].confirmedAt, hour(168));
+});
+
+test('an hourly spike, incomplete high day or open high day cannot establish popularity', () => {
+  const spike = daily(1000, 1000, 1000, 1000); spike[24].viewer_count = 100000;
+  const result = analyze(spike);
+  assert.equal(result.status, 'not_popular'); assert.equal(result.popularAt, null);
+  assert.equal(result.latest.lowDays, 0);
+  const incomplete = analyze(omitDayHours(daily(1000, 5000, 1000, 1000, 1000), 1, 13));
+  assert.equal(incomplete.status, 'not_popular'); assert.equal(incomplete.popularAt, null);
+  const open = analyze(daily(1000, 5000), start + 47 * HOUR);
+  assert.equal(open.status, 'not_popular'); assert.equal(open.popularAt, null);
+});
+
+test('exactly 3000 establishes the threshold and missing days do not erase earlier eligibility', () => {
+  const data = omitDayHours(daily(3000, 1000, 1000, 1000, 1000), 1, 13);
+  const result = analyze(data);
+  assert.equal(result.popularAt, hour(0)); assert.equal(result.status, 'cooled');
+  assert.equal(result.episodes[0].candidateAt, hour(48));
+  assert.equal(result.episodes[0].confirmedAt, hour(120));
 });
 
 test('exactly 3000 breaks a low run and begins no decline of its own', () => {
@@ -88,28 +125,28 @@ test('falling from 100000 to 50000 never satisfies the fixed audience rule', () 
 
 test('up to twelve missing hourly observations per closed day do not reset the run', () => {
   for (const missing of [0, 1, 11, 12]) {
-    const result = analyze(omitDayHours(daily(2000, 2000, 2000), 1, missing));
+    const result = analyzeEstablished(omitDayHours(daily(2000, 2000, 2000), 1, missing));
     assert.equal(result.status, 'cooled', `missing ${missing}`);
     assert.equal(result.episodes[0].candidateAt, hour(0));
     assert.equal(result.episodes[0].confirmedAt, hour(72));
-    assert.equal(result.days[1].validHours, 24 - missing);
-    assert.equal(result.days[1].missingHours, missing);
-    assert.equal(result.days[1].median, 2000); assert.equal(result.days[1].complete, true);
+    assert.equal(result.days[2].validHours, 24 - missing);
+    assert.equal(result.days[2].missingHours, missing);
+    assert.equal(result.days[2].median, 2000); assert.equal(result.days[2].complete, true);
   }
 });
 
 test('thirteen missing hours reset the run instead of joining nonconsecutive valid days', () => {
-  const result = analyze(omitDayHours(daily(2000, 2000, 2000, 2000, 2000), 2, 13));
+  const result = analyzeEstablished(omitDayHours(daily(2000, 2000, 2000, 2000, 2000), 2, 13));
   assert.equal(result.status, 'suspected'); assert.equal(result.episodes.length, 0);
-  assert.equal(result.days[2].validHours, 11); assert.equal(result.days[2].median, null);
-  assert.equal(result.days[2].complete, false); assert.equal(result.days[2].status, 'gap');
+  assert.equal(result.days[3].validHours, 11); assert.equal(result.days[3].median, null);
+  assert.equal(result.days[3].complete, false); assert.equal(result.days[3].status, 'gap');
   assert.equal(result.candidate.candidateAt, hour(72)); assert.equal(result.latest.lowDays, 2);
 });
 
 test('a wholly omitted day is an explicit gap and is not replaced with zero', () => {
-  const result = analyze(omitDayHours(daily(1000, 1000, 1000, 1000, 1000), 2, 24));
-  assert.equal(result.days.length, 5); assert.equal(result.days[2].median, null);
-  assert.equal(result.days[2].missingHours, 24); assert.equal(result.episodes.length, 0);
+  const result = analyzeEstablished(omitDayHours(daily(1000, 1000, 1000, 1000, 1000), 2, 24));
+  assert.equal(result.days.length, 6); assert.equal(result.days[3].median, null);
+  assert.equal(result.days[3].missingHours, 24); assert.equal(result.episodes.length, 0);
   assert.equal(result.candidate.candidateAt, hour(72));
 });
 
@@ -117,10 +154,10 @@ test('invalid and missing statuses share the same twelve-hour tolerance', () => 
   for (const status of ['missing', 'absent']) {
     const data = daily(1000, 1000, 1000);
     for (let n = 24; n < 36; n++) data[n].status = status;
-    const allowed = analyze(data);
-    assert.equal(allowed.status, 'cooled'); assert.equal(allowed.points[24].raw, null);
+    const allowed = analyzeEstablished(data);
+    assert.equal(allowed.status, 'cooled'); assert.equal(allowed.points[48].raw, null);
     data[36].status = status;
-    const interrupted = analyze(data);
+    const interrupted = analyzeEstablished(data);
     assert.equal(interrupted.status, 'suspected'); assert.equal(interrupted.episodes.length, 0);
     assert.equal(interrupted.latest.lowDays, 1);
   }
@@ -134,40 +171,40 @@ test('medians use observed values only, with correct odd and even sample sizes',
   assert.equal(even.latest.median, 3000); assert.equal(even.status, 'watching');
   const odd = analyze(rows(sequence([6, 0], [1, 2000], [6, 9000])));
   assert.equal(odd.latest.median, 2000); assert.equal(odd.days[0].validHours, 13);
-  assert.equal(odd.status, 'suspected');
+  assert.equal(odd.status, 'not_popular');
 });
 
 test('an unfinished day cannot confirm even when all 24 hourly slots exist', () => {
   const data = daily(1000, 1000, 1000);
-  const before = analyze(data, start + 71.5 * HOUR);
+  const before = analyzeEstablished(data, start + 71.5 * HOUR);
   assert.equal(before.status, 'suspected'); assert.equal(before.episodes.length, 0);
   assert.equal(before.latest.lowDays, 2); assert.equal(before.latest.day, '2026-10-02');
-  assert.equal(before.days[2].isClosed, false); assert.equal(before.days[2].complete, false);
-  assert.equal(before.days[2].validHours, 24); assert.equal(before.days[2].median, null);
-  const after = analyze(data, start + 72 * HOUR);
+  assert.equal(before.days[3].isClosed, false); assert.equal(before.days[3].complete, false);
+  assert.equal(before.days[3].validHours, 24); assert.equal(before.days[3].median, null);
+  const after = analyzeEstablished(data, start + 72 * HOUR);
   assert.equal(after.status, 'cooled'); assert.equal(after.episodes[0].confirmedAt, hour(72));
 });
 
 test('an open day does not reset the established run or provide early evidence of recovery', () => {
   const data = daily(1000, 1000, 1000, 3000);
-  const before = analyze(data, start + 73 * HOUR);
+  const before = analyzeEstablished(data, start + 73 * HOUR);
   assert.equal(before.status, 'cooled'); assert.equal(before.latest.lowDays, 3);
   assert.equal(before.episodes[0].recoveryAt, null); assert.equal(before.days.at(-1).status, 'open');
-  const after = analyze(data, start + 96 * HOUR);
+  const after = analyzeEstablished(data, start + 96 * HOUR);
   assert.equal(after.status, 'recovered'); assert.equal(after.episodes[0].recoveryAt, hour(72));
   assert.equal(after.episodes[0].recoveryConfirmedAt, hour(96));
 });
 
 test('a gap preserves the earlier confirmed event but requires three fresh low days', () => {
   const data = omitDayHours(daily(1000, 1000, 1000, 1000, 1000, 1000, 1000), 3, 13);
-  const atGap = analyze(data.filter(row => Date.parse(row.hour) < start + 96 * HOUR));
+  const atGap = analyzeEstablished(data.filter(row => Date.parse(row.hour) < start + 96 * HOUR));
   assert.equal(atGap.status, 'gap'); assert.equal(atGap.episodes.length, 1);
   assert.equal(atGap.episodes[0].interruptedAt, hour(72)); assert.equal(atGap.episodes[0].recoveryAt, null);
   assert.equal(atGap.pendingRecheck.days, 0); assert.equal(atGap.pendingRecheck.startedAt, null);
-  const pending = analyze(data.filter(row => Date.parse(row.hour) < start + 144 * HOUR));
+  const pending = analyzeEstablished(data.filter(row => Date.parse(row.hour) < start + 144 * HOUR));
   assert.equal(pending.status, 'suspected'); assert.equal(pending.candidate, null);
   assert.equal(pending.pendingRecheck.startedAt, hour(96)); assert.equal(pending.pendingRecheck.days, 2);
-  const result = analyze(data);
+  const result = analyzeEstablished(data);
   assert.equal(result.status, 'cooled'); assert.equal(result.episodes.length, 1);
   assert.equal(result.episodes[0].candidateAt, hour(0)); assert.equal(result.episodes[0].confirmedAt, hour(72));
   assert.deepEqual(result.episodes[0].reconfirmations, [{ startedAt: hour(96), confirmedAt: hour(168) }]);
@@ -175,31 +212,31 @@ test('a gap preserves the earlier confirmed event but requires three fresh low d
 });
 
 test('a tolerated gap after confirmation keeps the original episode active', () => {
-  const result = analyze(omitDayHours(daily(1000, 1000, 1000, 1000), 3, 12));
+  const result = analyzeEstablished(omitDayHours(daily(1000, 1000, 1000, 1000), 3, 12));
   assert.equal(result.status, 'cooled'); assert.equal(result.episodes.length, 1);
   assert.equal(result.episodes[0].interruptedAt, null); assert.equal(result.latest.lowDays, 4);
 });
 
 test('a completed day at 3000 resolves an episode, including after a gap, then a new wave starts afresh', () => {
   const data = omitDayHours(daily(1000, 1000, 1000, 1000, 3000, 1000, 1000, 1000), 3, 13);
-  const recovered = analyze(data.filter(row => Date.parse(row.hour) < start + 120 * HOUR));
+  const recovered = analyzeEstablished(data.filter(row => Date.parse(row.hour) < start + 120 * HOUR));
   assert.equal(recovered.status, 'recovered'); assert.equal(recovered.pendingRecheck, null);
   assert.equal(recovered.episodes[0].recoveryAt, hour(96));
   assert.equal(recovered.episodes[0].recoveryConfirmedAt, hour(120));
-  const result = analyze(data);
+  const result = analyzeEstablished(data);
   assert.equal(result.episodes.length, 2); assert.equal(result.status, 'cooled');
   assert.equal(result.episodes[1].candidateAt, hour(120)); assert.equal(result.episodes[1].confirmedAt, hour(192));
 });
 
 test('future peaks do not rewrite the beginning or confirmation of an earlier event', () => {
-  const before = analyze(daily(1000, 1000, 1000)).episodes[0];
-  const after = analyze(daily(1000, 1000, 1000, 100000, 100000)).episodes[0];
+  const before = analyzeEstablished(daily(1000, 1000, 1000)).episodes[0];
+  const after = analyzeEstablished(daily(1000, 1000, 1000, 100000, 100000)).episodes[0];
   for (const key of ['candidateAt', 'confirmedAt', 'thresholdValue']) assert.equal(after[key], before[key]);
 });
 
 test('zero is a real observation and can confirm three days below the fixed threshold', () => {
-  const result = analyze(daily(0, 0, 0));
-  assert.equal(result.status, 'cooled'); assert.equal(result.coverage.valid, 72);
+  const result = analyzeEstablished(daily(0, 0, 0));
+  assert.equal(result.status, 'cooled'); assert.equal(result.coverage.valid, 96);
   assert.equal(result.latest.median, 0); assert.equal(result.episodes.length, 1);
 });
 
@@ -213,8 +250,8 @@ test('end of tracking does not invent days beyond the saved record or turn a lar
 });
 
 test('future timestamps are ignored rather than completing a three-day window', () => {
-  const result = analyze(daily(1000, 1000, 1000), start + 48 * HOUR);
-  assert.equal(result.points.length, 49); assert.equal(result.days[2].validHours, 1);
+  const result = analyzeEstablished(daily(1000, 1000, 1000), start + 48 * HOUR);
+  assert.equal(result.points.length, 73); assert.equal(result.days[3].validHours, 1);
   assert.equal(result.episodes.length, 0); assert.equal(result.latest.lowDays, 2);
 });
 
@@ -249,4 +286,5 @@ test('release day zero uses Taiwan calendar dates, including pre-release and unc
   assert.equal(releaseDayIndex('invalid', '2026-10-01'), null);
   assert.equal(releaseDayIndex('2026-10-01T00:00:00Z', undefined), null);
 });
+
 

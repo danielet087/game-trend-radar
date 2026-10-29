@@ -27,6 +27,30 @@ async function mock(page, data = fixtures()) {
     await page.route(`**/data/twitch_series/42/${month}.json`, route => route.fulfill({ json: chunk }));
 }
 
+test('a never-popular game shows a neutral label and no cooldown countdown', async ({ page }) => {
+  const data = fixtures();
+  for (const chunk of Object.values(data.chunks))
+    for (const row of Object.values(chunk.hours) as any[]) row.viewer_count = 1000;
+  await mock(page, data); await page.goto('twitch-game.html?game=42');
+  await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'not_popular');
+  await expect(page.locator('#cooldownStatus')).toHaveText('尚未達熱門門檻');
+  await expect(page.locator('#cooldownSummary')).toContainText('尚未啟用');
+  await expect(page.locator('#cooldownSummary')).not.toContainText('0 / 3 天');
+  await expect(page.locator('#cooldownDailyEvidence')).toContainText('不累積退燒天數');
+  await expect(page.locator('#cooldownEvents button')).toHaveCount(0);
+});
+
+test('a later breakout starts a fresh countdown rather than reusing the initial low days', async ({ page }) => {
+  const data = fixtures(144);
+  const hours = Object.values(data.chunks).flatMap(chunk => Object.entries(chunk.hours) as [string, any][]).sort(([a], [b]) => a.localeCompare(b));
+  hours.forEach(([, row], index) => { row.viewer_count = index >= 72 && index < 96 ? 5000 : 1000; });
+  await mock(page, data); await page.goto('twitch-game.html?game=42');
+  await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'suspected');
+  await expect(page.locator('#cooldownStatus')).toContainText('等待滿 3 天');
+  await expect(page.locator('#cooldownSummary')).toContainText('2 / 3 天');
+  await expect(page.locator('#cooldownEvents')).not.toContainText('退燒確認');
+});
+
 test('the full-history cooldown onset and confirmation survive date changes without altering the original chart', async ({ page }) => {
   const failures: string[] = [];
   page.on('pageerror', error => failures.push(error.message));
@@ -141,4 +165,5 @@ for (const elapsedHours of [5, 12, 13]) {
     await expect(page.locator('#cooldownEvents')).toContainText('2026/10/04 00:00');
   });
 }
+
 
