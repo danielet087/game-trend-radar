@@ -67,6 +67,7 @@ export function createCooldown(root) {
   const stateDetail = el('p', 'tw-cooldown-state-detail'); stateDetail.id = 'cooldownStateDetail'; stateLine.append(status, stateDetail);
   const summary = el('div', 'tw-cooldown-summary'); summary.id = 'cooldownSummary';
   const evidence = el('div', 'tw-cooldown-daily'); evidence.id = 'cooldownDailyEvidence';
+  const decline = el('div', 'tw-cooldown-events'); decline.id = 'cooldownRelativeDecline';
   const figure = el('figure', 'tw-cooldown-figure'), chart = el('div', 'tw-cooldown-chart'); chart.id = 'cooldownChart';
   const legend = el('figcaption', 'tw-cooldown-legend', '淡紫線：逐時總觀眾　｜　紫線：每日中位數（日結束時標示）　｜　橘色虛線：3,000 人門檻　｜　橘色區間：已確認的低熱度觀測');
   figure.append(chart, legend);
@@ -76,7 +77,7 @@ export function createCooldown(root) {
   reader.append(readerLabel, scrubber, readout);
   const events = el('div', 'tw-cooldown-events'); events.id = 'cooldownEvents';
   const method = el('p', 'tw-cooldown-method'); method.id = 'cooldownMethod';
-  root.replaceChildren(head, intro, range, releaseSummary, controls, stateLine, summary, evidence, figure, reader, events, method);
+  root.replaceChildren(head, intro, range, releaseSummary, controls, stateLine, summary, evidence, decline, figure, reader, events, method);
 
   function releaseDate() {
     const reference = context.releaseReference;
@@ -155,6 +156,7 @@ export function createCooldown(root) {
   on(chart, 'click', event => { const marker = event.target?.closest?.('[data-cooldown-hour]'); if (marker) chooseAt(marker.getAttribute('data-cooldown-hour')); });
   on(chart, 'mouseover', event => { const marker = event.target?.closest?.('[data-cooldown-hour]'); if (marker) chooseAt(marker.getAttribute('data-cooldown-hour')); });
   on(events, 'click', event => { const button = event.target?.closest?.('button[data-cooldown-hour]'); if (button) chooseAt(button.getAttribute('data-cooldown-hour')); });
+  on(decline, 'click', event => { const button = event.target?.closest?.('button[data-cooldown-hour]'); if (button) chooseAt(button.getAttribute('data-cooldown-hour')); });
   on(retry, 'click', () => load(true));
 
   function path(points, key, x, y, interval = HOUR) {
@@ -262,6 +264,26 @@ export function createCooldown(root) {
     }
     evidence.append(list);
   }
+  function renderDecline() {
+    decline.replaceChildren(el('h3', '', '相對高峰衰退紀錄（輔助提示）'));
+    const { peak, milestones } = data.relativeDecline;
+    decline.append(el('p', 'tw-cooldown-event-hint', '比例只記錄衰退時間，不作為退燒判定；已退燒仍依每日中位數連續 3 天低於 3,000 人。'));
+    if (!peak || peak.median <= 0) {
+      decline.append(el('p', '', '尚無大於零的有效每日中位數高峰，無法計算比例衰退。')); return;
+    }
+    decline.append(el('p', '', `基準：已保存全期最高每日觀眾中位數 ${fmt(peak.median)} 人（${peak.date}${dayHint(peak.startAt) ? ` · ${dayHint(peak.startAt)}` : ''}）。`));
+    const list = el('ol', 'tw-cooldown-event-list');
+    for (const item of milestones) {
+      const row = el('li');
+      if (item.date) {
+        const button = el('button', '', `較高峰下降 ${item.percent}% · ${item.date}${dayHint(item.startedAt) ? ` · ${dayHint(item.startedAt)}` : ''}`);
+        button.type = 'button'; button.dataset.cooldownHour = item.observedAt;
+        row.append(button, el('small', '', `每日中位數 ${fmt(item.median)} 人 ≤ ${fmt(item.thresholdValue)} 人；於 ${at(item.observedAt)} 日結束後確認。`));
+      } else row.append(el('strong', '', `較高峰下降 ${item.percent}%：尚未觀測到`), el('small', '', `每日中位數需降至 ${fmt(item.thresholdValue)} 人以下（含）`));
+      list.append(row);
+    }
+    decline.append(list, el('p', 'tw-cooldown-event-hint', '各比例記錄高峰日之後首次達到該跌幅的有效統計日，無須連續 3 天；缺測超過 12 小時或尚未結束的日期不計。這是回顧紀錄，出現新高峰時會重新計算；缺測期間不推估跨越時間，未觀測到不代表未曾發生。點選紀錄可定位圖表。'));
+  }
   function render() {
     if (disposed || root.hidden || !rows) return;
     try {
@@ -296,11 +318,11 @@ export function createCooldown(root) {
       );
       range.textContent = `全期判定：${at(data.firstHour)} — ${at(data.lastHour)} · 有效 ${data.coverage.valid} / ${data.coverage.total} 個時段 · 可判定 ${data.coverage.completeDays} / ${data.coverage.totalDays} 天 · 台灣時間`;
       method.textContent = '規則：以台灣時間 00:00 至次日 00:00 為一天。日期結束後，當天至少有 12 / 24 筆有效逐時總觀眾，就用有效數值計算每日中位數；缺測最多 12 小時仍可延續計數，超過 12 小時才中斷，缺值不補零。每日中位數連續 3 天嚴格低於 3,000 人即確認退燒；等於 3,000 人不符合。確認後，首個有效統計日中位數達 3,000 人就解除低熱度狀態。中位數是這款遊戲一天內的逐時總觀眾，不是各直播台觀眾的中位數。這是雷達自訂的 Twitch 觀看熱度規則，不代表永久退燒或銷量變化。';
-      renderEvidence(); renderEvents(); draw();
+      renderEvidence(); renderDecline(); renderEvents(); draw();
     } catch (error) { failure(error); }
   }
   function failure(error) {
-    data = null; rows = null; geometry = null; loadedKey = '';
+    data = null; rows = null; geometry = null; loadedKey = ''; decline.replaceChildren();
     root.dataset.cooldownStatus = 'unavailable'; root.setAttribute('aria-busy', 'false'); retry.disabled = false;
     status.textContent = '全期資料暫時無法讀取'; stateDetail.textContent = '請按「重新讀取全期資料」再試。原本趨勢圖與明細仍可繼續操作。';
     summary.replaceChildren(); evidence.replaceChildren(); releaseSummary.replaceChildren(); chart.replaceChildren(el('p', 'tw-cooldown-empty', '目前沒有可用的退潮判定結果。')); events.replaceChildren(); reader.hidden = true; legend.hidden = true; method.textContent = '';
@@ -311,7 +333,7 @@ export function createCooldown(root) {
     const key = `${context.gameName || ''}|${context.lastHour || ''}|${context.generatedAt || ''}`;
     root.hidden = false;
     if (!force && rows && loadedKey === key) { render(); return; }
-    data = null; rows = null; geometry = null; loadedKey = '';
+    data = null; rows = null; geometry = null; loadedKey = ''; decline.replaceChildren();
     root.setAttribute('aria-busy', 'true'); root.dataset.cooldownStatus = 'loading'; retry.disabled = true;
     status.textContent = '正在讀取全期觀測…'; status.dataset.tone = 'neutral'; stateDetail.textContent = '整理這款遊戲的全部歷史，找出連續低熱度起始日與退燒確認時間。';
     range.textContent = '全期判定，不受上方日期範圍裁切。'; summary.replaceChildren(); evidence.replaceChildren(); releaseSummary.replaceChildren(); chart.replaceChildren(); events.replaceChildren(); reader.hidden = true; legend.hidden = true; method.textContent = '';
@@ -333,4 +355,5 @@ export function createCooldown(root) {
     destroy() { disposed = true; request++; listeners.abort(); observer?.disconnect(); root.replaceChildren(); root.hidden = true; },
   };
 }
+
 

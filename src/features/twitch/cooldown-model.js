@@ -20,6 +20,21 @@ function normalize(rows, now) {
   return [...unique.values()].sort((a, b) => a.at - b.at);
 }
 
+// Retrospective milestones relative to the highest valid closed-day median.
+// A new peak rebases this auxiliary history; it never changes cooldown status.
+function relativeDecline(days) {
+  const valid = days.filter(day => day.complete);
+  const peak = valid.reduce((best, day) => !best || day.median > best.median ? day : best, null);
+  const milestones = [25, 50, 75].map(percent => {
+    const thresholdValue = peak?.median > 0 ? peak.median * (1 - percent / 100) : null;
+    const day = thresholdValue === null ? null : valid.find(day =>
+      day.startAt > peak.startAt && day.median <= thresholdValue);
+    return { percent, thresholdValue, date: day?.date ?? null,
+      startedAt: day?.startAt ?? null, observedAt: day?.endAt ?? null, median: day?.median ?? null };
+  });
+  return { peak: peak ? { date: peak.date, startAt: peak.startAt, median: peak.median } : null, milestones };
+}
+
 /** Fixed Twitch audience rule. Only closed Taipei days can confirm an event.
  * Up to 12 missing hourly observations per day are tolerated; missing values
  * never become zero and future observations cannot complete an open day. */
@@ -93,8 +108,9 @@ export function analyzeCooldown(rows, { now = Date.now() } = {}) {
     missingHours: lastClosed?.missingHours ?? null, complete: lastClosed?.complete ?? false };
   const pendingRecheck = suspended && active ? { startedAt: recheckStart, days: lowDays,
     requiredDays: CONFIRM_DAYS, thresholdValue: THRESHOLD } : null;
-  return { settings, status, points, days, episodes, candidate, latest,
+  return { settings, status, points, days, episodes, candidate, latest, relativeDecline: relativeDecline(days),
     coverage: { valid: slots.filter(slot => slot.raw !== null).length, total: slots.length,
       completeDays: days.filter(day => day.complete).length, totalDays: days.length },
     firstHour: points[0]?.hour ?? null, lastHour: last?.hour ?? null, pendingRecheck };
 }
+

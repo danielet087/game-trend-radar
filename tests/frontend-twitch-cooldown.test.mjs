@@ -15,6 +15,40 @@ const omitDayHours = (data, day, missing) => data.filter(row => {
   return n < day * 24 || n >= day * 24 + missing;
 });
 
+test('relative decline records first inclusive 25/50/75 percent milestones without declaring cooldown', () => {
+  const result = analyze(daily(100000, 80000, 75000, 50000, 25000, 90000, 20000));
+  assert.equal(result.status, 'watching'); assert.equal(result.episodes.length, 0);
+  assert.equal(result.relativeDecline.peak.median, 100000);
+  assert.deepEqual(result.relativeDecline.milestones.map(item => [item.percent, item.thresholdValue, item.date, item.observedAt]), [
+    [25, 75000, '2026-10-03', hour(72)], [50, 50000, '2026-10-04', hour(96)], [75, 25000, '2026-10-05', hour(120)],
+  ]);
+});
+
+test('relative milestones exclude incomplete and open days and do not infer missing crossings', () => {
+  const data = omitDayHours(daily(100000, 10000, 50000, 1000), 1, 13);
+  const result = analyze(data, start + 95 * HOUR);
+  assert.deepEqual(result.relativeDecline.milestones.map(item => item.date), ['2026-10-03', '2026-10-03', null]);
+  assert.equal(result.relativeDecline.milestones[0].observedAt, hour(72));
+  const tolerated = analyze(omitDayHours(daily(100000, 75000), 1, 12));
+  assert.equal(tolerated.relativeDecline.milestones[0].date, '2026-10-02');
+});
+
+test('relative history rebases after a new high while fixed cooldown events remain unchanged', () => {
+  const result = analyze(daily(10000, 1000, 1000, 1000, 20000, 15000, 10000, 5000));
+  assert.equal(result.episodes[0].candidateAt, hour(24));
+  assert.equal(result.episodes[0].confirmedAt, hour(96));
+  assert.equal(result.relativeDecline.peak.date, '2026-10-05');
+  assert.deepEqual(result.relativeDecline.milestones.map(item => item.date), ['2026-10-06', '2026-10-07', '2026-10-08']);
+  assert.equal(analyze(daily(10000, 10000, 75000)).relativeDecline.milestones[0].date, null);
+});
+
+test('zero or missing peak has no relative milestones; a real zero after a positive peak reaches all levels', () => {
+  for (const data of [[], daily(0, 0, 0)]) {
+    assert.ok(analyze(data).relativeDecline.milestones.every(item => item.date === null && item.thresholdValue === null));
+  }
+  assert.deepEqual(analyze(daily(10000, 0)).relativeDecline.milestones.map(item => item.date), Array(3).fill('2026-10-02'));
+});
+
 test('three low Taipei days confirm at the third day end, distinct from the start date', () => {
   const result = analyze(daily(10000, 2999, 2999, 2999));
   assert.equal(result.status, 'cooled'); assert.equal(result.episodes.length, 1);
@@ -215,3 +249,4 @@ test('release day zero uses Taiwan calendar dates, including pre-release and unc
   assert.equal(releaseDayIndex('invalid', '2026-10-01'), null);
   assert.equal(releaseDayIndex('2026-10-01T00:00:00Z', undefined), null);
 });
+
