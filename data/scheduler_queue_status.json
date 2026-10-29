@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-29T19:05:29.605163Z",
+  "generated_at": "2026-10-29T20:04:54.168272Z",
   "today_taipei": "2026-10-30",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-10-29T19:03:53.656302Z",
-    "group_resolution_updated_at": "2026-10-29T19:02:46.764983Z",
+    "checkpoint_updated_at": "2026-10-29T20:03:31.811012Z",
+    "group_resolution_updated_at": "2026-10-29T20:02:40.217426Z",
     "candidate_state_updated_at": null,
     "prefilter_updated_at": null,
     "eligible_screened_at": "2026-10-28T23:16:52.351942Z",
-    "twitch_import_updated_at": "2026-10-29T19:04:45.851504Z",
+    "twitch_import_updated_at": "2026-10-29T20:04:14.434464Z",
     "last_official_success_at": "2026-10-29T18:23:25.866575Z",
     "queue_projection": "official_collector_make_queue"
   },
@@ -21,53 +21,53 @@
     "added_from_daily": 0,
     "eligible_count": 4625,
     "parked_group_xml_appids": [],
-    "combined_pending_now": 179,
+    "combined_pending_now": 180,
     "completed_legacy": 408,
     "completed_new": 3817,
-    "twitch_priority_pending": 3
+    "twitch_priority_pending": 4
   },
   "summary": {
     "normal_pending": 176,
-    "twitch_priority_pending": 3,
+    "twitch_priority_pending": 4,
     "parked": 0,
-    "ready_pending": 179,
-    "followers_ready_pending": 178,
+    "ready_pending": 180,
+    "followers_ready_pending": 179,
     "awaiting_group_pending": 1,
-    "total_pending": 179,
-    "today_attempts": 1,
+    "total_pending": 180,
+    "today_attempts": 2,
     "today_successes": 0,
-    "today_429": 1
+    "today_429": 2
   },
   "group_resolution_api_cooldown": {
     "status": "available",
     "retry_at": null,
-    "observed_at": "2026-10-29T19:02:46.764983Z",
+    "observed_at": "2026-10-29T20:02:40.217426Z",
     "attempts": 0,
     "source": "Steam ISteamUser/ResolveVanityURL"
   },
   "cooldown": {
     "active": true,
-    "until": "2026-10-29T19:18:19.054271Z",
+    "until": "2026-10-29T20:33:06.045826Z",
     "reason": "steam_http_429",
-    "next_eligible_slot": "2026-10-29T20:00:00Z",
+    "next_eligible_slot": "2026-10-29T21:00:00Z",
     "schedule_taipei": "03:00–23:00 hourly"
   },
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-10-30T03:03:18.380169+08:00",
-    "last_updated_at": "2026-10-30T03:03:53.656302+08:00",
-    "finished_at": "2026-10-30T03:03:53.656302+08:00",
+    "started_at": "2026-10-30T04:03:05.171466+08:00",
+    "last_updated_at": "2026-10-30T04:03:31.811012+08:00",
+    "finished_at": "2026-10-30T04:03:31.811012+08:00",
     "stop_reason": "first_http_429",
-    "last_appid": 5047230,
-    "last_name": "Combustor",
+    "last_appid": 972450,
+    "last_name": "The Zibbo Show",
     "requests_this_run": 1,
     "official_new_this_run": 0,
     "http_429_this_run": 1,
     "manual_cooldown_override": false,
     "request_limit": 90,
-    "run_id": "40936054927",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/40936054927"
+    "run_id": "40945116401",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/40945116401"
   },
   "queue": [
     {
@@ -2597,23 +2597,31 @@
       "group_resolution": null,
       "last_attempt_at": "2026-10-29T19:03:18.860672Z",
       "last_attempt_status": "rate_limited"
+    },
+    {
+      "position": 180,
+      "appid": 972450,
+      "name": "The Zibbo Show",
+      "steam_url": "https://store.steampowered.com/app/972450/",
+      "release_date": "2026-10-29",
+      "source": "twitch_steam_discovery",
+      "priority": true,
+      "state": "cooldown",
+      "group_id64": "103582791475593109",
+      "group_resolution": {
+        "status": "resolved",
+        "checked_at": "2026-10-29T20:02:39.974729Z",
+        "source": "Steam ISteamUser/ResolveVanityURL",
+        "attempted": true,
+        "http": 200,
+        "api_result": 1
+      },
+      "last_attempt_at": "2026-10-29T20:03:05.672588Z",
+      "last_attempt_status": "rate_limited"
     }
   ],
   "parked": [],
   "events": [
-    {
-      "at": "2026-10-26T23:27:29.064733Z",
-      "kind": "official_attempt",
-      "appid": 4992150,
-      "name": "Plink Void",
-      "status": "ok",
-      "http": 200,
-      "source": "fresh_daily_prefilter_unresolved",
-      "official_followers": 30,
-      "retry_at": null,
-      "run_id": "40416651412",
-      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/40416651412"
-    },
     {
       "at": "2026-10-26T23:27:59.064855Z",
       "kind": "official_attempt",
@@ -3900,6 +3908,19 @@
       "retry_at": "2026-10-29T19:18:19.054271Z",
       "run_id": "40936054927",
       "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/40936054927"
+    },
+    {
+      "at": "2026-10-29T20:03:05.672588Z",
+      "kind": "official_attempt",
+      "appid": 972450,
+      "name": "The Zibbo Show",
+      "status": "rate_limited",
+      "http": 429,
+      "source": "twitch_steam_discovery",
+      "official_followers": null,
+      "retry_at": "2026-10-29T20:33:06.045826Z",
+      "run_id": "40945116401",
+      "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/40945116401"
     }
   ],
   "events_limit": 100
