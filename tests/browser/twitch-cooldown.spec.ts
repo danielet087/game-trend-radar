@@ -27,6 +27,45 @@ async function mock(page, data = fixtures()) {
     await page.route(`**/data/twitch_series/42/${month}.json`, route => route.fulfill({ json: chunk }));
 }
 
+test('relative decline shows release-to-peak days and measures each drop from the peak day', async ({ page }) => {
+  const data = fixtures(216);
+  const values = [40000, 100000, 80000, 75000, 60000, 50000, 40000, 25000, 24000];
+  const hours = Object.values(data.chunks).flatMap(chunk => Object.entries(chunk.hours) as [string, any][]).sort(([a], [b]) => a.localeCompare(b));
+  hours.forEach(([, row], index) => { row.viewer_count = values[Math.floor(index / 24)]; });
+  await mock(page, data); await page.goto('twitch-game.html?game=42&range=24h');
+  const decline = page.locator('#cooldownRelativeDecline');
+  await expect(page.locator('#cooldownPeak')).toHaveText('上市後第 7 天達到高峰');
+  await expect(decline).toContainText('目前高峰日：2026-09-30');
+  await expect(decline.getByRole('button', { name: '高峰後第 2 天 · 較高峰下降 25%', exact: true })).toBeVisible();
+  await expect(decline.getByRole('button', { name: '高峰後第 4 天 · 較高峰下降 50%', exact: true })).toBeVisible();
+  await expect(decline.getByRole('button', { name: '高峰後第 6 天 · 較高峰下降 75%', exact: true })).toBeVisible();
+  await decline.getByRole('button', { name: '高峰後第 2 天 · 較高峰下降 25%', exact: true }).click();
+  await expect(page.locator('#cooldownReadout')).toContainText('2026-10-02 每日中位數');
+  await page.getByRole('button', { name: '7 天', exact: true }).click();
+  await expect(page.locator('#cooldownPeak')).toHaveText('上市後第 7 天達到高峰');
+  await expect(decline).toContainText('高峰後第 6 天');
+  await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'watching');
+});
+
+test('a new peak replaces both the release-to-peak day and all relative decline day counts', async ({ page }) => {
+  const data = fixtures(240);
+  const hours = Object.values(data.chunks).flatMap(chunk => Object.entries(chunk.hours) as [string, any][]).sort(([a], [b]) => a.localeCompare(b));
+  const oldValues = [40000, 100000, 75000, 50000, 25000, 25000, 25000, 25000, 25000, 25000];
+  hours.forEach(([, row], index) => { row.viewer_count = oldValues[Math.floor(index / 24)]; });
+  await mock(page, data); await page.goto('twitch-game.html?game=42');
+  const decline = page.locator('#cooldownRelativeDecline');
+  await expect(page.locator('#cooldownPeak')).toHaveText('上市後第 7 天達到高峰');
+  await expect(decline.getByRole('button', { name: '高峰後第 1 天 · 較高峰下降 25%', exact: true })).toBeVisible();
+  const newValues = [40000, 100000, 75000, 50000, 25000, 200000, 180000, 150000, 100000, 50000];
+  hours.forEach(([, row], index) => { row.viewer_count = newValues[Math.floor(index / 24)]; });
+  await page.reload();
+  await expect(page.locator('#cooldownPeak')).toHaveText('上市後第 11 天達到高峰');
+  await expect(decline).toContainText('目前高峰日：2026-10-04');
+  await expect(decline.getByRole('button', { name: '高峰後第 2 天 · 較高峰下降 25%', exact: true })).toBeVisible();
+  await expect(decline.getByRole('button', { name: '高峰後第 3 天 · 較高峰下降 50%', exact: true })).toBeVisible();
+  await expect(decline.getByRole('button', { name: '高峰後第 4 天 · 較高峰下降 75%', exact: true })).toBeVisible();
+});
+
 test('a never-popular game shows a neutral label and no cooldown countdown', async ({ page }) => {
   const data = fixtures();
   for (const chunk of Object.values(data.chunks))
@@ -108,6 +147,8 @@ test('an unknown release date never turns the observation start into release day
   await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'cooled');
   await expect(page.locator('#cooldownReleaseSummary')).toContainText('上市日尚未確認');
   await expect(page.locator('#cooldownReleaseSummary')).not.toContainText('上市後第');
+  await expect(page.locator('#cooldownPeak')).toContainText('上市日尚未確認');
+  await expect(page.locator('#cooldownRelativeDecline')).toContainText('高峰後第 2 天');
 });
 
 test('a live game with old observations reports uncertainty while retaining historical events', async ({ page }) => {
@@ -165,5 +206,6 @@ for (const elapsedHours of [5, 12, 13]) {
     await expect(page.locator('#cooldownEvents')).toContainText('2026/10/04 00:00');
   });
 }
+
 
 

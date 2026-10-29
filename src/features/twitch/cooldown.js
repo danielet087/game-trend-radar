@@ -272,18 +272,20 @@ export function createCooldown(root) {
     if (!peak || peak.median <= 0) {
       decline.append(el('p', '', '尚無大於零的有效每日中位數高峰，無法計算比例衰退。')); return;
     }
-    decline.append(el('p', '', `基準：已保存全期最高每日觀眾中位數 ${fmt(peak.median)} 人（${peak.date}${dayHint(peak.startAt) ? ` · ${dayHint(peak.startAt)}` : ''}）。`));
+    const peakSummary = el('p'); peakSummary.id = 'cooldownPeak';
+    peakSummary.append(el('strong', '', dayHint(peak.startAt) ? `${dayHint(peak.startAt)}達到高峰` : '上市日尚未確認，暫無法計算上市至高峰天數'));
+    decline.append(peakSummary, el('p', '', `目前高峰日：${peak.date} · 已保存全期最高每日觀眾中位數 ${fmt(peak.median)} 人。高峰日為第 0 天，以下衰退天數從這一天開始往後算。`));
     const list = el('ol', 'tw-cooldown-event-list');
     for (const item of milestones) {
       const row = el('li');
       if (item.date) {
-        const button = el('button', '', `較高峰下降 ${item.percent}% · ${item.date}${dayHint(item.startedAt) ? ` · ${dayHint(item.startedAt)}` : ''}`);
+        const button = el('button', '', `高峰後第 ${item.daysFromPeak} 天 · 較高峰下降 ${item.percent}%`);
         button.type = 'button'; button.dataset.cooldownHour = item.observedAt;
-        row.append(button, el('small', '', `每日中位數 ${fmt(item.median)} 人 ≤ ${fmt(item.thresholdValue)} 人；於 ${at(item.observedAt)} 日結束後確認。`));
-      } else row.append(el('strong', '', `較高峰下降 ${item.percent}%：尚未觀測到`), el('small', '', `每日中位數需降至 ${fmt(item.thresholdValue)} 人以下（含）`));
+        row.append(button, el('small', '', `${item.date}${dayHint(item.startedAt) ? ` · ${dayHint(item.startedAt)}` : ''} · 每日中位數 ${fmt(item.median)} 人 ≤ ${fmt(item.thresholdValue)} 人；於 ${at(item.observedAt)} 日結束後確認。`));
+      } else row.append(el('strong', '', `較高峰下降 ${item.percent}%：高峰後尚未觀測到`), el('small', '', `從 ${peak.date} 起算，等待每日中位數降至 ${fmt(item.thresholdValue)} 人以下（含）`));
       list.append(row);
     }
-    decline.append(list, el('p', 'tw-cooldown-event-hint', '各比例記錄高峰日之後首次達到該跌幅的有效統計日，無須連續 3 天；缺測超過 12 小時或尚未結束的日期不計。這是回顧紀錄，出現新高峰時會重新計算；缺測期間不推估跨越時間，未觀測到不代表未曾發生。點選紀錄可定位圖表。'));
+    decline.append(list, el('p', 'tw-cooldown-event-hint', '先記錄上市至目前高峰的天數，再計算高峰日之後首次下降 25%、50%、75% 各花幾天。天數以台灣日期差計算，跨越缺測日仍計入經過天數，但不推估缺測期間何時達到跌幅；缺測超過 12 小時或尚未結束的日期不作為高峰或衰退達標日。若每日中位數突破原高峰，改用新高峰日作為第 0 天，三個比例的門檻與天數全部重新計算，舊高峰後的結果不沿用；同高不重設。比例紀錄無須連續 3 天，也不影響 3,000 人退燒規則。點選紀錄可定位圖表。'));
   }
   function render() {
     if (disposed || root.hidden || !rows) return;
@@ -357,6 +359,7 @@ export function createCooldown(root) {
     destroy() { disposed = true; request++; listeners.abort(); observer?.disconnect(); root.replaceChildren(); root.hidden = true; },
   };
 }
+
 
 
 

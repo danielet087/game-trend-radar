@@ -30,6 +30,7 @@ function relativeDecline(days) {
     const day = thresholdValue === null ? null : valid.find(day =>
       day.startAt > peak.startAt && day.median <= thresholdValue);
     return { percent, thresholdValue, date: day?.date ?? null,
+      daysFromPeak: day ? Math.round((Date.parse(day.startAt) - Date.parse(peak.startAt)) / DAY) : null,
       startedAt: day?.startAt ?? null, observedAt: day?.endAt ?? null, median: day?.median ?? null };
   });
   return { peak: peak ? { date: peak.date, startAt: peak.startAt, median: peak.median } : null, milestones };
@@ -119,5 +120,6 @@ export function analyzeCooldown(rows, { now = Date.now() } = {}) {
       completeDays: days.filter(day => day.complete).length, totalDays: days.length },
     firstHour: points[0]?.hour ?? null, lastHour: last?.hour ?? null, pendingRecheck };
 }
+
 
 
