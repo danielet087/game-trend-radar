@@ -123,22 +123,23 @@
       raw.release_precision === "day" && raw.release_display_precision === "date_full" &&
       raw.release_date_timezone === "Asia/Taipei" &&
       (consistentTimestampDay || hasTaiwanStoreDateAuthority(raw)) && raw.release_end === raw.release_start &&
-      Number.isSafeInteger(raw.followers) && raw.followers >= 0 &&
-      awareTime(raw.follower_checked_at) !== null;
+      ((Object.hasOwn(raw, 'followers') && raw.followers === null && raw.follower_checked_at == null && raw.follower_source == null) ||
+        (Number.isSafeInteger(raw.followers) && raw.followers >= 0 &&
+         awareTime(raw.follower_checked_at) !== null));
   }
   function normalize(raw, recent = false, translated = null) {
     if (!raw || typeof raw !== "object") return null;
     const date = raw.release_start || raw.release_date;
-    const followers = raw.followers == null ? NaN : Number(raw.followers);
+    const followers = raw.followers == null ? null : Number(raw.followers);
     const appid = Number(raw.appid);
+    const twitchQualified = isTwitchQualified(raw);
     if (
       !exactReleaseDate(raw) ||
       !Number.isInteger(appid) ||
       appid <= 0 ||
-      !Number.isFinite(followers)
+      (!Number.isFinite(followers) && !(followers === null && twitchQualified))
     )
       return null;
-    const twitchQualified = isTwitchQualified(raw);
     if (!twitchQualified && (
       recent
         ? !(

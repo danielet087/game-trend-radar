@@ -21,12 +21,12 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-for (const accepted of [true, false]) {
-  test(`database-backed Twitch admission ${accepted ? 'opens' : 'rejects an unrelated source on'} Haunted Heist detail`, async ({ page }) => {
+for (const [accepted, unknownFollowers] of [[true, false], [false, false], [true, true]]) {
+  test(`database-backed Twitch admission${unknownFollowers ? " with unknown Followers" : ""} ${accepted ? 'opens' : 'rejects an unrelated source on'} Haunted Heist detail`, async ({ page }) => {
     await page.clock.install({ time: new Date('2026-10-16T13:00:00Z') });
     const row = {
       appid: 4024440, name: 'Haunted Heist', name_en: 'Haunted Heist', display_name: '鬧鬼大劫掠',
-      followers: 2043, follower_checked_at: '2026-10-16T07:02:39Z',
+      followers: unknownFollowers ? null : 2043, follower_checked_at: unknownFollowers ? null : '2026-10-16T07:02:39Z',
       release_start: '2026-10-13', release_end: '2026-10-13', release_precision: 'day',
       release_display_precision: 'date_full', release_date_timezone: 'Asia/Taipei',
       release_time_utc: '2026-10-12T17:00:30Z', release_timestamp_taipei_date: '2026-10-13',
@@ -52,7 +52,11 @@ for (const accepted of [true, false]) {
     if (accepted) {
       await expect(page.locator('#detailPage')).toBeVisible();
       await expect(page.locator('#gameTitle')).toHaveText('鬧鬼大劫掠');
-      await expect(page.locator('#gameFollowers')).toHaveText('2,043');
+      await expect(page.locator('#gameFollowers')).toHaveText(unknownFollowers ? '未取得' : '2,043');
+      if (unknownFollowers) {
+        await expect(page.locator('#gameInterestUnit')).toHaveText('');
+        await expect(page.locator('#gameInterestCaption')).toContainText('收錄依據 Twitch');
+      }
       await expect(page.locator('#gameSteam')).toHaveAttribute('href', 'https://store.steampowered.com/app/4024440/');
       await expect(page.locator('#detailStatus')).toBeHidden();
     } else {
