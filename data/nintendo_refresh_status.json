@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-29T00:33:14Z",
+  "generated_at": "2026-10-30T00:30:58Z",
   "complete": false,
   "ledger_complete": true,
   "lookup_complete": false,
   "public_complete": true,
   "status": "persisted_partial",
-  "candidate_count": 6899,
-  "public_count": 28,
+  "candidate_count": 6910,
+  "public_count": 25,
   "popularity_counts": {
     "qualified": 212,
-    "observe": 88,
-    "below_threshold": 1572,
-    "unknown": 5027
+    "observe": 89,
+    "below_threshold": 1576,
+    "unknown": 5033
   },
   "content_review_count": 555,
   "content_excluded_count": 21,
@@ -21,8 +21,8 @@
   "source": {
     "provider": "IGDB",
     "hypes_threshold": 30,
-    "discovery_release_count": 9082,
-    "request_count": 94,
+    "discovery_release_count": 9096,
+    "request_count": 95,
     "retry_count": 0,
     "platform_ids_verified": [
       130,
@@ -54,7 +54,7 @@
     "public_complete": true
   },
   "name_enrichment": {
-    "steam_request_count": 19,
+    "steam_request_count": 14,
     "steam_failure_count": 0,
     "steam_rate_limited": false
   },
@@ -62,8 +62,32 @@
     "review_only": true,
     "schema_version": 1,
     "provider": "PlayStation Store",
-    "request_count": 29,
+    "request_count": 25,
     "games": {
+      "igdb:236665": {
+        "igdb_id": 236665,
+        "name_en": "Professor Layton and the New World of Steam",
+        "status": "no_exact_store_url",
+        "attempted_urls": [],
+        "checked_at": "2026-10-30T00:31:55Z",
+        "evidence": null
+      },
+      "igdb:261146": {
+        "igdb_id": 261146,
+        "name_en": "Titan Quest II",
+        "status": "no_exact_store_url",
+        "attempted_urls": [],
+        "checked_at": "2026-10-30T00:31:55Z",
+        "evidence": null
+      },
+      "igdb:252852": {
+        "igdb_id": 252852,
+        "name_en": "Mariachi Legends",
+        "status": "no_exact_store_url",
+        "attempted_urls": [],
+        "checked_at": "2026-10-30T00:31:55Z",
+        "evidence": null
+      },
       "igdb:67195": {
         "igdb_id": 67195,
         "name_en": "Witchbrook",
@@ -72,31 +96,7 @@
           "https://store.playstation.com/en-tw/concept/10016633",
           "https://store.playstation.com/en-hk/concept/10016633"
         ],
-        "checked_at": "2026-10-29T00:34:16Z",
-        "evidence": null
-      },
-      "igdb:236665": {
-        "igdb_id": 236665,
-        "name_en": "Professor Layton and the New World of Steam",
-        "status": "no_exact_store_url",
-        "attempted_urls": [],
-        "checked_at": "2026-10-29T00:34:16Z",
-        "evidence": null
-      },
-      "igdb:261146": {
-        "igdb_id": 261146,
-        "name_en": "Titan Quest II",
-        "status": "no_exact_store_url",
-        "attempted_urls": [],
-        "checked_at": "2026-10-29T00:34:16Z",
-        "evidence": null
-      },
-      "igdb:252852": {
-        "igdb_id": 252852,
-        "name_en": "Mariachi Legends",
-        "status": "no_exact_store_url",
-        "attempted_urls": [],
-        "checked_at": "2026-10-29T00:34:16Z",
+        "checked_at": "2026-10-30T00:31:56Z",
         "evidence": null
       },
       "igdb:405070": {
@@ -106,7 +106,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10017860"
         ],
-        "checked_at": "2026-10-29T00:34:16Z",
+        "checked_at": "2026-10-30T00:31:57Z",
         "evidence": {
           "product_id": "JP0106-PPSA34857_00-WOLONG2000000000",
           "official_title": "Wo Long 2: Wings of Ember (English/Chinese/Korean/Japanese Ver.)",
@@ -121,44 +121,6 @@
           "evidence_type": "official_chinese_unspecified"
         }
       },
-      "igdb:404716": {
-        "igdb_id": 404716,
-        "name_en": "The Wolf Among Us Remastered",
-        "status": "unavailable",
-        "attempted_urls": [
-          "https://store.playstation.com/en-tw/concept/10018232",
-          "https://store.playstation.com/en-hk/concept/10018232"
-        ],
-        "checked_at": "2026-10-29T00:34:17Z",
-        "evidence": null
-      },
-      "igdb:250618": {
-        "igdb_id": 250618,
-        "name_en": "Phantom Blade Zero",
-        "status": "confirmed_product",
-        "attempted_urls": [
-          "https://store.playstation.com/en-tw/concept/10017620"
-        ],
-        "checked_at": "2026-10-29T00:34:18Z",
-        "evidence": {
-          "product_id": "UB2134-PPSA34579_00-0622032276386943",
-          "official_title": "Phantom Blade Zero (Simplified Chinese, English, Korean, Thai, Japanese, Traditional Chinese)",
-          "region": "taiwan",
-          "source_url": "https://store.playstation.com/zh-hant-tw/product/UB2134-PPSA34579_00-0622032276386943",
-          "supported_languages": [
-            "zh-Hans",
-            "en",
-            "ko",
-            "th",
-            "ja",
-            "zh-Hant"
-          ],
-          "complete": false,
-          "release_time_utc": "2026-10-29T02:00:00Z",
-          "date": "2026-10-29",
-          "evidence_type": "official_product_languages"
-        }
-      },
       "igdb:279621": {
         "igdb_id": 279621,
         "name_en": "Exodus",
@@ -166,7 +128,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10013615"
         ],
-        "checked_at": "2026-10-29T00:34:19Z",
+        "checked_at": "2026-10-30T00:31:58Z",
         "evidence": {
           "product_id": null,
           "concept_id": "10013615",
@@ -187,7 +149,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10017555"
         ],
-        "checked_at": "2026-10-29T00:34:20Z",
+        "checked_at": "2026-10-30T00:31:58Z",
         "evidence": {
           "product_id": null,
           "concept_id": "10017555",
@@ -208,7 +170,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10005291"
         ],
-        "checked_at": "2026-10-29T00:34:20Z",
+        "checked_at": "2026-10-30T00:31:59Z",
         "evidence": {
           "product_id": null,
           "concept_id": "10005291",
@@ -230,7 +192,7 @@
           "https://store.playstation.com/en-tw/concept/10014491",
           "https://store.playstation.com/en-hk/concept/10014491"
         ],
-        "checked_at": "2026-10-29T00:34:22Z",
+        "checked_at": "2026-10-30T00:32:00Z",
         "evidence": null
       },
       "igdb:325599": {
@@ -240,7 +202,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10017939"
         ],
-        "checked_at": "2026-10-29T00:34:23Z",
+        "checked_at": "2026-10-30T00:32:00Z",
         "evidence": {
           "product_id": "JP0177-PPSA34972_00-MAINGAME00000000",
           "official_title": "STRANGER THAN HEAVEN (English/Chinese/Korean/Japanese Ver.)",
@@ -262,7 +224,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10009461"
         ],
-        "checked_at": "2026-10-29T00:34:24Z",
+        "checked_at": "2026-10-30T00:32:01Z",
         "evidence": {
           "product_id": "UP9000-PPSA19249_00-LAUFEY0000000000",
           "official_title": "God of War Laufey™ (English/Chinese/Korean Ver.)",
@@ -284,7 +246,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10009337"
         ],
-        "checked_at": "2026-10-29T00:34:25Z",
+        "checked_at": "2026-10-30T00:32:02Z",
         "evidence": {
           "product_id": "EP8459-PPSA18995_00-GOZO0000000PS5WW",
           "official_title": "METRO 2039 (English/Chinese/Korean/Japanese Ver.)",
@@ -304,7 +266,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10009022"
         ],
-        "checked_at": "2026-10-29T00:34:26Z",
+        "checked_at": "2026-10-30T00:32:03Z",
         "evidence": {
           "product_id": null,
           "concept_id": "10009022",
@@ -325,7 +287,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10011107"
         ],
-        "checked_at": "2026-10-29T00:34:29Z",
+        "checked_at": "2026-10-30T00:32:03Z",
         "evidence": {
           "product_id": "JP0005-PPSA23593_00-APPLICATION00000",
           "official_title": "Persona 4 Revival (Simplified Chinese, English, Korean, Thai, Japanese, Traditional Chinese)",
@@ -352,7 +314,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10004067"
         ],
-        "checked_at": "2026-10-29T00:34:30Z",
+        "checked_at": "2026-10-30T00:32:04Z",
         "evidence": {
           "product_id": "EP9000-PPSA05719_00-UNTILDAWN2000001",
           "official_title": "Until Dawn 2 (English/Chinese/Korean/Japanese Ver.)",
@@ -375,7 +337,7 @@
           "https://store.playstation.com/en-tw/concept/10017364",
           "https://store.playstation.com/en-hk/concept/10017364"
         ],
-        "checked_at": "2026-10-29T00:34:32Z",
+        "checked_at": "2026-10-30T00:32:06Z",
         "evidence": null
       },
       "igdb:314449": {
@@ -385,7 +347,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10012485"
         ],
-        "checked_at": "2026-10-29T00:34:33Z",
+        "checked_at": "2026-10-30T00:32:08Z",
         "evidence": {
           "product_id": null,
           "concept_id": "10012485",
@@ -407,40 +369,8 @@
           "https://store.playstation.com/en-tw/concept/10014259",
           "https://store.playstation.com/en-hk/concept/10014259"
         ],
-        "checked_at": "2026-10-29T00:34:35Z",
+        "checked_at": "2026-10-30T00:32:09Z",
         "evidence": null
-      },
-      "igdb:250620": {
-        "igdb_id": 250620,
-        "name_en": "Sword of the Sea",
-        "status": "confirmed_product",
-        "attempted_urls": [
-          "https://store.playstation.com/en-tw/concept/10011227"
-        ],
-        "checked_at": "2026-10-29T00:34:36Z",
-        "evidence": {
-          "product_id": "EP0292-PPSA25344_00-0946238103518617",
-          "official_title": "Sword of the Sea (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
-          "region": "taiwan",
-          "source_url": "https://store.playstation.com/zh-hant-tw/product/EP0292-PPSA25344_00-0946238103518617",
-          "supported_languages": [
-            "zh-Hans",
-            "zh-Hant",
-            "en",
-            "fr",
-            "de",
-            "it",
-            "ja",
-            "ko",
-            "pt-BR",
-            "ru",
-            "es"
-          ],
-          "complete": true,
-          "release_time_utc": "2025-08-19T00:00:00Z",
-          "date": "2025-08-19",
-          "evidence_type": "official_product_languages"
-        }
       },
       "igdb:117170": {
         "igdb_id": 117170,
@@ -449,7 +379,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10006891"
         ],
-        "checked_at": "2026-10-29T00:34:37Z",
+        "checked_at": "2026-10-30T00:32:10Z",
         "evidence": {
           "product_id": "HP9000-PPSA13198_00-STELLARBLADE0000",
           "official_title": "Stellar Blade™ (Simplified Chinese, English, Korean, Thai, Japanese, Traditional Chinese)",
@@ -476,7 +406,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10006560"
         ],
-        "checked_at": "2026-10-29T00:34:38Z",
+        "checked_at": "2026-10-30T00:32:10Z",
         "evidence": {
           "product_id": "EP3969-PPSA11386_00-007FIRSTLIGHT000",
           "official_title": "007 First Light (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
@@ -511,7 +441,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10005176"
         ],
-        "checked_at": "2026-10-29T00:34:39Z",
+        "checked_at": "2026-10-30T00:32:11Z",
         "evidence": {
           "product_id": "UP0102-PPSA07862_00-MHWILDSSTANDARD0",
           "official_title": "Monster Hunter Wilds (Simplified Chinese, English, Korean, Thai, Japanese, Traditional Chinese)",
@@ -538,7 +468,7 @@
         "attempted_urls": [
           "https://store.playstation.com/en-tw/concept/10009571"
         ],
-        "checked_at": "2026-10-29T00:34:40Z",
+        "checked_at": "2026-10-30T00:32:12Z",
         "evidence": {
           "product_id": "EB0757-PPSA20548_00-0286086241569047",
           "official_title": "Eriksholm: The Stolen Dream (Simplified Chinese, English, Japanese)",
@@ -568,7 +498,7 @@
           "https://store.playstation.com/en-tw/concept/10001029",
           "https://store.playstation.com/en-hk/concept/10001029"
         ],
-        "checked_at": "2026-10-29T00:34:41Z",
+        "checked_at": "2026-10-30T00:32:13Z",
         "evidence": null
       }
     }
@@ -576,7 +506,7 @@
   "description_enrichment": {
     "official_chinese_count": 13,
     "official_failure_count": 0,
-    "english_fallback_count": 15,
+    "english_fallback_count": 12,
     "missing_count": 0,
     "official_request_count": 0,
     "official_rate_limited": false
@@ -584,15 +514,15 @@
   "exclusivity_counts": {
     "confirmed": 1,
     "listed_only": 3,
-    "multi_platform": 24,
+    "multi_platform": 21,
     "unknown": 0
   },
   "storage_backend": "turso",
   "state_persisted": true,
-  "committed_at": "2026-10-29T00:35:03Z",
-  "target_slot": "2026-10-29T00:30:00Z",
+  "committed_at": "2026-10-30T00:32:32Z",
+  "target_slot": "2026-10-30T00:30:00Z",
   "trigger_source": "cloudflare",
-  "run_id": "40794476670",
+  "run_id": "40980090682",
   "backend_mirror": "not_required",
   "authoritative_source": "danielet087/game-trend-radar@main",
   "collection_status": "partial"
