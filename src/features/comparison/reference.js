@@ -11,7 +11,7 @@ export function createComparisonView(ctx, presentation, comparisonHistory) {
     const sorted = matches.sort((a, b) => b.followers - a.followers);
     $("compareSuggestions").replaceChildren(...sorted.slice(0, 6).map(game => {
       const button = node("button", "compare-suggestion"); button.type = "button";
-      const text = node("span"); text.append(node("strong", "", game.name), node("small", "", `${dateText(game.date)} · ${number.format(game.followers)} 人關注`));
+      const text = node("span"); text.append(node("strong", "", game.name), node("small", "", `${dateText(game.date)} · ${Number.isFinite(game.followers) ? `${number.format(game.followers)} 人關注` : 'Followers 未取得'}`));
       button.append(cover(game, "suggestion-cover"), text, node("span", "suggestion-plus", "+"));
       button.setAttribute("aria-label", `加入比較：${game.name}`);
       button.disabled = selected.length >= 3;

@@ -48,6 +48,24 @@ for (const [name, adapter] of [['modular', modular], ['legacy', legacy]]) {
     }
   });
 
+  test(`${name}: missing Followers stay unknown after verified Twitch admission`, () => {
+    const raw = { ...hauntedHeist(), followers: null, follower_checked_at: null, follower_source: null };
+    assert.equal(adapter.isTwitchQualified(raw), true);
+    for (const recent of [false, true]) {
+      const game = adapter.normalize(raw, recent);
+      assert.equal(game.appid, raw.appid);
+      assert.equal(game.followers, null);
+      assert.ok(game.twitchAdmission);
+    }
+    for (const changes of [{ twitch_admission: null }, { steam_type: 'dlc' },
+      { sexual_content_screened: false }, { follower_checked_at: '2026-10-16T00:00:00Z' },
+      { follower_source: 'Steam Community XML memberCount' }]) {
+      const invalid = { ...raw, ...changes };
+      assert.equal(adapter.isTwitchQualified(invalid), false);
+      assert.equal(adapter.normalize(invalid), null);
+    }
+  });
+
   test(`${name}: legacy Git admission remains supported without database fields`, () => {
     const raw = { ...hauntedHeist(), twitch_admission: legacyProof() };
     assert.equal(adapter.hasTwitchAdmission(raw), true);

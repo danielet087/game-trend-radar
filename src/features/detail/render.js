@@ -43,11 +43,13 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     $("gameInterestLabel").textContent = nintendo ? "發售前的社群關注" : "已經有這麼多人關注";
     $("gameFollowers").textContent = nintendo
       ? Number.isSafeInteger(game.hypes) ? number.format(game.hypes) : "未知"
-      : number.format(game.followers);
-    $("gameInterestUnit").textContent = nintendo ? "次關注" : "人";
+      : Number.isFinite(game.followers) ? number.format(game.followers) : "未取得";
+    $("gameInterestUnit").textContent = nintendo ? "次關注" : Number.isFinite(game.followers) ? "人" : "";
     $("gameInterestCaption").textContent = nintendo
       ? "IGDB hypes · 發售前關注數"
-      : "Steam Followers · 非願望清單數";
+      : game.twitchAdmission && !Number.isFinite(game.followers)
+        ? "收錄依據 Twitch · Steam Followers 尚未取得"
+        : "Steam Followers · 非願望清單數";
     $("gameState").textContent =
       days > 0
         ? "值得期待的新作"

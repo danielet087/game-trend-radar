@@ -90,7 +90,11 @@ export const GameCard = defineComponent({
             ]),
             h('div', { class: 'card-interest' }, metrics.map(([value, label]) => h('span', { class: 'card-followers' }, [
               new Intl.NumberFormat('zh-TW').format(Number(value)), h('small', null, String(label)),
-            ]))),
+            ])).concat(game.twitchAdmission && !Number.isFinite(game.followers) ? [
+              h('span', { class: 'card-followers', title: 'Steam Followers 尚未取得；已通過 Twitch 收錄資格' }, [
+                '未取得', h('small', null, '收錄依據 Twitch'),
+              ]),
+            ] : [])),
           ]),
           h('div', { class: 'card-footer' }, [
             h('div', { class: 'card-platforms', 'aria-label': '遊戲平台與獨佔狀態' }, [h('span', { class: 'platform-badge platform-' + badge.status, title: badge.title }, badge.label)]),

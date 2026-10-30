@@ -36,7 +36,7 @@ export function createDetailContext(options = {}) {
     ...parseDetailRoute((options.location || window.location).search),
     interestText: game => isNativeConsole(game)
       ? Number.isSafeInteger(game.hypes) ? `IGDB hypes ${number.format(game.hypes)}` : 'IGDB hypes 未知'
-      : `${number.format(game.followers)} 人關注`,
+      : Number.isFinite(game.followers) ? `${number.format(game.followers)} 人關注` : 'Followers 未取得 · 收錄依據 Twitch',
     detailURL: game => D.detailURL(game),
     state: { currentGame: null, candidates: [], knownGames: [], tagsExpanded: false,
       selectedTag: '', recommendationsReady: false },
