@@ -44,7 +44,11 @@ test('overview defaults to Chinese, switches sorting and metrics, and carries sc
   await expect(page.locator('.tw-game').first()).toHaveAttribute('data-game-id', '2');
   await expect(page.locator('.tw-game[data-game-id="1"] [data-kind="viewers"] strong')).toHaveText('300');
   await expect(page.locator('.tw-game[data-game-id="3"]')).toContainText('未收集中文區');
+  await page.route('**/data/twitch_live.json', route => route.fulfill({ status: 503, body: 'Unavailable' }));
+  await page.locator('#snapshotRefresh').click();
+  await expect(page.locator('#noticeTitle')).toHaveText('暫時無法更新，保留上次讀取的快照');
   await page.locator('#audienceRegion').selectOption('global');
+  await expect(page.locator('#snapshotNotice')).toBeVisible();
   await expect(page).toHaveURL(/region=global/);
   await expect(page.locator('.tw-game').first()).toHaveAttribute('data-game-id', '1');
   await expect(page.locator('.tw-game').first().locator('[data-kind="viewers"] strong')).toHaveText('20,000');

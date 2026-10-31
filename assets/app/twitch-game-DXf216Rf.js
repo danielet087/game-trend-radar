@@ -1,1 +1,0 @@
-import{t as e}from"./bootstrap-BC-KyN9x.js";/* empty css             *//* empty css               */e(`twitch-game`).catch(e=>{console.error(`Unable to initialize Twitch history:`,e);let t=document.getElementById(`historyStatus`);t&&(t.textContent=`頁面暫時無法載入，請重新整理後再試。`)});
