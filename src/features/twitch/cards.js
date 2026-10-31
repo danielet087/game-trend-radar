@@ -1,6 +1,7 @@
 import { RadarTwitch as D } from "./data.js";
 import { node, fmt, time, IGDB_SOURCE, audienceNote, pendingLegacyMeasurement } from "./presentation.js";
 import { detailHref } from "./series.js";
+import { regionNames } from './audience-region.js';
 export function createTwitchCards({ state, historyPanel, signal: eventSignal }) {
 function badge(text, tone = "unknown") {
   const el = node("span","tw-state",text); el.dataset.tone = tone; return el;
@@ -60,7 +61,7 @@ function gameCard(g) {
   const metricNames = ["總觀眾人數","總開台數","篩選後中位數"];
   [g.viewer_count,g.streamer_count,g.filtered_audience.median_viewer_count].forEach((value,i) => {
     const metric = node("div","tw-metric"); metric.dataset.kind = ["viewers","streamers","median"][i];
-    metric.append(node("span","tw-metric-label",metricNames[i]),node("strong","",fmt(value)),node("small","",pendingLegacy ? "待首次完整量測" : g.observation_status === "retained" ? value == null ? "待更新・無保存數值" : "上次觀測・待更新" : i === 2 ? audienceNote(g.filtered_audience) : value == null ? "尚未收集" : i === 1 ? "個頻道・全體" : "人・全體"));
+    metric.append(node("span","tw-metric-label",metricNames[i]),node("strong","",fmt(value)),node("small","",g.audience_region_status === 'unavailable' ? '未收集中文區' : pendingLegacy ? "待首次完整量測" : g.observation_status === "retained" ? value == null ? "待更新・無保存數值" : "上次觀測・待更新" : i === 2 ? audienceNote(g.filtered_audience) : value == null ? "尚未收集" : `${i === 1 ? '個頻道' : '人'}・${regionNames[g.audience_region] || '全球'}`));
     if (i === 2) metric.setAttribute("aria-label",`${pendingLegacy ? "舊版補回，待首次完整量測；" : g.observation_status === "retained" ? "上次觀測，待更新；" : ""}篩選後觀眾中位數 ${fmt(value)} 人，${audienceNote(g.filtered_audience)}；免費追隨者超過 1,000 且觀眾至少 10 人`);
     summary.append(metric);
   });
@@ -97,3 +98,4 @@ function empty(title, message, action, label) {
 }
 return { gameCard, empty, evidence };
 }
+

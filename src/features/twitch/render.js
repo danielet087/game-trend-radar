@@ -1,9 +1,12 @@
 import { RadarTwitch as D } from "./data.js";
 import { node, fmt, time, filterNames, IGDB_SOURCE, sourceWindow } from "./presentation.js";
+import { forRegion, regionNames } from './audience-region.js';
 export function createTwitchRenderer({ state, $, cards, gameCard, empty, evidence, reset, syncURL, signal }) {
 function render() {
   if (!state.data) return;
-  const { games,legacy } = state.data;
+  const { legacy } = state.data;
+  const games = state.data.games.map(game => forRegion(game, state.region));
+  metadata();
   const visible = D.select(games,state);
   document.querySelectorAll("[data-filter]").forEach(button => {
     button.setAttribute("aria-pressed",String(button.dataset.filter === state.filter));
@@ -25,8 +28,9 @@ function render() {
   $("resultsStatus").textContent = `${visible.length} 款 · ${filterNames[state.filter]}${visible.length > state.limit ? ` · 顯示前 ${state.limit} 款` : ""}`;
   const fragment = document.createDocumentFragment();
   visible.slice(0,state.limit).forEach(g => {
-    if (!cards.has(g.game_id)) cards.set(g.game_id,gameCard(g));
-    fragment.append(cards.get(g.game_id));
+    const key = `${state.region}:${g.game_id}`;
+    if (!cards.has(key)) cards.set(key,gameCard(g));
+    fragment.append(cards.get(key));
   });
   if (!visible.length) {
     const noSignals = games.length && state.filter === D.DEFAULT_FILTER && !state.query;
@@ -70,7 +74,7 @@ function pendingSteam() {
 function metadata() {
   const d = state.data, coverage = d.coverage;
   $("snapshotTime").textContent = time(d.generated_at); $("snapshotTime").dateTime = d.generated_at;
-  $("scopeLabel").textContent = d.legacy ? "等待新版觀測" : "全球觀測 · Twitch 熱門新作 + Steam 近期上市";
+  $("scopeLabel").textContent = d.legacy ? "等待新版觀測" : `${regionNames[state.region]}觀測 · Twitch 熱門新作 + Steam 近期上市`;
   $("igdbDateGuide").textContent = `使用 IGDB 首次發售日期；本次快照採 ${sourceWindow(state, IGDB_SOURCE)}範圍。尚未發售會另標「未上市」，缺少有效日期時保持未知。`;
   document.querySelector('[data-metric-label="viewers"]').textContent = d.legacy ? "取樣觀眾數" : "總觀眾人數";
   document.querySelector('[data-metric-label="streamers"]').textContent = d.legacy ? "取樣開台數" : "總開台數";
@@ -86,8 +90,9 @@ function metadata() {
   const stale = Date.now() - Date.parse(d.generated_at) > 3 * 3600000;
   $("freshnessNote").hidden = !stale;
   $("freshnessNote").textContent = d.legacy ? "最近一份公開檔案仍為舊版，等待新版排程收集並發布。" : "這份快照已超過 3 小時未更新；以下是已保存的觀測，不代表目前直播狀態。";
-  $("tableNote").textContent = d.legacy ? "不以熱門程度推定新作，也不以舊取樣補出中位數或日期推算結果。" : "篩選後中位數只計免費追隨者 > 1,000 且觀眾 ≥ 10 的頻道，並標示納入台數。總觀眾與總開台維持全體頻道統計。「上次觀測」數值只供參考，排序置於本輪量測之後。展開可查看逐時紀錄與 IGDB 日期推算。";
+  $("tableNote").textContent = d.legacy ? "不以熱門程度推定新作，也不以舊取樣補出中位數或日期推算結果。" : `${regionNames[state.region]}：總觀眾與開台數涵蓋該區全部頻道；篩選中位數只計追隨者 > 1,000 且觀眾 ≥ 10 的頻道。${state.region === 'zh' ? '缺少語言分區的舊紀錄標示「未收集中文區」，不補成 0。' : ''}「上次觀測」只供參考，排序置於本輪量測之後。`;
   exclusions(); pendingSteam();
 }
 return { render, metadata, notice };
 }
+

@@ -31,7 +31,7 @@ test('Chinese archive search opens retained history and returns with filters int
   const errors: string[] = [], liveRequests: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => { if (/twitch_(live|tracking|steam_mapping)\.json/.test(request.url())) liveRequests.push(request.url()); });
-  await page.goto('twitch.html?view=archive');
+  await page.goto('twitch.html?region=global&view=archive');
   await expect(page.getByRole('tab', { name: '歷史資料庫' })).toHaveAttribute('aria-selected', 'true');
   await page.locator('#archiveSearch').fill('鬼武者');
   await page.locator('#archiveState').selectOption('ended');
@@ -46,7 +46,7 @@ test('Chinese archive search opens retained history and returns with filters int
   await card.click();
   await expect(page.locator('#pageTitle')).toHaveText('鬼武者 Way of the Sword');
   await expect(page.locator('#historyEnd')).toHaveValue('2026-10-04');
-  await expect(page.locator('#historyStatus')).toContainText('95 個有本遊戲');
+  await expect(page.locator('#historyStatus')).toContainText('95 個有本區');
   await page.getByRole('link', { name: '← 歷史資料庫', exact: true }).click();
   await expect(page.locator('#archiveSearch')).toHaveValue('鬼武者');
   await expect(page.locator('#archiveState')).toHaveValue('ended');
@@ -57,7 +57,7 @@ test('Chinese archive search opens retained history and returns with filters int
 });
 
 test('archive pagination, keyboard tabs, browser back and current search referral work', async ({ page }) => {
-  await page.goto('twitch.html?view=archive');
+  await page.goto('twitch.html?region=global&view=archive');
   await expect(page.locator('.tw-archive-card')).toHaveCount(24);
   await page.locator('#archiveNext').click();
   await expect(page).toHaveURL(/archive_page=2/);
@@ -84,7 +84,7 @@ test('archive failure is retryable and mobile search has no horizontal overflow'
   await page.setViewportSize({ width: 390, height: 844 });
   let fail = true;
   await page.route('**/data/twitch_series/index.json', route => fail ? route.fulfill({ status: 503, body: 'Unavailable' }) : route.fulfill({ json: fixtures().index }));
-  await page.goto('twitch.html?view=archive&q=鬼武者');
+  await page.goto('twitch.html?region=global&view=archive&q=鬼武者');
   await expect(page.locator('#archiveStatus')).toContainText('暫時無法讀取');
   fail = false;
   await page.locator('#archiveRefresh').click();
@@ -99,12 +99,13 @@ test('archive failure is retryable and mobile search has no horizontal overflow'
 test('unqualified raw games cannot appear in archive search or open through a direct history URL', async ({ page }) => {
   let monthlyRequest = false;
   page.on('request', request => { if (request.url().includes('/twitch_series/32982/')) monthlyRequest = true; });
-  await page.goto('twitch.html?view=archive&q=Grand+Theft+Auto+V');
+  await page.goto('twitch.html?region=global&view=archive&q=Grand+Theft+Auto+V');
   await expect(page.locator('#archiveResults')).toContainText('沒有符合的歷史紀錄');
   await expect(page.locator('.tw-archive-card')).toHaveCount(0);
-  await page.goto('twitch-game.html?game=32982');
+  await page.goto('twitch-game.html?region=global&game=32982');
   await expect(page.locator('#historyStatus')).toContainText('未列入正式收錄');
   await expect(page.locator('#historyContent')).toBeHidden();
   await expect(page.locator('#historyExport')).toBeDisabled();
   expect(monthlyRequest).toBe(false);
 });
+

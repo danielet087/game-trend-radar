@@ -32,7 +32,8 @@ function valueOf(row, metric) {
 function statusOf(row, metric) {
   if (!row || row.status === "missing") return "此時段沒有收集紀錄。";
   if (row.status === "absent") return "此時段有收集紀錄，但本遊戲未列入；不代表觀眾為 0。";
-  if (metric !== "median") return valueOf(row, metric) === null ? "此時段未提供這項數據。" : "統計全部直播頻道，未套用追隨者篩選。";
+  if (row.audience_region_status === 'unavailable') return '未收集中文區；這筆紀錄沒有語言分區資料，不代表 0。';
+  if (metric !== "median") return valueOf(row, metric) === null ? "此時段未提供這項數據。" : `統計${row.audience_region === 'zh' ? '中文區' : '全球'}全部直播頻道，未套用追隨者篩選。`;
   const filtered = row.filtered_audience;
   if (filtered?.status === "partial") return `追隨者數待補 ${number(filtered.unknown_follower_count || 0)} 個頻道，中位數尚未完成。`;
   if (filtered?.status === "invalid") return "此時段的篩選資料無法驗證，暫不顯示中位數。";
@@ -242,3 +243,4 @@ function mount(container, options) {
 }
 export const RadarTwitchChart = { mount };
 export { mount, valueOf, statusOf };
+

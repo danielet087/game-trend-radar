@@ -2,6 +2,7 @@ import { RadarStorage } from '../../data/storage.ts';
 import { node, fmt, time } from './presentation.js';
 import { validIndex, detailHref } from './series.js';
 import { archiveStates, archiveGames, archiveURLState, selectArchive, PAGE_SIZE } from './archive-model.js';
+import { regionNames, regionOf } from './audience-region.js';
 
 export function createTwitchArchive({ $, signal }) {
   let state = archiveURLState(location.search), index, games = [], pending, timer, composing = false, hintQuery = '', failed = false;
@@ -43,14 +44,17 @@ export function createTwitchArchive({ $, signal }) {
       const stat = node('div'); stat.append(node('dt', '', label), node('dd', '', fmt(value)), node('small', '', unit)); stats.append(stat);
     }
     link.append(identity, period, stats, node('span', 'tw-archive-open', '查看歷史 →'));
+    if (!game.regionAvailable) link.append(node('p', '', '未收集中文區'));
     return link;
   }
   function render() {
     if (!active() || signal.aborted || !index) return;
+    const region = regionOf(new URLSearchParams(location.search).get('region'));
+    games = archiveGames(index, region);
     const selected = selectArchive(games, state), pages = Math.max(1, Math.ceil(selected.length / PAGE_SIZE));
     state.page = Math.min(state.page, pages); syncURL();
     $('archiveUpdated').textContent = `更新 ${time(index.generated_at)}（台灣）`;
-    $('archiveStatus').textContent = `${failed ? '更新失敗，保留上次讀取的資料 · ' : ''}共保存 ${fmt(games.length)} 款遊戲${selected.length !== games.length ? ` · 符合 ${fmt(selected.length)} 款` : ''}`;
+    $('archiveStatus').textContent = `${regionNames[region]} · ${failed ? '更新失敗，保留上次讀取的資料 · ' : ''}共保存 ${fmt(games.length)} 款遊戲${selected.length !== games.length ? ` · 符合 ${fmt(selected.length)} 款` : ''}`;
     $('archiveReset').hidden = !state.query && state.filter === 'all' && state.sort === 'recent';
     const cards = selected.slice((state.page - 1) * PAGE_SIZE, state.page * PAGE_SIZE).map(card);
     if (!cards.length) {
@@ -128,3 +132,4 @@ export function createTwitchArchive({ $, signal }) {
     updateHint(query) { hintQuery = query; paintHint(); if (query.trim() && !index) load(); },
     destroy() { clearTimeout(timer); } };
 }
+

@@ -7,14 +7,14 @@
   <meta name="description" content="查看單款遊戲的 Twitch 歷史觀眾、開台數與篩選中位數，自訂日期、操作逐時趨勢並下載明細。">
   <title>Twitch 歷史趨勢｜Game Trend Radar</title>
   <link rel="icon" id="siteFavicon" type="image/svg+xml">
-  <script type="module" crossorigin src="/game-trend-radar/assets/app/twitch-game-Dx7WjDub.js"></script>
+  <script type="module" crossorigin src="/game-trend-radar/assets/app/twitch-game-DXf216Rf.js"></script>
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/contracts-CXfvy2kB.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/storage-B5HyBz-J.js">
-  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-DVkKne81.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-BC-KyN9x.js">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/bootstrap-oTuMO7h7.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/twitch-game-DKck6jRC.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-C_gCAust.css">
-  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/styles-YSx5EFqb.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/styles-ClXqcYc_.css">
 </head>
 <body data-page="twitch-game">
   <a class="skip-link" href="#mainContent">跳到主要內容</a>
@@ -25,13 +25,17 @@
       <div>
         <p class="tw-eyebrow">THE OBSERVATION ROOM / HISTORY</p>
         <h1 id="pageTitle">遊戲歷史趨勢</h1>
-        <p class="tw-intro" id="historyCategory">全球直播熱度 · 逐時觀測</p>
+        <p class="tw-intro" id="historyCategory">中文區直播熱度 · 逐時觀測</p>
         <p class="tw-intro" id="historySpan">選擇時間範圍，追蹤一款遊戲被看見的過程。</p>
         <a class="tw-statistics-jump" id="historyCooldownJump" href="#historyCooldown" hidden>查看熱度退潮點 ↓</a>
         <a class="tw-statistics-jump" id="historyStatisticsJump" href="#historyStatistics" hidden>查看統計分析 ↓</a>
       </div>
       <div class="tw-history-updated"><span id="historyUpdated"></span><button id="historyRefresh" type="button">重新載入 ↻</button></div>
     </section>
+    <div class="tw-region-control">
+      <label for="audienceRegion">語言區域 <select id="audienceRegion"><option value="zh" selected>中文區</option><option value="global">全球</option></select></label>
+      <p>曲線、統計分析與退潮判定使用所選區域；舊紀錄未收集中文區時保留空白</p>
+    </div>
     <section class="tw-workspace" id="historyPanel" aria-labelledby="historyTitle" aria-busy="true">
       <div class="tw-workspace-head"><div><span class="tw-section-no" aria-hidden="true">01</span><h2 id="historyTitle">歷史趨勢</h2></div><button id="historyExport" type="button" disabled>下載此區間 CSV ↓</button></div>
       <div class="tw-history-controls">
@@ -65,9 +69,10 @@
     </section>
     <section class="tw-workspace tw-cooldown" id="historyCooldown" aria-label="熱度退潮時間點" hidden></section>
     <section class="tw-workspace tw-statistics" id="historyStatistics" aria-label="補充統計分析" hidden></section>
-    <p class="tw-detail-method">總觀眾與開台數涵蓋全部頻道。篩選中位數只計免費追隨者 &gt; 1,000 且觀眾 ≥ 10 的頻道；追隨數待查時不顯示中位數，舊紀錄不回算新規則。所有時間以台灣時間顯示。</p>
+    <p class="tw-detail-method">總觀眾與開台數涵蓋所選語言區域的全部頻道。篩選中位數只計免費追隨者 &gt; 1,000 且觀眾 ≥ 10 的頻道；追隨數待查時不顯示中位數，舊紀錄不回算新規則。所有時間以台灣時間顯示。</p>
     <noscript>請啟用 JavaScript 以查看和操作歷史資料。</noscript>
   </main>
   <div id="siteFooter"></div>
 </body>
 </html>
+

@@ -1,4 +1,5 @@
 import { HOUR, timestamp, count, filteredAudience } from "./metrics.js";
+import { forRegion } from './audience-region.js';
 function taipeiDay(value) {
   const date = new Date(value);
   return Number.isFinite(date.getTime()) ? new Date(date.getTime() + 8 * HOUR).toISOString().slice(0, 10) : null;
@@ -7,7 +8,7 @@ function historyDays(at) {
   const end = Math.floor(Date.parse(at) / HOUR) * HOUR;
   return Number.isFinite(end) ? [...new Set([taipeiDay(end - 23 * HOUR), taipeiDay(end)])] : [];
 }
-function historyRows(files, gameID, at) {
+function historyRows(files, gameID, at, region = 'global') {
   const cutoff = Date.parse(at), end = Math.floor(cutoff / HOUR) * HOUR;
   if (!Number.isFinite(end)) return [];
   const hours = new Map();
@@ -25,12 +26,14 @@ function historyRows(files, gameID, at) {
   return Array.from({ length: 24 }, (_, i) => {
     const time = end - (23 - i) * HOUR, snapshot = hours.get(time);
     const row = snapshot?.games.find(g => String(g.game_id) === String(gameID) && !["retained", "stale"].includes(g.observation_status) && g.observation_freshness !== "stale");
-    return { hour: new Date(time).toISOString(), generated_at: snapshot?.generated_at || null,
+    return forRegion({ hour: new Date(time).toISOString(), generated_at: snapshot?.generated_at || null,
       status: row ? "observed" : snapshot ? "absent" : "missing",
       viewer_count: count(row?.viewer_count), streamer_count: count(row?.streamer_count), median_viewer_count: count(row?.median_viewer_count),
       filtered_audience: filteredAudience(row?.filtered_audience),
-    };
+      audience_regions: row?.audience_regions,
+    }, region);
   });
 }
 
 export { taipeiDay, historyDays, historyRows };
+
