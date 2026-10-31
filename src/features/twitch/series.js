@@ -1,4 +1,5 @@
 import { HOUR, count, filteredAudience, timestamp } from './metrics.js';
+import { forRegion, regionNames, regionOf } from './audience-region.js';
 
 export const metrics = { viewers: '總觀眾', streamers: '開台數', median: '篩選中位數' };
 export const dayOf = value => new Date(Number(value) + 8 * HOUR).toISOString().slice(0, 10);
@@ -39,16 +40,16 @@ export function monthsFor(start, end) {
   for (let at = start; at <= end; at += HOUR) months.add(dayOf(at).slice(0, 7));
   return [...months];
 }
-export function seriesRows(index, chunks, game, start, end) {
+export function seriesRows(index, chunks, game, start, end, region = 'global') {
   const rows = [];
   for (let at = start; at <= end; at += HOUR) {
     const hour = new Date(at).toISOString().replace('.000Z', 'Z');
     const month = dayOf(at).slice(0, 7), generated = index.months[month]?.[hour];
     const raw = chunks[month]?.hours[hour];
     if (raw && raw.generated_at !== generated) throw new Error('歷史資料正在更新，請按「重新載入」取得同一版紀錄。');
-    rows.push({ hour, generated_at: generated || null, status: !generated ? 'missing' : raw ? 'observed' : 'absent',
+    rows.push(forRegion({ hour, generated_at: generated || null, status: !generated ? 'missing' : raw ? 'observed' : 'absent',
       viewer_count: raw ? count(raw.viewer_count) : null, streamer_count: raw ? count(raw.streamer_count) : null,
-      filtered_audience: filteredAudience(raw?.filtered_audience) });
+      filtered_audience: filteredAudience(raw?.filtered_audience), audience_regions: raw?.audience_regions }, region));
   }
   return rows;
 }
@@ -58,6 +59,7 @@ export function overviewQuery(search) {
   if (q) output.set('q', q);
   if (['signals', 'twitch_new', 'steam_recent', 'igdb', 'all'].includes(input.get('state'))) output.set('state', input.get('state'));
   if (['median', 'viewers', 'streamers'].includes(input.get('sort'))) output.set('sort', input.get('sort'));
+  if (input.get('region') === 'global') output.set('region', 'global');
   if (input.get('view') === 'archive') output.set('view', 'archive');
   if (['active', 'ended'].includes(input.get('archive_state'))) output.set('archive_state', input.get('archive_state'));
   if (['peak', 'records', 'name'].includes(input.get('archive_sort'))) output.set('archive_sort', input.get('archive_sort'));
@@ -67,16 +69,20 @@ export function overviewQuery(search) {
 }
 export function detailHref(id, search = '') {
   const params = new URLSearchParams({ game: id }), back = overviewQuery(search);
+  if (regionOf(new URLSearchParams(search).get('region')) === 'global') params.set('region', 'global');
   if (back) params.set('back', back);
   return `./twitch-game.html?${params}`;
 }
 export function csvRows(rows) {
   const labels = { observed: '已觀測', missing: '無收集紀錄', absent: '未列入本次觀測' };
   const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
-  const header = ['時段（台灣）', '快照產生時間（UTC）', '狀態', '總觀眾', '開台數', '篩選中位數', '中位數狀態'];
+  const scoped = rows.some(row => row.audience_region);
+  const header = ['時段（台灣）', '快照產生時間（UTC）', '狀態', '總觀眾', '開台數', '篩選中位數', '中位數狀態', ...(scoped ? ['語言區域'] : [])];
   return '\uFEFF' + [header, ...rows.map(row => [
     new Date(Date.parse(row.hour) + 8 * HOUR).toISOString().slice(0, 16).replace('T', ' '), row.generated_at,
-    labels[row.status], row.viewer_count, row.streamer_count, row.filtered_audience.median_viewer_count,
+    row.audience_region_status === 'unavailable' && row.status === 'observed' ? '未收集中文區' : labels[row.status], row.viewer_count, row.streamer_count, row.filtered_audience.median_viewer_count,
     row.filtered_audience.status,
+    ...(scoped ? [regionNames[row.audience_region] || '全球'] : []),
   ])].map(row => row.map(quote).join(',')).join('\r\n');
 }
+

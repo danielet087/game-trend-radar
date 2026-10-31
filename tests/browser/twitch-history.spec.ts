@@ -31,10 +31,10 @@ test.beforeEach(async ({ page }) => {
 test('history ranges, metrics, selected hour, export and return filters work together', async ({ page }) => {
   const failures: string[] = [];
   page.on('pageerror', error => failures.push(error.message));
-  await page.goto('twitch-game.html?game=42&back=q%3DTest%26sort%3Dviewers');
+  await page.goto('twitch-game.html?region=global&game=42&back=q%3DTest%26sort%3Dviewers');
   await expect(page.locator('#pageTitle')).toHaveText('測試遊戲');
   await expect(page.locator('#historyStatus')).toContainText('168 個時段');
-  await expect(page.locator('#historyBack')).toHaveAttribute('href', './twitch.html?q=Test&sort=viewers');
+  await expect(page.locator('#historyBack')).toHaveAttribute('href', './twitch.html?q=Test&sort=viewers&region=global');
   await expect(page.locator('.tw-chart')).toHaveAttribute('data-range', '168');
   await page.getByRole('button', { name: '30 天', exact: true }).click();
   await expect(page.locator('#historyStatus')).toContainText('720 個時段');
@@ -61,7 +61,7 @@ test('history ranges, metrics, selected hour, export and return filters work tog
 
 test('mobile history fits the viewport and the chart supports keyboard selection', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('twitch-game.html?game=42');
+  await page.goto('twitch-game.html?region=global&game=42');
   await expect(page.locator('#historyContent')).toBeVisible();
   await page.locator('.tw-chart-scrubber').focus();
   await page.keyboard.press('ArrowLeft');
@@ -71,7 +71,7 @@ test('mobile history fits the viewport and the chart supports keyboard selection
 
 test('failed monthly data can be retried without displaying it as zero', async ({ page }) => {
   await page.route('**/data/twitch_series/42/2026-10.json', route => route.fulfill({ status: 503, body: 'Unavailable' }));
-  await page.goto('twitch-game.html?game=42');
+  await page.goto('twitch-game.html?region=global&game=42');
   await expect(page.locator('#historyStatus')).toContainText('暫時無法取得');
   await expect(page.locator('#historyContent')).toBeHidden();
   await expect(page.locator('#historyExport')).toBeDisabled();
@@ -81,3 +81,4 @@ test('failed monthly data can be retried without displaying it as zero', async (
   await expect(page.locator('#historyContent')).toBeVisible();
   await expect(page.locator('#historyTableBody tr').first().locator('td').nth(1)).toHaveText('0');
 });
+

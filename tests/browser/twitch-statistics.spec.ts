@@ -33,7 +33,7 @@ test('all supplementary modes work without changing the original chart, URL, dat
   const failures: string[] = [], dataReads: string[] = [];
   page.on('pageerror', error => failures.push(error.message));
   page.on('request', request => { if (request.url().includes('/data/twitch_series/')) dataReads.push(request.url()); });
-  await page.goto('twitch-game.html?game=42&metric=streamers&back=view%3Darchive%26q%3DTest');
+  await page.goto('twitch-game.html?region=global&game=42&metric=streamers&back=view%3Darchive%26q%3DTest');
   const stats = page.locator('#historyStatistics');
   await expect(stats).toBeVisible();
   await expect(stats).toHaveAttribute('data-statistics-mode', 'distribution');
@@ -55,7 +55,7 @@ test('all supplementary modes work without changing the original chart, URL, dat
   await expect(page.locator('#historyChart .tw-chart')).toHaveAttribute('data-metric', 'streamers');
   expect(page.url()).toBe(originalURL);
   expect(dataReads).toHaveLength(reads);
-  await expect(page.locator('#historyBack')).toHaveAttribute('href', './twitch.html?q=Test&view=archive');
+  await expect(page.locator('#historyBack')).toHaveAttribute('href', './twitch.html?q=Test&view=archive&region=global');
   const download = page.waitForEvent('download');
   await page.locator('#historyExport').click();
   expect((await download).suggestedFilename()).toBe('twitch-42-2026-10-15-2026-10-22.csv');
@@ -63,7 +63,7 @@ test('all supplementary modes work without changing the original chart, URL, dat
 });
 
 test('date changes recalculate statistics and retain their independent controls', async ({ page }) => {
-  await page.goto('twitch-game.html?game=42');
+  await page.goto('twitch-game.html?region=global&game=42');
   const stats = page.locator('#historyStatistics');
   await expect(stats).toBeVisible();
   await stats.getByRole('button', { name: '熱度動能', exact: true }).click();
@@ -82,7 +82,7 @@ test('date changes recalculate statistics and retain their independent controls'
 });
 
 test('a failed refresh hides supplementary results along with the original stale data', async ({ page }) => {
-  await page.goto('twitch-game.html?game=42');
+  await page.goto('twitch-game.html?region=global&game=42');
   await expect(page.locator('#historyStatistics')).toBeVisible();
   await page.route('**/data/twitch_series/42/2026-10.json', route => route.fulfill({ status: 503, body: 'Unavailable' }));
   await page.locator('#historyRefresh').click();
@@ -100,7 +100,7 @@ test('a zero comparison baseline explains why there is no growth percentage', as
     if (at <= cutoff && at > cutoff - 24 * 3600000) row.viewer_count = 0;
   }
   await page.route('**/data/twitch_series/42/2026-10.json', route => route.fulfill({ json: data.chunk }));
-  await page.goto('twitch-game.html?game=42');
+  await page.goto('twitch-game.html?region=global&game=42');
   const stats = page.locator('#historyStatistics');
   await stats.getByRole('button', { name: '熱度動能', exact: true }).click();
   await expect(stats.locator('#statisticsStatus')).toContainText('為 0');
@@ -109,7 +109,7 @@ test('a zero comparison baseline explains why there is no growth percentage', as
 
 test('supplementary controls and charts fit mobile and support keyboard use', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('twitch-game.html?game=42');
+  await page.goto('twitch-game.html?region=global&game=42');
   const stats = page.locator('#historyStatistics');
   await expect(stats).toBeVisible();
   const hourly = stats.getByRole('button', { name: '熱門時段', exact: true });
@@ -118,3 +118,4 @@ test('supplementary controls and charts fit mobile and support keyboard use', as
   await expect(stats.locator('.tw-statistics-chart svg')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 });
+

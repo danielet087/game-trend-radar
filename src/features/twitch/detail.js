@@ -5,10 +5,13 @@ import { node, fmt, time } from './presentation.js';
 import { validIndex, validChunk, windowFor, monthsFor, seriesRows, overviewQuery, dayOf, metrics, csvRows } from './series.js';
 import { createStatistics } from './statistics.js';
 import { createCooldown } from './cooldown.js';
+import { DEFAULT_REGION, regionOf, regionNames } from './audience-region.js';
 
 export function initTwitchDetail() {
   const $ = id => document.getElementById(id);
   let params = new URLSearchParams(location.search), metric = Object.hasOwn(metrics, params.get('metric')) ? params.get('metric') : 'viewers';
+  let region = regionOf(params.get('region') || new URLSearchParams(params.get('back') || '').get('region'));
+  $('audienceRegion').value = region;
   const id = canonicalID(params.get('game')), cache = new Map();
   let index, game, window, rows = [], disposeChart, statistics, cooldown, fullHistoryLoader, page = 0, descending = true, request = 0;
   const back = overviewQuery(params.get('back') || '');
@@ -20,6 +23,12 @@ export function initTwitchDetail() {
   }
   function syncURL() {
     params.set('game', id); params.set('metric', metric);
+    if (region === DEFAULT_REGION) params.delete('region'); else params.set('region', region);
+    const backParams = new URLSearchParams(back);
+    if (region === DEFAULT_REGION) backParams.delete('region'); else backParams.set('region', region);
+    const nextBack = backParams.toString();
+    if (nextBack) params.set('back', nextBack); else params.delete('back');
+    $('historyBack').href = `./twitch.html${nextBack ? `?${nextBack}` : ''}`;
     history.replaceState(null, '', `${location.pathname}?${params}`);
   }
   async function read(path, contract) {
@@ -88,7 +97,7 @@ export function initTwitchDetail() {
       if (!game || game.archive_eligible !== true) throw new Error('這款遊戲未列入正式收錄的歷史資料庫，請返回清單選擇遊戲。');
       if (!Array.isArray(game.months)) throw new Error('這款遊戲尚無已發布的歷史紀錄，請返回清單或稍後重新載入。');
       if (!fullHistoryLoader) {
-        const sourceIndex = index, sourceGame = game;
+        const sourceIndex = index, sourceGame = game, sourceRegion = region;
         let pendingHistory;
         fullHistoryLoader = () => {
           if (pendingHistory) return pendingHistory;
@@ -103,7 +112,7 @@ export function initTwitchDetail() {
               try { historyChunks[month] = await pendingMonth; }
               catch (error) { if (cache.get(month) === pendingMonth) cache.delete(month); throw error; }
             }));
-            return seriesRows(sourceIndex, historyChunks, id, start, end);
+            return seriesRows(sourceIndex, historyChunks, id, start, end, sourceRegion);
           })().catch(error => { pendingHistory = null; throw error; });
           return pendingHistory;
         };
@@ -116,11 +125,11 @@ export function initTwitchDetail() {
         try { chunks[month] = await pendingMonth; } catch (error) { if (cache.get(month) === pendingMonth) cache.delete(month); throw error; }
       }));
       if (token !== request) return;
-      rows = seriesRows(index, chunks, id, window.start, window.end); page = 0;
+      rows = seriesRows(index, chunks, id, window.start, window.end, region); page = 0;
       const name = game.display_name || game.name;
       document.title = `${name} · Twitch 歷史趨勢｜Game Trend Radar`;
       $('pageTitle').textContent = name;
-      $('historyCategory').textContent = `TWITCH CATEGORY ${id} · 全球觀測`;
+      $('historyCategory').textContent = `TWITCH CATEGORY ${id} · ${regionNames[region]}觀測`;
       $('historySpan').textContent = `${game.tracking_status === 'ended' ? '已結束追蹤 · ' : ''}已保存 ${time(game.first_hour)} 至 ${time(game.last_hour)} 的觀測紀錄（台灣時間）`;
       $('historyUpdated').textContent = `資料更新 ${time(index.generated_at)}（台灣）`;
       $('historyStart').value = dayOf(window.start); $('historyEnd').value = dayOf(window.end);
@@ -133,11 +142,11 @@ export function initTwitchDetail() {
         onMetricChange(value) { metric = value; syncURL(); summary(); table(); } });
       summary(); table(); syncURL();
       $('historyExport').disabled = false;
-      const count = rows.filter(row => row.status === 'observed').length;
-      message(`已載入 ${rows.length} 個時段，其中 ${count} 個有本遊戲的觀測紀錄。`);
+      const count = rows.filter(row => row.status === 'observed' && row.audience_region_status !== 'unavailable').length;
+      message(`${regionNames[region]} · 已載入 ${rows.length} 個時段，其中 ${count} 個有本區的觀測紀錄。${region === 'zh' ? '舊紀錄未收集中文區時保留空白。' : ''}`);
       try {
         statistics ||= createStatistics($('historyStatistics'));
-        statistics.update(rows, { gameName: name, rangeLabel: $('historyRangeLabel').textContent });
+        statistics.update(rows, { gameName: `${name} · ${regionNames[region]}`, rangeLabel: $('historyRangeLabel').textContent });
         $('historyStatisticsJump').hidden = false;
       } catch (error) {
         console.warn('Unable to display supplementary Twitch statistics:', error);
@@ -147,7 +156,7 @@ export function initTwitchDetail() {
       }
       try {
         cooldown ||= createCooldown($('historyCooldown'));
-        cooldown.update({ gameName: name, trackingStatus: game.tracking_status, lastHour: game.last_hour,
+        cooldown.update({ gameName: `${name} · ${regionNames[region]}`, trackingStatus: game.tracking_status, lastHour: game.last_hour,
           latestHour: new Date(window.latest).toISOString(), generatedAt: index.generated_at,
           releaseReference: game.release_reference, loadHistory: fullHistoryLoader });
         $('historyCooldownJump').hidden = false;
@@ -171,15 +180,19 @@ export function initTwitchDetail() {
     params.set('range', 'custom'); params.set('start', $('historyStart').value); params.set('end', $('historyEnd').value); load();
   });
   $('historyRefresh').addEventListener('click', () => load(true));
+  $('audienceRegion').addEventListener('change', () => {
+    region = regionOf($('audienceRegion').value); fullHistoryLoader = null; syncURL(); load();
+  });
   $('historyPrevious').addEventListener('click', () => { page--; table(); });
   $('historyNext').addEventListener('click', () => { page++; table(); });
   $('historyOrder').addEventListener('change', () => { descending = $('historyOrder').value === 'desc'; page = 0; table(); });
   $('historyExport').addEventListener('click', () => {
     if (!rows.length) return;
     const url = URL.createObjectURL(new Blob([csvRows(rows)], { type: 'text/csv;charset=utf-8' }));
-    const link = node('a'); link.href = url; link.download = `twitch-${id}-${dayOf(window.start)}-${dayOf(window.end)}.csv`;
+    const link = node('a'); link.href = url; link.download = `twitch-${id}${region === 'zh' ? '-zh' : ''}-${dayOf(window.start)}-${dayOf(window.end)}.csv`;
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   load();
   return () => { request++; disposeChart?.(); statistics?.destroy(); cooldown?.destroy(); };
 }
+

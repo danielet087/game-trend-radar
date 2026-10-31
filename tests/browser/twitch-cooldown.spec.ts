@@ -32,7 +32,7 @@ test('relative decline shows release-to-peak days and measures each drop from th
   const values = [40000, 100000, 80000, 75000, 60000, 50000, 40000, 25000, 24000];
   const hours = Object.values(data.chunks).flatMap(chunk => Object.entries(chunk.hours) as [string, any][]).sort(([a], [b]) => a.localeCompare(b));
   hours.forEach(([, row], index) => { row.viewer_count = values[Math.floor(index / 24)]; });
-  await mock(page, data); await page.goto('twitch-game.html?game=42&range=24h');
+  await mock(page, data); await page.goto('twitch-game.html?region=global&game=42&range=24h');
   const decline = page.locator('#cooldownRelativeDecline');
   await expect(page.locator('#cooldownPeak')).toHaveText('上市後第 7 天達到高峰');
   await expect(decline).toContainText('目前高峰日：2026-09-30');
@@ -52,7 +52,7 @@ test('a new peak replaces both the release-to-peak day and all relative decline 
   const hours = Object.values(data.chunks).flatMap(chunk => Object.entries(chunk.hours) as [string, any][]).sort(([a], [b]) => a.localeCompare(b));
   const oldValues = [40000, 100000, 75000, 50000, 25000, 25000, 25000, 25000, 25000, 25000];
   hours.forEach(([, row], index) => { row.viewer_count = oldValues[Math.floor(index / 24)]; });
-  await mock(page, data); await page.goto('twitch-game.html?game=42');
+  await mock(page, data); await page.goto('twitch-game.html?region=global&game=42');
   const decline = page.locator('#cooldownRelativeDecline');
   await expect(page.locator('#cooldownPeak')).toHaveText('上市後第 7 天達到高峰');
   await expect(decline.getByRole('button', { name: '高峰後第 1 天 · 較高峰下降 25%', exact: true })).toBeVisible();
@@ -70,7 +70,7 @@ test('a never-popular game shows a neutral label and no cooldown countdown', asy
   const data = fixtures();
   for (const chunk of Object.values(data.chunks))
     for (const row of Object.values(chunk.hours) as any[]) row.viewer_count = 1000;
-  await mock(page, data); await page.goto('twitch-game.html?game=42');
+  await mock(page, data); await page.goto('twitch-game.html?region=global&game=42');
   await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'not_popular');
   await expect(page.locator('#cooldownStatus')).toHaveText('尚未達熱門門檻');
   await expect(page.locator('#cooldownSummary')).toContainText('尚未啟用');
@@ -83,7 +83,7 @@ test('a later breakout starts a fresh countdown rather than reusing the initial 
   const data = fixtures(144);
   const hours = Object.values(data.chunks).flatMap(chunk => Object.entries(chunk.hours) as [string, any][]).sort(([a], [b]) => a.localeCompare(b));
   hours.forEach(([, row], index) => { row.viewer_count = index >= 72 && index < 96 ? 5000 : 1000; });
-  await mock(page, data); await page.goto('twitch-game.html?game=42');
+  await mock(page, data); await page.goto('twitch-game.html?region=global&game=42');
   await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'suspected');
   await expect(page.locator('#cooldownStatus')).toContainText('等待滿 3 天');
   await expect(page.locator('#cooldownSummary')).toContainText('2 / 3 天');
@@ -94,7 +94,7 @@ test('the full-history cooldown onset and confirmation survive date changes with
   const failures: string[] = [];
   page.on('pageerror', error => failures.push(error.message));
   await mock(page);
-  await page.goto('twitch-game.html?game=42&range=24h');
+  await page.goto('twitch-game.html?region=global&game=42&range=24h');
   const panel = page.locator('#historyCooldown');
   await expect(panel).toHaveAttribute('data-cooldown-status', 'cooled');
   await expect(page.locator('#cooldownStatus')).toHaveText('已退燒');
@@ -122,7 +122,7 @@ test('the full-history cooldown onset and confirmation survive date changes with
 test('failure in an older month only affects cooldown and can be retried independently', async ({ page }) => {
   const data = fixtures(); await mock(page, data);
   await page.route('**/data/twitch_series/42/2026-09.json', route => route.fulfill({ status: 503, body: 'Unavailable' }));
-  await page.goto('twitch-game.html?game=42&range=24h');
+  await page.goto('twitch-game.html?region=global&game=42&range=24h');
   await expect(page.locator('#historyContent')).toBeVisible();
   await expect(page.locator('#historyStatistics')).toBeVisible();
   await expect(page.locator('#historyCooldown').getByRole('button', { name: '重新讀取全期資料', exact: true })).toBeVisible();
@@ -135,7 +135,7 @@ test('failure in an older month only affects cooldown and can be retried indepen
 
 test('ending tracking is not interpreted as a decline', async ({ page }) => {
   await mock(page, fixtures(120, 'ended', false));
-  await page.goto('twitch-game.html?game=42');
+  await page.goto('twitch-game.html?region=global&game=42');
   await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'watching');
   await expect(page.locator('#cooldownStatus')).not.toContainText('已退燒');
   await expect(page.locator('#cooldownSummary')).not.toContainText('2026/10/01 00:00');
@@ -143,7 +143,7 @@ test('ending tracking is not interpreted as a decline', async ({ page }) => {
 
 test('an unknown release date never turns the observation start into release day zero', async ({ page }) => {
   const data = fixtures(); delete data.index.games['42'].release_reference;
-  await mock(page, data); await page.goto('twitch-game.html?game=42');
+  await mock(page, data); await page.goto('twitch-game.html?region=global&game=42');
   await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'cooled');
   await expect(page.locator('#cooldownReleaseSummary')).toContainText('上市日尚未確認');
   await expect(page.locator('#cooldownReleaseSummary')).not.toContainText('上市後第');
@@ -153,7 +153,7 @@ test('an unknown release date never turns the observation start into release day
 
 test('a live game with old observations reports uncertainty while retaining historical events', async ({ page }) => {
   await mock(page, fixtures(120, 'active'));
-  await page.goto('twitch-game.html?game=42');
+  await page.goto('twitch-game.html?region=global&game=42');
   await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'stale');
   await expect(page.locator('#cooldownStatus')).toContainText('最新狀態待確認');
   await expect(page.locator('#cooldownEvents')).toContainText('2026/10/01 00:00');
@@ -162,7 +162,7 @@ test('a live game with old observations reports uncertainty while retaining hist
 test('an unconfirmed decline is labelled as suspected and mobile controls fit', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await mock(page, fixtures(72, 'ended'));
-  await page.goto('twitch-game.html?game=42&range=24h');
+  await page.goto('twitch-game.html?region=global&game=42&range=24h');
   await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'suspected');
   await expect(page.locator('#cooldownStatus')).toContainText('等待滿 3 天');
   await page.locator('#cooldownScrubber').focus(); await page.keyboard.press('ArrowLeft');
@@ -176,7 +176,7 @@ for (const missingHours of [12, 13]) {
     // Remove measurements from the second low day, retaining the hourly index.
     for (const hour of hours.slice(24, 24 + missingHours)) delete data.chunks['2026-10'].hours[hour];
     await mock(page, data);
-    await page.goto('twitch-game.html?game=42');
+    await page.goto('twitch-game.html?region=global&game=42');
     await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', missingHours === 12 ? 'cooled' : 'suspected');
     await expect(page.locator('#cooldownDailyEvidence')).toContainText(`${24 - missingHours} / 24`);
     if (missingHours === 13) await expect(page.locator('#cooldownStatus')).not.toContainText('已退燒');
@@ -189,7 +189,7 @@ test('a 50 percent fall to 50,000 viewers stays above the fixed threshold', asyn
     for (const row of Object.values(chunk.hours) as any[]) row.viewer_count = row.viewer_count === 10000 ? 100000 : 50000;
   }
   await mock(page, data);
-  await page.goto('twitch-game.html?game=42');
+  await page.goto('twitch-game.html?region=global&game=42');
   await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'watching');
   await expect(page.locator('#cooldownSummary')).toContainText('50,000');
   await expect(page.locator('#cooldownStatus')).not.toContainText('已退燒');
@@ -200,12 +200,13 @@ for (const elapsedHours of [5, 12, 13]) {
     const data = fixtures(120, 'active');
     await page.clock.setFixedTime(new Date(Date.parse(data.index.games['42'].last_hour) + elapsedHours * 3600000));
     await mock(page, data);
-    await page.goto('twitch-game.html?game=42');
+    await page.goto('twitch-game.html?region=global&game=42');
     await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', elapsedHours > 12 ? 'stale' : 'cooled');
     await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-model-status', 'cooled');
     await expect(page.locator('#cooldownEvents')).toContainText('2026/10/04 00:00');
   });
 }
+
 
 
 

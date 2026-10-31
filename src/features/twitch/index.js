@@ -76,6 +76,17 @@ on($("gameSearch"), "compositionstart",() => { composing = true; clearTimeout(se
 on($("gameSearch"), "compositionend",() => { composing = false; search(); });
 on($("gameSearch"), "input",search);
 on($("gameSort"), "change",() => { state.sort = $("gameSort").value; syncURL(); render(); });
+on($('audienceRegion'), 'change', () => {
+  clearTimeout(searchTimer);
+  state.region = $('audienceRegion').value; state.limit = 24;
+  chartDisposers.forEach(dispose => dispose()); chartDisposers.clear(); cards.clear();
+  if (view === 'archive') {
+    archive.flushSearch(false);
+    const url = new URL(location.href);
+    if (state.region === 'global') url.searchParams.set('region', 'global'); else url.searchParams.delete('region');
+    history.replaceState(null, '', url); archive.render();
+  } else { state.query = $('gameSearch').value; syncURL(); render(); }
+});
 on($("resetFilters"), "click",reset);
 on($("snapshotRefresh"), "click",load);
 on($("loadMore"), "click",() => { const next = state.limit; state.limit += 24; render(); $("gameResults").children[next]?.querySelector("summary")?.focus({ preventScroll:true }); });
@@ -96,3 +107,4 @@ on(window, "popstate",showView);
   showView();
   return controller;
 }
+

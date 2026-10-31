@@ -388,3 +388,9 @@ body[data-page="twitch"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; --page
   #steamPendingGames { grid-template-columns:minmax(0,1fr); }
 }
 @media(prefers-reduced-motion:reduce) { .tw-steam-tags a { transition:none; } }
+
+.tw-region-control { display:flex; align-items:center; gap:12px 20px; flex-wrap:wrap; margin:0 0 20px; padding:14px 18px; border:1px solid #ddd4ed; border-radius:14px; background:#f3eef9; }
+.tw-region-control label { display:flex; align-items:center; gap:10px; font-weight:700; white-space:nowrap; }
+.tw-region-control select { font:inherit; color:inherit; padding:8px 30px 8px 12px; border:1px solid #cbbddf; border-radius:9px; background:#fff; }
+.tw-region-control select:focus-visible { outline:3px solid #a98bc9; outline-offset:3px; }
+.tw-region-control p { flex:1 1 240px; margin:0; color:#655773; font-size:13px; line-height:1.7; }
