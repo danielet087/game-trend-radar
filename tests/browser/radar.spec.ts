@@ -171,7 +171,7 @@ test('ticker shows collector reasons for Twitch-discovered Steam, daily Steam ch
   const igdb = page.locator('#activityList .activity-item').nth(2);
   await expect(igdb).toHaveAttribute('href', `./game.html?igdb=${native.igdbId}&date=2026-11-05`);
   await expect(igdb.locator('.activity-origin')).toHaveAttribute('title', '更新原因：IGDB 更新；平台：PS5');
-  await expect(page.locator('#activityList .activity-platform')).toHaveCount(0);
+  await expect(page.locator('#activityList .activity-platform')).toHaveText(['Steam', 'Steam', 'PS5', 'Steam']);
 });
 
 test('search, card reuse, collection and filtered return remain usable', async ({ page }) => {

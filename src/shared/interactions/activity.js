@@ -24,6 +24,7 @@ const { make } = helpers;
     const reason = make("span", "activity-kind activity-origin", I.activityReason(event));
     reason.title = `更新原因：${I.activityReason(event)}；平台：${I.activityPlatform(event)}`;
     a.append(reason);
+    a.append(make("span", "activity-kind activity-platform", I.activityPlatform(event)));
     a.append(make("span", "activity-name", event.name));
     if (event.type === "release_date") a.append(make("span", "activity-change", `${dateLabel(event.previous_date)} → ${dateLabel(event.date)}`));
     else a.append(make("span", "activity-change", dateLabel(event.date) + " 上市"));

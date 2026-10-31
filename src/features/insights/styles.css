@@ -22,6 +22,7 @@ body[data-page="analysis"] { --page-wash:#e2dcf4; --page-wash-soft:#f5e8ed; --pa
 .activity-kind { padding:3px 6px; border-radius:5px; color:#426449; background:#e7efda; font-size:9px; font-weight:700; flex-shrink:0; }
 .activity-kind.is-date { color:#8d562f; background:#ffead2; }
 .activity-kind.activity-origin { color:#3b5391; background:#edf1fb; }
+.activity-kind.activity-platform { color:#645174; background:#f0eaf5; }
 .activity-name { min-width:0; overflow:hidden; text-overflow:ellipsis; font-weight:700; }
 .activity-change { flex-shrink:0; color:#766e62; font-size:10px; font-variant-numeric:tabular-nums; }
 .activity-ticker > button { flex-shrink:0; min-height:38px; border-radius:9px; font-size:11px; }
@@ -208,8 +209,13 @@ body[data-page="analysis"] { --page-wash:#e2dcf4; --page-wash-soft:#f5e8ed; --pa
 @media (max-width:700px) {
   .activity-ticker { display:grid; grid-template-columns:1fr auto auto; gap:2px 8px; margin-bottom:22px; padding:5px 10px; }
   .activity-label { grid-column:1; grid-row:1; padding-right:0; border-right:0; gap:5px; font-size:10px; }
-  .activity-viewport { grid-column:1 / -1; grid-row:2; width:100%; }
-  .activity-ticker .activity-name { flex:1; }
+  .activity-viewport { grid-column:1 / -1; grid-row:2; width:100%; height:68px; }
+  .activity-ticker .activity-item { display:grid; grid-template-columns:auto auto minmax(0,1fr); grid-template-rows:auto auto; gap:4px 7px; height:68px; padding:7px 0; }
+  .activity-ticker .activity-added-at { grid-column:1; grid-row:1; }
+  .activity-ticker .activity-kind { justify-self:start; }
+  .activity-ticker .activity-origin { min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden; text-overflow:ellipsis; }
+  .activity-ticker .activity-platform { grid-column:1; grid-row:2; }
+  .activity-ticker .activity-name { grid-column:2 / -1; grid-row:2; }
   .activity-ticker .activity-change { display:none; }
   .activity-label > span { font-size:17px; }
   #activityMore { grid-column:3; grid-row:1; padding:8px; font-size:10px; }

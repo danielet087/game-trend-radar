@@ -151,7 +151,7 @@ class Element {
   showModal() { this.open = true; }
   close() { this.open = false; this.listeners.close?.(); }
 }
-async function display(events, animated = false, payloadOverrides = {}) {
+async function display(events, animated = false, payloadOverrides = {}, modular = false) {
   const elements = new Map(['activityTicker', 'activityViewport', 'activityTrack', 'activityPause', 'activityMore', 'activityDialog', 'activityList', 'activityClose'].map(id => [id, new Element()]));
   const frames = [], timeouts = [];
   if (animated) elements.get('activityTrack').animate = keyframes => { frames.push(keyframes); return { finished: Promise.resolve(), cancel() {} }; };
@@ -166,7 +166,14 @@ async function display(events, animated = false, payloadOverrides = {}) {
     localStorage: { getItem: () => null }, sessionStorage: { getItem: () => null },
     performance: { getEntriesByType: () => [] }, URL, setTimeout: callback => { timeouts.push(callback); return timeouts.length; },
     clearTimeout() {}, queueMicrotask, console });
-  vm.runInContext(script, context);
+  if (modular) {
+    const source = readFileSync(join(__dirname, '..', 'src/shared/interactions/activity.js'), 'utf8')
+      .replace('export function createActivity', 'function createActivity');
+    vm.runInContext(source, context);
+    vm.runInContext(`createActivity({ insights: window.RadarInsights, storage: window.RadarStorage, motion: window.RadarMotion,
+      helpers: { make(tag, className, text) { const node = document.createElement(tag); if (className) node.className = className;
+        if (text !== undefined) node.textContent = text; return node; } } });`, context);
+  } else vm.runInContext(script, context);
   await new Promise(resolve => setImmediate(resolve));
   return { elements, frames, timeouts };
 }
@@ -180,8 +187,8 @@ test('actual ticker and history render safe mixed-source names with Taipei date 
   assert.equal(rows[0].children[0].textContent, '2026/10/04');
   assert.equal(rows[0].children[0].dateTime, '2026-10-04');
   assert.equal(rows[0].href, './game.html?igdb=42&date=2026-11-05');
-  assert.match(rows[0].textContent, /日期更新IGDB 更新Nintendo game2026\/10\/30 → 2026\/11\/05/);
-  assert.equal(rows[1].children[3].textContent, name);
+  assert.match(rows[0].textContent, /日期更新IGDB 更新NS2Nintendo game2026\/10\/30 → 2026\/11\/05/);
+  assert.equal(rows[1].children[4].textContent, name);
   assert.equal(rows[1].attributes['aria-label'], rows[1].title);
   assert.equal(rows[2].href, './game.html?appid=42');
   assert.equal(rows[2].children[0].textContent, '2026/10/04');
@@ -197,7 +204,7 @@ test('platform additions show their IGDB trigger and retain native platform cont
   for (const platform of ['NS', 'PS5']) {
     const { elements: e } = await display([nintendo({ type: 'platform_added', platforms: [platform], name: 'Native port' })]);
     const link = e.get('activityTrack').children[0];
-    assert.ok(link.textContent.includes('新增平台IGDB 更新Native port2026/11/05 上市'));
+    assert.ok(link.textContent.includes('新增平台IGDB 更新' + platform + 'Native port2026/11/05 上市'));
     assert.equal(link.children[2].title, '更新原因：IGDB 更新；平台：' + platform);
     assert.equal(link.children[0].textContent, '2026/10/04');
     assert.doesNotMatch(link.textContent, /NS2/);
@@ -210,11 +217,33 @@ test('platform additions show their IGDB trigger and retain native platform cont
 test('daily Steam date changes retain the recorded cause rather than inferring it from event type', async () => {
   const { elements: e } = await display([steam({ type: 'release_date', previous_date: '2026-10-30', update_reason: 'steam_daily_search' })]);
   const link = e.get('activityTrack').children[0];
-  assert.match(link.textContent, /日期更新每日 Steam 搜尋Steam game2026\/10\/30 → 2026\/11\/05/);
+  assert.match(link.textContent, /日期更新每日 Steam 搜尋SteamSteam game2026\/10\/30 → 2026\/11\/05/);
   assert.equal(link.children[2].title, '更新原因：每日 Steam 搜尋；平台：Steam');
   const { elements: legacy } = await display([steam({ type: 'release_date', previous_date: '2026-10-30' })]);
   assert.equal(legacy.get('activityTrack').children[0].children[2].textContent, '更新來源未記錄');
 });
+
+for (const modular of [false, true]) {
+  test(`${modular ? 'modular' : 'legacy'} ticker and history visibly identify only the platforms of each date or launch`, async () => {
+    const input = [
+      nintendo({ type: 'release_date', previous_date: '2026-10-30', platforms: ['PS5', 'NS2', 'NS', 'NS2'], name: 'Shared date change', at: '2026-10-04T05:00:00Z' }),
+      steam({ type: 'release_date', previous_date: '2026-10-30', name: 'Steam date change', at: '2026-10-04T04:00:00Z' }),
+      nintendo({ platforms: ['NS'], name: 'NS launch', date: '2026-11-05', at: '2026-10-04T03:00:00Z' }),
+      nintendo({ platforms: ['NS2'], name: 'NS2 launch', date: '2026-12-01', at: '2026-10-04T02:00:00Z' }),
+      nintendo({ type: 'platform_added', platforms: ['PS5'], name: 'PS5 launch', at: '2026-10-04T01:00:00Z' }),
+    ];
+    const { elements: e } = await display(input, false, {}, modular);
+    const rows = e.get('activityList').children.map(item => item.children[0]);
+    const labels = rows.map(row => row.children.find(child => child.className === 'activity-kind activity-platform'));
+    assert.deepEqual(labels.map(label => label.textContent), ['NS／NS2／PS5', 'Steam', 'NS', 'NS2', 'PS5']);
+    assert.equal(e.get('activityTrack').children[0].children[3].textContent, 'NS／NS2／PS5');
+    assert.equal(rows[0].children[1].textContent, '日期更新');
+    assert.equal(rows[0].children[5].textContent, '2026/10/30 → 2026/11/05');
+    assert.equal(rows[2].children[5].textContent, '2026/11/05 上市');
+    assert.equal(rows[3].children[5].textContent, '2026/12/01 上市');
+    assert.match(rows[0].attributes['aria-label'], /NS／NS2／PS5/);
+  });
+}
 
 test('vertical ticker still flips upward through only the latest eight valid mixed events', async () => {
   const events = Array.from({ length: 10 }, (_, index) => (index % 2 ? steam : nintendo)({
