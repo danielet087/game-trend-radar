@@ -6,6 +6,7 @@ import { createTwitchCards } from "./cards.js";
 import { createTwitchRenderer } from "./render.js";
 import { createTwitchLoader } from "./load.js";
 import { createTwitchArchive } from "./archive.js";
+import { DEFAULT_REGION } from "./audience-region.js";
 export { RadarTwitch } from "./data.js";
 export { RadarTwitchChart } from "./chart.js";
 
@@ -83,7 +84,7 @@ on($('audienceRegion'), 'change', () => {
   if (view === 'archive') {
     archive.flushSearch(false);
     const url = new URL(location.href);
-    if (state.region === 'global') url.searchParams.set('region', 'global'); else url.searchParams.delete('region');
+    if (state.region === DEFAULT_REGION) url.searchParams.delete('region'); else url.searchParams.set('region', state.region);
     history.replaceState(null, '', url); archive.render();
   } else { state.query = $('gameSearch').value; syncURL(); render(); }
 });

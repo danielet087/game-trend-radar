@@ -1,5 +1,5 @@
 import { HOUR, count, filteredAudience, timestamp } from './metrics.js';
-import { forRegion, regionNames, regionOf } from './audience-region.js';
+import { forRegion, regionNames } from './audience-region.js';
 
 export const metrics = { viewers: '總觀眾', streamers: '開台數', median: '篩選中位數' };
 export const dayOf = value => new Date(Number(value) + 8 * HOUR).toISOString().slice(0, 10);
@@ -59,7 +59,7 @@ export function overviewQuery(search) {
   if (q) output.set('q', q);
   if (['signals', 'twitch_new', 'steam_recent', 'igdb', 'all'].includes(input.get('state'))) output.set('state', input.get('state'));
   if (['median', 'viewers', 'streamers'].includes(input.get('sort'))) output.set('sort', input.get('sort'));
-  if (input.get('region') === 'global') output.set('region', 'global');
+  if (['global', 'zh'].includes(input.get('region'))) output.set('region', input.get('region'));
   if (input.get('view') === 'archive') output.set('view', 'archive');
   if (['active', 'ended'].includes(input.get('archive_state'))) output.set('archive_state', input.get('archive_state'));
   if (['peak', 'records', 'name'].includes(input.get('archive_sort'))) output.set('archive_sort', input.get('archive_sort'));
@@ -69,7 +69,8 @@ export function overviewQuery(search) {
 }
 export function detailHref(id, search = '') {
   const params = new URLSearchParams({ game: id }), back = overviewQuery(search);
-  if (regionOf(new URLSearchParams(search).get('region')) === 'global') params.set('region', 'global');
+  const region = new URLSearchParams(search).get('region');
+  if (['global', 'zh'].includes(region)) params.set('region', region);
   if (back) params.set('back', back);
   return `./twitch-game.html?${params}`;
 }

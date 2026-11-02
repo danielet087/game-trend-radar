@@ -28,7 +28,7 @@
     </section>
 
     <div class="tw-region-control">
-      <label for="audienceRegion">語言區域 <select id="audienceRegion"><option value="zh" selected>中文區</option><option value="global">全球</option></select></label>
+      <label for="audienceRegion">語言區域 <select id="audienceRegion"><option value="global" selected>全球</option><option value="zh">中文區</option></select></label>
       <p>依主播標註的直播語言統計；中文區包含所有中文直播頻道，全球包含全部語言</p>
     </div>
     <div class="tw-view-tabs" role="tablist" aria-label="Twitch 觀測資料">
@@ -42,7 +42,7 @@
     <section class="tw-workspace" aria-labelledby="candidatesTitle">
       <div class="tw-workspace-head">
         <div><span class="tw-section-no" aria-hidden="true">01</span><h2 id="candidatesTitle">新作觀測</h2></div>
-        <p id="scopeLabel">中文區觀測 · Twitch 熱門新作 + Steam 近期上市</p>
+        <p id="scopeLabel">全球觀測 · Twitch 熱門新作 + Steam 近期上市</p>
       </div>
       <div class="tw-tools">
         <label class="tw-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="sr-only">搜尋遊戲名稱、Steam AppID 或 Twitch 類別 ID</span><input id="gameSearch" type="search" placeholder="搜尋遊戲名稱或 ID…" autocomplete="off" maxlength="160"><kbd aria-hidden="true">/</kbd></label>
@@ -82,7 +82,7 @@
       <div class="tw-guide-grid tw-igdb-only">
         <article class="tw-guide-card tw-tone-igdb"><span class="tw-guide-index">IGDB / RELEASE DATE</span><h3>IGDB 日期・30 天推算</h3><p id="igdbDateGuide">以距 IGDB 首次發售未滿 30 天推算；各筆仍以快照記錄的規則為準。缺少有效日期時保持未知。</p></article>
       </div>
-      <details class="tw-method"><summary>量測範圍與判讀細節 <span aria-hidden="true">＋</span></summary><div><p>Twitch 熱門新作涵蓋不同平台，以 7,000 名觀眾與新作依據首次收錄。Steam 近期上市則取本站已收錄、台灣上市未滿 30 天且成功配對的遊戲，不受觀眾門檻限制。兩種來源分別計算期限，任一來源有效便繼續追蹤；同一 Twitch 類別只量測一次。</p><p>Steam 配對補充名稱、TAG、關注度與該版本上市日；封面沿用 Twitch，直播數據涵蓋整個 Twitch 類別。Steam 台灣上市日與 IGDB 首次發售日分開保存；未配對的遊戲不計為零觀眾。不同類別依序抓取，並非同一秒的全球排名。</p><p>篩選後中位數只納入免費追隨者超過 1,000 人、且當次觀眾至少 10 人的頻道。追隨數最多使用 24 小時內的紀錄；未知不當成 0，有待查頻道時暫不顯示中位數。總觀眾與總開台涵蓋所選區域的全體頻道；舊歷史無法回算新條件。</p><p>IGDB 推算採後端快照當下的結果，以距首次發售未滿 30 天為範圍，恰好滿 30 天不命中；尚未發售仍命中並另標「未上市」。歷史快照保留當時規則，不用瀏覽器時間重算。資料過期或缺少日期時保持未知。</p><p>從歷史補回而尚未重新量測的遊戲，會註明「上次觀測」與保存時間；舊值不列入本輪排名，也不寫成新的逐時資料。預設觀看中文區，可切換全球。中文區依主播標註的直播語言統計；全球包含中文區。直播語言不等於主播或觀眾所在地。舊紀錄未收集語言分區時不回算、不補零。逐時紀錄保留缺測，沒有出現在清單不代表零觀眾。</p></div></details>
+      <details class="tw-method"><summary>量測範圍與判讀細節 <span aria-hidden="true">＋</span></summary><div><p>Twitch 熱門新作涵蓋不同平台，以 7,000 名觀眾與新作依據首次收錄。Steam 近期上市則取本站已收錄、台灣上市未滿 30 天且成功配對的遊戲，不受觀眾門檻限制。兩種來源分別計算期限，任一來源有效便繼續追蹤；同一 Twitch 類別只量測一次。</p><p>Steam 配對補充名稱、TAG、關注度與該版本上市日；封面沿用 Twitch，直播數據涵蓋整個 Twitch 類別。Steam 台灣上市日與 IGDB 首次發售日分開保存；未配對的遊戲不計為零觀眾。不同類別依序抓取，並非同一秒的全球排名。</p><p>篩選後中位數只納入免費追隨者超過 1,000 人、且當次觀眾至少 10 人的頻道。追隨數最多使用 24 小時內的紀錄；未知不當成 0，有待查頻道時暫不顯示中位數。總觀眾與總開台涵蓋所選區域的全體頻道；舊歷史無法回算新條件。</p><p>IGDB 推算採後端快照當下的結果，以距首次發售未滿 30 天為範圍，恰好滿 30 天不命中；尚未發售仍命中並另標「未上市」。歷史快照保留當時規則，不用瀏覽器時間重算。資料過期或缺少日期時保持未知。</p><p>從歷史補回而尚未重新量測的遊戲，會註明「上次觀測」與保存時間；舊值不列入本輪排名，也不寫成新的逐時資料。預設觀看全球，可切換中文區。中文區依主播標註的直播語言統計；全球包含中文區。直播語言不等於主播或觀眾所在地。舊紀錄未收集語言分區時不回算、不補零。逐時紀錄保留缺測，沒有出現在清單不代表零觀眾。</p></div></details>
     </section>
     </div>
     <section id="historyArchive" class="tw-workspace tw-archive" role="tabpanel" aria-labelledby="archiveTab" hidden>

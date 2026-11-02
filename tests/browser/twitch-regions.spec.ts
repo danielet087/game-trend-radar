@@ -37,10 +37,14 @@ test.beforeEach(async ({ page }) => {
   } }));
 });
 
-test('overview defaults to Chinese, switches sorting and metrics, and carries scope to history', async ({ page }) => {
+test('overview defaults to global, switches sorting and metrics, and carries scope to history', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('twitch.html?sort=viewers');
-  await expect(page.locator('#audienceRegion')).toHaveValue('zh');
+  await expect(page.locator('#audienceRegion')).toHaveValue('global');
+  await expect(page.locator('.tw-game').first()).toHaveAttribute('data-game-id', '1');
+  await expect(page.locator('.tw-game').first().locator('[data-kind="viewers"] strong')).toHaveText('20,000');
+  await page.locator('#audienceRegion').selectOption('zh');
+  await expect(page).toHaveURL(/region=zh/);
   await expect(page.locator('.tw-game').first()).toHaveAttribute('data-game-id', '2');
   await expect(page.locator('.tw-game[data-game-id="1"] [data-kind="viewers"] strong')).toHaveText('300');
   await expect(page.locator('.tw-game[data-game-id="3"]')).toContainText('未收集中文區');
@@ -49,7 +53,7 @@ test('overview defaults to Chinese, switches sorting and metrics, and carries sc
   await expect(page.locator('#noticeTitle')).toHaveText('暫時無法更新，保留上次讀取的快照');
   await page.locator('#audienceRegion').selectOption('global');
   await expect(page.locator('#snapshotNotice')).toBeVisible();
-  await expect(page).toHaveURL(/region=global/);
+  await expect(page).not.toHaveURL(/region=/);
   await expect(page.locator('.tw-game').first()).toHaveAttribute('data-game-id', '1');
   await expect(page.locator('.tw-game').first().locator('[data-kind="viewers"] strong')).toHaveText('20,000');
   await page.locator('.tw-game').first().locator('.tw-detail-link').click();
@@ -60,7 +64,7 @@ test('overview defaults to Chinese, switches sorting and metrics, and carries sc
   await expect(page.locator('#historyTableBody tr').first().locator('td').nth(1)).toHaveText('300');
   await expect(page.locator('#historyTableBody tr').nth(1).locator('td').nth(1)).toHaveText('—');
   await expect(page.locator('#historyTableBody tr').nth(1).locator('td').nth(1)).toHaveAttribute('title', /未收集中文區/);
-  await expect(page.locator('#historyBack')).not.toHaveAttribute('href', /region=global/);
+  await expect(page.locator('#historyBack')).toHaveAttribute('href', /region=zh/);
   const download = page.waitForEvent('download');
   await page.locator('#historyExport').click();
   expect((await download).suggestedFilename()).toContain('-zh-');
@@ -71,10 +75,19 @@ test('overview defaults to Chinese, switches sorting and metrics, and carries sc
 test('archive preserves its query when changing region and uses regional peaks on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('twitch.html?view=archive&q=遊戲');
-  await expect(page.locator('.tw-archive-card')).toContainText('300');
-  await page.locator('#audienceRegion').selectOption('global');
+  await expect(page.locator('#audienceRegion')).toHaveValue('global');
+  await expect(page.locator('.tw-archive-card')).toContainText('20,000');
+  await page.locator('#audienceRegion').selectOption('zh');
   await expect(page.locator('#archiveSearch')).toHaveValue('遊戲');
   await expect(page).toHaveURL(/q=/);
-  await expect(page.locator('.tw-archive-card')).toContainText('20,000');
+  await expect(page).toHaveURL(/region=zh/);
+  await expect(page.locator('.tw-archive-card')).toContainText('300');
+  await page.locator('.tw-archive-card').click();
+  await expect(page.locator('#audienceRegion')).toHaveValue('zh');
+  await expect(page.locator('#historyBack')).toHaveAttribute('href', /region=zh/);
+  await page.locator('#historyBack').click();
+  await expect(page.locator('#audienceRegion')).toHaveValue('zh');
+  await expect(page.locator('#archiveSearch')).toHaveValue('遊戲');
+  await expect(page.locator('.tw-archive-card')).toContainText('300');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 });

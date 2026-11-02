@@ -18,8 +18,9 @@ const raw = () => ({ game_id: '1', game_name: 'Test', status: 'observed', viewer
   filtered_audience: audience(1000), audience_regions: { zh: { viewer_count: 100, streamer_count: 1,
     median_viewer_count: 100, filtered_audience: audience() } } });
 
-test('Chinese is the UI default; missing history is distinct from observed zero', () => {
-  assert.equal(DEFAULT_REGION, 'zh'); assert.equal(regionOf('bad'), 'zh');
+test('Global is the UI default; explicit Chinese and missing history stay distinct', () => {
+  assert.equal(DEFAULT_REGION, 'global'); assert.equal(regionOf('bad'), 'global');
+  assert.equal(regionOf(null), 'global'); assert.equal(regionOf('zh'), 'zh'); assert.equal(regionOf('global'), 'global');
   const missing = forRegion({ ...raw(), audience_regions: undefined }, 'zh');
   assert.equal(missing.viewer_count, null); assert.equal(missing.filtered_audience.status, 'unavailable');
   assert.match(statusOf(missing, 'viewers'), /未收集中文區/);
@@ -57,9 +58,13 @@ test('daily and monthly charts project the same region; CSV identifies missing C
   assert.match(csvRows([missing]), /未收集中文區/);
 });
 test('region survives detail, return links, and archive ranking without borrowing global peaks', () => {
-  const link = new URL(detailHref('1', '?region=global&q=Test&view=archive'), 'https://example.test/');
-  assert.equal(link.searchParams.get('region'), 'global');
-  assert.match(link.searchParams.get('back'), /region=global/);
+  for (const region of ['global', 'zh']) {
+    const link = new URL(detailHref('1', `?region=${region}&q=Test&view=archive`), 'https://example.test/');
+    assert.equal(link.searchParams.get('region'), region);
+    assert.match(link.searchParams.get('back'), new RegExp(`region=${region}`));
+  }
+  const defaultLink = new URL(detailHref('1'), 'https://example.test/');
+  assert.equal(defaultLink.searchParams.has('region'), false);
   assert.equal(overviewQuery('?region=bad'), '');
   const game = { name: 'Test', archive_eligible: true, tracking_status: 'ended', first_hour: '2026-10-01T00:00:00Z',
     last_hour: '2026-10-31T00:00:00Z', sample_count: 100, peak_viewer_count: 9999 };

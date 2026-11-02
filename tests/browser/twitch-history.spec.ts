@@ -34,7 +34,7 @@ test('history ranges, metrics, selected hour, export and return filters work tog
   await page.goto('twitch-game.html?region=global&game=42&back=q%3DTest%26sort%3Dviewers');
   await expect(page.locator('#pageTitle')).toHaveText('測試遊戲');
   await expect(page.locator('#historyStatus')).toContainText('168 個時段');
-  await expect(page.locator('#historyBack')).toHaveAttribute('href', './twitch.html?q=Test&sort=viewers&region=global');
+  await expect(page.locator('#historyBack')).toHaveAttribute('href', './twitch.html?q=Test&sort=viewers');
   await expect(page.locator('.tw-chart')).toHaveAttribute('data-range', '168');
   await page.getByRole('button', { name: '30 天', exact: true }).click();
   await expect(page.locator('#historyStatus')).toContainText('720 個時段');

@@ -55,7 +55,7 @@ test('all supplementary modes work without changing the original chart, URL, dat
   await expect(page.locator('#historyChart .tw-chart')).toHaveAttribute('data-metric', 'streamers');
   expect(page.url()).toBe(originalURL);
   expect(dataReads).toHaveLength(reads);
-  await expect(page.locator('#historyBack')).toHaveAttribute('href', './twitch.html?q=Test&view=archive&region=global');
+  await expect(page.locator('#historyBack')).toHaveAttribute('href', './twitch.html?q=Test&view=archive');
   const download = page.waitForEvent('download');
   await page.locator('#historyExport').click();
   expect((await download).suggestedFilename()).toBe('twitch-42-2026-10-15-2026-10-22.csv');

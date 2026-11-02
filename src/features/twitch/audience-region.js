@@ -1,8 +1,8 @@
 import { filteredAudience } from './metrics.js';
 
-export const DEFAULT_REGION = 'zh';
+export const DEFAULT_REGION = 'global';
 export const regionNames = { zh: '中文區', global: '全球' };
-export const regionOf = value => value === 'global' ? 'global' : DEFAULT_REGION;
+export const regionOf = value => ['global', 'zh'].includes(value) ? value : DEFAULT_REGION;
 const validCount = value => Number.isSafeInteger(value) && value >= 0;
 
 // Global totals remain the collection/admission authority. The selected view
