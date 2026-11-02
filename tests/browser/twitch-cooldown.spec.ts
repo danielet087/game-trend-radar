@@ -113,7 +113,9 @@ test('the full-history cooldown onset and confirmation survive date changes with
   await page.getByRole('button', { name: '7 天', exact: true }).click();
   await expect(panel).toHaveAttribute('data-cooldown-status', 'cooled');
   await expect(page.locator('#cooldownSummary')).toHaveText(summary, { useInnerText: true });
-  await expect(panel.locator('select')).toHaveCount(0);
+  await expect(panel.locator('select')).toHaveCount(1);
+  await expect(panel.locator('#cooldownRegion')).toHaveValue('global');
+  await expect(panel.locator('#cooldownRegion option')).toHaveText(['全球', '中文區', '兩區比較']);
   await expect(page.locator('#cooldownRule')).toContainText('3,000');
   await expect(page.locator('#cooldownDailyEvidence')).toContainText('24 / 24');
   await expect(page.locator('#historyChart .tw-chart')).toHaveAttribute('data-range', '168');

@@ -46,7 +46,7 @@ test('Chinese archive search opens retained history and returns with filters int
   await card.click();
   await expect(page.locator('#pageTitle')).toHaveText('鬼武者 Way of the Sword');
   await expect(page.locator('#historyEnd')).toHaveValue('2026-10-04');
-  await expect(page.locator('#historyStatus')).toContainText('95 個有本區');
+  await expect(page.locator('#historyStatus')).toContainText('全球有效 95 / 168 個時段');
   await page.getByRole('link', { name: '← 歷史資料庫', exact: true }).click();
   await expect(page.locator('#archiveSearch')).toHaveValue('鬼武者');
   await expect(page.locator('#archiveState')).toHaveValue('ended');
@@ -108,4 +108,5 @@ test('unqualified raw games cannot appear in archive search or open through a di
   await expect(page.locator('#historyExport')).toBeDisabled();
   expect(monthlyRequest).toBe(false);
 });
+
 
