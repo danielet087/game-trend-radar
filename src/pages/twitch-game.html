@@ -29,6 +29,7 @@
       <label for="audienceRegion">語言區域 <select id="audienceRegion"><option value="global" selected>全球</option><option value="zh">中文區</option></select></label>
       <p>曲線、統計分析與退潮判定使用所選區域；舊紀錄未收集中文區時保留空白</p>
     </div>
+    <section class="tw-heat-overview" id="historyOverview" aria-labelledby="heatOverviewTitle" hidden></section>
     <section class="tw-workspace" id="historyPanel" aria-labelledby="historyTitle" aria-busy="true">
       <div class="tw-workspace-head"><div><span class="tw-section-no" aria-hidden="true">01</span><h2 id="historyTitle">歷史趨勢</h2></div><button id="historyExport" type="button" disabled>下載此區間 CSV ↓</button></div>
       <div class="tw-history-controls">
@@ -47,14 +48,18 @@
       <p id="historyStatus" class="tw-detail-status" role="status" aria-live="polite">正在讀取逐時歷史…</p>
       <div id="historyContent" hidden>
         <p id="historyRangeLabel" class="tw-history-range-label"></p>
-        <div id="historySummary" class="tw-history-stats" aria-label="目前指標的區間統計"></div>
+        <div id="historyResolution" class="tw-history-resolution" role="group" aria-label="圖表粒度" hidden>
+          <span>總觀眾趨勢</span><button type="button" data-history-resolution="daily" aria-pressed="true">每日中位數</button><button type="button" data-history-resolution="hourly" aria-pressed="false">逐時數值</button>
+        </div>
         <div id="historyChart" class="tw-detail-chart"></div>
+        <p id="historyChartNote" class="tw-detail-note"></p>
+        <div id="historySummary" class="tw-history-stats" aria-label="所選指標的逐時區間統計"></div>
         <p class="tw-detail-note">平均值僅計有效時段。無收集紀錄、未列入觀測與中位數待補均保留空白；未列入不代表觀眾為 0。自訂日期最多 31 天，可查詢更早的已保存紀錄。</p>
-        <details class="tw-hourly" open>
+        <details class="tw-hourly">
           <summary>逐時明細 <span>查看數值與缺測狀態</span></summary>
           <div class="tw-hourly-tools"><p>點選時間可在圖表查看該時段。</p><label>時間排序 <select id="historyOrder"><option value="desc">由新到舊</option><option value="asc">由舊到新</option></select></label></div>
           <div class="tw-hourly-scroll" tabindex="0" role="region" aria-label="可橫向捲動的逐時明細表">
-            <table><thead><tr><th scope="col">時段（台灣）</th><th scope="col">總觀眾</th><th scope="col">開台數</th><th scope="col">篩選中位數</th><th scope="col">目前指標狀態</th></tr></thead><tbody id="historyTableBody"></tbody></table>
+            <table><thead><tr><th scope="col">時段（台灣）</th><th scope="col">總觀眾</th><th scope="col">開台數</th><th scope="col">單台觀眾中位數</th><th scope="col">目前指標狀態</th></tr></thead><tbody id="historyTableBody"></tbody></table>
           </div>
           <div class="tw-history-pagination"><button id="historyPrevious" type="button">← 上一頁</button><span id="historyPagination"></span><button id="historyNext" type="button">下一頁 →</button></div>
         </details>

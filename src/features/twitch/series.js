@@ -1,7 +1,7 @@
 import { HOUR, count, filteredAudience, timestamp } from './metrics.js';
 import { forRegion, regionNames } from './audience-region.js';
 
-export const metrics = { viewers: '總觀眾', streamers: '開台數', median: '篩選中位數' };
+export const metrics = { viewers: '總觀眾', streamers: '開台數', median: '單台觀眾中位數' };
 export const dayOf = value => new Date(Number(value) + 8 * HOUR).toISOString().slice(0, 10);
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
 export function validIndex(value) {

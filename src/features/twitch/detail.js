@@ -6,10 +6,13 @@ import { validIndex, validChunk, windowFor, monthsFor, seriesRows, overviewQuery
 import { createStatistics } from './statistics.js';
 import { createCooldown } from './cooldown.js';
 import { DEFAULT_REGION, regionOf, regionNames } from './audience-region.js';
+import { dailyRows } from './daily-series.js';
+import { renderHeatOverview } from './heat-overview.js';
 
 export function initTwitchDetail() {
   const $ = id => document.getElementById(id);
   let params = new URLSearchParams(location.search), metric = Object.hasOwn(metrics, params.get('metric')) ? params.get('metric') : 'viewers';
+  let resolution = ['daily', 'hourly'].includes(params.get('resolution')) ? params.get('resolution') : '';
   let region = regionOf(params.get('region') || new URLSearchParams(params.get('back') || '').get('region'));
   $('audienceRegion').value = region;
   const id = canonicalID(params.get('game')), cache = new Map();
@@ -23,6 +26,7 @@ export function initTwitchDetail() {
   }
   function syncURL() {
     params.set('game', id); params.set('metric', metric);
+    if (resolution) params.set('resolution', resolution); else params.delete('resolution');
     if (region === DEFAULT_REGION) params.delete('region'); else params.set('region', region);
     const backParams = new URLSearchParams(back);
     if (region === DEFAULT_REGION) backParams.delete('region'); else backParams.set('region', region);
@@ -39,7 +43,7 @@ export function initTwitchDetail() {
   function summary() {
     const valid = rows.map(row => valueOf(row, metric)).filter(value => value !== null);
     const cards = [
-      ['區間最高', valid.length ? Math.max(...valid) : null],
+      ['逐時區間最高', valid.length ? Math.max(...valid) : null],
       ['有效時段平均', valid.length ? Math.round(valid.reduce((a, b) => a + b, 0) / valid.length * 10) / 10 : null],
       ['區間最後有效值', valid.at(-1)],
       ['有效時段', `${valid.length} / ${rows.length}`],
@@ -51,6 +55,26 @@ export function initTwitchDetail() {
       return card;
     }));
   }
+  function renderChart() {
+    const canAggregate = metric === 'viewers' && rows.length > 24;
+    const daily = canAggregate && resolution !== 'hourly';
+    $('historyResolution').hidden = !canAggregate;
+    document.querySelectorAll('[data-history-resolution]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.historyResolution === (daily ? 'daily' : 'hourly'))));
+    disposeChart?.();
+    disposeChart = mount($('historyChart'), {
+      rows: daily ? dailyRows(rows) : rows, gameName: game.display_name || game.name,
+      rangeOptions: [], initialRange: daily ? Number.MAX_SAFE_INTEGER : rows.length,
+      rangeHours: rows.length, initialMetric: metric, granularity: daily ? 'daily' : 'hourly',
+      connectGaps: false, ...(daily ? { referenceValue: 3000 } : {}),
+      onMetricChange(value) {
+        metric = value; syncURL(); renderChart(); summary(); table();
+        $('historyChart').querySelector(`.tw-chart-metric[data-metric="${value}"]`)?.focus({ preventScroll: true });
+      },
+    });
+    $('historyChartNote').textContent = daily
+      ? '主圖為每日總觀眾中位數；3,000 人線供對照。退燒仍需曾達門檻後，連續 3 個有效統計日低於門檻，判定結果見上方全期摘要。下方摘要、逐時明細與 CSV 保留逐時原值。'
+      : '主圖為逐時原值。單台觀眾中位數描述合格頻道的典型觀眾規模；退燒判定使用一天內逐時總觀眾的中位數，兩者不同。';
+  }
   function table() {
     const ordered = rows.map((row, index) => ({ row, index }));
     if (descending) ordered.reverse();
@@ -60,7 +84,10 @@ export function initTwitchDetail() {
       const tr = node('tr');
       const at = node('td'), select = node('button', 'tw-hour-link', time(row.hour));
       select.type = 'button'; select.title = '在圖表查看此時段';
-      select.addEventListener('click', () => { disposeChart?.select(index); $('historyChart').scrollIntoView({ block: 'nearest' }); });
+      select.addEventListener('click', () => {
+        resolution = 'hourly'; syncURL(); renderChart(); disposeChart?.select(index);
+        $('historyChart').scrollIntoView({ block: 'nearest' });
+      });
       at.append(select); tr.append(at);
       for (const key of ['viewers', 'streamers', 'median']) {
         const td = node('td', key === metric ? 'tw-selected-column' : '', fmt(valueOf(row, key)));
@@ -75,6 +102,7 @@ export function initTwitchDetail() {
   }
   async function load(refresh = false) {
     const token = ++request;
+    $('historyOverview').hidden = true;
     $('historyCooldownJump').hidden = true;
     if (cooldown) cooldown.hide();
     else $('historyCooldown').hidden = true;
@@ -137,9 +165,7 @@ export function initTwitchDetail() {
       document.querySelectorAll('[data-history-range]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.historyRange === window.range)));
       $('historyRangeLabel').textContent = `${time(new Date(window.start).toISOString())} — ${time(new Date(window.end).toISOString())} · 台灣時間${window.range !== 'custom' ? ' · 以本遊戲最後觀測時段為基準' : ''}`;
       $('historyContent').hidden = false;
-      disposeChart?.();
-      disposeChart = mount($('historyChart'), { rows, gameName: name, rangeOptions: [], initialRange: rows.length, initialMetric: metric,
-        onMetricChange(value) { metric = value; syncURL(); summary(); table(); } });
+      renderChart();
       summary(); table(); syncURL();
       $('historyExport').disabled = false;
       const count = rows.filter(row => row.status === 'observed' && row.audience_region_status !== 'unavailable').length;
@@ -155,14 +181,17 @@ export function initTwitchDetail() {
         $('historyStatistics').replaceChildren(node('p', 'tw-detail-note', '統計分析暫時無法顯示，請重新載入再試。'));
       }
       try {
-        cooldown ||= createCooldown($('historyCooldown'));
+        renderHeatOverview($('historyOverview'), { status: 'loading', label: '正在整理全期熱度…', scope: regionNames[region] });
+        cooldown ||= createCooldown($('historyCooldown'), { onSummary: result => renderHeatOverview($('historyOverview'), result) });
         cooldown.update({ gameName: `${name} · ${regionNames[region]}`, trackingStatus: game.tracking_status, lastHour: game.last_hour,
+          scope: regionNames[region],
           latestHour: new Date(window.latest).toISOString(), generatedAt: index.generated_at,
           releaseReference: game.release_reference, loadHistory: fullHistoryLoader });
         $('historyCooldownJump').hidden = false;
       } catch (error) {
         console.warn('Unable to display Twitch cooldown analysis:', error);
         cooldown?.destroy(); cooldown = null;
+        renderHeatOverview($('historyOverview'), { status: 'unavailable', label: '全期摘要暫時無法顯示，請重新載入。', scope: regionNames[region] });
         $('historyCooldown').hidden = false;
         $('historyCooldown').replaceChildren(node('p', 'tw-detail-note', '退潮觀測暫時無法顯示，請重新載入再試。'));
       }
@@ -172,6 +201,9 @@ export function initTwitchDetail() {
       if (token === request) $('historyPanel').setAttribute('aria-busy', 'false');
     }
   }
+  document.querySelectorAll('[data-history-resolution]').forEach(button => button.addEventListener('click', () => {
+    resolution = button.dataset.historyResolution; syncURL(); renderChart();
+  }));
   document.querySelectorAll('[data-history-range]').forEach(button => button.addEventListener('click', () => {
     params.set('range', button.dataset.historyRange); params.delete('start'); params.delete('end'); load();
   }));

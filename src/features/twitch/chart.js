@@ -2,7 +2,7 @@ const NS = "http://www.w3.org/2000/svg";
 const METRICS = {
   viewers: { label: "總觀眾", key: "viewer_count", unit: "人" },
   streamers: { label: "開台數", key: "streamer_count", unit: "台" },
-  median: { label: "篩選中位數", unit: "人／台" },
+  median: { label: "單台觀眾中位數", unit: "人／台" },
 };
 const numeric = value => typeof value === "number" && Number.isFinite(value) && value >= 0;
 const numberFormat = new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 10 });
@@ -30,6 +30,9 @@ function valueOf(row, metric) {
     ? filtered.median_viewer_count : null;
 }
 function statusOf(row, metric) {
+  if (row?.aggregation === 'daily') return !row.isClosed ? `${row.date} 尚未結束，暫不計算每日中位數。`
+    : row.complete ? `每日總觀眾中位數 · 有效 ${row.validHours} / 24 小時；以台灣日期統計。`
+    : `有效 ${row.validHours} / 24 小時，未達 12 筆；每日數值保留空白。`;
   if (!row || row.status === "missing") return "此時段沒有收集紀錄。";
   if (row.status === "absent") return "此時段有收集紀錄，但本遊戲未列入；不代表觀眾為 0。";
   if (row.audience_region_status === 'unavailable') return '未收集中文區；這筆紀錄沒有語言分區資料，不代表 0。';
@@ -56,6 +59,9 @@ function svgElement(tag, attributes, text) {
 function mount(container, options) {
   if (!container || typeof container.replaceChildren !== "function") return function () {};
   const settings = options || {};
+  const daily = settings.granularity === 'daily';
+  const labels = { ...METRICS, viewers: { ...METRICS.viewers, label: daily ? '每日總觀眾中位數' : METRICS.viewers.label } };
+  const timeLabel = row => daily ? `${row.date} 每日統計` : `${time(row.hour)} 時段`;
   const rows = Array.isArray(settings.rows) ? settings.rows.slice() : [];
   const gameName = String(settings.gameName || "遊戲");
   let metric = Object.hasOwn(METRICS, settings.initialMetric) ? settings.initialMetric : "viewers";
@@ -69,11 +75,11 @@ function mount(container, options) {
   function on(target, event, handler) { target.addEventListener(event, handler); listeners.push(() => target.removeEventListener(event, handler)); }
   const chart = element("section", "tw-chart");
   chart.dataset.metric = metric;
-  chart.setAttribute("aria-label", `${gameName}逐時趨勢`);
+  chart.setAttribute("aria-label", `${gameName}${daily ? '每日' : '逐時'}趨勢`);
   const toolbar = element("div", "tw-chart-toolbar");
   const metrics = element("div", "tw-chart-metrics");
   metrics.setAttribute("role", "group"); metrics.setAttribute("aria-label", "選擇統計指標");
-  const metricButtons = Object.entries(METRICS).map(([key, config]) => {
+  const metricButtons = Object.entries(labels).map(([key, config]) => {
     const button = element("button", "tw-chart-metric", config.label);
     button.type = "button"; button.dataset.metric = key;
     on(button, "click", () => { metric = key; draw(); announce(); settings.onMetricChange?.(key); });
@@ -106,8 +112,11 @@ function mount(container, options) {
   const footer = element("div", "tw-chart-footer");
   const scrubber = element("input", "tw-chart-scrubber");
   scrubber.type = "range"; scrubber.min = "0"; scrubber.step = "1";
-  scrubber.setAttribute("aria-label", `${gameName}逐時紀錄，使用左右方向鍵切換時段`);
-  const hint = element("p", "tw-chart-hint", "滑過或點選圖表查看數值，也可拖動下方時間軸。台灣時間；實線連接連續紀錄，虛線跨越缺測，僅供觀察趨勢。");
+  scrubber.setAttribute("aria-label", `${gameName}${daily ? '每日' : '逐時'}紀錄，使用左右方向鍵切換${daily ? '日期' : '時段'}`);
+  const continuity = settings.connectGaps === false ? '缺測位置斷線，保留原始空白。' : '實線連接連續紀錄，虛線跨越缺測，僅供觀察趨勢。';
+  const hint = element("p", "tw-chart-hint", daily
+    ? '每日總觀眾中位數：依台灣日期彙整逐時總觀眾。日期已結束且至少有 12 筆才顯示；首日未完整涵蓋的日期不納入。滑過、點選或拖動時間軸查看數值與有效筆數。'
+    : `滑過或點選圖表查看數值，也可拖動下方時間軸。台灣時間；${continuity}`);
   footer.append(scrubber, hint);
   const announcement = element("p", "tw-chart-announcement");
   announcement.setAttribute("role", "status"); announcement.setAttribute("aria-live", "polite"); announcement.setAttribute("aria-atomic", "true");
@@ -117,16 +126,17 @@ function mount(container, options) {
   function visibleRows() { return rows.slice(startIndex()); }
   function summary() {
     const row = rows[selected], value = valueOf(row, metric);
-    return `${row ? `${time(row.hour)} 時段` : "尚無逐時紀錄"}，${METRICS[metric].label} ${value === null ? "無數據" : `${number(value)} ${METRICS[metric].unit}`}。${statusOf(row, metric)}${row?.generated_at ? `快照產生於 ${time(row.generated_at, true)}，台灣時間。` : ""}`;
+    return `${row ? timeLabel(row) : "尚無紀錄"}，${labels[metric].label} ${value === null ? "無數據" : `${number(value)} ${labels[metric].unit}`}。${statusOf(row, metric)}${row?.generated_at ? `快照產生於 ${time(row.generated_at, true)}，台灣時間。` : ""}`;
   }
   function announce() { announcement.textContent = summary(); }
   function inspect() {
     const row = rows[selected], value = valueOf(row, metric);
-    selectedTime.textContent = row ? `${time(row.hour)} 時段` : "尚無逐時紀錄";
+    selectedTime.textContent = row ? timeLabel(row) : "尚無紀錄";
     selectedValue.textContent = value === null ? "—" : number(value);
     unit.textContent = METRICS[metric].unit;
     status.textContent = statusOf(row, metric);
-    observed.textContent = row?.generated_at ? `快照產生時間 ${time(row.generated_at, true)}（台灣）` : "此時段尚無快照";
+    observed.textContent = daily ? `每日總觀眾中位數與單台觀眾中位數為不同指標。`
+      : row?.generated_at ? `快照產生時間 ${time(row.generated_at, true)}（台灣）` : "此時段尚無快照";
     scrubber.value = String(Math.max(0, selected - startIndex()));
     scrubber.setAttribute("aria-valuetext", summary());
     if (!geometry) return;
@@ -160,14 +170,15 @@ function mount(container, options) {
   on(scrubber, "change", announce);
   function draw() {
     if (disposed) return;
-    chart.dataset.metric = metric; chart.dataset.range = String(range);
+    chart.dataset.metric = metric; chart.dataset.range = String(settings.rangeHours || range);
+    chart.dataset.aggregation = daily ? 'daily' : 'hourly';
     metricButtons.forEach(button => button.setAttribute("aria-pressed", String(button.dataset.metric === metric)));
     rangeButtons.forEach(button => button.setAttribute("aria-pressed", String(Number(button.dataset.range) === range)));
     const visible = visibleRows(), values = visible.map(row => valueOf(row, metric));
     const bounds = plot.getBoundingClientRect();
     const width = Math.max(240, Math.round(bounds.width || 640));
     const height = Math.max(200, Math.min(320, Math.round(bounds.height || 250)));
-    const maximum = Math.max(0, ...values.filter(numeric));
+    const maximum = Math.max(0, settings.referenceValue || 0, ...values.filter(numeric));
     const rawStep = Math.max(1, maximum / 5);
     const magnitude = 10 ** Math.floor(Math.log10(rawStep));
     const step = ([1, 2, 2.5, 5, 10].find(candidate => candidate * magnitude >= rawStep) || 10) * magnitude;
@@ -178,10 +189,10 @@ function mount(container, options) {
     const x = index => left + (visible.length > 1 ? index / (visible.length - 1) : 0.5) * innerWidth;
     const y = value => above + innerHeight * (1 - value / top);
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    svg.setAttribute("aria-label", `${gameName}近 ${range} 小時${METRICS[metric].label}折線圖，${values.filter(numeric).length} 個有效時段。使用下方時間軸查看各時段數值；虛線連接缺測前後的紀錄，缺測時段仍無數據。`);
+    svg.setAttribute("aria-label", `${gameName}${daily ? '' : `近 ${range} 小時`}${labels[metric].label}折線圖，${values.filter(numeric).length} 個有效${daily ? '日期' : '時段'}。使用下方時間軸查看數值；${continuity}`);
     svg.replaceChildren();
-    svg.append(svgElement("title", {}, `${gameName} · ${METRICS[metric].label}`));
-    svg.append(svgElement("desc", {}, "X 軸為台灣時間，Y 軸從零起算。資料點為有效紀錄，實線連接連續紀錄，虛線跨越缺測區間，並非實測或補值。下方時間軸可用鍵盤切換時段。"));
+    svg.append(svgElement("title", {}, `${gameName} · ${labels[metric].label}`));
+    svg.append(svgElement("desc", {}, `X 軸為台灣${daily ? '日期' : '時間'}，Y 軸從零起算。資料點為有效紀錄，${continuity}下方時間軸可用鍵盤切換${daily ? '日期' : '時段'}。`));
     for (let tick = 0; tick <= top; tick += gridStep) {
       svg.append(svgElement("line", { class: "tw-chart-grid", x1: left, x2: width - right, y1: y(tick), y2: y(tick), stroke: "var(--tw-chart-grid, #dbe3eb)", "stroke-width": 1 }));
       svg.append(svgElement("text", { class: "tw-chart-axis", x: left - 9, y: y(tick) + 4, "text-anchor": "end", "font-size": 11, fill: "var(--tw-chart-ink, #59677d)" }, number(tick)));
@@ -190,7 +201,11 @@ function mount(container, options) {
     const tickCount = Math.min(labelCount, visible.length);
     const ticks = new Set(Array.from({ length: tickCount }, (_, index) => Math.round(index * (visible.length - 1) / Math.max(1, tickCount - 1))));
     for (const index of ticks) {
-      svg.append(svgElement("text", { class: "tw-chart-axis", x: x(index), y: height - 12, "text-anchor": index === 0 ? "start" : index === visible.length - 1 ? "end" : "middle", "font-size": 11, fill: "var(--tw-chart-ink, #59677d)" }, tickTime(visible[index]?.hour, range > 24)));
+      svg.append(svgElement("text", { class: "tw-chart-axis", x: x(index), y: height - 12, "text-anchor": index === 0 ? "start" : index === visible.length - 1 ? "end" : "middle", "font-size": 11, fill: "var(--tw-chart-ink, #59677d)" }, daily ? visible[index]?.date.slice(5).replace('-', '/') : tickTime(visible[index]?.hour, range > 24)));
+    }
+    if (numeric(settings.referenceValue)) {
+      svg.append(svgElement('line', { class: 'tw-chart-threshold', x1: left, x2: width - right, y1: y(settings.referenceValue), y2: y(settings.referenceValue) }));
+      svg.append(svgElement('text', { class: 'tw-chart-threshold-label', x: width - right, y: y(settings.referenceValue) - 6, 'text-anchor': 'end' }, '3,000 人門檻'));
     }
     let segment = [], previous = null;
     function line(points, bridge = false) {
@@ -203,7 +218,7 @@ function mount(container, options) {
     values.forEach((value, index) => {
       if (value === null) { flush(); return; }
       const point = [x(index), y(value)];
-      if (previous && index > previous.index + 1) line([previous.point, point], true);
+      if (settings.connectGaps !== false && previous && index > previous.index + 1) line([previous.point, point], true);
       segment.push(point);
       previous = { index, point };
     });

@@ -36,12 +36,19 @@ test('history ranges, metrics, selected hour, export and return filters work tog
   await expect(page.locator('#historyStatus')).toContainText('168 個時段');
   await expect(page.locator('#historyBack')).toHaveAttribute('href', './twitch.html?q=Test&sort=viewers');
   await expect(page.locator('.tw-chart')).toHaveAttribute('data-range', '168');
+  await expect(page.locator('.tw-chart')).toHaveAttribute('data-aggregation', 'daily');
+  await expect(page.locator('.tw-hourly')).not.toHaveAttribute('open', '');
+  await expect(page.locator('.tw-chart-threshold-label')).toHaveText('3,000 人門檻');
+  await page.getByRole('button', { name: '逐時數值', exact: true }).click();
+  await expect(page.locator('.tw-chart')).toHaveAttribute('data-aggregation', 'hourly');
+  await page.getByRole('button', { name: '每日中位數', exact: true }).click();
   await page.getByRole('button', { name: '30 天', exact: true }).click();
   await expect(page.locator('#historyStatus')).toContainText('720 個時段');
   await page.getByRole('button', { name: '24 小時', exact: true }).click();
   await expect(page.locator('.tw-chart')).toHaveAttribute('data-range', '24');
-  await page.getByRole('button', { name: '篩選中位數', exact: true }).click();
+  await page.getByRole('button', { name: '單台觀眾中位數', exact: true }).click();
   await expect(page).toHaveURL(/metric=median/);
+  await page.locator('.tw-hourly > summary').click();
   await page.locator('#historyTableBody tr').nth(1).getByRole('button').click();
   await expect(page.locator('.tw-chart-status')).toContainText('追隨者數待補');
   await expect(page.locator('.tw-chart-value')).toHaveText('—');
@@ -61,12 +68,23 @@ test('history ranges, metrics, selected hour, export and return filters work tog
 
 test('mobile history fits the viewport and the chart supports keyboard selection', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('twitch-game.html?region=global&game=42');
+  await page.goto('twitch-game.html?region=global&game=42&range=24h');
   await expect(page.locator('#historyContent')).toBeVisible();
   await page.locator('.tw-chart-scrubber').focus();
   await page.keyboard.press('ArrowLeft');
   await expect(page.locator('.tw-chart-time')).toContainText('14:00');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+});
+
+test('choosing an hourly table record switches the daily chart to the exact original hour', async ({ page }) => {
+  await page.goto('twitch-game.html?game=42');
+  await expect(page.locator('.tw-chart')).toHaveAttribute('data-aggregation', 'daily');
+  await page.locator('.tw-hourly > summary').click();
+  await page.locator('#historyTableBody tr').first().getByRole('button').click();
+  await expect(page.locator('.tw-chart')).toHaveAttribute('data-aggregation', 'hourly');
+  await expect(page.locator('.tw-chart-time')).toContainText('15:00');
+  await expect(page.locator('.tw-chart-value')).toHaveText('0');
+  await expect(page).toHaveURL(/resolution=hourly/);
 });
 
 test('failed monthly data can be retried without displaying it as zero', async ({ page }) => {
@@ -81,4 +99,3 @@ test('failed monthly data can be retried without displaying it as zero', async (
   await expect(page.locator('#historyContent')).toBeVisible();
   await expect(page.locator('#historyTableBody tr').first().locator('td').nth(1)).toHaveText('0');
 });
-

@@ -46,7 +46,7 @@ function svgEl(tag, attributes = {}, text) {
   return element;
 }
 
-export function createCooldown(root) {
+export function createCooldown(root, { onSummary = () => {} } = {}) {
   if (!root) return { update() {}, hide() {}, destroy() {} };
   const listeners = new AbortController(), on = (target, type, handler) => target.addEventListener(type, handler, { signal: listeners.signal });
   let context = {}, rows = null, data = null, loadedKey = '', request = 0, disposed = false, width = 0;
@@ -323,6 +323,8 @@ export function createCooldown(root) {
       range.textContent = `全期判定：${at(data.firstHour)} — ${at(data.lastHour)} · 有效 ${data.coverage.valid} / ${data.coverage.total} 個時段 · 可判定 ${data.coverage.completeDays} / ${data.coverage.totalDays} 天 · 台灣時間`;
       method.textContent = '規則：已保存的有效統計日中，每日中位數須先達到 3,000 人（含），才啟用退燒檢查；達標前的低觀眾日不列入退燒計數，也不因後來爆紅而回溯標示退燒。以台灣時間 00:00 至次日 00:00 為一天。日期結束後，當天至少有 12 / 24 筆有效逐時總觀眾，就用有效數值計算每日中位數；缺測最多 12 小時仍可延續計數，超過 12 小時才中斷，缺值不補零。每日中位數連續 3 天嚴格低於 3,000 人即確認退燒；等於 3,000 人不符合。確認後，首個有效統計日中位數達 3,000 人就解除低熱度狀態。中位數是這款遊戲一天內的逐時總觀眾，不是各直播台觀眾的中位數。這是雷達自訂的 Twitch 觀看熱度規則，不代表永久退燒或銷量變化。';
       renderEvidence(); renderDecline(); renderEvents(); draw();
+      onSummary({ data, status: displayStatus, label: status.textContent,
+        releaseDate: releaseDate(), historical, scope: context.scope });
     } catch (error) { failure(error); }
   }
   function failure(error) {
@@ -330,6 +332,7 @@ export function createCooldown(root) {
     root.dataset.cooldownStatus = 'unavailable'; root.setAttribute('aria-busy', 'false'); retry.disabled = false;
     status.textContent = '全期資料暫時無法讀取'; stateDetail.textContent = '請按「重新讀取全期資料」再試。原本趨勢圖與明細仍可繼續操作。';
     summary.replaceChildren(); evidence.replaceChildren(); releaseSummary.replaceChildren(); chart.replaceChildren(el('p', 'tw-cooldown-empty', '目前沒有可用的退潮判定結果。')); events.replaceChildren(); reader.hidden = true; legend.hidden = true; method.textContent = '';
+    onSummary({ status: 'unavailable', label: '全期摘要暫時無法讀取，請到判定依據重新載入。', scope: context.scope });
     console.warn('Unable to display Twitch cooldown analysis:', error);
   }
   async function load(force = false) {

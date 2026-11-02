@@ -35,6 +35,8 @@ test('relative decline shows release-to-peak days and measures each drop from th
   await mock(page, data); await page.goto('twitch-game.html?region=global&game=42&range=24h');
   const decline = page.locator('#cooldownRelativeDecline');
   await expect(page.locator('#cooldownPeak')).toHaveText('上市後第 7 天達到高峰');
+  await expect(page.locator('#historyOverview [data-heat="peak"] strong')).toHaveText('上市後第 7 天');
+  const overview = await page.locator('#historyOverview').textContent() || '';
   await expect(decline).toContainText('目前高峰日：2026-09-30');
   await expect(decline.getByRole('button', { name: '高峰後第 2 天 · 較高峰下降 25%', exact: true })).toBeVisible();
   await expect(decline.getByRole('button', { name: '高峰後第 4 天 · 較高峰下降 50%', exact: true })).toBeVisible();
@@ -42,6 +44,7 @@ test('relative decline shows release-to-peak days and measures each drop from th
   await decline.getByRole('button', { name: '高峰後第 2 天 · 較高峰下降 25%', exact: true }).click();
   await expect(page.locator('#cooldownReadout')).toContainText('2026-10-02 每日中位數');
   await page.getByRole('button', { name: '7 天', exact: true }).click();
+  await expect(page.locator('#historyOverview')).toHaveText(overview);
   await expect(page.locator('#cooldownPeak')).toHaveText('上市後第 7 天達到高峰');
   await expect(decline).toContainText('高峰後第 6 天');
   await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'watching');
@@ -206,7 +209,3 @@ for (const elapsedHours of [5, 12, 13]) {
     await expect(page.locator('#cooldownEvents')).toContainText('2026/10/04 00:00');
   });
 }
-
-
-
-

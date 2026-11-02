@@ -1,4 +1,24 @@
 body[data-page="twitch-game"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; --page-orbit:#c3b5e0; --page-orbit-line:#a18abb; }
+.tw-heat-overview { margin:0 0 25px; padding:22px 25px; border:1px solid #c9bdd8; border-radius:18px; background:#fffdf9; }
+.tw-heat-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+.tw-heat-heading h2 { margin:0; font-size:19px; color:#503b6b; }
+.tw-heat-heading > span { color:#746780; font-size:12px; }
+.tw-heat-status { margin:13px 0 16px; color:#59436f; font-size:20px; font-weight:700; }
+.tw-heat-overview[data-status="cooled"] .tw-heat-status,.tw-heat-overview[data-status="suspected"] .tw-heat-status { color:#965a32; }
+.tw-heat-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.tw-heat-stat { display:grid; align-content:start; gap:8px; min-width:0; padding:14px; border-radius:10px; background:#f5f0fa; overflow-wrap:anywhere; }
+.tw-heat-stat > span { color:#746780; font-size:12px; }
+.tw-heat-stat strong { color:#503b6b; font-size:clamp(17px,2vw,24px); line-height:1.6; font-variant-numeric:tabular-nums; }
+.tw-heat-stat small,.tw-heat-note { color:#746780; font-size:12px; line-height:1.8; }
+.tw-heat-note { margin:15px 0 9px; }
+.tw-heat-overview > a { color:#67518f; font-size:12px; text-decoration:underline; text-underline-offset:4px; }
+.tw-history-resolution { display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin:0 25px 12px; }
+.tw-history-resolution > span { color:#746780; font-size:12px; margin-right:4px; }
+.tw-history-resolution button[aria-pressed="true"] { color:#fff; background:#67518f; border-color:#67518f; }
+.tw-history-resolution button[aria-pressed="true"]:hover { background:#67518f; }
+.tw-detail-chart .tw-chart[data-aggregation="daily"] .tw-chart-point { r:3.5; }
+.tw-chart-threshold { stroke:#b77a43; stroke-width:1.5; stroke-dasharray:6 5; }
+.tw-chart-threshold-label { fill:#8d562f; font-size:11px; }
 .tw-back { display:inline-block; color:#67518f; margin:0 0 22px; font-size:13px; font-weight:650; text-underline-offset:4px; }
 .tw-back:hover { text-decoration:underline; }
 .tw-detail-shell .tw-heading { align-items:flex-end; }
@@ -47,6 +67,14 @@ body[data-page="twitch-game"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; -
 .tw-history-pagination { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:20px 25px; color:#887692; font-size:11px; }
 .tw-detail-method { margin:25px 4px; font-size:11px; color:#746780; line-height:1.9; }
 @media(max-width:760px) {
+  .tw-heat-overview { padding:18px 16px; }
+  .tw-heat-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .tw-heat-stat:last-child { grid-column:1 / -1; }
+  .tw-heat-stat strong { font-size:18px; }
+  .tw-history-resolution { margin-left:16px; margin-right:16px; }
+  .tw-detail-chart .tw-chart-metrics { display:grid; width:100%; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .tw-detail-chart .tw-chart-metric { font-size:11px; min-height:44px; padding:8px 7px; }
+  .tw-detail-chart .tw-chart-metric:last-child { grid-column:1 / -1; }
   .tw-detail-shell .tw-heading { display:block; }
   .tw-history-updated { display:flex; align-items:center; justify-content:space-between; margin-top:20px; }
   .tw-history-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
