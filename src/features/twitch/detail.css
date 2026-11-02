@@ -46,6 +46,29 @@ body[data-page="twitch-game"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; -
 .tw-history-stat strong { font-size:clamp(20px,2.4vw,29px); letter-spacing:-.04em; font-variant-numeric:tabular-nums; color:#503b6b; }
 .tw-history-stat small { font-size:10px; color:#897793; }
 .tw-detail-chart { margin:0 25px; }
+.tw-region-note { margin:0 0 22px; color:#746780; font-size:12px; line-height:1.9; }
+.tw-scope-section { margin:0 0 26px; min-width:0; scroll-margin-top:110px; }
+.tw-scope-toolbar { position:sticky; top:86px; z-index:7; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:14px 20px; border:1px solid #d7cce2; border-radius:13px; background:#f7f1fc; margin:0 0 12px; }
+.tw-scope-toolbar h2 { margin:0; color:#59436f; font-size:18px; }
+.tw-scope-actions { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.tw-local-region { display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:12px; color:#746780; }
+.tw-local-region select { font:inherit; color:#59436f; background:#fffdf9; border:1px solid #d2c4df; border-radius:9px; min-height:42px; padding:8px 28px 8px 10px; max-width:100%; }
+.tw-region-compare { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; align-items:start; }
+.tw-region-panel { min-width:0; }
+.tw-region-caption { margin:0 0 10px; color:#59436f; font-size:15px; }
+.tw-region-panel .tw-workspace { margin-top:0; }
+.tw-region-panel .tw-heat-overview { margin-bottom:0; }
+.tw-region-compare .tw-heat-stats,.tw-region-compare .tw-cooldown-summary,.tw-region-compare .tw-statistics-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.tw-region-compare .tw-heat-stat:last-child { grid-column:1 / -1; }
+.tw-region-compare .tw-chart-inspector { grid-template-columns:1fr; }
+.tw-region-compare .tw-chart-reading { grid-row:auto; }
+.tw-region-compare .tw-chart-status,.tw-region-compare .tw-chart-observed { text-align:left; }
+.tw-region-compare .tw-chart-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; }
+.tw-region-compare .tw-chart-metric:last-child { grid-column:1 / -1; }
+.tw-compare-table { border-collapse:collapse; width:100%; grid-column:1 / -1; font-size:12px; font-variant-numeric:tabular-nums; }
+.tw-compare-table :is(th,td) { padding:12px 10px; text-align:right; border-bottom:1px solid #e6dfea; overflow-wrap:anywhere; }
+.tw-compare-table th:first-child { text-align:left; }
+.tw-compare-table thead { color:#67518f; background:#f5f0fa; }
 .tw-detail-chart .tw-chart-plot { height:300px; }
 .tw-detail-chart .tw-chart-ranges { display:none; }
 .tw-detail-chart .tw-chart-point { r:2; }
@@ -67,6 +90,10 @@ body[data-page="twitch-game"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; -
 .tw-history-pagination { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:20px 25px; color:#887692; font-size:11px; }
 .tw-detail-method { margin:25px 4px; font-size:11px; color:#746780; line-height:1.9; }
 @media(max-width:760px) {
+  .tw-scope-toolbar { top:124px; padding:12px 15px; }
+  .tw-region-compare { grid-template-columns:1fr; }
+  .tw-scope-section { scroll-margin-top:155px; }
+  .tw-scope-actions { width:100%; }
   .tw-heat-overview { padding:18px 16px; }
   .tw-heat-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .tw-heat-stat:last-child { grid-column:1 / -1; }

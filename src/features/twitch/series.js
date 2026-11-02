@@ -59,7 +59,8 @@ export function overviewQuery(search) {
   if (q) output.set('q', q);
   if (['signals', 'twitch_new', 'steam_recent', 'igdb', 'all'].includes(input.get('state'))) output.set('state', input.get('state'));
   if (['median', 'viewers', 'streamers'].includes(input.get('sort'))) output.set('sort', input.get('sort'));
-  if (['global', 'zh'].includes(input.get('region'))) output.set('region', input.get('region'));
+  if (['global', 'zh', 'compare'].includes(input.get('region'))) output.set('region', input.get('region'));
+  if (['global', 'zh', 'compare'].includes(input.get('archive_region'))) output.set('archive_region', input.get('archive_region'));
   if (input.get('view') === 'archive') output.set('view', 'archive');
   if (['active', 'ended'].includes(input.get('archive_state'))) output.set('archive_state', input.get('archive_state'));
   if (['peak', 'records', 'name'].includes(input.get('archive_sort'))) output.set('archive_sort', input.get('archive_sort'));
@@ -69,8 +70,9 @@ export function overviewQuery(search) {
 }
 export function detailHref(id, search = '') {
   const params = new URLSearchParams({ game: id }), back = overviewQuery(search);
-  const region = new URLSearchParams(search).get('region');
-  if (['global', 'zh'].includes(region)) params.set('region', region);
+  const source = new URLSearchParams(search);
+  const region = source.get('view') === 'archive' ? source.get('archive_region') ?? source.get('region') : source.get('region');
+  if (['global', 'zh', 'compare'].includes(region)) params.set('region', region);
   if (back) params.set('back', back);
   return `./twitch-game.html?${params}`;
 }

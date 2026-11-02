@@ -1,14 +1,15 @@
 import { filteredAudience } from './metrics.js';
 
 export const DEFAULT_REGION = 'global';
-export const regionNames = { zh: '中文區', global: '全球' };
+export const regionNames = { zh: '中文區', global: '全球', compare: '兩區比較' };
 export const regionOf = value => ['global', 'zh'].includes(value) ? value : DEFAULT_REGION;
+export const viewOf = value => ['global', 'zh', 'compare'].includes(value) ? value : DEFAULT_REGION;
 const validCount = value => Number.isSafeInteger(value) && value >= 0;
 
 // Global totals remain the collection/admission authority. The selected view
 // replaces only metrics, after catalog membership and identity are resolved.
 export function forRegion(row, region = 'global') {
-  if (region === 'global') return { ...row, audience_region: 'global' };
+  if (region !== 'zh') return { ...row, audience_region: 'global' };
   const value = row.audience_regions?.zh;
   const available = value && validCount(row.viewer_count) && validCount(row.streamer_count) && validCount(value.viewer_count) && validCount(value.streamer_count) &&
     value.viewer_count <= row.viewer_count && value.streamer_count <= row.streamer_count &&

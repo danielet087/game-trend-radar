@@ -25,6 +25,7 @@ export function archiveGames(index, region = 'global') {
       status: game.tracking_status,
       samples: count(scope?.sample_count), peak: count(scope?.peak_viewer_count),
       region, regionAvailable: region !== 'zh' || scope?.sample_count > 0,
+      chineseSamples: count(game.audience_regions?.zh?.sample_count), chinesePeak: count(game.audience_regions?.zh?.peak_viewer_count),
       search: normalize([id, name, displayName, ...(Array.isArray(game.aliases) ? game.aliases : []),
         ...(Array.isArray(game.steam_appids) ? game.steam_appids : [])].join(' ')) }];
   });

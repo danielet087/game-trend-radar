@@ -46,38 +46,51 @@ function svgEl(tag, attributes = {}, text) {
   return element;
 }
 
-export function createCooldown(root, { onSummary = () => {} } = {}) {
+export function cooldownPresentation(data, context = {}, now = Date.now()) {
+  const last = Date.parse(context.lastHour || data.lastHour), latest = Date.parse(context.latestHour);
+  const tolerance = (data.settings.maxMissingHours ?? 12) * HOUR;
+  const stale = context.trackingStatus === 'active' &&
+    (!Number.isFinite(last) || Number.isFinite(latest) && latest - last > tolerance || now - last > tolerance);
+  const status = stale ? 'stale' : data.status;
+  const reference = context.releaseReference;
+  return { data, status, label: stale ? '最新狀態待確認' : statuses[data.status] || statuses.insufficient,
+    releaseDate: reference?.precision === 'day' && calendarDate(reference.date) !== null ? reference.date : null,
+    historical: context.trackingStatus === 'ended', scope: context.scope };
+}
+
+export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {}) {
+  const uid = name => idPrefix + name;
   if (!root) return { update() {}, hide() {}, destroy() {} };
   const listeners = new AbortController(), on = (target, type, handler) => target.addEventListener(type, handler, { signal: listeners.signal });
   let context = {}, rows = null, data = null, loadedKey = '', request = 0, disposed = false, width = 0;
   let selected = 0, geometry = null;
-  root.classList.add('tw-cooldown'); root.setAttribute('aria-labelledby', 'cooldownTitle');
+  root.classList.add('tw-cooldown'); root.setAttribute('aria-labelledby', uid('cooldownTitle'));
   const head = el('div', 'tw-workspace-head'), heading = el('div');
   const section = el('span', 'tw-section-no', '02'); section.setAttribute('aria-hidden', 'true');
-  const title = el('h2', '', '熱度退潮時間點'); title.id = 'cooldownTitle';
+  const title = el('h2', '', '熱度退潮時間點'); title.id = uid('cooldownTitle');
   heading.append(section, title); head.append(heading, el('span', 'tw-cooldown-scope', '全期判定'));
   const intro = el('p', 'tw-cooldown-intro', '每日觀眾中位數曾達 3,000 人，才啟用退燒檢查；之後連續 3 天低於 3,000 人，即確認退燒。未曾達標時顯示「尚未達熱門門檻」，不累積退燒天數。使用該遊戲的 Twitch 逐時總觀眾，依台灣時間統計已結束的日期；每天最多容許缺 12 小時，不補零。此圖使用全部已保存紀錄，不受上方日期範圍裁切。');
-  const range = el('p', 'tw-cooldown-range'); range.id = 'cooldownRange';
-  const releaseSummary = el('div', 'tw-cooldown-release'); releaseSummary.id = 'cooldownReleaseSummary';
+  const range = el('p', 'tw-cooldown-range'); range.id = uid('cooldownRange');
+  const releaseSummary = el('div', 'tw-cooldown-release'); releaseSummary.id = uid('cooldownReleaseSummary');
   const controls = el('div', 'tw-cooldown-controls');
-  const rule = el('p', 'tw-cooldown-rule', '固定規則：每日中位數曾達 3,000 人後，低於 3,000 人 × 連續 3 天；每天至少 12 / 24 筆有效資料'); rule.id = 'cooldownRule';
+  const rule = el('p', 'tw-cooldown-rule', '固定規則：每日中位數曾達 3,000 人後，低於 3,000 人 × 連續 3 天；每天至少 12 / 24 筆有效資料'); rule.id = uid('cooldownRule');
   const retry = el('button', 'tw-cooldown-retry', '重新讀取全期資料'); retry.type = 'button';
   controls.append(rule, retry);
   const stateLine = el('div', 'tw-cooldown-state-line');
-  const status = el('strong', 'tw-cooldown-status'); status.id = 'cooldownStatus'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
-  const stateDetail = el('p', 'tw-cooldown-state-detail'); stateDetail.id = 'cooldownStateDetail'; stateLine.append(status, stateDetail);
-  const summary = el('div', 'tw-cooldown-summary'); summary.id = 'cooldownSummary';
-  const evidence = el('div', 'tw-cooldown-daily'); evidence.id = 'cooldownDailyEvidence';
-  const decline = el('div', 'tw-cooldown-events'); decline.id = 'cooldownRelativeDecline';
-  const figure = el('figure', 'tw-cooldown-figure'), chart = el('div', 'tw-cooldown-chart'); chart.id = 'cooldownChart';
+  const status = el('strong', 'tw-cooldown-status'); status.id = uid('cooldownStatus'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
+  const stateDetail = el('p', 'tw-cooldown-state-detail'); stateDetail.id = uid('cooldownStateDetail'); stateLine.append(status, stateDetail);
+  const summary = el('div', 'tw-cooldown-summary'); summary.id = uid('cooldownSummary');
+  const evidence = el('div', 'tw-cooldown-daily'); evidence.id = uid('cooldownDailyEvidence');
+  const decline = el('div', 'tw-cooldown-events'); decline.id = uid('cooldownRelativeDecline');
+  const figure = el('figure', 'tw-cooldown-figure'), chart = el('div', 'tw-cooldown-chart'); chart.id = uid('cooldownChart');
   const legend = el('figcaption', 'tw-cooldown-legend', '淡紫線：逐時總觀眾　｜　紫線：每日中位數（日結束時標示）　｜　橘色虛線：3,000 人門檻　｜　橘色區間：已確認的低熱度觀測');
   figure.append(chart, legend);
-  const reader = el('div', 'tw-cooldown-reader'), readerLabel = el('label', '', '查看全期觀測與事件'); readerLabel.htmlFor = 'cooldownScrubber';
-  const scrubber = el('input'); scrubber.type = 'range'; scrubber.id = 'cooldownScrubber'; scrubber.min = '0'; scrubber.step = '1';
-  const readout = el('output', 'tw-cooldown-readout'); readout.id = 'cooldownReadout'; readout.setAttribute('for', 'cooldownScrubber');
+  const reader = el('div', 'tw-cooldown-reader'), readerLabel = el('label', '', '查看全期觀測與事件'); readerLabel.htmlFor = uid('cooldownScrubber');
+  const scrubber = el('input'); scrubber.type = 'range'; scrubber.id = uid('cooldownScrubber'); scrubber.min = '0'; scrubber.step = '1';
+  const readout = el('output', 'tw-cooldown-readout'); readout.id = uid('cooldownReadout'); readout.setAttribute('for', uid('cooldownScrubber'));
   reader.append(readerLabel, scrubber, readout);
-  const events = el('div', 'tw-cooldown-events'); events.id = 'cooldownEvents';
-  const method = el('p', 'tw-cooldown-method'); method.id = 'cooldownMethod';
+  const events = el('div', 'tw-cooldown-events'); events.id = uid('cooldownEvents');
+  const method = el('p', 'tw-cooldown-method'); method.id = uid('cooldownMethod');
   root.replaceChildren(head, intro, range, releaseSummary, controls, stateLine, summary, evidence, decline, figure, reader, events, method);
 
   function releaseDate() {
@@ -177,12 +190,12 @@ export function createCooldown(root, { onSummary = () => {} } = {}) {
     const left = w < 500 ? 52 : 68, right = 22, top = 40, bottom = 55;
     const dailyPoints = (data.days || []).filter(day => day.isClosed).map(day => ({ hour: day.endAt, median: day.median, date: day.date, validHours: day.validHours }));
     const times = readerPoints(), start = Date.parse(times[0].hour), end = Date.parse(times.at(-1).hour);
-    const high = Math.max(data.settings.threshold, ...valid.map(point => point.raw)) * 1.08;
+    const high = Math.max(data.settings.threshold, context.domainMaximum || 0, ...valid.map(point => point.raw)) * 1.08;
     const x = value => left + (value - start) / Math.max(HOUR, end - start) * (w - left - right);
     const y = value => top + (h - top - bottom) * (1 - value / high);
-    const svg = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, role: 'img', 'aria-labelledby': 'cooldownSvgTitle cooldownSvgDesc' });
-    svg.append(svgEl('title', { id: 'cooldownSvgTitle' }, `${context.gameName || '遊戲'}的全期熱度退潮觀測`),
-      svgEl('desc', { id: 'cooldownSvgDesc' }, '淡線為逐時總觀眾，紫線為每日觀眾中位數（日結束時標示），橘色虛線固定在三千人。連續低熱度起始日與退燒確認時間分開標示；可使用下方滑桿或事件按鈕查看。'));
+    const svg = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, role: 'img', 'aria-labelledby': `${uid('cooldownSvgTitle')} ${uid('cooldownSvgDesc')}` });
+    svg.append(svgEl('title', { id: uid('cooldownSvgTitle') }, `${context.gameName || '遊戲'}的全期熱度退潮觀測`),
+      svgEl('desc', { id: uid('cooldownSvgDesc') }, '淡線為逐時總觀眾，紫線為每日觀眾中位數（日結束時標示），橘色虛線固定在三千人。連續低熱度起始日與退燒確認時間分開標示；可使用下方滑桿或事件按鈕查看。'));
     const lastClosedEnd = Date.parse((data.days || []).findLast(day => day.isClosed)?.endAt);
     for (const episode of data.episodes) {
       const phases = [{ startedAt: episode.candidateAt, confirmedAt: episode.confirmedAt }, ...(episode.reconfirmations || [])];
@@ -234,12 +247,6 @@ export function createCooldown(root, { onSummary = () => {} } = {}) {
     chart.replaceChildren(svg); geometry = { x, y, cursor, marks };
     scrubber.max = String(times.length - 1); select(Math.min(selected, times.length - 1));
   }
-  function isStale() {
-    if (context.trackingStatus !== 'active') return false;
-    const last = Date.parse(context.lastHour || data?.lastHour), latest = Date.parse(context.latestHour);
-    const tolerance = (data?.settings.maxMissingHours ?? 12) * HOUR;
-    return !Number.isFinite(last) || Number.isFinite(latest) && latest - last > tolerance || Date.now() - last > tolerance;
-  }
   function renderEvents() {
     const entries = eventEntries(); events.replaceChildren(el('h3', '', '退潮與回升紀錄'));
     if (!entries.length) { events.append(el('p', '', '目前尚未找到符合此門檻的退潮事件。')); return; }
@@ -272,7 +279,7 @@ export function createCooldown(root, { onSummary = () => {} } = {}) {
     if (!peak || peak.median <= 0) {
       decline.append(el('p', '', '尚無大於零的有效每日中位數高峰，無法計算比例衰退。')); return;
     }
-    const peakSummary = el('p'); peakSummary.id = 'cooldownPeak';
+    const peakSummary = el('p'); peakSummary.id = uid('cooldownPeak');
     peakSummary.append(el('strong', '', dayHint(peak.startAt) ? `${dayHint(peak.startAt)}達到高峰` : '上市日尚未確認，暫無法計算上市至高峰天數'));
     decline.append(peakSummary, el('p', '', `目前高峰日：${peak.date} · 已保存全期最高每日觀眾中位數 ${fmt(peak.median)} 人。高峰日為第 0 天，以下衰退天數從這一天開始往後算。`));
     const list = el('ol', 'tw-cooldown-event-list');
@@ -291,7 +298,8 @@ export function createCooldown(root, { onSummary = () => {} } = {}) {
     if (disposed || root.hidden || !rows) return;
     try {
       data = analyzeCooldown(rows);
-      const stale = isStale(), displayStatus = stale ? 'stale' : data.status;
+      const presentation = cooldownPresentation(data, context);
+      const displayStatus = presentation.status, stale = displayStatus === 'stale';
       root.dataset.cooldownStatus = displayStatus; root.dataset.cooldownModelStatus = data.status;
       status.textContent = stale ? '最新狀態待確認' : statuses[data.status] || statuses.insufficient;
       status.dataset.tone = ['cooled', 'suspected'].includes(displayStatus) ? 'cooling' : displayStatus === 'recovered' ? 'recovery' : 'neutral';

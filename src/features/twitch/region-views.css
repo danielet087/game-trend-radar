@@ -1,0 +1,24 @@
+.tw-local-region { display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:12px; color:#746780; }
+.tw-local-region select { font:inherit; color:#59436f; background:#fffdf9; border:1px solid #d2c4df; border-radius:9px; min-height:42px; padding:8px 28px 8px 10px; max-width:100%; }
+.tw-scope-actions { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.tw-list-scope-toolbar { position:sticky; top:86px; z-index:7; border-radius:20px 20px 0 0; background:#f1eaf9; }
+.tw-workspace:has(.tw-list-scope-toolbar),#historyPanel { overflow:visible; }
+.tw-metric-region { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:4px 8px; margin-top:6px; }
+.tw-metric-region > span { font-size:11px; color:#746780; }
+.tw-metric .tw-metric-region > strong { font-size:19px; }
+.tw-inline-region-compare { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.tw-inline-region-panel { min-width:0; }
+.tw-inline-region-panel h4 { color:#59436f; font-size:14px; margin:14px 0 8px; }
+.tw-inline-region-compare .tw-chart-inspector { grid-template-columns:1fr; }
+.tw-inline-region-compare .tw-chart-reading { grid-row:auto; }
+.tw-inline-region-compare .tw-chart-status,.tw-inline-region-compare .tw-chart-observed { text-align:left; }
+.tw-inline-region-compare .tw-chart-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; }
+.tw-inline-region-compare .tw-chart-metric:last-child { grid-column:1 / -1; }
+.tw-archive-stats .tw-archive-comparison { display:grid; grid-template-columns:auto auto; gap:4px 10px; align-items:baseline; }
+.tw-archive-comparison dt { grid-column:1 / -1; }
+.tw-archive-comparison dd { text-align:right; }
+@media(max-width:760px) {
+  .tw-list-scope-toolbar { top:124px; }
+  .tw-inline-region-compare { grid-template-columns:1fr; }
+  .tw-scope-actions { width:100%; }
+}

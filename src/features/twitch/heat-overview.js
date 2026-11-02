@@ -5,7 +5,8 @@ export function renderHeatOverview(root, snapshot) {
   if (!root) return;
   root.hidden = false;
   const head = node('div', 'tw-heat-heading');
-  const title = node('h2', '', '熱度摘要'); title.id = 'heatOverviewTitle';
+  const title = node('h2', '', `${snapshot.scope || ''}熱度摘要`); title.id = `${root.id}Title`;
+  root.setAttribute('aria-labelledby', title.id);
   head.append(title, node('span', '', `${snapshot.scope || ''} · 全期觀測`));
   const state = node('p', 'tw-heat-status', snapshot.label);
   state.setAttribute('role', 'status'); state.setAttribute('aria-live', 'polite');

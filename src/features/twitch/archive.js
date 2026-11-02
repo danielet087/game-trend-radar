@@ -2,14 +2,16 @@ import { RadarStorage } from '../../data/storage.ts';
 import { node, fmt, time } from './presentation.js';
 import { validIndex, detailHref } from './series.js';
 import { archiveStates, archiveGames, archiveURLState, selectArchive, PAGE_SIZE } from './archive-model.js';
-import { regionNames, regionOf } from './audience-region.js';
+import { regionNames, viewOf } from './audience-region.js';
 
 export function createTwitchArchive({ $, signal }) {
   let state = archiveURLState(location.search), index, games = [], pending, timer, composing = false, hintQuery = '', failed = false;
+  let region = 'global';
   const active = () => !$('historyArchive').hidden;
   const on = (target, event, handler) => target.addEventListener(event, handler, { signal });
   function syncURL() {
     const url = new URL(location.href);
+    if (active()) url.searchParams.set('archive_region', region);
     for (const [key, value, defaultValue] of [['q', state.query, ''], ['archive_state', state.filter, 'all'],
       ['archive_sort', state.sort, 'recent'], ['archive_page', String(state.page), '1']]) {
       if (value === defaultValue) url.searchParams.delete(key); else url.searchParams.set(key, value);
@@ -18,6 +20,9 @@ export function createTwitchArchive({ $, signal }) {
   }
   function readURL() {
     clearTimeout(timer); state = archiveURLState(location.search);
+    const p = new URLSearchParams(location.search);
+    region = viewOf(p.get('archive_region') ?? (p.get('view') === 'archive' ? p.get('region') : 'global'));
+    $('archiveRegion').value = region;
     $('archiveSearch').value = state.query; $('archiveState').value = state.filter; $('archiveSort').value = state.sort;
   }
   function card(game) {
@@ -40,8 +45,13 @@ export function createTwitchArchive({ $, signal }) {
     const period = node('div', 'tw-archive-period');
     period.append(node('span', '', '已保存觀測期間'), node('time', '', time(game.first)), node('time', '', `至 ${time(game.last)}`));
     const stats = node('dl', 'tw-archive-stats');
-    for (const [label, value, unit] of [['紀錄筆數', game.samples, '筆'], ['最高觀眾', game.peak, '人']]) {
+    for (const [label, value, unit, chinese] of [['紀錄筆數', game.samples, '筆', game.chineseSamples], ['最高觀眾', game.peak, '人', game.chinesePeak]]) {
       const stat = node('div'); stat.append(node('dt', '', label), node('dd', '', fmt(value)), node('small', '', unit)); stats.append(stat);
+      if (region === 'compare') {
+        stat.classList.add('tw-archive-comparison');
+        stat.replaceChildren(node('dt', '', label), node('small', '', '全球'), node('dd', '', fmt(value)),
+          node('small', '', '中文區'), node('dd', '', fmt(chinese)));
+      }
     }
     link.append(identity, period, stats, node('span', 'tw-archive-open', '查看歷史 →'));
     if (!game.regionAvailable) link.append(node('p', '', '未收集中文區'));
@@ -49,12 +59,11 @@ export function createTwitchArchive({ $, signal }) {
   }
   function render() {
     if (!active() || signal.aborted || !index) return;
-    const region = regionOf(new URLSearchParams(location.search).get('region'));
     games = archiveGames(index, region);
     const selected = selectArchive(games, state), pages = Math.max(1, Math.ceil(selected.length / PAGE_SIZE));
     state.page = Math.min(state.page, pages); syncURL();
     $('archiveUpdated').textContent = `更新 ${time(index.generated_at)}（台灣）`;
-    $('archiveStatus').textContent = `${regionNames[region]} · ${failed ? '更新失敗，保留上次讀取的資料 · ' : ''}共保存 ${fmt(games.length)} 款遊戲${selected.length !== games.length ? ` · 符合 ${fmt(selected.length)} 款` : ''}`;
+    $('archiveStatus').textContent = `${regionNames[region]} · ${failed ? '更新失敗，保留上次讀取的資料 · ' : ''}共保存 ${fmt(games.length)} 款遊戲${selected.length !== games.length ? ` · 符合 ${fmt(selected.length)} 款` : ''}` + (region === 'compare' ? ' · 依全球數據排序；各區高峰可能發生在不同時間' : '');
     $('archiveReset').hidden = !state.query && state.filter === 'all' && state.sort === 'recent';
     const cards = selected.slice((state.page - 1) * PAGE_SIZE, state.page * PAGE_SIZE).map(card);
     if (!cards.length) {
@@ -124,6 +133,7 @@ export function createTwitchArchive({ $, signal }) {
     state = { query: '', filter: 'all', sort: 'recent', page: 1 }; syncURL(); readURL(); render(); $('archiveSearch').focus();
   });
   on($('archiveRefresh'), 'click', () => load(true));
+  on($('archiveRegion'), 'change', () => { region = viewOf($('archiveRegion').value); state.page = 1; flushSearch(); });
   for (const [id, change] of [['archivePrevious', -1], ['archiveNext', 1]]) on($(id), 'click', () => {
     state.page += change; syncURL(); render(); $('archiveTitle').focus({ preventScroll: true });
     $('historyArchive').scrollIntoView({ block: 'start' });

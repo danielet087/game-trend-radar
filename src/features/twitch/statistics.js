@@ -28,49 +28,50 @@ function svgEl(tag, attrs = {}, text) {
   return result;
 }
 
-export function createStatistics(root) {
+export function createStatistics(root, { idPrefix = '', onViewChange = () => {} } = {}) {
+  const uid = name => idPrefix + name;
   if (!root) return { update() {}, hide() {}, destroy() {} };
   const events = new AbortController();
   const on = (target, type, listener) => target.addEventListener(type, listener, { signal: events.signal });
   let rows = [], gameName = '', mode = 'distribution', metric = 'viewers', threshold = 5000;
   let selected = 0, points = [], marks = [], width = 0, disposed = false;
   root.classList.add('tw-statistics');
-  root.setAttribute('aria-labelledby', 'statisticsTitle');
+  root.setAttribute('aria-labelledby', uid('statisticsTitle'));
   const head = el('div', 'tw-workspace-head');
   const heading = el('div');
   const sectionNumber = el('span', 'tw-section-no', '03'); sectionNumber.setAttribute('aria-hidden', 'true');
-  const title = el('h2', '', '統計分析'); title.id = 'statisticsTitle';
+  const title = el('h2', '', '統計分析'); title.id = uid('statisticsTitle');
   heading.append(sectionNumber, title); head.append(heading, el('span', 'tw-statistics-independent', '獨立圖表'));
   const intro = el('p', 'tw-statistics-intro', '從常態、趨勢與時段分布，讀懂這款遊戲的歷史熱度。上方日期範圍會同步套用。');
-  const range = el('p', 'tw-statistics-range'); range.id = 'statisticsRange';
-  const tabs = el('div', 'tw-statistics-modes'); tabs.id = 'statisticsModes'; tabs.setAttribute('role', 'group'); tabs.setAttribute('aria-label', '統計分析方式');
+  const range = el('p', 'tw-statistics-range'); range.id = uid('statisticsRange');
+  const tabs = el('div', 'tw-statistics-modes'); tabs.id = uid('statisticsModes'); tabs.setAttribute('role', 'group'); tabs.setAttribute('aria-label', '統計分析方式');
   const buttons = Object.entries(modes).map(([key, label]) => {
     const button = el('button', '', label); button.type = 'button'; button.dataset.statisticsMode = key;
     button.setAttribute('aria-pressed', String(key === mode));
-    on(button, 'click', () => { mode = key; render(); }); tabs.append(button); return button;
+    on(button, 'click', () => { mode = key; render(); onViewChange({ mode, metric, threshold }); }); tabs.append(button); return button;
   });
   const controls = el('div', 'tw-statistics-controls');
   const metricLabel = el('label', '', '統計指標');
-  const metricSelect = el('select'); metricSelect.id = 'statisticsMetric'; metricSelect.name = 'statisticsMetric';
+  const metricSelect = el('select'); metricSelect.id = uid('statisticsMetric'); metricSelect.name = 'statisticsMetric';
   for (const [value, label] of Object.entries(metrics)) { const option = el('option', '', label); option.value = value; metricSelect.append(option); }
   metricLabel.append(metricSelect);
-  on(metricSelect, 'change', () => { metric = metricSelect.value; render(); });
-  const thresholdForm = el('form', 'tw-statistics-threshold'); thresholdForm.id = 'statisticsThresholdForm'; thresholdForm.hidden = true;
+  on(metricSelect, 'change', () => { metric = metricSelect.value; render(); onViewChange({ mode, metric, threshold }); });
+  const thresholdForm = el('form', 'tw-statistics-threshold'); thresholdForm.id = uid('statisticsThresholdForm'); thresholdForm.hidden = true;
   const thresholdLabel = el('label', '', '觀眾門檻（人）');
-  const thresholdInput = el('input'); thresholdInput.id = 'statisticsThreshold'; thresholdInput.name = 'statisticsThreshold'; thresholdInput.type = 'number';
+  const thresholdInput = el('input'); thresholdInput.id = uid('statisticsThreshold'); thresholdInput.name = 'statisticsThreshold'; thresholdInput.type = 'number';
   thresholdInput.min = '0'; thresholdInput.max = '1000000000'; thresholdInput.step = '1'; thresholdInput.required = true; thresholdInput.value = '5000';
   const apply = el('button', '', '套用門檻'); apply.type = 'submit'; thresholdLabel.append(thresholdInput); thresholdForm.append(thresholdLabel, apply);
   on(thresholdForm, 'submit', event => {
     event.preventDefault(); if (!thresholdForm.reportValidity()) return;
     const next = Number(thresholdInput.value);
-    if (Number.isFinite(next) && next >= 0) { threshold = next; render(); }
+    if (Number.isFinite(next) && next >= 0) { threshold = next; render(); onViewChange({ mode, metric, threshold }); }
   });
   const fixedMetric = el('p', 'tw-statistics-fixed'); fixedMetric.hidden = true;
   controls.append(metricLabel, thresholdForm, fixedMetric);
-  const summary = el('div', 'tw-statistics-summary'); summary.id = 'statisticsSummary';
-  const status = el('p', 'tw-statistics-status'); status.id = 'statisticsStatus'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
+  const summary = el('div', 'tw-statistics-summary'); summary.id = uid('statisticsSummary');
+  const status = el('p', 'tw-statistics-status'); status.id = uid('statisticsStatus'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
   const figure = el('figure', 'tw-statistics-figure');
-  const chart = el('div', 'tw-statistics-chart'); chart.id = 'statisticsChart';
+  const chart = el('div', 'tw-statistics-chart'); chart.id = uid('statisticsChart');
   for (const type of ['mouseover', 'click']) on(chart, type, event => {
     const mark = event.target?.closest?.('[data-statistics-point]');
     if (mark && chart.contains(mark)) select(Number(mark.getAttribute('data-statistics-point')));
@@ -78,11 +79,11 @@ export function createStatistics(root) {
   const legend = el('figcaption', 'tw-statistics-legend');
   figure.append(chart, legend);
   const reader = el('div', 'tw-statistics-reader');
-  const readerLabel = el('label', '', '查看統計資料點'); readerLabel.htmlFor = 'statisticsScrubber';
-  const scrubber = el('input'); scrubber.id = 'statisticsScrubber'; scrubber.type = 'range'; scrubber.min = '0'; scrubber.step = '1';
-  const readout = el('output', 'tw-statistics-readout'); readout.id = 'statisticsReadout'; readout.setAttribute('for', 'statisticsScrubber');
+  const readerLabel = el('label', '', '查看統計資料點'); readerLabel.htmlFor = uid('statisticsScrubber');
+  const scrubber = el('input'); scrubber.id = uid('statisticsScrubber'); scrubber.type = 'range'; scrubber.min = '0'; scrubber.step = '1';
+  const readout = el('output', 'tw-statistics-readout'); readout.id = uid('statisticsReadout'); readout.setAttribute('for', uid('statisticsScrubber'));
   reader.append(readerLabel, scrubber, readout); on(scrubber, 'input', () => select(Number(scrubber.value)));
-  const method = el('p', 'tw-statistics-method'); method.id = 'statisticsMethod';
+  const method = el('p', 'tw-statistics-method'); method.id = uid('statisticsMethod');
   const footnote = el('p', 'tw-statistics-footnote', '統計僅描述已保存的逐時觀測。缺測、未列入與指標待補不當成 0；樣本少時不推論最佳開台時間。現有歷史未保存逐台分布，因此不推算大台占比或個人預期觀眾。');
   root.replaceChildren(head, intro, range, tabs, controls, summary, status, figure, reader, method, footnote);
 
@@ -107,9 +108,9 @@ export function createStatistics(root) {
     const x = value => left + (value - minX) / (maxX > minX ? maxX - minX : 1) * plotWidth;
     const upper = Math.max(1, maxY) * 1.08;
     const y = value => top + plotHeight - value / upper * plotHeight;
-    const svg = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, role: 'img', 'aria-labelledby': 'statisticsSvgTitle statisticsSvgDesc', preserveAspectRatio: 'xMidYMid meet' });
-    const name = svgEl('title', { id: 'statisticsSvgTitle' }, `${gameName} · ${chartTitle}`);
-    const descriptionNode = svgEl('desc', { id: 'statisticsSvgDesc' }, description);
+    const svg = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, role: 'img', 'aria-labelledby': `${uid('statisticsSvgTitle')} ${uid('statisticsSvgDesc')}`, preserveAspectRatio: 'xMidYMid meet' });
+    const name = svgEl('title', { id: uid('statisticsSvgTitle') }, `${gameName} · ${chartTitle}`);
+    const descriptionNode = svgEl('desc', { id: uid('statisticsSvgDesc') }, description);
     svg.append(name, descriptionNode);
     for (let i = 0; i <= 4; i++) {
       const value = upper * i / 4;
@@ -248,6 +249,13 @@ export function createStatistics(root) {
   }) : null;
   observer?.observe(root);
   return {
+    view() { return { mode, metric, threshold }; },
+    setView(view = {}) {
+      if (Object.hasOwn(modes, view.mode)) mode = view.mode;
+      if (Object.hasOwn(metrics, view.metric)) metric = view.metric;
+      if (Number.isFinite(view.threshold) && view.threshold >= 0) threshold = view.threshold;
+      metricSelect.value = metric; thresholdInput.value = String(threshold); render();
+    },
     update(nextRows, context = {}) {
       rows = Array.isArray(nextRows) ? nextRows : []; gameName = context.gameName || '遊戲';
       range.textContent = context.rangeLabel || ''; root.hidden = false; render();

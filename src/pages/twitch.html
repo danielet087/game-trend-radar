@@ -27,10 +27,6 @@
       </div>
     </section>
 
-    <div class="tw-region-control">
-      <label for="audienceRegion">語言區域 <select id="audienceRegion"><option value="global" selected>全球</option><option value="zh">中文區</option></select></label>
-      <p>依主播標註的直播語言統計；中文區包含所有中文直播頻道，全球包含全部語言</p>
-    </div>
     <div class="tw-view-tabs" role="tablist" aria-label="Twitch 觀測資料">
       <button id="currentTab" type="button" role="tab" data-twitch-view="current" aria-selected="true" aria-controls="currentObservation">目前觀測</button>
       <button id="archiveTab" type="button" role="tab" data-twitch-view="archive" aria-selected="false" aria-controls="historyArchive" tabindex="-1">歷史資料庫</button>
@@ -40,9 +36,9 @@
     <p id="freshnessNote" class="tw-freshness" hidden></p>
 
     <section class="tw-workspace" aria-labelledby="candidatesTitle">
-      <div class="tw-workspace-head">
+      <div class="tw-workspace-head tw-list-scope-toolbar">
         <div><span class="tw-section-no" aria-hidden="true">01</span><h2 id="candidatesTitle">新作觀測</h2></div>
-        <p id="scopeLabel">全球觀測 · Twitch 熱門新作 + Steam 近期上市</p>
+        <div class="tw-scope-actions"><label class="tw-local-region">新作觀測範圍 <select id="audienceRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label><p id="scopeLabel">全球觀測 · Twitch 熱門新作 + Steam 近期上市</p></div>
       </div>
       <div class="tw-tools">
         <label class="tw-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="sr-only">搜尋遊戲名稱、Steam AppID 或 Twitch 類別 ID</span><input id="gameSearch" type="search" placeholder="搜尋遊戲名稱或 ID…" autocomplete="off" maxlength="160"><kbd aria-hidden="true">/</kbd></label>
@@ -86,9 +82,9 @@
     </section>
     </div>
     <section id="historyArchive" class="tw-workspace tw-archive" role="tabpanel" aria-labelledby="archiveTab" hidden>
-      <div class="tw-workspace-head">
+      <div class="tw-workspace-head tw-list-scope-toolbar">
         <div><span class="tw-section-no" aria-hidden="true">02</span><h2 id="archiveTitle" tabindex="-1">歷史資料庫</h2></div>
-        <div><span id="archiveUpdated"></span><button id="archiveRefresh" class="tw-archive-refresh" type="button">重新載入 ↻</button></div>
+        <div class="tw-scope-actions"><label class="tw-local-region">歷史資料庫範圍 <select id="archiveRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label><span id="archiveUpdated"></span><button id="archiveRefresh" class="tw-archive-refresh" type="button">重新載入 ↻</button></div>
       </div>
       <p class="tw-archive-intro">保留曾符合 Twitch 新作或 Steam 近期上市收錄條件的遊戲，包含追蹤中與已結束的觀測。僅出現在早期排行榜、未通過收錄條件的項目不列入。<br>點選遊戲查看逐時曲線、切換日期或下載 CSV；時間皆為台灣時間。</p>
       <div class="tw-tools">

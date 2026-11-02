@@ -6,7 +6,6 @@ import { createTwitchCards } from "./cards.js";
 import { createTwitchRenderer } from "./render.js";
 import { createTwitchLoader } from "./load.js";
 import { createTwitchArchive } from "./archive.js";
-import { DEFAULT_REGION } from "./audience-region.js";
 export { RadarTwitch } from "./data.js";
 export { RadarTwitchChart } from "./chart.js";
 
@@ -58,7 +57,10 @@ export function initTwitchPage() {
     if (view === 'archive') archive.flushSearch(false);
     else { clearTimeout(searchTimer); state.query = $('gameSearch').value; syncURL(); }
     const url = new URL(location.href);
-    if (next === 'archive') url.searchParams.set('view', 'archive'); else url.searchParams.delete('view');
+    if (next === 'archive') {
+      url.searchParams.set('view', 'archive');
+      if (!url.searchParams.has('archive_region')) url.searchParams.set('archive_region', 'global');
+    } else url.searchParams.delete('view');
     history.pushState(null, '', url); showView();
   }
   const tabs = [...document.querySelectorAll('[data-twitch-view]')];
@@ -81,12 +83,7 @@ on($('audienceRegion'), 'change', () => {
   clearTimeout(searchTimer);
   state.region = $('audienceRegion').value; state.limit = 24;
   chartDisposers.forEach(dispose => dispose()); chartDisposers.clear(); cards.clear();
-  if (view === 'archive') {
-    archive.flushSearch(false);
-    const url = new URL(location.href);
-    if (state.region === DEFAULT_REGION) url.searchParams.delete('region'); else url.searchParams.set('region', state.region);
-    history.replaceState(null, '', url); archive.render();
-  } else { state.query = $('gameSearch').value; syncURL(); render(); }
+  state.query = $('gameSearch').value; syncURL(); render();
 });
 on($("resetFilters"), "click",reset);
 on($("snapshotRefresh"), "click",load);

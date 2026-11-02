@@ -1,13 +1,13 @@
 import { RadarTwitch as D } from "./data.js";
 import { filterNames } from "./presentation.js";
-import { DEFAULT_REGION, regionOf } from './audience-region.js';
+import { DEFAULT_REGION, viewOf } from './audience-region.js';
 export function createTwitchState() {
   return { data:null, sources:{}, disposed:false, query:"", filter:D.DEFAULT_FILTER, sort:D.DEFAULT_SORT, region:DEFAULT_REGION, limit:24, loading:false };
 }
 export function createTwitchURLState(state, $) {
 function urlState() {
   const p = new URLSearchParams(location.search);
-  state.region = regionOf(p.get('region'));
+  state.region = viewOf(p.get('region'));
   if ($('audienceRegion')) $('audienceRegion').value = state.region;
   state.query = (p.get("q") || "").slice(0,160);
   state.filter = Object.hasOwn(filterNames, p.get("state")) ? p.get("state") : D.DEFAULT_FILTER;

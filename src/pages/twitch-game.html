@@ -25,13 +25,13 @@
       </div>
       <div class="tw-history-updated"><span id="historyUpdated"></span><button id="historyRefresh" type="button">重新載入 ↻</button></div>
     </section>
-    <div class="tw-region-control">
-      <label for="audienceRegion">語言區域 <select id="audienceRegion"><option value="global" selected>全球</option><option value="zh">中文區</option></select></label>
-      <p>曲線、統計分析與退潮判定使用所選區域；舊紀錄未收集中文區時保留空白</p>
-    </div>
-    <section class="tw-heat-overview" id="historyOverview" aria-labelledby="heatOverviewTitle" hidden></section>
+    <p class="tw-region-note">各區塊可獨立切換範圍；全球包含中文區。兩區比較會同時顯示數據，中文區未收集的時段保留空白。</p>
+    <section class="tw-scope-section" id="historyOverview" aria-labelledby="heatOverviewTitle" hidden>
+      <div class="tw-scope-toolbar"><h2 id="heatOverviewTitle">熱度摘要</h2><label class="tw-local-region">熱度摘要範圍 <select id="summaryRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label></div>
+      <div id="heatOverviewPanels"></div>
+    </section>
     <section class="tw-workspace" id="historyPanel" aria-labelledby="historyTitle" aria-busy="true">
-      <div class="tw-workspace-head"><div><span class="tw-section-no" aria-hidden="true">01</span><h2 id="historyTitle">歷史趨勢</h2></div><button id="historyExport" type="button" disabled>下載此區間 CSV ↓</button></div>
+      <div class="tw-workspace-head tw-scope-toolbar"><div><span class="tw-section-no" aria-hidden="true">01</span><h2 id="historyTitle">歷史趨勢</h2></div><div class="tw-scope-actions"><label class="tw-local-region">歷史趨勢範圍 <select id="audienceRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label><button id="historyExport" type="button" disabled>下載此區間 CSV ↓</button></div></div>
       <div class="tw-history-controls">
         <div class="tw-history-presets" role="group" aria-label="歷史時間範圍">
           <button type="button" data-history-range="24h" aria-pressed="false">24 小時</button>
@@ -65,8 +65,8 @@
         </details>
       </div>
     </section>
-    <section class="tw-workspace tw-cooldown" id="historyCooldown" aria-label="熱度退潮時間點" hidden></section>
-    <section class="tw-workspace tw-statistics" id="historyStatistics" aria-label="補充統計分析" hidden></section>
+    <section class="tw-scope-section" id="historyCooldown" aria-label="熱度退潮時間點" hidden><div class="tw-scope-toolbar"><h2>退燒與高峰衰退</h2><label class="tw-local-region">退燒判定範圍 <select id="cooldownRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label></div><div id="cooldownPanels"></div></section>
+    <section class="tw-scope-section" id="historyStatistics" aria-label="補充統計分析" hidden><div class="tw-scope-toolbar"><h2>統計分析</h2><label class="tw-local-region">統計分析範圍 <select id="statisticsRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label></div><p class="tw-detail-note" id="statisticsCompareNote" hidden>比較模式會同步分析方式、指標與門檻；各區統計圖依自己的資料設定刻度，請配合軸上數值閱讀。</p><div id="statisticsPanels"></div></section>
     <p class="tw-detail-method">總觀眾與開台數涵蓋所選語言區域的全部頻道。篩選中位數只計免費追隨者 &gt; 1,000 且觀眾 ≥ 10 的頻道；追隨數待查時不顯示中位數，舊紀錄不回算新規則。所有時間以台灣時間顯示。</p>
     <noscript>請啟用 JavaScript 以查看和操作歷史資料。</noscript>
   </main>

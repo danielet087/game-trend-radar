@@ -90,7 +90,7 @@ function mount(container, options) {
   const rangeButtons = (settings.rangeOptions || [24, 6]).map(hours => {
     const button = element("button", "tw-chart-range", `${hours} 小時`);
     button.type = "button"; button.dataset.range = String(hours);
-    on(button, "click", () => { range = hours; selected = Math.max(startIndex(), selected); draw(); announce(); });
+    on(button, "click", () => { range = hours; selected = Math.max(startIndex(), selected); draw(); announce(); settings.onRangeChange?.(hours); });
     ranges.append(button); return button;
   });
   toolbar.append(metrics, ranges);
@@ -150,10 +150,10 @@ function mount(container, options) {
     }
     svg.dataset.selectedIndex = String(Math.max(0, selected - startIndex()));
   }
-  function choose(index, speak) {
+  function choose(index, speak, notify = true) {
     if (!rows.length) return;
     const next = Math.max(startIndex(), Math.min(rows.length - 1, index));
-    if (next !== selected) { selected = next; inspect(); }
+    if (next !== selected) { selected = next; inspect(); if (notify) settings.onSelect?.(next); }
     if (speak) announce();
   }
   function pointer(event) {
@@ -178,7 +178,7 @@ function mount(container, options) {
     const bounds = plot.getBoundingClientRect();
     const width = Math.max(240, Math.round(bounds.width || 640));
     const height = Math.max(200, Math.min(320, Math.round(bounds.height || 250)));
-    const maximum = Math.max(0, settings.referenceValue || 0, ...values.filter(numeric));
+    const maximum = Math.max(0, settings.referenceValue || 0, settings.domainMaximum || 0, ...values.filter(numeric));
     const rawStep = Math.max(1, maximum / 5);
     const magnitude = 10 ** Math.floor(Math.log10(rawStep));
     const step = ([1, 2, 2.5, 5, 10].find(candidate => candidate * magnitude >= rawStep) || 10) * magnitude;
@@ -253,7 +253,7 @@ function mount(container, options) {
     if (disposed) return;
     disposed = true; observer?.disconnect(); listeners.forEach(remove => remove());
   }
-  cleanup.select = index => { if (!disposed) choose(index, true); };
+  cleanup.select = (index, notify = true) => { if (!disposed) choose(index, notify, notify); };
   return cleanup;
 }
 export const RadarTwitchChart = { mount };

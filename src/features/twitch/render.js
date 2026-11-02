@@ -96,6 +96,7 @@ function scope() {
   const d = state.data;
   $("scopeLabel").textContent = d.legacy ? "等待新版觀測" : `${regionNames[state.region]}觀測 · Twitch 熱門新作 + Steam 近期上市`;
   $("tableNote").textContent = d.legacy ? "不以熱門程度推定新作，也不以舊取樣補出中位數或日期推算結果。" : `${regionNames[state.region]}：總觀眾與開台數涵蓋該區全部頻道；篩選中位數只計追隨者 > 1,000 且觀眾 ≥ 10 的頻道。${state.region === 'zh' ? '缺少語言分區的舊紀錄標示「未收集中文區」，不補成 0。' : ''}「上次觀測」只供參考，排序置於本輪量測之後。`;
+  if (!d.legacy && state.region === 'compare') $("tableNote").textContent = '全球與中文區並列；全球包含中文區，比較模式依全球數據排序。中文區未收集時保留空白，不借用全球值。各款遊戲的逐時圖表可另行切換範圍。';
 }
 return { render, metadata, notice };
 }
