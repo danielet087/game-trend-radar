@@ -41,8 +41,12 @@ body[data-page="analysis"] { --page-wash:#e2dcf4; --page-wash-soft:#f5e8ed; --pa
 .activity-list { list-style:none; padding:0; margin:0; }
 .activity-list li { padding:12px 0; border-top:1px solid #ebe5da; }
 .activity-list .activity-item { display:flex; flex-wrap:wrap; justify-content:flex-start; height:auto; white-space:normal; padding:3px 0; line-height:1.8; }
-.activity-list .activity-name { overflow:visible; overflow-wrap:anywhere; }
-.activity-list .activity-change { width:100%; }
+/* Start platform, game name and release date together on the next line. */
+.activity-list .activity-item { row-gap:0; }
+.activity-list .activity-item::before { content:""; flex-basis:100%; height:9px; order:1; }
+.activity-list .activity-platform, .activity-list .activity-name, .activity-list .activity-change { order:2; }
+.activity-list .activity-name { max-width:100%; overflow:visible; overflow-wrap:anywhere; }
+.activity-list .activity-change { width:auto; }
 
 /* Included and excluded tags remain readable without relying on color alone. */
 .tag-combination-controls { display:flex; align-items:center; flex-wrap:wrap; gap:12px 18px; padding:15px 0; margin:0 0 14px; border-top:1px dashed #c4d5c1; border-bottom:1px dashed #c4d5c1; }
