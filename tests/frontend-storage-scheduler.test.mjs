@@ -45,7 +45,7 @@ test('queued workflow has no actual start and large run IDs retain canonical lin
 test('Twitch whole-hour batch maps to the :05 scheduled point, without inventing other successes', () => {
   const observed = run('collect.yml', 'game-trend-radar-twitch-backend', { run_started_at: '2026-10-03T07:06:00Z' });
   const lanes = buildSlots('2026-10-03', [observed], queue(), null, now);
-  assert.equal(lanes.flatMap(l => l.slots).length, 84);
+  assert.equal(lanes.flatMap(l => l.slots).length, 85);
   const twitch = lanes.find(l => l.job.id === 'twitch');
   assert.equal(twitch.slots[15].state, 'success');
   assert.equal(twitch.slots[15].at, Date.parse('2026-10-03T07:05:00Z'));

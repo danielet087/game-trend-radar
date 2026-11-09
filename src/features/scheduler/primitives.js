@@ -3,6 +3,7 @@ const OWNER = "danielet087";
 const RAW = "https://raw.githubusercontent.com/" + OWNER + "/";
 const JOBS = Object.freeze([
   { id: "steam_daily", name: "每日候選更新", repo: "game-trend-radar-backend", workflow: "steam-two-phase.yml", hours: [0, 6, 12, 18], minute: 0, oncePerDay: true, note: "00:00／06:00／12:00／18:00 · 今日成功後略過" },
+  { id: "steam_rechecks", name: "Follower 回查盤點", repo: "game-trend-radar-backend", workflow: null, hours: [], minute: 0, note: "候選更新後 · 顯示最近盤點時間" },
   { id: "steam_growth", name: "Steam 成長追蹤", repo: "game-trend-radar-backend", workflow: "steam-public-growth.yml", hours: [1, 7, 13, 19], minute: 15, oncePerDay: true, note: "01:15／07:15／13:15／19:15 · 今日成功後略過" },
   { id: "steam_catchup", name: "官方 Followers", repo: "game-trend-radar-backend", workflow: "steam-official-daily-catchup-250.yml", hours: Array.from({ length: 21 }, (_, i) => i + 3), minute: 0, note: "03:00–23:00，每小時" },
   { id: "twitch", name: "Twitch 新作觀測", repo: "game-trend-radar-twitch-backend", workflow: "collect.yml", hours: Array.from({ length: 24 }, (_, i) => i), minute: 5, note: "每小時 :05" },
