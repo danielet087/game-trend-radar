@@ -1,5 +1,6 @@
 import { HOUR, JOBS, ACTIVE, num, instant, day, dateLabel, clockLabel, runUrl } from "./primitives.js";
 import { queueGameState } from "./queue.js";
+import { recheckScheduleRow } from "./rechecks.js";
 function jobForRun(run, repo) {
   const path = String(run?.path || "").split("@")[0];
   return JOBS.find(j => j.repo === repo && path === ".github/workflows/" + j.workflow);
@@ -63,7 +64,7 @@ function skippedAfterSuccess(success) {
 }
 function buildSlots(date, runs = [], snapshot, growth, now = Date.now(), freshRepos = {}) {
   const midnight = Date.parse(date + "T00:00:00+08:00");
-  return JOBS.map(job => ({ job, slots: job.hours.map(hour => {
+  return JOBS.map(job => job.id === "steam_rechecks" ? recheckScheduleRow(job, date, snapshot, now) : ({ job, slots: job.hours.map(hour => {
     const at = midnight + hour * HOUR + job.minute * 60000;
     const runSlot = job.id === "twitch" ? at - 5 * 60000 : at;
     const matches = runs.filter(r => r.job_id === job.id && instant(r.slot) === runSlot).sort((a, b) => instant(b.created_at) - instant(a.created_at));

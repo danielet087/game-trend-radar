@@ -114,6 +114,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .schedule-axis-track, .schedule-ticks { position: relative; display: flex; justify-content: space-between; height: 24px; }
 .schedule-axis time, .schedule-ticks span { font-variant-numeric: tabular-nums; }
 .schedule-lane, .schedule-row { display: grid; grid-template-columns: 150px 1fr; align-items: center; min-height: 56px; border-top: 1px solid #efede7; }
+.schedule-lane.is-recheck { min-height: 94px; background: #f6f8f2; }
+.schedule-result { display: block; margin-top: 5px; font-size: 11px; line-height: 1.6; color: #737b90; }
+.schedule-result.is-confirmed { color: #42644d; }
 .schedule-lane-name, .schedule-label { padding-right: 15px; font-size: 11px; font-weight: 700; }
 .schedule-lane-name small, .schedule-label small { display: block; margin-top: 3px; font-size: 9px; font-weight: 400; line-height: 1.6; color: #9297a0; }
 .schedule-track { position: relative; height: 48px; background: repeating-linear-gradient(to right,transparent 0,transparent calc(100% / 6 - 1px),#efede6 calc(100% / 6 - 1px),#efede6 calc(100% / 6)); }
