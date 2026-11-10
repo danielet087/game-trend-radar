@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-10T05:32:11Z",
+  "generated_at": "2026-11-10T11:32:04Z",
   "checkpoints": {
     "1167820": {
       "attempted_at": "2026-11-06T11:32:12Z",
@@ -738,9 +738,9 @@
       "next_check_at": "2026-11-16T23:32:27Z"
     },
     "3768400": {
-      "attempted_at": "2026-11-03T11:31:40Z",
+      "attempted_at": "2026-11-10T11:32:04Z",
       "outcome": "success",
-      "next_check_at": "2026-11-10T11:31:40Z"
+      "next_check_at": "2026-12-10T11:32:04Z"
     },
     "2828710": {
       "attempted_at": "2026-11-06T11:32:12Z",
@@ -983,9 +983,9 @@
       "next_check_at": "2026-11-11T05:32:11Z"
     },
     "5378110": {
-      "attempted_at": "2026-11-09T11:31:59Z",
+      "attempted_at": "2026-11-10T11:32:04Z",
       "outcome": "success",
-      "next_check_at": "2026-11-10T11:31:59Z"
+      "next_check_at": "2026-11-11T11:32:04Z"
     },
     "4435490": {
       "attempted_at": "2026-11-06T11:32:12Z",
@@ -1041,40 +1041,30 @@
       "attempted_at": "2026-11-08T23:32:09Z",
       "outcome": "success",
       "next_check_at": "2026-11-15T23:32:09Z"
+    },
+    "3218350": {
+      "attempted_at": "2026-11-10T11:32:04Z",
+      "outcome": "success",
+      "next_check_at": "2026-11-11T11:32:04Z"
     }
   },
-  "due_count": 17,
-  "attempted": 17,
-  "refreshed": 17,
+  "due_count": 3,
+  "attempted": 3,
+  "refreshed": 3,
   "updated_appids": [
-    2870790,
-    3310570,
-    2411200,
-    2443590,
-    3339970,
-    3370490,
-    3927170,
-    4262460,
-    5037200,
-    5037510,
-    5073990,
-    5133900,
-    5258340,
-    5279620,
-    5327150,
-    5341070,
-    5356470
+    3218350,
+    3768400,
+    5378110
   ],
   "failed_appids": [],
   "sources": {
-    "steam_schinese_converted": 1,
-    "steam_tchinese": 1,
-    "steam_english": 15
+    "steam_english": 2,
+    "steam_tchinese": 1
   },
   "pending_count": 0,
   "retry_pending_appids": [],
   "complete": true,
   "stop_reason": "",
-  "next_due_at": "2026-11-10T08:33:48Z",
+  "next_due_at": "2026-11-10T17:32:23Z",
   "superseded_appids": []
 }
