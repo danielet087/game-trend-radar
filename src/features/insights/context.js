@@ -28,7 +28,7 @@ export function createInsightsContext(options = {}) {
     state: { games:[], observations:new Map(), rawCatalog:null, growthData:null,
       span:[1,7,30].includes(Number(params.get('days'))) ? Number(params.get('days')) : 7,
       scope:['all','future','released'].includes(params.get('period')) ? params.get('period') : 'all',
-      sort:params.get('sort') === 'percent' ? 'percent' : 'delta', limit:25, searchTimer:null,
+      limit:25, searchTimer:null,
       initialized:false, analysisGeneration:0, loadComparisonDescriptions:null },
     dispose() { cleanup.splice(0).forEach(dispose => dispose()); },
   };
