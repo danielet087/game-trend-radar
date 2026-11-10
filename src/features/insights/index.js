@@ -23,7 +23,8 @@ export function initInsightsPage(options = {}) {
   function saveURL() {
     const url = new URL(location.href);
     if (mode === "growth") {
-      for (const [key, value] of [["q", $("growthSearch").value.trim()], ["days", state.span === 7 ? "" : state.span], ["period", state.scope === "all" ? "" : state.scope], ["sort", state.sort === "delta" ? "" : state.sort]]) {
+      url.searchParams.delete("sort");
+      for (const [key, value] of [["q", $("growthSearch").value.trim()], ["days", state.span === 7 ? "" : state.span], ["period", state.scope === "all" ? "" : state.scope]]) {
         if (value) url.searchParams.set(key, value); else url.searchParams.delete(key);
       }
     } else {
@@ -76,14 +77,12 @@ export function initInsightsPage(options = {}) {
     on($("growthSearch"), "input", event => { clearTimeout(state.searchTimer); if (!event.isComposing) state.searchTimer = setTimeout(refresh, 120); });
     on($("growthSearch"), "compositionend", refresh);
     on($("growthScope"), "change", () => { state.scope = $("growthScope").value; refresh(); });
-    on($("growthSort"), "change", () => { state.sort = $("growthSort").value; refresh(); });
     document.querySelectorAll("[data-growth-days]").forEach(button => on(button, "click", () => { state.span = Number(button.dataset.growthDays); refresh(); }));
     on($("growthMore"), "click", () => { state.limit += 25; renderGrowth(); });
     on(window, "popstate", () => {
       const next = new URLSearchParams(location.search);
       state.span = [1, 7, 30].includes(Number(next.get("days"))) ? Number(next.get("days")) : 7;
       state.scope = ["all", "future", "released"].includes(next.get("period")) ? next.get("period") : "all";
-      state.sort = next.get("sort") === "percent" ? "percent" : "delta";
       $("growthSearch").value = next.get("q") || "";
       state.limit = 25; renderGrowth();
     });
