@@ -42,19 +42,20 @@ export function createGrowthView(ctx, presentation) {
     const eligible = state.games.filter(game => I.tracking(game.date, today) && game.date <= I.offset(today, 365) &&
       (!term || `${game.name} ${game.nameEn} ${game.appid}`.toLocaleLowerCase().includes(term)) &&
       (state.scope === "all" || (state.scope === "future" ? game.date > today : game.date <= today)));
-    const entries = eligible.map(game => ({ game, metric: I.metric(history(game), state.span, today) }));
+    const entries = eligible.map(game => ({ game, metric: I.metric(history(game), state.span, today) }))
+      .filter(entry => entry.metric.latest?.followers >= 5000);
     const canRank = entry => entry.metric.status === "ready" && Number.isFinite(entry.metric.percent);
     const ready = entries.filter(canRank);
     ready.sort((a, b) => b.metric.percent - a.metric.percent || a.game.appid - b.game.appid);
     const pending = entries.filter(entry => !canRank(entry));
     $("growthRanked").textContent = number.format(ready.length);
-    $("growthTracked").textContent = number.format(eligible.length);
+    $("growthTracked").textContent = number.format(entries.length);
     $("growthPending").textContent = number.format(pending.length);
     $("growthResultCount").textContent = `${state.span} 日成長率榜 · ${ready.length} 款可比較`;
     $("growthRows").replaceChildren(...ready.slice(0, state.limit).map(growthRow));
-    if (!ready.length) $("growthRows").append(empty("rocket", eligible.length ? "下一波上升曲線，正在累積" : "這次沒有符合的遊戲", eligible.length
+    if (!ready.length) $("growthRows").append(empty("rocket", entries.length ? "下一波上升曲線，正在累積" : "這次沒有符合上榜條件的遊戲", entries.length
       ? `需有最新有效量測及 ${state.span} 日前的同日紀錄，且基準日關注數大於 0，才會進入排行榜。缺少紀錄不會視為零成長。`
-      : "試試其他日期範圍，或清除搜尋條件。"));
+      : "最新官方量測須達 5,000 Followers 才能參與成長榜。可切換發售範圍，或清除搜尋條件。"));
     $("growthMore").hidden = ready.length <= state.limit;
     $("pendingTitle").textContent = `資料累積中 · ${pending.length} 款`;
     $("pendingList").replaceChildren(...pending.slice(0, 12).map(({ game, metric }) => {
@@ -74,7 +75,7 @@ export function createGrowthView(ctx, presentation) {
       $("growthNotice").textContent = growthCollectionNotice(run);
       $("growthNotice").hidden = false;
     }
-    $("growthUpdated").textContent = "依成長率由高到低 · 以各遊戲最新實測日回看";
+    $("growthUpdated").textContent = "5,000 Followers 以上 · 依成長率由高到低";
     document.querySelectorAll("[data-growth-days]").forEach(button => button.setAttribute("aria-pressed", String(Number(button.dataset.growthDays) === state.span)));
     $("growthScope").value = state.scope;
   }

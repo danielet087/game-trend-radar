@@ -50,6 +50,13 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
       : game.twitchAdmission && !Number.isFinite(game.followers)
         ? "收錄依據 Twitch · Steam Followers 尚未取得"
         : "Steam Followers · 非願望清單數";
+    const measuredAt = new Date(game.followersCheckedAt || "");
+    $("gameFollowersMeasured").hidden = nintendo || !Number.isFinite(measuredAt.getTime());
+    $("gameFollowersMeasured").textContent = $("gameFollowersMeasured").hidden ? ""
+      : "關注數量測 · " + new Intl.DateTimeFormat("zh-TW", {
+        timeZone:"Asia/Taipei", year:"numeric", month:"2-digit", day:"2-digit",
+        hour:"2-digit", minute:"2-digit", hour12:false,
+      }).format(measuredAt) + "（台灣）";
     $("gameState").textContent =
       days > 0
         ? "值得期待的新作"

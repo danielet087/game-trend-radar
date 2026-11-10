@@ -1,4 +1,5 @@
 import { detailCatalog } from '../../data/publication.mjs';
+import { withLatestFollowers } from '../../domain/followers.mjs';
 /** Progressive hero loading: optional console/catalog failures do not block a known Steam game. */
 export function createDetailLoader(ctx, render, favorites, related) {
   const { $, D, R, storage, location, document, window, today,
@@ -87,7 +88,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
       setStatus("找不到這款遊戲", "連結沒有有效的 Steam AppID 或發售日期，請返回遊戲清單重新選擇。");
       return;
     }
-    let rawGame = null, catalog = null, preview = null, nintendo = null;
+    let rawGame = null, catalog = null, preview = null, nintendo = null, growth = null;
     let catalogDone = false, shown = false;
     function present() {
       if (!active()) return;
@@ -110,7 +111,9 @@ export function createDetailLoader(ctx, render, favorites, related) {
         }
         return;
       }
-      render(game, data, !catalogDone);
+      const record = official?.games?.find(row => Number(row.appid) === appid);
+      const history = growth?.games?.find(row => row?.appid === appid)?.history;
+      render(withLatestFollowers(game, record, history, today), data, !catalogDone);
       shown = true;
       if (catalogDone && !catalog && !preview) {
         $("recommendationSummary").textContent = "相似遊戲暫時無法讀取";
@@ -127,6 +130,10 @@ export function createDetailLoader(ctx, render, favorites, related) {
         }),
         storage.loadNintendo({ force }).then(result => { nintendo = result; present(); })
           .catch(() => { /* Optional platform data must not block the Steam profile. */ }),
+        Promise.resolve(storage.readJSON?.('./data/growth.json',
+          value => value?.version === 1 && Array.isArray(value.games), { force }))
+          .then(result => { growth = result; present(); })
+          .catch(() => { /* Retain the catalog measurement when history is unavailable. */ }),
       ]);
       if (!active()) return;
       if (!shown) {

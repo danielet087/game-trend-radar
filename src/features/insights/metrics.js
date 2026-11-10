@@ -1,4 +1,5 @@
 /* Exact dated observations: missing history never becomes zero growth. */
+import { dailyFollowerPoints as points, followerDay as taipeiDay } from '../../domain/followers.mjs';
 const DAY = 86400000;
 const day = value => {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
@@ -6,11 +7,6 @@ const day = value => {
   return Number.isFinite(time) && new Date(time).toISOString().slice(0, 10) === value ? value : null;
 };
 const offset = (value, days) => day(value) ? new Date(Date.parse(value + "T12:00:00Z") + days * DAY).toISOString().slice(0, 10) : null;
-function taipeiDay(value) {
-  if (typeof value !== "string" || !/(?:Z|[+-]\d{2}:\d{2})$/.test(value)) return null;
-  const time = Date.parse(value);
-  return Number.isFinite(time) ? new Date(time + 8 * 3600000).toISOString().slice(0, 10) : null;
-}
 /* Activity identities stay in their source namespace. A missing source is
    supported only for the existing Steam event format. */
 function activityTime(value) {
@@ -79,16 +75,6 @@ function activityPlatform(value) {
 function activityReason(value) {
   const event = activityEvent(value);
   return event ? ACTIVITY_REASONS[event.update_reason] : null;
-}
-function points(history, today) {
-  const days = new Map();
-  for (const point of Array.isArray(history) ? history : []) {
-    const date = taipeiDay(point?.at);
-    if (!date || date > today || !Number.isSafeInteger(point.followers) || point.followers < 0 || point.source !== "steam_community") continue;
-    if (!days.has(date) || Date.parse(days.get(date).at) < Date.parse(point.at))
-      days.set(date, { ...point, day: date });
-  }
-  return [...days.values()].sort((a, b) => a.day.localeCompare(b.day));
 }
 function metric(history, span, today) {
   const series = points(history, today);

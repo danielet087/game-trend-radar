@@ -47,14 +47,14 @@ function fixture(search = '') {
   add(7, 5000, 10000, { stale:true });
   add(8, 5000, 20000, { date:'2026-10-10' });
   add(9, 5000, 20000, { date:'2027-11-11' });
-  add(10, 2000, 2200);
+  add(10, 6000, 6600);
   ctx.state.growthData = { version:1 };
   const view = createGrowthView(ctx, {
     history:game => histories.get(game.appid),
     cover:() => element('div'), gameLink:game => element('a', '', game.name),
     sparkline:() => element('svg'), empty:() => element('div'),
   });
-  return { ctx, view, get:id => document.getElementById(id) };
+  return { ctx, view, add, get:id => document.getElementById(id) };
 }
 
 for (const span of [1, 7, 30]) {
@@ -96,3 +96,24 @@ test('legacy absolute-count sort links keep percentage ranking through period, s
   view.render();
   assert.deepEqual(get('growthRows').children.map(row => row.dataset.appid), [1, 10]);
 });
+
+for (const span of [1, 7, 30]) {
+  test(`${span}-day ranking includes 5,000 and excludes 4,999 based on the latest measurement`, () => {
+    const { ctx, view, add, get } = fixture();
+    ctx.state.span = span;
+    add(11, 1, 4999);
+    add(12, 4000, 5000);
+    add(13, null, 4999);
+    add(14, null, 5000);
+    ctx.state.games.find(game => game.appid === 11).followers = 50000;
+    ctx.state.games.find(game => game.appid === 12).followers = 1;
+    view.render();
+    const ranked = get('growthRows').children.map(row => row.dataset.appid);
+    assert.ok(ranked.includes(12), 'a new official measurement can cross the threshold');
+    assert.ok(!ranked.includes(11), 'an old catalog count cannot keep a game qualified');
+    const pending = get('pendingList').children.map(row => row.children[0].textContent);
+    assert.ok(pending.includes('Game 14'));
+    assert.ok(!pending.includes('Game 13'), 'games below the threshold do not appear as accumulating');
+    assert.equal(get('growthTracked').textContent, '10');
+  });
+}

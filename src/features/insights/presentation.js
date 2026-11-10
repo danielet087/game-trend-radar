@@ -1,11 +1,12 @@
 import { RadarArtwork } from '../../shared/artwork.js';
+import { followerHistory } from '../../domain/followers.mjs';
 export function createInsightsPresentation(ctx) {
   const { $, node, E, I, state, number, document } = ctx;
   const { dateText } = ctx;
   function history(game) {
     const stored = state.observations.get(game.appid)?.history || [];
     const row = state.rawCatalog?.games.find(value => Number(value.appid) === game.appid);
-    return [...stored, ...(row?.follower_checked_at ? [{ at: row.follower_checked_at, followers: row.followers, source: "steam_community" }] : [])];
+    return followerHistory(row, stored);
   }
   function cover(game, className = "lab-cover") {
     const box = node("div", className);

@@ -154,3 +154,33 @@ test('late catalog exclusion hides a previously displayed old direct record', as
   assert.equal(f.elements.get('detailStatus').hidden,false);
   assert.match(f.elements.get('detailStatusTitle').textContent,/公開清單/);
 });
+
+test('late official growth history refreshes detail Followers without blocking the hero', async () => {
+  const history = deferred();
+  const row = { ...raw('Hero'), followers:78, follower_checked_at:'2026-10-01T00:00:00Z' };
+  const f = loaderFixture({ loadGame:async()=>row,
+    loadSources:async()=>({ catalog:{ games:[row] }, preview:null }), loadNintendo:async()=>null,
+    readJSON:()=>history.promise });
+  const done = f.loader.load();
+  await tick();
+  assert.equal(f.renders.at(-1).game.followers, 78);
+  history.resolve({ version:1, games:[{ appid:42, history:[
+    { at:'2026-10-08T00:00:00Z', followers:807, source:'steam_community' },
+  ] }] });
+  await done;
+  assert.equal(f.renders.at(-1).game.followers, 807);
+  assert.equal(f.renders.at(-1).game.followersCheckedAt, '2026-10-08T00:00:00Z');
+});
+
+test('unavailable or unrelated growth history retains the catalog measurement', async () => {
+  const row = { ...raw('Hero'), followers:78, follower_checked_at:'2026-10-01T00:00:00Z' };
+  for (const readJSON of [async()=>{ throw new Error('Unavailable'); }, async()=>({ version:1, games:[
+    { appid:99, history:[{ at:'2026-10-08T00:00:00Z', followers:99999, source:'steam_community' }] },
+  ] })]) {
+    const f = loaderFixture({ loadGame:async()=>row,
+      loadSources:async()=>({ catalog:{ games:[row] }, preview:null }), loadNintendo:async()=>null, readJSON });
+    await f.loader.load();
+    assert.equal(f.renders.at(-1).game.followers, 78);
+    assert.equal(f.renders.at(-1).game.followersCheckedAt, row.follower_checked_at);
+  }
+});

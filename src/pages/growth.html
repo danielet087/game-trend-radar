@@ -32,13 +32,13 @@
           <label class="lab-search"><span class="sr-only">搜尋成長榜遊戲</span><input id="growthSearch" type="search" placeholder="搜尋名稱或 AppID…" autocomplete="off"></label>
           <label class="lab-select"><span class="sr-only">發售範圍</span><select id="growthScope"><option value="all">全部追蹤中</option><option value="future">尚未上市</option><option value="released">上市 30 天內</option></select></label>
         </div>
-        <div class="growth-summary" aria-label="目前量測狀況"><span><b id="growthRanked">—</b> 款可比較</span><span><b id="growthPending">—</b> 款累積中</span><span>追蹤範圍 <b id="growthTracked">—</b> 款</span></div>
+        <div class="growth-summary" aria-label="目前量測狀況"><span><b id="growthRanked">—</b> 款可比較</span><span><b id="growthPending">—</b> 款累積中</span><span>符合關注門檻 <b id="growthTracked">—</b> 款</span></div>
         <div class="lab-section-heading"><h2 id="growthResultCount" aria-live="polite">7 日成長率榜</h2><span id="growthUpdated"></span></div>
         <div id="growthRows" class="growth-rows"></div>
         <button id="growthMore" type="button" class="button secondary" hidden>載入更多 ↓</button>
       </section>
       <section id="pendingSection" class="pending-section" hidden aria-labelledby="pendingTitle"><div class="lab-section-heading"><h2 id="pendingTitle">資料累積中</h2><span>有足夠實測紀錄後，自動加入排名</span></div><div id="pendingList" class="pending-list"></div><p id="pendingOverflow" class="lab-fine-print"></p></section>
-      <details class="lab-method"><summary>成長率怎麼計算？</summary><div><p>成長率＝（最新官方關注數 − 基準日關注數）÷ 基準日關注數 × 100%。以最新量測日往前 1／7／30 天的同日紀錄為基準，依成長率由高到低排名。時間皆以台灣日期對齊。</p><p>只追蹤本站公開收錄、未來一年內上市或上市後 30 天內的遊戲。超過期限保留既有紀錄，停止新增量測；缺少基準日、基準日關注數為 0 或超過 2 天未更新時，暫不排名。</p><p>小曲線使用各遊戲自己的刻度，呈現實際量測的變化，不代表遊戲間的關注規模。Steam Followers 與願望清單數不同。</p></div></details>
+      <details class="lab-method"><summary>成長率怎麼計算？</summary><div><p>上榜門檻為最新有效官方量測至少 5,000 Followers，1／7／30 日榜皆適用。成長率＝（最新官方關注數 − 基準日關注數）÷ 基準日關注數 × 100%。以最新量測日往前 1／7／30 天的同日紀錄為基準，依成長率由高到低排名。時間皆以台灣日期對齊。</p><p>只追蹤本站公開收錄、未來一年內上市或上市後 30 天內的遊戲。超過期限保留既有紀錄，停止新增量測；缺少基準日、基準日關注數為 0 或超過 2 天未更新時，暫不排名。</p><p>小曲線使用各遊戲自己的刻度，呈現實際量測的變化，不代表遊戲間的關注規模。Steam Followers 與願望清單數不同。</p></div></details>
     </main>
     <div id="siteFooter"></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
