@@ -46,7 +46,7 @@ test('activity reasons describe the triggering collector independently of platfo
   assert.equal(I.activityReason(steam({ source: 'twitch' })), null);
 });
 
-test('missing or unknown activity reasons preserve valid history without guessing a Steam collector', () => {
+test('missing or unknown activity reasons preserve valid history without guessing a Steam collector', async () => {
   assert.equal(I.activityReason(steam()), '更新來源未記錄');
   assert.equal(I.activityReason(nintendo()), 'IGDB 更新');
   for (const update_reason of ['unknown', 'toString', '<img src=x onerror=alert(1)>', null, 7, {}]) {
@@ -57,13 +57,10 @@ test('missing or unknown activity reasons preserve valid history without guessin
       assert.ok(I.activityURL(event));
     }
   }
-  const context = vm.createContext({});
-  const source = readFileSync(join(__dirname, '..', 'src/features/insights/metrics.js'), 'utf8')
-    .replace(/export \{ RadarInsights \};\s*export default RadarInsights;/, 'globalThis.insights = RadarInsights;');
-  vm.runInContext(source, context);
+  const { RadarInsights: insights } = await import('../src/features/insights/metrics.js');
   for (const event of [steam(), steam({ update_reason: 'twitch_rankings' }), nintendo(), nintendo({ update_reason: 'unknown' })]) {
-    assert.equal(context.insights.activityReason(event), I.activityReason(event));
-    assert.deepEqual(JSON.parse(JSON.stringify(context.insights.activityEvent(event))), I.activityEvent(event));
+    assert.equal(insights.activityReason(event), I.activityReason(event));
+    assert.deepEqual(insights.activityEvent(event), I.activityEvent(event));
   }
 });
 

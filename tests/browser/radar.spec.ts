@@ -45,6 +45,7 @@ for (const [accepted, unknownFollowers] of [[true, false], [false, false], [true
       generated_at: '2026-10-16T11:31:25Z', count: 1, games: [row] };
     await page.route('**/data/catalog.json', route => route.fulfill({ json: catalog }));
     await page.route('**/data/games/4024440.json', route => route.fulfill({ json: row }));
+    await page.route('**/data/growth.json', route => route.fulfill({ json: { version:1, games:[] } }));
     await page.route('**/data/nintendo_upcoming.json', route => route.fulfill({
       json: { schema_version: 1, generated_at: catalog.generated_at, games: [] },
     }));
