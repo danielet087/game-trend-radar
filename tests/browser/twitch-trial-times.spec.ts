@@ -45,7 +45,8 @@ test('compares two trial hours with matched coverage and preserves the independe
   await expect(page.locator('#trialTimeStatus')).toHaveText('請選兩個不同的時段。');
   await page.locator('#trialHourB').selectOption('21');
   await page.locator('#trialRegion').selectOption('zh');
-  await expect(chinese).toContainText('21:00 有 0 天紀錄');
+  await expect(chinese).toContainText('22:00 有 2 天紀錄，21:00 有 0 天');
+  await expect(chinese).toContainText('同日可比較 0／7 天');
   await expect(page.locator('#summaryRegion')).toHaveValue('compare');
   await page.reload();
   await expect(page.locator('#trialHourB')).toHaveValue('21');
