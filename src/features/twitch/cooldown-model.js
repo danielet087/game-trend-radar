@@ -1,7 +1,8 @@
 import { HOUR, count, timestamp } from './metrics.js';
 
 const DAY = 24 * HOUR, TAIPEI_OFFSET = 8 * HOUR;
-const THRESHOLD = 3000, CONFIRM_DAYS = 3, MIN_VALID_HOURS = 12;
+const CONFIRM_DAYS = 3, MIN_VALID_HOURS = 12;
+export const cooldownThreshold = region => region === 'zh' ? 100 : 3000;
 const iso = at => new Date(at).toISOString().replace('.000Z', 'Z');
 const dayStart = at => Math.floor((at + TAIPEI_OFFSET) / DAY) * DAY - TAIPEI_OFFSET;
 const median = values => {
@@ -36,12 +37,13 @@ function relativeDecline(days) {
   return { peak: peak ? { date: peak.date, startAt: peak.startAt, median: peak.median } : null, milestones };
 }
 
-/** Fixed Twitch audience rule. Only closed Taipei days can confirm an event.
+/** Fixed regional Twitch audience rule. Only closed Taipei days can confirm an event.
  * Up to 12 missing hourly observations per day are tolerated; missing values
  * never become zero and future observations cannot complete an open day. */
-export function analyzeCooldown(rows, { now = Date.now() } = {}) {
+export function analyzeCooldown(rows, { now = Date.now(), region } = {}) {
   now = typeof now === 'number' && Number.isFinite(now) ? now : Date.now();
-  const settings = { threshold: THRESHOLD, confirmDays: CONFIRM_DAYS, timeZone: 'Asia/Taipei',
+  const threshold = cooldownThreshold(region);
+  const settings = { threshold, confirmDays: CONFIRM_DAYS, timeZone: 'Asia/Taipei',
     maxMissingHours: 24 - MIN_VALID_HOURS, minValidHours: MIN_VALID_HOURS };
   const slots = normalize(rows, now), points = slots.map(({ hour, raw }) => ({ hour, raw }));
   const byHour = new Map(slots.map(slot => [slot.at, slot.raw]));
@@ -57,7 +59,7 @@ export function analyzeCooldown(rows, { now = Date.now() } = {}) {
     const value = complete ? median(values) : null;
     const day = { date: iso(at + TAIPEI_OFFSET).slice(0, 10), startAt: iso(at), endAt: iso(at + DAY),
       median: value, validHours: values.length, missingHours: 24 - values.length, totalHours: 24,
-      complete, isClosed, belowThreshold: complete ? value < THRESHOLD : null, status, lowDays };
+      complete, isClosed, belowThreshold: complete ? value < threshold : null, status, lowDays };
 
     // Today's unfinished observations neither confirm nor reset yesterday's run.
     if (!isClosed) {
@@ -69,7 +71,7 @@ export function analyzeCooldown(rows, { now = Date.now() } = {}) {
       status = sawCompleteDay ? 'gap' : 'insufficient';
     } else {
       sawCompleteDay = true;
-      if (value >= THRESHOLD) {
+      if (value >= threshold) {
         popularAt ||= day.startAt;
         lowDays = 0; candidate = null; recheckStart = null;
         if (active) {
@@ -95,7 +97,7 @@ export function analyzeCooldown(rows, { now = Date.now() } = {}) {
             }
           } else status = 'cooled';
         } else {
-          candidate ||= { candidateAt: day.startAt, confirmedAt: null, thresholdValue: THRESHOLD,
+          candidate ||= { candidateAt: day.startAt, confirmedAt: null, thresholdValue: threshold,
             days: 0, recoveryAt: null, recoveryConfirmedAt: null, interruptedAt: null, reconfirmations: [] };
           candidate.days = lowDays; status = 'suspected';
           if (lowDays >= CONFIRM_DAYS) {
@@ -114,7 +116,7 @@ export function analyzeCooldown(rows, { now = Date.now() } = {}) {
     lowDays: lastClosed?.lowDays ?? 0, validHours: lastClosed?.validHours ?? 0,
     missingHours: lastClosed?.missingHours ?? null, complete: lastClosed?.complete ?? false };
   const pendingRecheck = suspended && active ? { startedAt: recheckStart, days: lowDays,
-    requiredDays: CONFIRM_DAYS, thresholdValue: THRESHOLD } : null;
+    requiredDays: CONFIRM_DAYS, thresholdValue: threshold } : null;
   return { settings, status, points, days, episodes, candidate, latest, popularAt, relativeDecline: relativeDecline(days),
     coverage: { valid: slots.filter(slot => slot.raw !== null).length, total: slots.length,
       completeDays: days.filter(day => day.complete).length, totalDays: days.length },

@@ -20,7 +20,7 @@ function sample(dates, dailyMedians) {
 }
 
 export function analyzeStreamHeat(rows, { game, region, period }) {
-  const data = analyzeCooldown(rows, { now: period.now });
+  const data = analyzeCooldown(rows, { now: period.now, region });
   const last = data.points.findLast(point => point.raw !== null);
   const snapshot = cooldownPresentation(data, { trackingStatus: game.tracking_status, lastHour: last?.hour }, period.now);
   const release = game.release_reference;

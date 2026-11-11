@@ -51,6 +51,9 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
   await expect(chineseCard.locator('.tw-stream-reason')).toContainText('2/3 天達標');
   await expect(chineseCard.locator('.tw-stream-metrics dd')).toHaveText(['0 人', '100 人']);
   await expect(page.locator('#streamHour')).toHaveCount(0);
+  await page.locator('.tw-stream-method summary').click();
+  await expect(page.locator('#streamCooldownRule')).toContainText('全球 3,000 人，中文區 100 人');
+  await page.locator('.tw-stream-method summary').click();
   await expect(page.locator('.tw-stream-game[data-game="2"] [data-region="global"] .tw-stream-reason')).toHaveText('尚無逐時紀錄');
   for (const width of [320, 390, 1280]) {
     await page.setViewportSize({ width, height:844 });
@@ -77,6 +80,11 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
   expect(await currentIds()).toEqual([...reordered, '1']);
   await page.locator('#streamPlanningTab').click();
   await page.getByRole('link', { name:'試播遊戲', exact:true }).click();
+  await expect(page.locator('#historyChart [data-region="global"] .tw-chart-threshold-label')).toHaveText('3,000 人門檻');
+  await expect(page.locator('#historyChart [data-region="zh"] .tw-chart-threshold-label')).toHaveText('100 人門檻');
+  await expect(page.locator('#global-cooldownRule')).toContainText('3,000 人');
+  await expect(page.locator('#zh-cooldownRule')).toContainText('100 人');
+  await expect(page.locator('#zh-cooldownStatus')).toHaveText('尚未符合退燒條件');
   await page.locator('#trialTimesJump').click();
   await expect(page).toHaveURL(/#trialTimes$/);
   await expect(page.locator('#trialHourA')).toHaveValue('22');

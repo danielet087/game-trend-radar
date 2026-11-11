@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { analyzeCooldown } from '../src/features/twitch/cooldown-model.js';
-import { releaseDayIndex } from '../src/features/twitch/cooldown.js';
+import { cooldownPresentation, releaseDayIndex } from '../src/features/twitch/cooldown.js';
 
 // Taipei 2026-10-01 00:00. Tests freeze the clock instead of depending on today.
 const HOUR = 3600000, start = Date.parse('2026-09-30T16:00:00Z');
@@ -17,6 +17,21 @@ const daily = (...values) => rows(values.flatMap(value => Array(24).fill(value))
 const omitDayHours = (data, day, missing) => data.filter(row => {
   const n = (Date.parse(row.hour) - start) / HOUR;
   return n < day * 24 || n >= day * 24 + missing;
+});
+
+test('Chinese cooldown activates at 100 and recovers at the same boundary independently of global', () => {
+  const now = start + 7 * 24 * HOUR;
+  const data = daily(99, 100, 99, 99, 99);
+  assert.equal(analyze(data, now).status, 'not_popular');
+  const chinese = analyzeCooldown(data, { now, region: 'zh' });
+  assert.equal(chinese.settings.threshold, 100);
+  assert.equal(chinese.status, 'cooled');
+  assert.equal(chinese.episodes[0].candidateAt, hour(48));
+  assert.equal(chinese.episodes[0].confirmedAt, hour(120));
+  const recovered = analyzeCooldown(daily(99, 100, 99, 99, 99, 100), { now, region: 'zh' });
+  assert.equal(recovered.status, 'recovered');
+  assert.equal(cooldownPresentation(recovered).label, '已回到 100 人門檻');
+  assert.equal(analyzeCooldown(daily(99, 99, 99, 99), { now, region: 'zh' }).status, 'not_popular');
 });
 
 test('relative decline records first inclusive 25/50/75 percent milestones without declaring cooldown', () => {

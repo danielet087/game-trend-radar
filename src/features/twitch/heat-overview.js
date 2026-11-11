@@ -54,7 +54,7 @@ export function renderHeatOverview(root, snapshot) {
   card('peak', '觀測高峰', peak ? releaseDayLabel(peak.startAt, releaseDate) || peak.date : '尚無有效統計日',
     peak ? `${peak.date} · 每日總觀眾中位數 ${fmt(peak.median)} 人` : '日期結束且至少有 12 筆有效紀錄後統計');
   card('cooled', '首次確認退燒', first ? releaseDayLabel(first.confirmedAt, releaseDate) || time(first.confirmedAt) : '尚未確認',
-    first ? `${time(first.confirmedAt)} · 第三個連續低熱度日結束後確認` : '曾達 3,000 人後，連續 3 天低於門檻才確認');
+    first ? `${time(first.confirmedAt)} · 第三個連續低熱度日結束後確認` : `曾達 ${fmt(data.settings.threshold)} 人後，連續 3 天低於門檻才確認`);
   card('coverage', '有效觀測', `${fmt(data.coverage.valid)} / ${fmt(data.coverage.total)} 小時`,
     `${data.coverage.completeDays} 個有效統計日 · 缺測保留空白`);
   const note = node('p', 'tw-heat-note', `${snapshot.historical ? '已結束追蹤，以最後保存紀錄判定。' : '追蹤中，以已保存紀錄判定。'} 高峰與退燒使用全部歷史，不隨下方日期範圍改變。`);

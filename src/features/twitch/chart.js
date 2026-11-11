@@ -205,7 +205,7 @@ function mount(container, options) {
     }
     if (numeric(settings.referenceValue)) {
       svg.append(svgElement('line', { class: 'tw-chart-threshold', x1: left, x2: width - right, y1: y(settings.referenceValue), y2: y(settings.referenceValue) }));
-      svg.append(svgElement('text', { class: 'tw-chart-threshold-label', x: width - right, y: y(settings.referenceValue) - 6, 'text-anchor': 'end' }, '3,000 人門檻'));
+      svg.append(svgElement('text', { class: 'tw-chart-threshold-label', x: width - right, y: y(settings.referenceValue) - 6, 'text-anchor': 'end' }, `${number(settings.referenceValue)} 人門檻`));
     }
     let segment = [], previous = null;
     function line(points, bridge = false) {
