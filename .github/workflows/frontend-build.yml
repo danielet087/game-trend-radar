@@ -33,7 +33,13 @@ jobs:
       - run: npm run build
       - run: npm run publish:static
       - run: npm test && npm run test:frontend
-      - run: npx playwright install --with-deps chromium
+      - name: Set up Chrome for browser tests
+        run: |
+          if radar_chrome="$(command -v google-chrome)"; then
+            echo "RADAR_CHROMIUM_PATH=$radar_chrome" >> "$GITHUB_ENV"
+          else
+            npx playwright install --with-deps chromium
+          fi
       - run: npm run test:browser
       - name: Verify generated files in the pull request
         if: github.event_name == 'pull_request'

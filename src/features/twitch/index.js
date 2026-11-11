@@ -38,7 +38,7 @@ export function initTwitchPage() {
   }
   const render = () => { renderer.render(); archive.updateHint(state.query); };
   const load = () => pendingSnapshot ??= loader.load().finally(() => { pendingSnapshot = null; });
-  const planning = createStreamPlanning({ $, signal, state, setRegion,
+  const planning = createStreamPlanning({ $, signal, state,
     ensureSnapshot: force => force || !state.data || pendingSnapshot ? load() : null });
   renderer = createTwitchRenderer({ state, $, cards, gameCard, empty, evidence, reset, syncURL, signal });
   loader = createTwitchLoader({ state, $, cards, historyCache, chartDisposers, ...renderer, render, empty });

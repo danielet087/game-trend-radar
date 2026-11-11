@@ -84,20 +84,29 @@
     </div>
     <div id="streamPlanning" class="tw-stream-view" role="tabpanel" aria-labelledby="streamPlanningTab" hidden>
       <section class="tw-workspace" aria-labelledby="streamPlanTitle">
-        <div class="tw-workspace-head">
+        <div class="tw-workspace-head tw-stream-head">
           <h2 id="streamPlanTitle">下一場播什麼？</h2>
-          <div class="tw-stream-links"><a class="tw-stream-link" href="./growth.html?period=future">找即將上市的備播題材 →</a><a class="tw-stream-link" href="#streamCheck">檢查正在播的遊戲 ↓</a></div>
+          <div class="tw-stream-links">
+            <a class="tw-stream-link" href="./growth.html?period=future">找待上市遊戲 →</a>
+            <a class="tw-stream-link" href="#streamCheck">查續播建議 ↓</a>
+          </div>
         </div>
-        <p class="tw-stream-intro">清單與順序沿用目前觀測。選開台時間，就能看每款遊戲的試播理由。</p>
         <div class="tw-stream-controls">
           <label class="tw-sort">開台時間（台灣）<select id="streamHour"></select></label>
-          <label class="tw-sort">觀眾範圍<select id="streamRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label>
-          <button id="streamRefresh" type="button" class="tw-archive-refresh">重新讀取 ↻</button>
+          <button id="streamRefresh" type="button" class="tw-archive-refresh">重新讀取</button>
         </div>
-        <p id="streamPlanStatus" class="tw-stream-status" role="status"></p>
+        <div class="tw-stream-summary">
+          <p id="streamPlanStatus" class="tw-stream-status" role="status"></p>
+          <details class="tw-stream-method">
+            <summary>判讀方式</summary>
+            <div>
+              <p>清單與排序沿用「目前觀測」。開台時段取最近 7 個完整台灣日的資料，有上市參考日的遊戲從上市日算起。</p>
+              <p>至少有 3 天量測才顯示觀眾與同時開台數的中位數。「較多／較少」依同區已載入且有觀眾與開台紀錄的遊戲比較，至少須有 3 款。全球包含中文區。</p>
+            </div>
+          </details>
+        </div>
         <div id="streamTrialResults" class="tw-stream-results" aria-busy="false"></div>
         <div class="tw-load-more"><button id="streamLoadMore" type="button" hidden>再看 24 款 ↓</button></div>
-        <details class="tw-method"><summary>試播理由怎麼看？ <span aria-hidden="true">＋</span></summary><div><p>開台選題沿用目前觀測的遊戲、篩選與排序。理由取最近 7 個完整台灣日的同一小時，至少 3 天同時量到觀眾與開台數才呈現常見水準。有上市參考日的遊戲從上市當天開始計算。</p><p>常見觀眾與同時開台數各取有效紀錄的中位數。「較多」與「較少」依同區已載入遊戲的中間值比較，至少需有 3 款該時段有觀眾且有開台紀錄的遊戲。資料不足仍會列出遊戲。</p></div></details>
       </section>
       <section id="streamCheck" class="tw-workspace" aria-labelledby="streamCheckTitle">
         <div class="tw-workspace-head"><h2 id="streamCheckTitle">這款還值得繼續播嗎？</h2></div>

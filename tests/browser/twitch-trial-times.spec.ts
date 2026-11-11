@@ -34,14 +34,34 @@ test('compares two trial hours with matched coverage and preserves the independe
     schema_version:1, timezone:'Asia/Taipei', game_id:'1', month:'2026-11', hours,
   } }));
 
-  await page.goto('twitch.html?view=streamer&sort=viewers&stream_hour=22&stream_region=compare');
+  await page.goto('twitch.html?view=streamer&sort=viewers&stream_hour=22');
   const card = page.locator('.tw-stream-game[data-game="1"]');
-  await expect(card.locator('[data-region="global"] .tw-stream-reason')).toHaveText('有觀眾 · 同區可比遊戲較少');
-  await expect(card.locator('[data-region="zh"] .tw-stream-reason')).toHaveText('這個時段資料不足');
+  const globalCard = card.locator('[data-region="global"]');
+  const chineseCard = card.locator('[data-region="zh"]');
+  await expect(globalCard.locator('.tw-stream-reason')).toHaveText('有觀眾 · 同區可比遊戲較少');
+  await expect(globalCard.locator('.tw-stream-metrics')).toContainText('90 人');
+  await expect(globalCard.locator('.tw-stream-metrics')).toContainText('8 台');
+  await expect(chineseCard.locator('.tw-stream-reason')).toHaveText('這個時段資料不足');
+  await expect(chineseCard.locator('.tw-stream-coverage')).toContainText('2/7 天');
+  await expect(chineseCard.locator('.tw-stream-metrics')).toHaveCount(0);
   await expect(page.locator('.tw-stream-game[data-game="2"] [data-region="global"] .tw-stream-reason')).toHaveText('尚無逐時紀錄');
+  for (const width of [320, 390, 1280]) {
+    await page.setViewportSize({ width, height:844 });
+    const [left, right] = await Promise.all([globalCard.boundingBox(), chineseCard.boundingBox()]);
+    expect(left!.x + left!.width).toBeLessThanOrEqual(right!.x);
+    expect(left!.y).toEqual(right!.y);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  }
+  await page.setViewportSize({ width:390, height:844 });
   const ids = () => page.locator('.tw-stream-game').evaluateAll(cards => cards.map(card => card.getAttribute('data-game')));
   const currentIds = () => page.locator('#gameResults .tw-game').evaluateAll(cards => cards.map(card => card.getAttribute('data-game-id')));
   const initial = await ids();
+  await page.locator('#streamHour').selectOption('20');
+  await expect(chineseCard.locator('.tw-stream-metrics')).toContainText('9 人');
+  await expect(globalCard.locator('.tw-stream-metrics')).toContainText('180 人');
+  expect(await ids()).toEqual(initial);
+  await page.locator('#streamHour').selectOption('22');
+  await expect(chineseCard.locator('.tw-stream-reason')).toHaveText('這個時段資料不足');
   await page.locator('#currentTab').click();
   expect(await currentIds()).toEqual(initial);
   await page.locator('#gameSort').selectOption('streamers');
@@ -75,7 +95,7 @@ test('compares two trial hours with matched coverage and preserves the independe
   await page.locator('#trialRegion').selectOption('zh');
   await expect(chinese).toContainText('22:00 有 2 天紀錄，21:00 有 0 天');
   await expect(chinese).toContainText('同日可比較 0／7 天');
-  await expect(page.locator('#summaryRegion')).toHaveValue('compare');
+  await expect(page.locator('#summaryRegion')).toHaveValue('global');
   await page.reload();
   await expect(page.locator('#trialHourB')).toHaveValue('21');
   await expect(page.locator('#trialRegion')).toHaveValue('zh');
