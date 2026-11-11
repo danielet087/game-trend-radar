@@ -10,6 +10,7 @@ function node(tag, className, text) {
   return el;
 }
 function fmt(value) { return value === null || value === undefined ? "—" : number.format(value); }
+export const hourLabel = hour => String(hour).padStart(2, '0') + ':00';
 function legacyRecovery(g) { return g.tracking?.enrollment?.source === "user_requested_legacy_recovery"; }
 function pendingLegacyMeasurement(g) { return legacyRecovery(g) && g.observation_status === "retained" && g.viewer_count == null && g.streamer_count == null; }
 function audienceNote(a) {

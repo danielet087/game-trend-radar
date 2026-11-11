@@ -32,14 +32,51 @@ export function trialGames(index, games, window, region) {
 export function trialSample(index, chunks, game, window, region) {
   const paired = window.slots.filter(at => at >= game.released)
     .map(at => seriesRows(index, chunks, game.id, at, at, region)[0])
-    .filter(row => row.status === 'observed' && Number.isSafeInteger(row.viewer_count) &&
-      Number.isSafeInteger(row.streamer_count) && (row.streamer_count > 0 || row.viewer_count === 0));
-  const days = paired.length;
+    .map(trialCounts).filter(Boolean);
+  return { days: paired.length, totalDays: window.slots.length, ...trialMedians(paired) };
+}
+
+function trialCounts(row) {
+  const { viewer_count: viewers, streamer_count: streamers } = row;
+  if (row.status !== 'observed' || !Number.isSafeInteger(viewers) || !Number.isSafeInteger(streamers) ||
+      viewers < 0 || streamers < 0 || (streamers === 0 && viewers > 0)) return null;
+  return { viewers, streamers };
+}
+
+function trialMedians(samples) {
+  if (samples.length < TRIAL_MIN_DAYS) return { viewers: null, streamers: null };
   return {
-    days, totalDays: window.slots.length,
-    viewers: days >= TRIAL_MIN_DAYS ? quantile(paired.map(row => row.viewer_count), .5) : null,
-    streamers: days >= TRIAL_MIN_DAYS ? quantile(paired.map(row => row.streamer_count), .5) : null,
+    viewers: quantile(samples.map(sample => sample.viewers), .5),
+    streamers: quantile(samples.map(sample => sample.streamers), .5),
   };
+}
+
+function hasTimeAdvantage(a, b) {
+  return a.viewers > 0 && a.streamers > 0 && a.viewers >= b.viewers && a.streamers <= b.streamers &&
+    (a.viewers > b.viewers || a.streamers < b.streamers);
+}
+
+export function compareTrialTimes(index, chunks, gameId, period, hours, region) {
+  const reference = index.games[gameId].release_reference;
+  const released = reference?.precision === 'day' ? dateStart(reference.date) : NaN;
+  const pairs = [], dates = [], coverage = [0, 0];
+  for (const day of period.slots) {
+    if (day < released) continue;
+    const pair = hours.map((hour, i) => {
+      const at = day + hour * HOUR;
+      const sample = trialCounts(seriesRows(index, chunks, gameId, at, at, region)[0]);
+      if (sample) coverage[i]++;
+      return sample;
+    });
+    if (pair.every(Boolean)) { pairs.push(pair); dates.push(dayOf(day)); }
+  }
+  const slots = hours.map((hour, i) => ({
+    hour, observed: coverage[i], ...trialMedians(pairs.map(pair => pair[i])),
+    strongerDays: pairs.filter(pair => hasTimeAdvantage(pair[i], pair[1 - i])).length,
+  }));
+  const typicalLead = slots.find((slot, i) => hasTimeAdvantage(slot, slots[1 - i])) ?? null;
+  const preferred = typicalLead && typicalLead.strongerDays * 2 > pairs.length ? typicalLead : null;
+  return { slots, dates, typicalLead, preferred, releaseDate: Number.isFinite(released) ? reference.date : null };
 }
 
 export function sortTrialGames(rows, region, sort) {
