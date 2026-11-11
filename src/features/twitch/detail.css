@@ -5,6 +5,13 @@ body[data-page="twitch-game"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; -
 .tw-heat-heading > span { color:#746780; font-size:12px; }
 .tw-heat-status { margin:13px 0 16px; color:#59436f; font-size:20px; font-weight:700; }
 .tw-heat-overview[data-status="cooled"] .tw-heat-status,.tw-heat-overview[data-status="suspected"] .tw-heat-status { color:#965a32; }
+.tw-stream-action { margin:0 0 15px; padding:14px 16px; border:1px solid #cfe1d5; border-radius:12px; background:#f0f7f0; }
+.tw-stream-action > span { display:block; color:#415f4e; font-size:11px; font-weight:700; }
+.tw-stream-action h3 { margin:3px 0 4px; color:#284939; font-size:17px; }
+.tw-stream-action p { margin:0; color:#3e5145; font-size:13px; line-height:1.7; }
+.tw-stream-action small { display:block; margin-top:7px; color:#4f6055; font-size:11px; }
+.tw-heat-overview:is([data-status="cooled"],[data-status="suspected"]) .tw-stream-action { border-color:#e4ceaf; background:#fbf4e8; }
+.tw-heat-overview:is([data-status="cooled"],[data-status="suspected"]) .tw-stream-action h3 { color:#784721; }
 .tw-heat-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
 .tw-heat-stat { display:grid; align-content:start; gap:8px; min-width:0; padding:14px; border-radius:10px; background:#f5f0fa; overflow-wrap:anywhere; }
 .tw-heat-stat > span { color:#746780; font-size:12px; }

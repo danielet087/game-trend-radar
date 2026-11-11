@@ -1,5 +1,31 @@
 import { node, fmt, time } from './presentation.js';
 import { releaseDayLabel } from './cooldown.js';
+import { HOUR } from './metrics.js';
+
+export function streamerAdvice({ data, status, historical }, now = Date.now()) {
+  if (historical) return ['先核對近期表現', '這款已結束追蹤。要再排這個主題，可以先看自己近期同時段播這類遊戲的表現。'];
+  const last = data.points.findLast(point => Number.isFinite(point.raw));
+  if (!last || now - Date.parse(last.hour) > data.settings.maxMissingHours * HOUR ||
+      ['gap', 'insufficient', 'stale'].includes(status)) {
+    return ['先等有效資料', '等觀測更新，再決定是否縮減場次。也可以先回看自己最近的同時段表現。'];
+  }
+  const threshold = fmt(data.settings.threshold);
+  const lowDays = data.latest.lowDays;
+  switch (status) {
+    case 'cooled':
+      return ['考慮收尾或換題', `遊戲已連續 ${lowDays} 個有效日低於 ${threshold} 人。如果你的同時段平均觀眾也低於平常，可以安排一場收尾或換題。`];
+    case 'suspected':
+      return ['先暫緩加開場次', `目前有 ${lowDays}／${data.settings.confirmDays} 個連續有效日低於 ${threshold} 人。等下一個有效日，再一起看你最近的開台表現。`];
+    case 'recovered':
+      return ['可安排一場回訪', `最新有效日已回到 ${threshold} 人門檻。先試一場，和你以往同時段的平均觀眾比較。`];
+    case 'not_popular':
+      return ['先試播一場', '目前尚未達熱門門檻。若題材適合你的頻道，可先用一場測試觀眾反應。'];
+    case 'watching':
+      return ['可先續播一場', '目前仍有觀看需求。開完後比較你的同時段平均觀眾，再決定是否加場。'];
+    default:
+      return ['先看近期表現', '對照遊戲的最新觀測與自己同時段的開台數字，再排下一場。'];
+  }
+}
 
 export function renderHeatOverview(root, snapshot) {
   if (!root) return;
@@ -14,6 +40,10 @@ export function renderHeatOverview(root, snapshot) {
   root.replaceChildren(head, state);
   if (!snapshot.data) return;
   const { data, releaseDate } = snapshot;
+  const [actionTitle, actionText] = streamerAdvice(snapshot);
+  const action = node('section', 'tw-stream-action');
+  action.append(node('span', '', '開台建議'), node('h3', '', actionTitle), node('p', '', actionText));
+  if (data.latest.complete) action.append(node('small', '', `${data.latest.day} · 每日總觀眾中位數 ${fmt(data.latest.median)} 人 · ${data.latest.validHours}／24 個有效小時`));
   const peak = data.relativeDecline.peak, first = data.episodes[0];
   const cards = node('div', 'tw-heat-stats');
   function card(key, label, value, hint) {
@@ -32,5 +62,5 @@ export function renderHeatOverview(root, snapshot) {
   if (firstDay) note.append(node('span', '', ` 自${firstDay}開始觀測。`));
   else note.append(node('span', '', ' 上市日尚未確認時顯示觀測日期。'));
   const link = node('a', '', '查看判定依據與高峰衰退紀錄 ↓'); link.href = '#historyCooldown';
-  root.append(cards, note, link);
+  root.append(action, cards, note, link);
 }

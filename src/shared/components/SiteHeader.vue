@@ -141,7 +141,7 @@ onBeforeUnmount(() => {
             </a>
             <a class="explore-route explore-route-twitch" href="./twitch.html" :aria-current="['twitch', 'twitch-game'].includes(page) ? 'page' : undefined">
               <span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><rect x="15" y="25" width="50" height="38" rx="10" /><path d="m28 12 12 13 12-13M29 72h22M31 39v8m18-8v8m-16 7h14M6 34v16m68-16v16" /></svg></span>
-              <span class="explore-route-copy"><span class="explore-route-title">Twitch 新作觀測 <small>實驗</small></span><span class="explore-route-note">直播熱度與全新判讀</span></span>
+              <span class="explore-route-copy"><span class="explore-route-title">Twitch 新作觀測 <small>實驗</small></span><span class="explore-route-note">開台選題、熱度與歷史紀錄</span></span>
               <span class="explore-route-arrow" aria-hidden="true">{{ ['twitch', 'twitch-game'].includes(page) ? '✓' : '↗' }}</span>
             </a>
           </div>

@@ -61,7 +61,15 @@ export function overviewQuery(search) {
   if (['median', 'viewers', 'streamers'].includes(input.get('sort'))) output.set('sort', input.get('sort'));
   if (['global', 'zh', 'compare'].includes(input.get('region'))) output.set('region', input.get('region'));
   if (['global', 'zh', 'compare'].includes(input.get('archive_region'))) output.set('archive_region', input.get('archive_region'));
-  if (input.get('view') === 'archive') output.set('view', 'archive');
+  const view = input.get('view');
+  if (['archive', 'streamer'].includes(view)) output.set('view', view);
+  if (view === 'streamer') {
+    const hour = input.get('stream_hour'), query = input.get('stream_q')?.slice(0, 160);
+    if (/^(?:[01]?\d|2[0-3])$/.test(hour || '')) output.set('stream_hour', hour);
+    if (['global', 'zh', 'compare'].includes(input.get('stream_region'))) output.set('stream_region', input.get('stream_region'));
+    if (input.get('stream_order') === 'competition') output.set('stream_order', 'competition');
+    if (query) output.set('stream_q', query);
+  }
   if (['active', 'ended'].includes(input.get('archive_state'))) output.set('archive_state', input.get('archive_state'));
   if (['peak', 'records', 'name'].includes(input.get('archive_sort'))) output.set('archive_sort', input.get('archive_sort'));
   const page = Number(input.get('archive_page'));
@@ -71,7 +79,9 @@ export function overviewQuery(search) {
 export function detailHref(id, search = '') {
   const params = new URLSearchParams({ game: id }), back = overviewQuery(search);
   const source = new URLSearchParams(search);
-  const region = source.get('view') === 'archive' ? source.get('archive_region') ?? source.get('region') : source.get('region');
+  const view = source.get('view');
+  const region = view === 'archive' ? source.get('archive_region') ?? source.get('region')
+    : view === 'streamer' ? source.get('stream_region') : source.get('region');
   if (['global', 'zh', 'compare'].includes(region)) params.set('region', region);
   if (back) params.set('back', back);
   return `./twitch-game.html?${params}`;

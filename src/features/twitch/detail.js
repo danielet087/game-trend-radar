@@ -22,7 +22,9 @@ export function initTwitchDetail() {
   const controls = { summary: 'summaryRegion', history: 'audienceRegion', cooldown: 'cooldownRegion', statistics: 'statisticsRegion' };
   for (const block of Object.keys(scopeKeys)) $(controls[block]).value = scopes[block];
   $('historyBack').href = './twitch.html' + (back ? '?' + back : '');
-  if (new URLSearchParams(back).get('view') === 'archive') $('historyBack').textContent = '← 歷史資料庫';
+  const backView = new URLSearchParams(back).get('view');
+  if (backView === 'archive') $('historyBack').textContent = '← 歷史資料庫';
+  if (backView === 'streamer') $('historyBack').textContent = '← 開台選題';
   function syncURL() {
     params.set('game', id); params.set('metric', metric); writeBlockScopes(params, scopes);
     if (resolution) params.set('resolution', resolution); else params.delete('resolution');

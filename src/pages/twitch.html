@@ -30,6 +30,7 @@
     <div class="tw-view-tabs" role="tablist" aria-label="Twitch 觀測資料">
       <button id="currentTab" type="button" role="tab" data-twitch-view="current" aria-selected="true" aria-controls="currentObservation">目前觀測</button>
       <button id="archiveTab" type="button" role="tab" data-twitch-view="archive" aria-selected="false" aria-controls="historyArchive" tabindex="-1">歷史資料庫</button>
+      <button id="streamPlanningTab" type="button" role="tab" data-twitch-view="streamer" aria-selected="false" aria-controls="streamPlanning" tabindex="-1">開台選題</button>
     </div>
     <div id="currentObservation" role="tabpanel" aria-labelledby="currentTab">
     <div id="snapshotNotice" class="tw-notice" role="status" hidden><span class="tw-notice-mark" aria-hidden="true">i</span><div><strong id="noticeTitle"></strong><p id="noticeText"></p></div></div>
@@ -80,6 +81,31 @@
       </div>
       <details class="tw-method"><summary>量測範圍與判讀細節 <span aria-hidden="true">＋</span></summary><div><p>Twitch 熱門新作涵蓋不同平台，以 7,000 名觀眾與新作依據首次收錄。Steam 近期上市則取本站已收錄、台灣上市未滿 30 天且成功配對的遊戲，不受觀眾門檻限制。兩種來源分別計算期限，任一來源有效便繼續追蹤；同一 Twitch 類別只量測一次。</p><p>Steam 配對補充名稱、TAG、關注度與該版本上市日；封面沿用 Twitch，直播數據涵蓋整個 Twitch 類別。Steam 台灣上市日與 IGDB 首次發售日分開保存；未配對的遊戲不計為零觀眾。不同類別依序抓取，並非同一秒的全球排名。</p><p>篩選後中位數只納入免費追隨者超過 1,000 人、且當次觀眾至少 10 人的頻道。追隨數最多使用 24 小時內的紀錄；未知不當成 0，有待查頻道時暫不顯示中位數。總觀眾與總開台涵蓋所選區域的全體頻道；舊歷史無法回算新條件。</p><p>IGDB 推算採後端快照當下的結果，以距首次發售未滿 30 天為範圍，恰好滿 30 天不命中；尚未發售仍命中並另標「未上市」。歷史快照保留當時規則，不用瀏覽器時間重算。資料過期或缺少日期時保持未知。</p><p>從歷史補回而尚未重新量測的遊戲，會註明「上次觀測」與保存時間；舊值不列入本輪排名，也不寫成新的逐時資料。預設觀看全球，可切換中文區。中文區依主播標註的直播語言統計；全球包含中文區。直播語言不等於主播或觀眾所在地。舊紀錄未收集語言分區時不回算、不補零。逐時紀錄保留缺測，沒有出現在清單不代表零觀眾。</p></div></details>
     </section>
+    </div>
+    <div id="streamPlanning" class="tw-stream-view" role="tabpanel" aria-labelledby="streamPlanningTab" hidden>
+      <section class="tw-workspace" aria-labelledby="streamPlanTitle">
+        <div class="tw-workspace-head">
+          <h2 id="streamPlanTitle">下一場播什麼？</h2>
+          <div class="tw-stream-links"><a class="tw-stream-link" href="./growth.html?period=future">找即將上市的備播題材 →</a><a class="tw-stream-link" href="#streamCheck">檢查正在播的遊戲 ↓</a></div>
+        </div>
+        <p class="tw-stream-intro">選預計開台時間，看看近 7 天同時段有哪些新作有人看、同時有幾台在播。</p>
+        <div class="tw-stream-controls">
+          <label class="tw-sort">開台時間（台灣）<select id="streamHour"></select></label>
+          <label class="tw-sort">觀眾範圍<select id="streamRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label>
+          <label class="tw-sort">優先比較<select id="streamOrder"><option value="viewers">觀眾較多</option><option value="competition">開台較少</option></select></label>
+          <button id="streamRefresh" type="button" class="tw-archive-refresh">重新讀取 ↻</button>
+        </div>
+        <p id="streamPlanStatus" class="tw-stream-status" role="status"></p>
+        <div id="streamTrialResults" class="tw-stream-results" aria-busy="false"></div>
+        <details class="tw-method"><summary>這些遊戲怎麼選？ <span aria-hidden="true">＋</span></summary><div><p>從所選範圍中，取近期 30 天已上市、仍在追蹤且觀測高峰較高的最多 8 款新作。用最近 7 個完整台灣日的同一小時比較，至少 3 天同時量到觀眾與開台數才呈現常見水準。兩區比較以全球候選並列中文區紀錄。</p><p>常見觀眾與同時開台數各取有效紀錄的中位數。可以先從觀眾規模相近的遊戲裡，挑同時開台較少的一款試播。缺測保留空白。</p></div></details>
+      </section>
+      <section id="streamCheck" class="tw-workspace" aria-labelledby="streamCheckTitle">
+        <div class="tw-workspace-head"><h2 id="streamCheckTitle">這款還值得繼續播嗎？</h2></div>
+        <div class="tw-stream-search">
+          <label class="tw-search"><span class="sr-only">搜尋正在播的遊戲</span><input id="streamGameSearch" type="search" placeholder="輸入正在播的遊戲名稱…" maxlength="160" autocomplete="off"></label>
+          <div id="streamGameMatches" class="tw-stream-matches"></div>
+        </div>
+      </section>
     </div>
     <section id="historyArchive" class="tw-workspace tw-archive" role="tabpanel" aria-labelledby="archiveTab" hidden>
       <div class="tw-workspace-head tw-list-scope-toolbar">
