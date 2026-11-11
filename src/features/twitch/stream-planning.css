@@ -19,10 +19,10 @@
 .tw-stream-comparisons { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:8px; min-width:0; }
 .tw-stream-sample { min-width:0; padding:8px 11px; border:1px solid #e4d9ef; border-radius:10px; background:#f9f5fc; }
 .tw-stream-sample[data-region="zh"] { background:#f1f8f2; border-color:#d7e9dc; }
-.tw-stream-scope,.tw-stream-sample small,.tw-stream-metrics dt { color:#655971; font-size:11px; }
+.tw-stream-scope,.tw-stream-sample small { color:#655971; font-size:12px; }
 .tw-stream-scope { display:block; font-weight:700; }
-.tw-stream-metrics { display:flex; gap:8px 18px; flex-wrap:wrap; margin:4px 0 3px; }
-.tw-stream-metrics dd { margin:0; color:#4c3267; font-size:17px; font-weight:750; font-variant-numeric:tabular-nums; }
+.tw-stream-reason { margin:3px 0; color:#4c3267; font-size:16px; font-weight:750; line-height:1.4; }
+.tw-stream-sample small { display:block; line-height:1.6; font-variant-numeric:tabular-nums; }
 .tw-stream-search { padding:18px 25px 21px; }
 .tw-stream-matches { margin-top:10px; }
 .tw-stream-match { display:flex; justify-content:space-between; align-items:center; gap:8px 16px; flex-wrap:wrap; padding:10px 0; color:#50366e; border-bottom:1px solid #e7dff0; }
@@ -32,5 +32,4 @@
 @media (max-width:640px) {
   .tw-stream-intro,.tw-stream-controls,.tw-stream-status,.tw-stream-results,.tw-stream-search { padding-left:16px; padding-right:16px; }
   .tw-stream-game { grid-template-columns:minmax(0,1fr); gap:9px; }
-  .tw-stream-metrics { gap:6px 13px; }
 }

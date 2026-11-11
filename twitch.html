@@ -8,13 +8,13 @@
   <meta name="description" content="Twitch 熱門新作與 Steam 近期上市遊戲的直播觀測，查看中文區與全球觀眾、開台數、中位數與互動逐時曲線。">
   <title>Twitch 新作觀測・實驗｜Game Trend Radar</title>
   <link rel="icon" id="siteFavicon" type="image/svg+xml">
-  <script type="module" crossorigin src="/game-trend-radar/assets/app/twitch-CV3TGTO2.js"></script>
+  <script type="module" crossorigin src="/game-trend-radar/assets/app/twitch-yOgqTcPY.js"></script>
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/contracts-CXfvy2kB.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/storage-BcgAUlou.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/followers-Czt0-Vco.js">
-  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-GG0cyZ27.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-j_vFzpVl.js">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/bootstrap-oTuMO7h7.css">
-  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/twitch-B5lQmR6B.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/twitch-Dnoanjtt.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-C_gCAust.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/styles-BXThwy_-.css">
 </head>
@@ -96,7 +96,7 @@
           <h2 id="streamPlanTitle">下一場播什麼？</h2>
           <div class="tw-stream-links"><a class="tw-stream-link" href="./growth.html?period=future">找即將上市的備播題材 →</a><a class="tw-stream-link" href="#streamCheck">檢查正在播的遊戲 ↓</a></div>
         </div>
-        <p class="tw-stream-intro">選預計開台時間，看看近 7 天同時段有哪些新作有人看、同時有幾台在播。</p>
+        <p class="tw-stream-intro">選預計開台時間，直接比較同區新作的觀眾與同播競爭。</p>
         <div class="tw-stream-controls">
           <label class="tw-sort">開台時間（台灣）<select id="streamHour"></select></label>
           <label class="tw-sort">觀眾範圍<select id="streamRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label>
@@ -105,7 +105,7 @@
         </div>
         <p id="streamPlanStatus" class="tw-stream-status" role="status"></p>
         <div id="streamTrialResults" class="tw-stream-results" aria-busy="false"></div>
-        <details class="tw-method"><summary>這些遊戲怎麼選？ <span aria-hidden="true">＋</span></summary><div><p>從所選範圍中，取近期 30 天已上市、仍在追蹤且觀測高峰較高的最多 8 款新作。用最近 7 個完整台灣日的同一小時比較，至少 3 天同時量到觀眾與開台數才呈現常見水準。兩區比較以全球候選並列中文區紀錄。</p><p>常見觀眾與同時開台數各取有效紀錄的中位數。可以先從觀眾規模相近的遊戲裡，挑同時開台較少的一款試播。缺測保留空白。</p></div></details>
+        <details class="tw-method"><summary>這些遊戲怎麼選？ <span aria-hidden="true">＋</span></summary><div><p>從所選範圍中，取近期 30 天已上市、仍在追蹤且觀測高峰較高的最多 8 款新作。用最近 7 個完整台灣日的同一小時比較，至少 3 天同時量到觀眾與開台數才呈現常見水準。兩區比較以全球候選並列中文區紀錄。</p><p>常見觀眾與同時開台數各取有效紀錄的中位數。卡片上的「較多」與「較少」是與同區清單的中間值比較，至少需有 3 款該時段有觀眾且有開台紀錄的遊戲。缺測保留空白。</p></div></details>
       </section>
       <section id="streamCheck" class="tw-workspace" aria-labelledby="streamCheckTitle">
         <div class="tw-workspace-head"><h2 id="streamCheckTitle">這款還值得繼續播嗎？</h2></div>

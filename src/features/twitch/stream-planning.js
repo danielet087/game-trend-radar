@@ -1,12 +1,10 @@
 import { RadarStorage } from '../../data/storage.ts';
 import { archiveGames, selectArchive } from './archive-model.js';
 import { regionNames, viewOf } from './audience-region.js';
-import { hourLabel, node, time } from './presentation.js';
+import { fmt, hourLabel, node, time } from './presentation.js';
 import { regionsFor } from './region-views.js';
 import { dayOf, detailHref, monthsFor, validChunk, validIndex } from './series.js';
-import { sortTrialGames, streamHour, trialGames, trialSample, trialWindow, TRIAL_MIN_DAYS } from './stream-planning-model.js';
-
-const number = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 1 });
+import { sortTrialGames, streamHour, trialBenchmarks, trialGames, trialReason, trialSample, trialWindow, TRIAL_MIN_DAYS } from './stream-planning-model.js';
 
 async function read(path, validate, force) {
   const result = await RadarStorage.readJSONResult(path, validate, { force, allowStale:false });
@@ -52,7 +50,7 @@ export function createStreamPlanning({ $, signal }) {
     }));
   }
 
-  function row({ game, samples }, regions) {
+  function row({ game, samples }, benchmarks) {
     const card = node('article', 'tw-stream-game'); card.dataset.game = game.id;
     const gameInfo = node('div', 'tw-stream-game-info');
     if (game.cover) {
@@ -68,22 +66,13 @@ export function createStreamPlanning({ $, signal }) {
     copy.append(link, node('small', '', `上市參考 ${game.releaseDate.replaceAll('-', '/')}${game.releaseSource ? ` · ${game.releaseSource}` : ''}`), compare);
     gameInfo.append(copy);
     const comparisons = node('div', 'tw-stream-comparisons');
-    for (const key of regions) {
+    for (const [key, benchmark] of benchmarks) {
       const sample = samples[key];
       const panel = node('div', 'tw-stream-sample'); panel.dataset.region = key;
-      panel.append(node('span', 'tw-stream-scope', regionNames[key]));
-      if (sample.viewers === null) {
-        panel.append(node('p', 'tw-stream-muted', '這個時段樣本不足'));
-      } else {
-        const metrics = node('dl', 'tw-stream-metrics');
-        for (const [label, value, unit] of [['常見觀眾', sample.viewers, '人'], ['同時開台', sample.streamers, '台']]) {
-          const metric = node('div');
-          const display = Number.isInteger(value) ? number.format(value) : `約 ${number.format(Math.round(value))}`;
-          metric.append(node('dt', '', label), node('dd', '', `${display} ${unit}`)); metrics.append(metric);
-        }
-        panel.append(metrics);
-      }
-      panel.append(node('small', '', `有量測 ${sample.days}／${sample.totalDays} 天`)); comparisons.append(panel);
+      panel.append(node('span', 'tw-stream-scope', regionNames[key]),
+        node('p', 'tw-stream-reason', trialReason(sample, benchmark)));
+      const counts = sample.viewers === null ? '' : `常見 ${fmt(sample.viewers)} 人看 · ${fmt(sample.streamers)} 台同播 · `;
+      panel.append(node('small', '', `${counts}有量測 ${sample.days}／${sample.totalDays} 天`)); comparisons.append(panel);
     }
     card.append(gameInfo, comparisons);
     return card;
@@ -124,8 +113,9 @@ export function createStreamPlanning({ $, signal }) {
       if (!active()) return;
       const errors = observations.filter(result => result.status === 'rejected').length;
       const ranked = sortTrialGames(observations.flatMap(result => result.status === 'fulfilled' ? [result.value] : []), primary, order.value);
+      const benchmarks = regions.map(key => [key, trialBenchmarks(ranked, key)]);
       status.textContent = `${dayOf(period.start)} 至 ${dayOf(period.end)} · 每日 ${hourLabel(hour.value)}（台灣） · 資料更新 ${time(state.index.generated_at)}${errors ? ` · ${errors} 款暫無法讀取` : ''}`;
-      results.replaceChildren(...ranked.map(entry => row(entry, regions)));
+      results.replaceChildren(...ranked.map(entry => row(entry, benchmarks)));
       if (!ranked.length) {
         results.append(node('p', 'tw-stream-muted', errors && errors === games.length
           ? '這個時段的歷史資料暫時無法讀取。請按重新讀取。'

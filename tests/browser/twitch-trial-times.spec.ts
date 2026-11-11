@@ -27,6 +27,9 @@ test('compares two trial hours with matched coverage and preserves the independe
   } }));
 
   await page.goto('twitch.html?view=streamer&stream_hour=22&stream_region=compare');
+  const card = page.locator('.tw-stream-game[data-game="1"]');
+  await expect(card.locator('[data-region="global"] .tw-stream-reason')).toHaveText('有觀眾 · 同區可比遊戲較少');
+  await expect(card.locator('[data-region="zh"] .tw-stream-reason')).toHaveText('這個時段資料不足');
   await page.getByRole('link', { name:'比較 試播遊戲 的試播時段' }).click();
   await expect(page).toHaveURL(/#trialTimes$/);
   await expect(page.locator('#trialHourA')).toHaveValue('22');
