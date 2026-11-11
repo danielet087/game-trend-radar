@@ -39,6 +39,7 @@ test('compares two trial hours with matched coverage and preserves the independe
   await expect(global).toContainText('同日可比較 3／7 天');
   await expect(chinese).toContainText('同日可比較 2／7 天');
   await expect(chinese.getByRole('table')).toHaveCount(0);
+  await expect(page.locator('#trialTimeTitle')).toBeInViewport();
 
   await page.locator('#trialHourB').selectOption('22');
   await expect(page.locator('#trialTimeStatus')).toHaveText('請選兩個不同的時段。');

@@ -258,7 +258,14 @@ export function initTwitchDetail() {
       document.querySelectorAll('[data-history-range]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.historyRange === window.range)));
       $('historyRangeLabel').textContent = time(new Date(window.start).toISOString()) + ' — ' + time(new Date(window.end).toISOString()) + ' · 台灣時間' + (window.range !== 'custom' ? ' · 以本遊戲最後觀測時段為基準' : '');
       $('historyContent').hidden = false;
-      renderHistory(); renderStatistics(); renderCooldown(); renderOverview(); trialTimes.update(index, id, chunksFor); syncURL();
+      renderHistory(); renderStatistics(); renderCooldown();
+      const alignTrialTimes = $('trialTimes').hidden && location.hash === '#trialTimes';
+      const overview = renderOverview();
+      const comparison = trialTimes.update(index, id, chunksFor);
+      if (alignTrialTimes) Promise.all([overview, comparison]).then(() => {
+        if (token === request && !disposed && location.hash === '#trialTimes') $('trialTimes').scrollIntoView();
+      });
+      syncURL();
       $('historyExport').disabled = false;
     } catch (error) { if (token === request && !disposed) message(error.message || '歷史資料暫時無法載入。', true); }
     finally { if (token === request) $('historyPanel').setAttribute('aria-busy', 'false'); }

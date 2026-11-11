@@ -14,7 +14,7 @@ function timeAdvice({ slots: [first, second], dates, releaseDate, typicalLead, p
     const other = preferred === first ? second : first;
     const demand = preferred.viewers > other.viewers ? '常見觀眾較多' : '常見觀眾相同';
     const supply = preferred.streamers < other.streamers ? '同時開台較少' : '同時開台相同';
-    return [`可優先試播 ${hourLabel(preferred.hour)}`, `${demand}、${supply}，有 ${preferred.strongerDays}／${dates.length} 天同時占優。`];
+    return [`可優先試播 ${hourLabel(preferred.hour)}`, `${demand}、${supply}，有 ${preferred.strongerDays}／${dates.length} 天兩項條件同時成立。`];
   }
   if (typicalLead) return ['先用平常的時段試一場', `${hourLabel(typicalLead.hour)} 有 ${typicalLead.strongerDays}／${dates.length} 天同時占優，近期優勢仍有變動。`];
   if (first.viewers === second.viewers && first.streamers === second.streamers)
@@ -108,10 +108,8 @@ export function createTrialTimeComparison({ $, params, back, onChange }) {
       if (current?.index === index && current.period.today === period.today && !current.error) return;
       const entry = { index, gameId, period, chunks: null, error: false };
       current = entry;
-      const firstOpen = section.hidden;
       section.hidden = false; jump.hidden = false;
       render();
-      if (firstOpen && location.hash === '#trialTimes') section.scrollIntoView();
       const gameMonths = index.games[gameId].months;
       try {
         entry.chunks = await chunksFor(monthsFor(period.start, period.end).filter(month => gameMonths.includes(month)));
