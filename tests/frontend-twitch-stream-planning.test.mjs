@@ -60,8 +60,8 @@ test('stream heat requires a meaningful regional breakout with two qualifying da
   assert.equal(breakout.recent.median, 100);
   assert.equal(breakout.change, null);
   assert.equal(heatFixture(counts, 'global').signal, 'not_popular');
-  assert.equal(heatFixture([0, 0, 2, 150, 100, 7], 'zh').signal, 'not_popular');
-  assert.equal(heatFixture([0, 0, 2, 7, 150, 7], 'zh').signal, 'not_popular');
+  assert.equal(heatFixture([0, 0, 2, 150, 100, 7], 'zh').signal, 'suspected');
+  assert.equal(heatFixture([0, 0, 2, 7, 150, 7], 'zh').signal, 'suspected');
   assert.equal(heatFixture([0, 50, 2, 7, 150, 100], 'zh').signal, 'rising');
   assert.equal(heatFixture(counts, 'zh', '2026-11-06').previous.median, null);
   assert.equal(heatFixture([0, 0, 2, 7, 150, null], 'zh').signal, 'insufficient');

@@ -5,7 +5,7 @@ import { node, fmt, time } from './presentation.js';
 import { validIndex, validChunk, windowFor, monthsFor, seriesRows, fullSeriesRows, overviewQuery, dayOf, metrics, csvRows } from './series.js';
 import { createStatistics } from './statistics.js';
 import { createCooldown, cooldownPresentation } from './cooldown.js';
-import { analyzeCooldown } from './cooldown-model.js';
+import { analyzeCooldown, cooldownThreshold } from './cooldown-model.js';
 import { regionNames, viewOf } from './audience-region.js';
 import { blockScopes, scopeKeys, regionsFor, projectRows, writeBlockScopes } from './region-views.js';
 import { dailyRows } from './daily-series.js';
@@ -43,7 +43,7 @@ export function initTwitchDetail() {
     return result.data;
   }
   function context(region) {
-    return { gameName: (game.display_name || game.name) + ' · ' + regionNames[region], scope: regionNames[region],
+    return { gameName: (game.display_name || game.name) + ' · ' + regionNames[region], region, scope: regionNames[region],
       trackingStatus: game.tracking_status, lastHour: game.last_hour, latestHour: new Date(window.latest).toISOString(),
       generatedAt: index.generated_at, releaseReference: game.release_reference };
   }
@@ -90,15 +90,16 @@ export function initTwitchDetail() {
     $('historyResolution').hidden = metric !== 'viewers' || rows.length <= 24;
     document.querySelectorAll('[data-history-resolution]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.historyResolution === (daily ? 'daily' : 'hourly'))));
     const scoped = regionsFor(scopes.history).map(region => {
-      const data = projectRows(rows, region); return { region, data: daily ? dailyRows(data) : data };
+      const data = projectRows(rows, region); return { region, data: daily ? dailyRows(data, { region }) : data };
     });
-    const max = scopes.history === 'compare' ? Math.max(0, ...scoped.flatMap(group => group.data.map(row => valueOf(row, metric) || 0))) : 0;
+    const max = scopes.history === 'compare'
+      ? Math.max(daily ? cooldownThreshold('global') : 0, ...scoped.flatMap(group => group.data.map(row => valueOf(row, metric) || 0))) : 0;
     const roots = panels($('historyChart'), scopes.history, 'historyChart');
     for (const group of scoped) {
       const chart = mount(roots.get(group.region), { rows: group.data, gameName: (game.display_name || game.name) + ' · ' + regionNames[group.region],
         rangeOptions: [], initialRange: daily ? Number.MAX_SAFE_INTEGER : rows.length, rangeHours: rows.length,
         initialMetric: metric, granularity: daily ? 'daily' : 'hourly', connectGaps: false, domainMaximum: max,
-        ...(daily ? { referenceValue: 3000 } : {}),
+        ...(daily ? { referenceValue: cooldownThreshold(group.region) } : {}),
         onSelect(i) { charts.forEach(other => { if (other !== chart) other.select(i, false); }); },
         onMetricChange(value) {
           metric = value; syncURL(); renderHistory();
@@ -112,7 +113,7 @@ export function initTwitchDetail() {
       charts.forEach(chart => chart.select(selected, false));
     }
     $('historyChartNote').textContent = (scopes.history === 'compare' ? '全球包含中文區；兩圖使用相同時間與縱軸刻度，資料點與時間軸同步定位。' : '') +
-      (daily ? '每日總觀眾中位數以已結束的台灣日期統計，3,000 人線供對照；退燒仍須連續 3 個有效統計日低於門檻。' : '逐時數值保留原始紀錄。單台觀眾中位數與每日總觀眾中位數為不同指標。');
+      (daily ? '每日總觀眾中位數以已結束的台灣日期統計。虛線標示各區退燒門檻。' : '逐時數值保留原始紀錄。單台觀眾中位數與每日總觀眾中位數為不同指標。');
   }
   function table() {
     const regions = regionsFor(scopes.history), data = regions.map(region => projectRows(rows, region));
@@ -161,7 +162,7 @@ export function initTwitchDetail() {
     try {
       const full = await fullHistoryLoader();
       if (disposed || token !== summaryRequest || version !== request) return;
-      roots.forEach((root, region) => renderHeatOverview(root, cooldownPresentation(analyzeCooldown(projectRows(full, region)), context(region))));
+      roots.forEach((root, region) => renderHeatOverview(root, cooldownPresentation(analyzeCooldown(projectRows(full, region), { region }), context(region))));
     } catch {
       if (disposed || token !== summaryRequest || version !== request) return;
       roots.forEach((root, region) => renderHeatOverview(root, { status: 'unavailable', label: '全期摘要暫時無法讀取，請重新載入。', scope: regionNames[region] }));
@@ -208,7 +209,7 @@ export function initTwitchDetail() {
       const next = context(region);
       next.loadHistory = async () => {
         const full = await fullHistoryLoader();
-        if (scopes.cooldown === 'compare') next.domainMaximum = Math.max(3000, ...full.map(row => row.viewer_count || 0));
+        if (scopes.cooldown === 'compare') next.domainMaximum = Math.max(cooldownThreshold('global'), ...full.map(row => row.viewer_count || 0));
         return projectRows(full, region);
       };
       controller.update(next);

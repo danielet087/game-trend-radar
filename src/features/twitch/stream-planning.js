@@ -5,6 +5,7 @@ import { filterNames, fmt, node } from './presentation.js';
 import { projectRows, regionsFor } from './region-views.js';
 import { dateStart, detailHref, fullSeriesRows, validChunk, validIndex } from './series.js';
 import { analyzeStreamHeat, streamHeatWindow, STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS } from './stream-heat-model.js';
+import { cooldownThreshold } from './cooldown-model.js';
 import { selectObservation } from './selection.js';
 import { OBSERVATION_PAGE_SIZE } from './state.js';
 
@@ -71,6 +72,7 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
   let loaded = null, source = null, request = 0;
 
   const globalFloor = STREAM_HEAT_FLOORS.global, chineseFloor = STREAM_HEAT_FLOORS.zh;
+  $('streamCooldownRule').textContent = `全球 ${fmt(cooldownThreshold('global'))} 人，中文區 ${fmt(cooldownThreshold('zh'))} 人。曾達各區門檻後，連續 3 個有效日低於該門檻。`;
   $('streamBreakoutRule').textContent = `較前 3 日成長至少 50%（基準為 0 時以增加人數判斷）。全球達 ${fmt(globalFloor)} 人且至少增加 ${fmt(globalFloor / 2)} 人，中文區達 ${fmt(chineseFloor)} 人且至少增加 ${fmt(chineseFloor / 2)} 人。近 3 日至少 2 天達標，包含最新一日，且此前未達區域門檻。`;
 
   function saveURL() {
