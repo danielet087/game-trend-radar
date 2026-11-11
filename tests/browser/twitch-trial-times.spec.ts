@@ -1,17 +1,22 @@
 import { test, expect } from '@playwright/test';
 
-test('compares two trial hours with matched coverage and preserves the independent region and hour choices', async ({ page }) => {
+test('shows regional heat on the planning list and keeps paired trial hours on the game detail', async ({ page }) => {
   await page.setViewportSize({ width:390, height:844 });
   await page.clock.setFixedTime(new Date('2026-11-11T12:00:00+08:00'));
   const hours: Record<string, object> = {}, indexHours: Record<string, string> = {};
-  for (const day of [8,9,10]) {
-    for (const hour of [12,14]) {
-      const stamp = `2026-11-${String(day).padStart(2, '0')}T${hour}:00:00Z`;
-      const generated_at = stamp.replace(':00:00', ':10:00');
+  const audience = [3600, 3800, 4000, 1600, 1400, 1200, 10000];
+  const chineseAudience = [0, 0, 2, 7, 150, 100, 5000];
+  for (let day = 5; day <= 11; day++) {
+    for (let hour = 0; hour < (day === 11 ? 12 : 24); hour++) {
+      const start = Date.parse(`2026-11-${String(day).padStart(2, '0')}T00:00:00+08:00`);
+      const at = start + hour * 3600000;
+      const stamp = new Date(at).toISOString().replace('.000Z', 'Z');
+      const generated_at = new Date(at + 600000).toISOString().replace('.000Z', 'Z');
       indexHours[stamp] = generated_at;
-      hours[stamp] = { generated_at, viewer_count:hour === 12 ? day * 20 : day * 10,
-        streamer_count:hour === 12 ? 4 : 8, audience_regions:day !== 10 || hour === 12
-          ? { zh:{ viewer_count:day, streamer_count:1 } } : undefined };
+      const viewers = audience[day - 5], chinese = chineseAudience[day - 5];
+      hours[stamp] = { generated_at, viewer_count:viewers + (hour === 20 ? 200 : 0),
+        streamer_count:hour === 20 ? 4 : 8, audience_regions:hour === 22 && day >= 7
+          ? undefined : { zh:{ viewer_count:chinese, streamer_count:chinese ? 1 : 0 } } };
     }
   }
   await page.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
@@ -26,9 +31,9 @@ test('compares two trial hours with matched coverage and preserves the independe
   await page.route('**/data/twitch_series/index.json', route => route.fulfill({ json:{
     schema_version:1, timezone:'Asia/Taipei', generated_at:'2026-11-11T03:15:00Z', months:{ '2026-11':indexHours },
     games:{ '1':{ name:'試播遊戲', archive_eligible:true, tracking_status:'active', months:['2026-11'],
-      first_hour:'2026-11-08T12:00:00Z', last_hour:'2026-11-10T14:00:00Z', sample_count:6, peak_viewer_count:200,
-      release_reference:{ date:'2026-11-08', precision:'day', source:'Steam 台灣商店' },
-      audience_regions:{ zh:{ sample_count:5, peak_viewer_count:10 } } } },
+      first_hour:'2026-11-04T16:00:00Z', last_hour:'2026-11-11T03:00:00Z', sample_count:156, peak_viewer_count:10000,
+      release_reference:{ date:'2026-11-05', precision:'day', source:'Steam 台灣商店' },
+      audience_regions:{ zh:{ sample_count:152, peak_viewer_count:5000 } } } },
   } }));
   await page.route('**/data/twitch_series/1/2026-11.json', route => route.fulfill({ json:{
     schema_version:1, timezone:'Asia/Taipei', game_id:'1', month:'2026-11', hours,
@@ -38,12 +43,14 @@ test('compares two trial hours with matched coverage and preserves the independe
   const card = page.locator('.tw-stream-game[data-game="1"]');
   const globalCard = card.locator('[data-region="global"]');
   const chineseCard = card.locator('[data-region="zh"]');
-  await expect(globalCard.locator('.tw-stream-reason')).toHaveText('有觀眾 · 同區可比遊戲較少');
-  await expect(globalCard.locator('.tw-stream-metrics')).toContainText('90 人');
-  await expect(globalCard.locator('.tw-stream-metrics')).toContainText('8 台');
-  await expect(chineseCard.locator('.tw-stream-reason')).toHaveText('這個時段資料不足');
-  await expect(chineseCard.locator('.tw-stream-coverage')).toContainText('2/7 天');
-  await expect(chineseCard.locator('.tw-stream-metrics')).toHaveCount(0);
+  await expect(globalCard.locator('.tw-stream-signal')).toHaveText('已退燒');
+  await expect(globalCard.locator('.tw-stream-reason')).toContainText('11/11 確認');
+  await expect(globalCard.locator('.tw-stream-metrics')).toContainText('3,800 人');
+  await expect(globalCard.locator('.tw-stream-metrics')).toContainText('1,400 人');
+  await expect(chineseCard.locator('.tw-stream-signal')).toHaveText('黑馬竄起');
+  await expect(chineseCard.locator('.tw-stream-reason')).toContainText('2/3 天達標');
+  await expect(chineseCard.locator('.tw-stream-metrics dd')).toHaveText(['0 人', '100 人']);
+  await expect(page.locator('#streamHour')).toHaveCount(0);
   await expect(page.locator('.tw-stream-game[data-game="2"] [data-region="global"] .tw-stream-reason')).toHaveText('尚無逐時紀錄');
   for (const width of [320, 390, 1280]) {
     await page.setViewportSize({ width, height:844 });
@@ -56,12 +63,6 @@ test('compares two trial hours with matched coverage and preserves the independe
   const ids = () => page.locator('.tw-stream-game').evaluateAll(cards => cards.map(card => card.getAttribute('data-game')));
   const currentIds = () => page.locator('#gameResults .tw-game').evaluateAll(cards => cards.map(card => card.getAttribute('data-game-id')));
   const initial = await ids();
-  await page.locator('#streamHour').selectOption('20');
-  await expect(chineseCard.locator('.tw-stream-metrics')).toContainText('9 人');
-  await expect(globalCard.locator('.tw-stream-metrics')).toContainText('180 人');
-  expect(await ids()).toEqual(initial);
-  await page.locator('#streamHour').selectOption('22');
-  await expect(chineseCard.locator('.tw-stream-reason')).toHaveText('這個時段資料不足');
   await page.locator('#currentTab').click();
   expect(await currentIds()).toEqual(initial);
   await page.locator('#gameSort').selectOption('streamers');
@@ -75,7 +76,8 @@ test('compares two trial hours with matched coverage and preserves the independe
   await page.locator('#currentTab').click();
   expect(await currentIds()).toEqual([...reordered, '1']);
   await page.locator('#streamPlanningTab').click();
-  await page.getByRole('link', { name:'比較 試播遊戲 的試播時段' }).click();
+  await page.getByRole('link', { name:'試播遊戲', exact:true }).click();
+  await page.locator('#trialTimesJump').click();
   await expect(page).toHaveURL(/#trialTimes$/);
   await expect(page.locator('#trialHourA')).toHaveValue('22');
   await expect(page.locator('#trialHourB')).toHaveValue('20');
@@ -83,8 +85,8 @@ test('compares two trial hours with matched coverage and preserves the independe
   const global = page.locator('#trialTimeResults [data-region="global"]');
   const chinese = page.locator('#trialTimeResults [data-region="zh"]');
   await expect(global).toContainText('可優先試播 20:00');
-  await expect(global.getByRole('row', { name:/20:00/ })).toContainText('180 人');
-  await expect(global).toContainText('同日可比較 3／7 天');
+  await expect(global.getByRole('row', { name:/20:00/ })).toContainText('2,800 人');
+  await expect(global).toContainText('同日可比較 6／7 天');
   await expect(chinese).toContainText('同日可比較 2／7 天');
   await expect(chinese.getByRole('table')).toHaveCount(0);
   await expect(page.locator('#trialTimeTitle')).toBeInViewport();
@@ -93,9 +95,9 @@ test('compares two trial hours with matched coverage and preserves the independe
   await expect(page.locator('#trialTimeStatus')).toHaveText('請選兩個不同的時段。');
   await page.locator('#trialHourB').selectOption('21');
   await page.locator('#trialRegion').selectOption('zh');
-  await expect(chinese).toContainText('22:00 有 2 天紀錄，21:00 有 0 天');
-  await expect(chinese).toContainText('同日可比較 0／7 天');
-  await expect(page.locator('#summaryRegion')).toHaveValue('global');
+  await expect(chinese).toContainText('22:00 有 2 天紀錄，21:00 有 6 天');
+  await expect(chinese).toContainText('同日可比較 2／7 天');
+  await expect(page.locator('#summaryRegion')).toHaveValue('compare');
   await page.reload();
   await expect(page.locator('#trialHourB')).toHaveValue('21');
   await expect(page.locator('#trialRegion')).toHaveValue('zh');
