@@ -76,6 +76,17 @@ body[data-page="twitch-game"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; -
 .tw-compare-table :is(th,td) { padding:12px 10px; text-align:right; border-bottom:1px solid #e6dfea; overflow-wrap:anywhere; }
 .tw-compare-table th:first-child { text-align:left; }
 .tw-compare-table thead { color:#67518f; background:#f5f0fa; }
+.tw-trial-workspace { margin-top:0; }
+.tw-trial-controls { display:flex; flex-wrap:wrap; gap:8px 18px; padding:18px 25px 6px; }
+.tw-trial-status { margin:0; padding:5px 25px 10px; color:#655971; font-size:12px; line-height:1.7; }
+.tw-trial-results { padding:0 25px 15px; }
+.tw-trial-results:empty { padding-bottom:0; }
+.tw-trial-region { padding:14px 16px; border:1px solid #ded3e8; border-radius:12px; background:#fffdfb; min-width:0; }
+.tw-trial-region[data-region="zh"] { border-color:#d7e9dc; }
+.tw-trial-region .tw-region-caption { margin-bottom:5px; }
+.tw-trial-action { margin:0; color:#503b6b; font-size:17px; font-weight:700; }
+.tw-trial-reason { margin:4px 0 10px; color:#61536e; font-size:13px; line-height:1.65; }
+.tw-trial-coverage { display:flex; flex-wrap:wrap; gap:4px 10px; margin:10px 0 0; color:#655971; font-size:11px; }
 .tw-detail-chart .tw-chart-plot { height:300px; }
 .tw-detail-chart .tw-chart-ranges { display:none; }
 .tw-detail-chart .tw-chart-point { r:2; }
@@ -99,6 +110,7 @@ body[data-page="twitch-game"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; -
 @media(max-width:760px) {
   .tw-scope-toolbar { top:124px; padding:12px 15px; }
   .tw-region-compare { grid-template-columns:1fr; }
+  .tw-trial-controls,.tw-trial-status,.tw-trial-results { padding-left:16px; padding-right:16px; }
   .tw-scope-section { scroll-margin-top:155px; }
   .tw-scope-actions { width:100%; }
   .tw-heat-overview { padding:18px 16px; }

@@ -1,13 +1,12 @@
 import { RadarStorage } from '../../data/storage.ts';
 import { archiveGames, selectArchive } from './archive-model.js';
 import { regionNames, viewOf } from './audience-region.js';
-import { node, time } from './presentation.js';
+import { hourLabel, node, time } from './presentation.js';
 import { regionsFor } from './region-views.js';
 import { dayOf, detailHref, monthsFor, validChunk, validIndex } from './series.js';
 import { sortTrialGames, streamHour, trialGames, trialSample, trialWindow, TRIAL_MIN_DAYS } from './stream-planning-model.js';
 
 const number = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 1 });
-const hourLabel = hour => String(hour).padStart(2, '0') + ':00';
 
 async function read(path, validate, force) {
   const result = await RadarStorage.readJSONResult(path, validate, { force, allowStale:false });
@@ -61,8 +60,13 @@ export function createStreamPlanning({ $, signal }) {
       image.loading = 'lazy'; image.decoding = 'async'; gameInfo.append(image);
     }
     const copy = node('div');
-    const link = node('a', '', game.displayName); link.href = detailHref(game.id, location.search);
-    copy.append(link, node('small', '', `上市參考 ${game.releaseDate.replaceAll('-', '/')}${game.releaseSource ? ` · ${game.releaseSource}` : ''}`)); gameInfo.append(copy);
+    const href = detailHref(game.id, location.search);
+    const link = node('a', '', game.displayName); link.href = href;
+    const compare = node('a', 'tw-stream-time-link', '比較試播時段 →');
+    compare.href = `${href}#trialTimes`;
+    compare.setAttribute('aria-label', `比較 ${game.displayName} 的試播時段`);
+    copy.append(link, node('small', '', `上市參考 ${game.releaseDate.replaceAll('-', '/')}${game.releaseSource ? ` · ${game.releaseSource}` : ''}`), compare);
+    gameInfo.append(copy);
     const comparisons = node('div', 'tw-stream-comparisons');
     for (const key of regions) {
       const sample = samples[key];

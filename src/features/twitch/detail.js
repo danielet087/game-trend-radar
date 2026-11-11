@@ -10,6 +10,7 @@ import { regionNames, viewOf } from './audience-region.js';
 import { blockScopes, scopeKeys, regionsFor, projectRows, writeBlockScopes } from './region-views.js';
 import { dailyRows } from './daily-series.js';
 import { renderHeatOverview } from './heat-overview.js';
+import { createTrialTimeComparison } from './trial-time-comparison.js';
 
 export function initTwitchDetail() {
   const $ = id => document.getElementById(id);
@@ -17,6 +18,7 @@ export function initTwitchDetail() {
   let metric = Object.hasOwn(metrics, params.get('metric')) ? params.get('metric') : 'viewers';
   let resolution = ['daily', 'hourly'].includes(params.get('resolution')) ? params.get('resolution') : '';
   const id = canonicalID(params.get('game')), cache = new Map(), back = overviewQuery(params.get('back') || '');
+  const trialTimes = createTrialTimeComparison({ $, params, back, onChange: syncURL });
   let index, game, window, rows = [], fullHistoryLoader, page = 0, descending = true, request = 0, summaryRequest = 0;
   let charts = [], statsMode = '', cooldownMode = '', stats = new Map(), cooldowns = new Map(), disposed = false;
   const controls = { summary: 'summaryRegion', history: 'audienceRegion', cooldown: 'cooldownRegion', statistics: 'statisticsRegion' };
@@ -32,7 +34,7 @@ export function initTwitchDetail() {
     const next = p.toString();
     if (next) params.set('back', next); else params.delete('back');
     $('historyBack').href = './twitch.html' + (next ? '?' + next : '');
-    history.replaceState(null, '', location.pathname + '?' + params);
+    history.replaceState(null, '', location.pathname + '?' + params + location.hash);
   }
   function message(text, error = false) { $('historyStatus').textContent = text; $('historyStatus').dataset.error = String(error); }
   async function read(path, contract) {
@@ -214,6 +216,7 @@ export function initTwitchDetail() {
   }
   async function load(refresh = false) {
     const token = ++request; summaryRequest++;
+    if (refresh) trialTimes.reset();
     for (const key of ['historyOverview', 'historyCooldown', 'historyStatistics', 'historyContent', 'historyCooldownJump', 'historyStatisticsJump']) $(key).hidden = true;
     stats.forEach(controller => controller.hide()); cooldowns.forEach(controller => controller.hide());
     $('historyPanel').setAttribute('aria-busy', 'true'); $('historyExport').disabled = true; message('正在讀取逐時歷史…');
@@ -255,7 +258,14 @@ export function initTwitchDetail() {
       document.querySelectorAll('[data-history-range]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.historyRange === window.range)));
       $('historyRangeLabel').textContent = time(new Date(window.start).toISOString()) + ' — ' + time(new Date(window.end).toISOString()) + ' · 台灣時間' + (window.range !== 'custom' ? ' · 以本遊戲最後觀測時段為基準' : '');
       $('historyContent').hidden = false;
-      renderHistory(); renderStatistics(); renderCooldown(); renderOverview(); syncURL();
+      renderHistory(); renderStatistics(); renderCooldown();
+      const alignTrialTimes = $('trialTimes').hidden && location.hash === '#trialTimes';
+      const overview = renderOverview();
+      const comparison = trialTimes.update(index, id, chunksFor);
+      if (alignTrialTimes) Promise.all([overview, comparison]).then(() => {
+        if (token === request && !disposed && location.hash === '#trialTimes') $('trialTimes').scrollIntoView();
+      });
+      syncURL();
       $('historyExport').disabled = false;
     } catch (error) { if (token === request && !disposed) message(error.message || '歷史資料暫時無法載入。', true); }
     finally { if (token === request) $('historyPanel').setAttribute('aria-busy', 'false'); }
@@ -281,5 +291,5 @@ export function initTwitchDetail() {
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   load();
-  return () => { disposed = true; request++; summaryRequest++; charts.forEach(dispose => dispose()); stats.forEach(c => c.destroy()); cooldowns.forEach(c => c.destroy()); };
+  return () => { disposed = true; request++; summaryRequest++; trialTimes.reset(); charts.forEach(dispose => dispose()); stats.forEach(c => c.destroy()); cooldowns.forEach(c => c.destroy()); };
 }

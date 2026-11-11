@@ -15,6 +15,7 @@
 .tw-stream-game-info a { color:#4d3469; font-weight:750; line-height:1.4; overflow-wrap:anywhere; }
 .tw-stream-game-info a:hover { text-decoration:underline; }
 .tw-stream-game-info small { display:block; margin-top:4px; color:#655971; font-size:11px; }
+.tw-stream-game-info .tw-stream-time-link { display:inline-block; margin-top:6px; font-size:12px; text-decoration:underline; text-underline-offset:3px; }
 .tw-stream-comparisons { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:8px; min-width:0; }
 .tw-stream-sample { min-width:0; padding:8px 11px; border:1px solid #e4d9ef; border-radius:10px; background:#f9f5fc; }
 .tw-stream-sample[data-region="zh"] { background:#f1f8f2; border-color:#d7e9dc; }
