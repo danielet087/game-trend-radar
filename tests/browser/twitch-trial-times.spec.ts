@@ -110,10 +110,12 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
   await page.locator('#streamPlanningTab').click();
   await consoleProfile.click();
   await expect(page.locator('#gameTitle')).toHaveText('遊戲 3');
-  await page.getByRole('link', { name:'← 返回開台選題', exact:true }).click();
+  const back = page.getByRole('link', { name:'← 返回開台選題', exact:true });
+  await expect(back).toHaveAttribute('href', /stream_limit=48/);
+  await back.click();
+  await expect(page.locator('.tw-stream-game')).toHaveCount(25);
   await profile.click();
   await expect(page.locator('#gameTitle')).toHaveText('試播遊戲');
-  const back = page.getByRole('link', { name:'← 返回開台選題', exact:true });
   await expect(back).toHaveAttribute('href', /twitch\.html\?.*view=streamer/);
   await back.click();
   await card.getByRole('link', { name:'詳細分析', exact:true }).click();

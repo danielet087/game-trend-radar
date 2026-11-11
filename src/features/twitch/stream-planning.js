@@ -83,6 +83,8 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
     const term = query.value.trim();
     if (term) url.searchParams.set('stream_q', term);
     else url.searchParams.delete('stream_q');
+    if (state.limit > OBSERVATION_PAGE_SIZE) url.searchParams.set('stream_limit', String(state.limit));
+    else url.searchParams.delete('stream_limit');
     history.replaceState(null, '', url);
   }
 
@@ -200,6 +202,7 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
   }
 
   async function load(force = false) {
+    saveURL();
     const token = ++request;
     const active = () => token === request && !signal.aborted;
     status.textContent = '正在讀取目前觀測清單…';
@@ -278,6 +281,8 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
     open() {
       const params = new URLSearchParams(location.search);
       query.value = (params.get('stream_q') || '').slice(0, 160);
+      const limit = Number(params.get('stream_limit'));
+      if (Number.isSafeInteger(limit) && limit > state.limit) state.limit = limit;
       return load();
     },
     close() { request++; },
