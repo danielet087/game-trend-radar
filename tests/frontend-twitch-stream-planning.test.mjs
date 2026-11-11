@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dateStart, dayOf, detailHref } from '../src/features/twitch/series.js';
-import { compareTrialTimes, trialWindow, trialGames, trialSample, sortTrialGames } from '../src/features/twitch/stream-planning-model.js';
+import { compareTrialTimes, trialWindow, trialGames, trialSample, sortTrialGames, trialBenchmarks, trialReason } from '../src/features/twitch/stream-planning-model.js';
 import { analyzeCooldown } from '../src/features/twitch/cooldown-model.js';
 import { streamerAdvice } from '../src/features/twitch/heat-overview.js';
 
@@ -48,6 +48,22 @@ test('trial selection keeps archived and unreleased games out, with separate com
   const link = new URL(detailHref('2', '?view=streamer&stream_hour=0&stream_region=compare&stream_order=competition&stream_q=Game'), 'https://example.com/');
   assert.equal(link.searchParams.get('region'), 'compare');
   assert.equal(link.searchParams.get('back'), 'view=streamer&stream_hour=0&stream_region=compare&stream_order=competition&stream_q=Game');
+});
+
+test('trial card reasons compare visible games within each region and distinguish zero from missing data', () => {
+  const sample = (viewers, streamers) => ({ viewers, streamers });
+  const rows = [
+    { samples:{ global:sample(300, 2), zh:sample(10, 5) } },
+    { samples:{ global:sample(200, 3), zh:sample(0, 0) } },
+    { samples:{ global:sample(100, 4), zh:sample(null, null) } },
+  ];
+  const global = trialBenchmarks(rows, 'global'), zh = trialBenchmarks(rows, 'zh');
+  assert.equal(trialReason(rows[0].samples.global, global), '觀眾較多 · 同播較少');
+  assert.equal(trialReason(rows[1].samples.global, global), '觀眾與同播居中');
+  assert.equal(trialReason(rows[2].samples.global, global), '觀眾較少 · 同播較多');
+  assert.equal(trialReason(rows[0].samples.zh, zh), '有觀眾 · 同區可比遊戲較少');
+  assert.equal(trialReason(rows[1].samples.zh, zh), '常見觀眾為 0');
+  assert.equal(trialReason(rows[2].samples.zh, zh), '這個時段資料不足');
 });
 
 function trialFixture(period, hours, counts, releaseDate) {

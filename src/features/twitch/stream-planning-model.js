@@ -79,9 +79,24 @@ export function compareTrialTimes(index, chunks, gameId, period, hours, region) 
   return { slots, dates, typicalLead, preferred, releaseDate: Number.isFinite(released) ? reference.date : null };
 }
 
+const hasTrialAudience = sample => sample.viewers > 0 && sample.streamers > 0;
+
+export function trialBenchmarks(rows, region) {
+  return trialMedians(rows.map(row => row.samples[region]).filter(hasTrialAudience));
+}
+
+export function trialReason(sample, benchmark) {
+  if (sample.viewers === null) return '這個時段資料不足';
+  if (sample.viewers === 0) return '常見觀眾為 0';
+  if (benchmark.viewers === null) return '有觀眾 · 同區可比遊戲較少';
+  const demand = sample.viewers > benchmark.viewers ? '觀眾較多' : sample.viewers < benchmark.viewers ? '觀眾較少' : '';
+  const competition = sample.streamers < benchmark.streamers ? '同播較少' : sample.streamers > benchmark.streamers ? '同播較多' : '';
+  return [demand, competition].filter(Boolean).join(' · ') || '觀眾與同播居中';
+}
+
 export function sortTrialGames(rows, region, sort) {
   const audience = row => row.samples[region];
-  return rows.filter(row => audience(row).viewers > 0 && audience(row).streamers > 0).sort((a, b) =>
+  return rows.filter(row => hasTrialAudience(audience(row))).sort((a, b) =>
     (sort === 'competition' ? audience(a).streamers - audience(b).streamers : 0) ||
     audience(b).viewers - audience(a).viewers || audience(a).streamers - audience(b).streamers || a.game.id.localeCompare(b.game.id));
 }
