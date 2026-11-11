@@ -6,6 +6,7 @@ import { createTwitchCards } from "./cards.js";
 import { createTwitchRenderer } from "./render.js";
 import { createTwitchLoader } from "./load.js";
 import { createTwitchArchive } from "./archive.js";
+import { createStreamPlanning } from "./stream-planning.js";
 export { RadarTwitch } from "./data.js";
 export { RadarTwitchChart } from "./chart.js";
 
@@ -27,6 +28,7 @@ export function initTwitchPage() {
   const cards = new Map(), historyCache = new Map(), chartDisposers = new Set();
   let searchTimer, composing = false, view = 'current';
   const archive = createTwitchArchive({ $, signal });
+  const planning = createStreamPlanning({ $, signal });
   const { urlState, syncURL } = createTwitchURLState(state, $);
   const { historyPanel } = createTwitchHistory({ state, historyCache, chartDisposers, signal });
   const { gameCard, empty, evidence } = createTwitchCards({ state, historyPanel, signal });
@@ -41,26 +43,31 @@ export function initTwitchPage() {
   loader = createTwitchLoader({ state, $, cards, historyCache, chartDisposers, ...renderer, render, empty });
   function showView() {
     clearTimeout(searchTimer);
-    view = new URLSearchParams(location.search).get('view') === 'archive' ? 'archive' : 'current';
+    const requestedView = new URLSearchParams(location.search).get('view');
+    if (view === 'streamer' && requestedView !== 'streamer') planning.close();
+    view = ['archive', 'streamer'].includes(requestedView) ? requestedView : 'current';
     $('currentObservation').hidden = $('currentSnapshot').hidden = view !== 'current';
     $('historyArchive').hidden = view !== 'archive';
+    $('streamPlanning').hidden = view !== 'streamer';
     document.querySelectorAll('[data-twitch-view]').forEach(button => {
       const selected = button.dataset.twitchView === view;
       button.setAttribute('aria-selected', String(selected)); button.tabIndex = selected ? 0 : -1;
     });
     urlState(); archive.readURL();
     if (view === 'archive') archive.load();
+    else if (view === 'streamer') planning.open();
     else if (state.data) render(); else load();
   }
   function switchView(next) {
     if (next === view) return;
     if (view === 'archive') archive.flushSearch(false);
-    else { clearTimeout(searchTimer); state.query = $('gameSearch').value; syncURL(); }
+    else if (view === 'current') { clearTimeout(searchTimer); state.query = $('gameSearch').value; syncURL(); }
     const url = new URL(location.href);
     if (next === 'archive') {
       url.searchParams.set('view', 'archive');
       if (!url.searchParams.has('archive_region')) url.searchParams.set('archive_region', 'global');
-    } else url.searchParams.delete('view');
+    } else if (next === 'streamer') url.searchParams.set('view', 'streamer');
+    else url.searchParams.delete('view');
     history.pushState(null, '', url); showView();
   }
   const tabs = [...document.querySelectorAll('[data-twitch-view]')];
@@ -90,11 +97,14 @@ on($("snapshotRefresh"), "click",load);
 on($("loadMore"), "click",() => { const next = state.limit; state.limit += 24; render(); $("gameResults").children[next]?.querySelector("summary")?.focus({ preventScroll:true }); });
 on(document, "keydown",event => {
   if (event.isComposing || event.ctrlKey || event.metaKey || event.altKey) return;
-  if (event.key === "/" && !event.target.closest("input,textarea,select,[contenteditable]")) { event.preventDefault(); $(view === 'archive' ? 'archiveSearch' : 'gameSearch').focus(); }
+  if (event.key === "/" && !event.target.closest("input,textarea,select,[contenteditable]")) {
+    event.preventDefault();
+    $({ archive:'archiveSearch', streamer:'streamGameSearch', current:'gameSearch' }[view]).focus();
+  }
   if (event.key === "Escape" && event.target === $("gameSearch")) { clearTimeout(searchTimer); $("gameSearch").value = ""; state.query = ""; state.limit = 24; syncURL(); render(); }
 });
 on(window, "popstate",showView);
-  const controller = { state, refresh: () => view === 'archive' ? archive.load(true) : load(), destroy() {
+  const controller = { state, refresh: () => view === 'archive' ? archive.load(true) : view === 'streamer' ? planning.refresh() : load(), destroy() {
     if (state.disposed) return;
     state.disposed = true; events.abort(); clearTimeout(searchTimer); archive.destroy(); unsubscribeSaved();
     chartDisposers.forEach(dispose => dispose()); chartDisposers.clear();
