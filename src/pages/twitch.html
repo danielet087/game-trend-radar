@@ -89,23 +89,21 @@
           <div class="tw-stream-links">
             <a class="tw-stream-link" href="./growth.html?period=future">找待上市遊戲 →</a>
             <a class="tw-stream-link" href="#streamCheck">查續播建議 ↓</a>
+            <button id="streamRefresh" type="button" class="tw-archive-refresh">重新讀取</button>
           </div>
-        </div>
-        <div class="tw-stream-controls">
-          <label class="tw-sort">開台時間（台灣）<select id="streamHour"></select></label>
-          <button id="streamRefresh" type="button" class="tw-archive-refresh">重新讀取</button>
         </div>
         <div class="tw-stream-summary">
           <p id="streamPlanStatus" class="tw-stream-status" role="status"></p>
           <details class="tw-stream-method">
             <summary>判讀方式</summary>
             <div>
-              <p>清單與排序沿用「目前觀測」。開台時段取最近 7 個完整台灣日的資料，有上市參考日的遊戲從上市日算起。</p>
-              <p>至少有 3 天量測才顯示觀眾與同時開台數的中位數。「較多／較少」依同區已載入且有觀眾與開台紀錄的遊戲比較，至少須有 3 款。全球包含中文區。</p>
+              <p>各區比較近 3 日與前 3 日的每日觀眾中位數。只用已結束的台灣日，每日至少有 12 小時量測。已知上市日的趨勢自上市起算。</p>
+              <p><strong>已退燒</strong> 曾達 3,000 人後，連續 3 個有效日低於 3,000 人。</p>
+              <p><strong>黑馬竄起</strong> <span id="streamBreakoutRule"></span></p>
             </div>
           </details>
         </div>
-        <div id="streamTrialResults" class="tw-stream-results" aria-busy="false"></div>
+        <div id="streamTrendResults" class="tw-stream-results" aria-busy="false"></div>
         <div class="tw-load-more"><button id="streamLoadMore" type="button" hidden>再看 24 款 ↓</button></div>
       </section>
       <section id="streamCheck" class="tw-workspace" aria-labelledby="streamCheckTitle">

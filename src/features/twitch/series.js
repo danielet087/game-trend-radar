@@ -53,6 +53,12 @@ export function seriesRows(index, chunks, game, start, end, region = 'global') {
   }
   return rows;
 }
+export function fullSeriesRows(index, chunks, id) {
+  const game = index.games[id];
+  const start = Date.parse(game?.first_hour), end = Date.parse(game?.last_hour);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start > end) throw new Error('這款遊戲的完整觀測期間尚無法確認。');
+  return seriesRows(index, chunks, id, start, end);
+}
 export function overviewQuery(search) {
   const input = new URLSearchParams(search), output = new URLSearchParams();
   const q = input.get('q')?.slice(0, 160);

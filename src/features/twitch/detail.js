@@ -2,7 +2,7 @@ import { RadarStorage } from '../../data/storage.ts';
 import { canonicalID } from './metrics.js';
 import { mount, valueOf, statusOf } from './chart.js';
 import { node, fmt, time } from './presentation.js';
-import { validIndex, validChunk, windowFor, monthsFor, seriesRows, overviewQuery, dayOf, metrics, csvRows } from './series.js';
+import { validIndex, validChunk, windowFor, monthsFor, seriesRows, fullSeriesRows, overviewQuery, dayOf, metrics, csvRows } from './series.js';
 import { createStatistics } from './statistics.js';
 import { createCooldown, cooldownPresentation } from './cooldown.js';
 import { analyzeCooldown } from './cooldown-model.js';
@@ -238,10 +238,8 @@ export function initTwitchDetail() {
       if (!fullHistoryLoader) {
         const sourceIndex = index, sourceGame = game; let pending;
         fullHistoryLoader = () => pending ||= (async () => {
-          const start = Date.parse(sourceGame.first_hour), end = Date.parse(sourceGame.last_hour);
-          if (!Number.isFinite(start) || !Number.isFinite(end) || start > end) throw new Error('這款遊戲的完整觀測期間尚無法確認。');
           const chunks = await chunksFor(sourceGame.months);
-          return seriesRows(sourceIndex, chunks, id, start, end, 'global');
+          return fullSeriesRows(sourceIndex, chunks, id);
         })().catch(error => { pending = null; throw error; });
       }
       window = windowFor(params, index, game);

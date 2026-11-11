@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dateStart, dayOf, detailHref } from '../src/features/twitch/series.js';
-import { compareTrialTimes, trialWindow, trialSample, trialBenchmarks, trialReason } from '../src/features/twitch/stream-planning-model.js';
+import { compareTrialTimes, trialWindow } from '../src/features/twitch/stream-planning-model.js';
+import { analyzeStreamHeat, streamHeatWindow } from '../src/features/twitch/stream-heat-model.js';
 import { analyzeCooldown } from '../src/features/twitch/cooldown-model.js';
 import { streamerAdvice } from '../src/features/twitch/heat-overview.js';
 
@@ -16,44 +17,54 @@ test('trial windows use the selected Taipei hour across seven closed days', () =
   assert.equal(dayOf(midnight.end), '2026-11-10');
 });
 
-test('trial comparisons exclude prelaunch and missing observations and keep real zeroes', () => {
-  const period = trialWindow('20', now);
-  const month = '2026-11';
-  const index = { months:{ [month]:{} } }, chunks = { [month]:{ hours:{} } };
-  const counts = [[90000,20], [90000,20], [0,0], [1000,2], [3000,4], null, [2000,3]];
-  period.slots.forEach((at, i) => {
-    const hour = iso(at), generated_at = iso(at + 60000);
-    index.months[month][hour] = generated_at;
-    if (!counts[i]) return;
-    const [viewer_count, streamer_count] = counts[i];
-    chunks[month].hours[hour] = { generated_at, viewer_count, streamer_count,
-      audience_regions: i === 2 || i === 3 ? { zh:{ viewer_count:0, streamer_count:0 } } : undefined };
-  });
-  const game = { id:'1', released:dateStart('2026-11-06') };
-  assert.deepEqual(trialSample(index, chunks, game, period, 'global'), { days:4,totalDays:7,viewers:1500,streamers:2.5 });
-  assert.deepEqual(trialSample(index, chunks, game, period, 'zh'), { days:2,totalDays:7,viewers:null,streamers:null });
-});
-
 test('trial detail links carry the shared current filters and accept the previous region parameter', () => {
   const link = new URL(detailHref('2', '?view=streamer&sort=streamers&stream_hour=0&stream_region=compare&stream_order=competition&stream_q=Game'), 'https://example.com/');
   assert.equal(link.searchParams.get('region'), 'compare');
   assert.equal(link.searchParams.get('back'), 'sort=streamers&view=streamer&stream_hour=0&region=compare&stream_q=Game');
 });
 
-test('trial card reasons compare visible games within each region and distinguish zero from missing data', () => {
-  const sample = (viewers, streamers) => ({ viewers, streamers });
-  const rows = [
-    { samples:{ global:sample(300, 2), zh:sample(10, 5) } },
-    { samples:{ global:sample(200, 3), zh:sample(0, 0) } },
-    { samples:{ global:sample(100, 4), zh:sample(null, null) } },
-  ];
-  const global = trialBenchmarks(rows, 'global'), zh = trialBenchmarks(rows, 'zh');
-  assert.equal(trialReason(rows[0].samples.global, global), '觀眾較多 · 同播較少');
-  assert.equal(trialReason(rows[1].samples.global, global), '觀眾與同播居中');
-  assert.equal(trialReason(rows[2].samples.global, global), '觀眾較少 · 同播較多');
-  assert.equal(trialReason(rows[0].samples.zh, zh), '有觀眾 · 同區可比遊戲較少');
-  assert.equal(trialReason(rows[1].samples.zh, zh), '常見觀眾為 0');
-  assert.equal(trialReason(rows[2].samples.zh, zh), '這個時段資料不足');
+function heatFixture(values, region, releaseDate = '2026-11-05') {
+  const period = streamHeatWindow(now);
+  const rows = [...period.previous, ...period.recent].flatMap((day, i) =>
+    Array.from({ length:values[i] === null ? 11 : 24 }, (_, hour) => ({
+      hour:iso(dateStart(day) + hour * 3600000), status:'observed', viewer_count:values[i] ?? 80000,
+    })));
+  rows.push({ hour:iso(dateStart(dayOf(now)) + 8 * 3600000), status:'observed', viewer_count:100000 });
+  const game = { tracking_status:'active', release_reference:{ date:releaseDate, precision:'day' } };
+  return analyzeStreamHeat(rows, { game, region, period });
+}
+
+test('stream heat uses closed Taipei days and the established cooldown date and coverage', () => {
+  const period = streamHeatWindow(now);
+  assert.deepEqual(period.previous, ['2026-11-05', '2026-11-06', '2026-11-07']);
+  assert.deepEqual(period.recent, ['2026-11-08', '2026-11-09', '2026-11-10']);
+  const cooled = heatFixture([3600, 3800, 4000, 1600, 1400, 1200], 'global');
+  assert.equal(cooled.signal, 'cooled');
+  assert.equal(cooled.confirmedOn, '2026-11-11');
+  assert.equal(cooled.lowDays, 3);
+  assert.equal(cooled.previous.median, 3800);
+  assert.equal(cooled.recent.median, 1400);
+  const gap = heatFixture([3600, 3800, 4000, 1600, null, 1200], 'global');
+  assert.equal(gap.signal, 'suspected');
+  assert.equal(gap.lowDays, 1);
+  assert.equal(gap.recent.median, null);
+  assert.equal(heatFixture([2200, 2500, 2800, 1000, 900, 800], 'global').signal, 'falling');
+});
+
+test('stream heat requires a meaningful regional breakout with two qualifying days and a qualifying last day', () => {
+  const counts = [0, 0, 2, 7, 150, 100];
+  const breakout = heatFixture(counts, 'zh');
+  assert.equal(breakout.signal, 'breakout');
+  assert.equal(breakout.growthDays, 2);
+  assert.equal(breakout.previous.median, 0);
+  assert.equal(breakout.recent.median, 100);
+  assert.equal(breakout.change, null);
+  assert.equal(heatFixture(counts, 'global').signal, 'not_popular');
+  assert.equal(heatFixture([0, 0, 2, 150, 100, 7], 'zh').signal, 'not_popular');
+  assert.equal(heatFixture([0, 0, 2, 7, 150, 7], 'zh').signal, 'not_popular');
+  assert.equal(heatFixture([0, 50, 2, 7, 150, 100], 'zh').signal, 'rising');
+  assert.equal(heatFixture(counts, 'zh', '2026-11-06').previous.median, null);
+  assert.equal(heatFixture([0, 0, 2, 7, 150, null], 'zh').signal, 'insufficient');
 });
 
 function trialFixture(period, hours, counts, releaseDate) {

@@ -16,13 +16,6 @@ export function trialWindow(hour, now = Date.now()) {
   return { slots, start: slots[0], end: slots.at(-1), today, now };
 }
 
-export function trialSample(index, chunks, game, window, region) {
-  const paired = window.slots.filter(at => !Number.isFinite(game.released) || at >= game.released)
-    .map(at => seriesRows(index, chunks, game.id, at, at, region)[0])
-    .map(trialCounts).filter(Boolean);
-  return { days: paired.length, totalDays: window.slots.length, ...trialMedians(paired) };
-}
-
 function trialCounts(row) {
   const { viewer_count: viewers, streamer_count: streamers } = row;
   if (row.status !== 'observed' || !Number.isSafeInteger(viewers) || !Number.isSafeInteger(streamers) ||
@@ -64,19 +57,4 @@ export function compareTrialTimes(index, chunks, gameId, period, hours, region) 
   const typicalLead = slots.find((slot, i) => hasTimeAdvantage(slot, slots[1 - i])) ?? null;
   const preferred = typicalLead && typicalLead.strongerDays * 2 > pairs.length ? typicalLead : null;
   return { slots, dates, typicalLead, preferred, releaseDate: Number.isFinite(released) ? reference.date : null };
-}
-
-const hasTrialAudience = sample => sample?.viewers > 0 && sample.streamers > 0;
-
-export function trialBenchmarks(rows, region) {
-  return trialMedians(rows.map(row => row.samples?.[region]).filter(hasTrialAudience));
-}
-
-export function trialReason(sample, benchmark) {
-  if (sample.viewers === null) return '這個時段資料不足';
-  if (sample.viewers === 0) return '常見觀眾為 0';
-  if (benchmark.viewers === null) return '有觀眾 · 同區可比遊戲較少';
-  const demand = sample.viewers > benchmark.viewers ? '觀眾較多' : sample.viewers < benchmark.viewers ? '觀眾較少' : '';
-  const competition = sample.streamers < benchmark.streamers ? '同播較少' : sample.streamers > benchmark.streamers ? '同播較多' : '';
-  return [demand, competition].filter(Boolean).join(' · ') || '觀眾與同播居中';
 }
