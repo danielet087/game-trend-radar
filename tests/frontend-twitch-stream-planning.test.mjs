@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dateStart, dayOf, detailHref } from '../src/features/twitch/series.js';
-import { compareTrialTimes, trialWindow, trialGames, trialSample, sortTrialGames, trialBenchmarks, trialReason } from '../src/features/twitch/stream-planning-model.js';
+import { compareTrialTimes, trialWindow, trialSample, trialBenchmarks, trialReason } from '../src/features/twitch/stream-planning-model.js';
 import { analyzeCooldown } from '../src/features/twitch/cooldown-model.js';
 import { streamerAdvice } from '../src/features/twitch/heat-overview.js';
 
@@ -34,20 +34,10 @@ test('trial comparisons exclude prelaunch and missing observations and keep real
   assert.deepEqual(trialSample(index, chunks, game, period, 'zh'), { days:2,totalDays:7,viewers:null,streamers:null });
 });
 
-test('trial selection keeps archived and unreleased games out, with separate competition sorting', () => {
-  const period = trialWindow('20', now);
-  const games = ['1','2','3','4'].map(id => ({ id, status:id === '3' ? 'ended' : 'active', last:iso(now), peak:1000, chinesePeak:100 }));
-  const index = { games:Object.fromEntries(games.map(game => [game.id, { release_reference:{
-    precision:'day', date:game.id === '4' ? '2026-11-12' : '2026-11-01',
-  } }])) };
-  const candidates = trialGames(index, games, period, 'global');
-  assert.deepEqual(candidates.map(game => game.id), ['1','2']);
-  const rows = candidates.map((game, i) => ({ game, samples:{global:{viewers:1000-i*100,streamers:5-i*2}} }));
-  assert.deepEqual(sortTrialGames(rows, 'global', 'viewers').map(row => row.game.id), ['1','2']);
-  assert.deepEqual(sortTrialGames(rows, 'global', 'competition').map(row => row.game.id), ['2','1']);
-  const link = new URL(detailHref('2', '?view=streamer&stream_hour=0&stream_region=compare&stream_order=competition&stream_q=Game'), 'https://example.com/');
+test('trial detail links carry the shared current filters and accept the previous region parameter', () => {
+  const link = new URL(detailHref('2', '?view=streamer&sort=streamers&stream_hour=0&stream_region=compare&stream_order=competition&stream_q=Game'), 'https://example.com/');
   assert.equal(link.searchParams.get('region'), 'compare');
-  assert.equal(link.searchParams.get('back'), 'view=streamer&stream_hour=0&stream_region=compare&stream_order=competition&stream_q=Game');
+  assert.equal(link.searchParams.get('back'), 'sort=streamers&view=streamer&stream_hour=0&region=compare&stream_q=Game');
 });
 
 test('trial card reasons compare visible games within each region and distinguish zero from missing data', () => {

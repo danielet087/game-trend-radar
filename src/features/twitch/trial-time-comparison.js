@@ -63,7 +63,7 @@ export function createTrialTimeComparison({ $, params, back, onChange }) {
   const source = new URLSearchParams(back);
   const firstDefault = streamHour(source.get('stream_hour'));
   const secondDefault = firstDefault === 22 ? 20 : 22;
-  const regionDefault = viewOf(source.get('stream_region'));
+  const regionDefault = viewOf(source.get('region') ?? source.get('stream_region'));
   for (const select of [first, second]) {
     for (let hour = 0; hour < 24; hour++) {
       const option = node('option', '', hourLabel(hour)); option.value = String(hour); select.append(option);

@@ -15,6 +15,14 @@ test('compares two trial hours with matched coverage and preserves the independe
     }
   }
   await page.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
+  const generated = '2026-11-11T03:15:00Z';
+  await page.route('**/data/twitch_live.json', route => route.fulfill({ json:{
+    schema_version:2, generated_at:generated, min_viewers:7000, coverage:{ collection_complete:true },
+    candidate_games:Array.from({ length:25 }, (_, i) => ({ game_id:String(i + 1), game_name:i === 0 ? '試播遊戲' : `遊戲 ${i + 1}`,
+      viewer_count:20000 - i, streamer_count:i + 1, verification:{ status:'new', observed_at:generated } })),
+  } }));
+  for (const name of ['twitch_tracking', 'twitch_steam_mapping', 'catalog'])
+    await page.route(`**/data/${name}.json`, route => route.fulfill({ status:404, body:'{}' }));
   await page.route('**/data/twitch_series/index.json', route => route.fulfill({ json:{
     schema_version:1, timezone:'Asia/Taipei', generated_at:'2026-11-11T03:15:00Z', months:{ '2026-11':indexHours },
     games:{ '1':{ name:'試播遊戲', archive_eligible:true, tracking_status:'active', months:['2026-11'],
@@ -26,10 +34,27 @@ test('compares two trial hours with matched coverage and preserves the independe
     schema_version:1, timezone:'Asia/Taipei', game_id:'1', month:'2026-11', hours,
   } }));
 
-  await page.goto('twitch.html?view=streamer&stream_hour=22&stream_region=compare');
+  await page.goto('twitch.html?view=streamer&sort=viewers&stream_hour=22&stream_region=compare');
   const card = page.locator('.tw-stream-game[data-game="1"]');
   await expect(card.locator('[data-region="global"] .tw-stream-reason')).toHaveText('有觀眾 · 同區可比遊戲較少');
   await expect(card.locator('[data-region="zh"] .tw-stream-reason')).toHaveText('這個時段資料不足');
+  await expect(page.locator('.tw-stream-game[data-game="2"] [data-region="global"] .tw-stream-reason')).toHaveText('尚無逐時紀錄');
+  const ids = () => page.locator('.tw-stream-game').evaluateAll(cards => cards.map(card => card.getAttribute('data-game')));
+  const currentIds = () => page.locator('#gameResults .tw-game').evaluateAll(cards => cards.map(card => card.getAttribute('data-game-id')));
+  const initial = await ids();
+  await page.locator('#currentTab').click();
+  expect(await currentIds()).toEqual(initial);
+  await page.locator('#gameSort').selectOption('streamers');
+  const reordered = await currentIds();
+  expect(reordered[0]).toBe('25');
+  await page.locator('#streamPlanningTab').click();
+  await expect(page.locator('.tw-stream-game')).toHaveCount(24);
+  expect(await ids()).toEqual(reordered);
+  await page.locator('#streamLoadMore').click();
+  await expect(page.locator('.tw-stream-game')).toHaveCount(25);
+  await page.locator('#currentTab').click();
+  expect(await currentIds()).toEqual([...reordered, '1']);
+  await page.locator('#streamPlanningTab').click();
   await page.getByRole('link', { name:'比較 試播遊戲 的試播時段' }).click();
   await expect(page).toHaveURL(/#trialTimes$/);
   await expect(page.locator('#trialHourA')).toHaveValue('22');

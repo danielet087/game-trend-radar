@@ -66,8 +66,7 @@ export function overviewQuery(search) {
   if (view === 'streamer') {
     const hour = input.get('stream_hour'), query = input.get('stream_q')?.slice(0, 160);
     if (/^(?:[01]?\d|2[0-3])$/.test(hour || '')) output.set('stream_hour', hour);
-    if (['global', 'zh', 'compare'].includes(input.get('stream_region'))) output.set('stream_region', input.get('stream_region'));
-    if (input.get('stream_order') === 'competition') output.set('stream_order', 'competition');
+    if (!output.has('region') && ['global', 'zh', 'compare'].includes(input.get('stream_region'))) output.set('region', input.get('stream_region'));
     if (query) output.set('stream_q', query);
   }
   if (['active', 'ended'].includes(input.get('archive_state'))) output.set('archive_state', input.get('archive_state'));
@@ -81,7 +80,7 @@ export function detailHref(id, search = '') {
   const source = new URLSearchParams(search);
   const view = source.get('view');
   const region = view === 'archive' ? source.get('archive_region') ?? source.get('region')
-    : view === 'streamer' ? source.get('stream_region') : source.get('region');
+    : source.get('region') ?? (view === 'streamer' ? source.get('stream_region') : null);
   if (['global', 'zh', 'compare'].includes(region)) params.set('region', region);
   if (back) params.set('back', back);
   return `./twitch-game.html?${params}`;

@@ -1,6 +1,6 @@
 import { savedCount, subscribeSaved } from "../../shared/state/favorites.ts";
 import { RadarTwitch as D } from "./data.js";
-import { createTwitchState, createTwitchURLState } from "./state.js";
+import { createTwitchState, createTwitchURLState, OBSERVATION_PAGE_SIZE } from "./state.js";
 import { createTwitchHistory } from "./history-ui.js";
 import { createTwitchCards } from "./cards.js";
 import { createTwitchRenderer } from "./render.js";
@@ -28,17 +28,18 @@ export function initTwitchPage() {
   const cards = new Map(), historyCache = new Map(), chartDisposers = new Set();
   let searchTimer, composing = false, view = 'current';
   const archive = createTwitchArchive({ $, signal });
-  const planning = createStreamPlanning({ $, signal });
   const { urlState, syncURL } = createTwitchURLState(state, $);
   const { historyPanel } = createTwitchHistory({ state, historyCache, chartDisposers, signal });
   const { gameCard, empty, evidence } = createTwitchCards({ state, historyPanel, signal });
-  let renderer, loader;
+  let renderer, loader, pendingSnapshot;
   function reset() {
-    clearTimeout(searchTimer); state.query = ""; state.filter = D.DEFAULT_FILTER; state.sort = D.DEFAULT_SORT; state.limit = 24;
+    clearTimeout(searchTimer); state.query = ""; state.filter = D.DEFAULT_FILTER; state.sort = D.DEFAULT_SORT; state.limit = OBSERVATION_PAGE_SIZE;
     $("gameSearch").value = ""; $("gameSort").value = D.DEFAULT_SORT; syncURL(); render();
   }
   const render = () => { renderer.render(); archive.updateHint(state.query); };
-  const load = () => loader.load();
+  const load = () => pendingSnapshot ??= loader.load().finally(() => { pendingSnapshot = null; });
+  const planning = createStreamPlanning({ $, signal, state, setRegion,
+    ensureSnapshot: force => force || !state.data || pendingSnapshot ? load() : null });
   renderer = createTwitchRenderer({ state, $, cards, gameCard, empty, evidence, reset, syncURL, signal });
   loader = createTwitchLoader({ state, $, cards, historyCache, chartDisposers, ...renderer, render, empty });
   function showView() {
@@ -61,7 +62,11 @@ export function initTwitchPage() {
   function switchView(next) {
     if (next === view) return;
     if (view === 'archive') archive.flushSearch(false);
-    else if (view === 'current') { clearTimeout(searchTimer); state.query = $('gameSearch').value; syncURL(); }
+    else if (view === 'current') {
+      clearTimeout(searchTimer);
+      if (state.query !== $('gameSearch').value) state.limit = OBSERVATION_PAGE_SIZE;
+      state.query = $('gameSearch').value; syncURL();
+    }
     const url = new URL(location.href);
     if (next === 'archive') {
       url.searchParams.set('view', 'archive');
@@ -80,28 +85,29 @@ export function initTwitchPage() {
       tabs[next].focus(); switchView(tabs[next].dataset.twitchView);
     });
   });
-document.querySelectorAll("[data-filter]").forEach(button => on(button, "click",() => { clearTimeout(searchTimer); state.query = $("gameSearch").value; state.filter = button.dataset.filter; state.limit = 24; syncURL(); render(); }));
-function search() { clearTimeout(searchTimer); if (composing) return; searchTimer = setTimeout(() => { state.query = $("gameSearch").value; state.limit = 24; syncURL(); render(); },140); }
+document.querySelectorAll("[data-filter]").forEach(button => on(button, "click",() => { clearTimeout(searchTimer); state.query = $("gameSearch").value; state.filter = button.dataset.filter; state.limit = OBSERVATION_PAGE_SIZE; syncURL(); render(); }));
+function search() { clearTimeout(searchTimer); if (composing) return; searchTimer = setTimeout(() => { state.query = $("gameSearch").value; state.limit = OBSERVATION_PAGE_SIZE; syncURL(); render(); },140); }
 on($("gameSearch"), "compositionstart",() => { composing = true; clearTimeout(searchTimer); });
 on($("gameSearch"), "compositionend",() => { composing = false; search(); });
 on($("gameSearch"), "input",search);
 on($("gameSort"), "change",() => { state.sort = $("gameSort").value; syncURL(); render(); });
-on($('audienceRegion'), 'change', () => {
+function setRegion(region) {
   clearTimeout(searchTimer);
-  state.region = $('audienceRegion').value; state.limit = 24;
+  state.region = $('audienceRegion').value = region; state.limit = OBSERVATION_PAGE_SIZE;
   chartDisposers.forEach(dispose => dispose()); chartDisposers.clear(); cards.clear();
-  state.query = $('gameSearch').value; syncURL(); render();
-});
+  state.query = $('gameSearch').value; syncURL();
+}
+on($('audienceRegion'), 'change', () => { setRegion($('audienceRegion').value); render(); });
 on($("resetFilters"), "click",reset);
 on($("snapshotRefresh"), "click",load);
-on($("loadMore"), "click",() => { const next = state.limit; state.limit += 24; render(); $("gameResults").children[next]?.querySelector("summary")?.focus({ preventScroll:true }); });
+on($("loadMore"), "click",() => { const next = state.limit; state.limit += OBSERVATION_PAGE_SIZE; render(); $("gameResults").children[next]?.querySelector("summary")?.focus({ preventScroll:true }); });
 on(document, "keydown",event => {
   if (event.isComposing || event.ctrlKey || event.metaKey || event.altKey) return;
   if (event.key === "/" && !event.target.closest("input,textarea,select,[contenteditable]")) {
     event.preventDefault();
     $({ archive:'archiveSearch', streamer:'streamGameSearch', current:'gameSearch' }[view]).focus();
   }
-  if (event.key === "Escape" && event.target === $("gameSearch")) { clearTimeout(searchTimer); $("gameSearch").value = ""; state.query = ""; state.limit = 24; syncURL(); render(); }
+  if (event.key === "Escape" && event.target === $("gameSearch")) { clearTimeout(searchTimer); $("gameSearch").value = ""; state.query = ""; state.limit = OBSERVATION_PAGE_SIZE; syncURL(); render(); }
 });
 on(window, "popstate",showView);
   const controller = { state, refresh: () => view === 'archive' ? archive.load(true) : view === 'streamer' ? planning.refresh() : load(), destroy() {

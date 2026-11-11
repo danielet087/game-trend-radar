@@ -1,10 +1,12 @@
 import { RadarStorage } from '../../data/storage.ts';
 import { archiveGames, selectArchive } from './archive-model.js';
-import { regionNames, viewOf } from './audience-region.js';
-import { fmt, hourLabel, node, time } from './presentation.js';
+import { regionNames } from './audience-region.js';
+import { filterNames, fmt, hourLabel, node, time } from './presentation.js';
 import { regionsFor } from './region-views.js';
-import { dayOf, detailHref, monthsFor, validChunk, validIndex } from './series.js';
-import { sortTrialGames, streamHour, trialBenchmarks, trialGames, trialReason, trialSample, trialWindow, TRIAL_MIN_DAYS } from './stream-planning-model.js';
+import { dateStart, dayOf, detailHref, monthsFor, validChunk, validIndex } from './series.js';
+import { streamHour, trialBenchmarks, trialReason, trialSample, trialWindow } from './stream-planning-model.js';
+import { selectObservation } from './selection.js';
+import { OBSERVATION_PAGE_SIZE } from './state.js';
 
 async function read(path, validate, force) {
   const result = await RadarStorage.readJSONResult(path, validate, { force, allowStale:false });
@@ -12,10 +14,10 @@ async function read(path, validate, force) {
   return result.data;
 }
 
-export function createStreamPlanning({ $, signal }) {
-  const hour = $('streamHour'), region = $('streamRegion'), order = $('streamOrder'), query = $('streamGameSearch');
+export function createStreamPlanning({ $, signal, state, setRegion, ensureSnapshot }) {
+  const hour = $('streamHour'), region = $('streamRegion'), query = $('streamGameSearch');
   const status = $('streamPlanStatus'), results = $('streamTrialResults'), matches = $('streamGameMatches');
-  const refresh = $('streamRefresh');
+  const refresh = $('streamRefresh'), more = $('streamLoadMore');
   let loaded = null, source = null, request = 0;
 
   for (let value = 0; value < 24; value++) {
@@ -25,8 +27,7 @@ export function createStreamPlanning({ $, signal }) {
   function saveURL() {
     const url = new URL(location.href);
     for (const [key, value, fallback] of [
-      ['stream_hour', hour.value, '20'], ['stream_region', region.value, 'global'],
-      ['stream_order', order.value, 'viewers'], ['stream_q', query.value.trim(), ''],
+      ['stream_hour', hour.value, '20'], ['stream_q', query.value.trim(), ''],
     ]) {
       if (value === fallback) url.searchParams.delete(key);
       else url.searchParams.set(key, value);
@@ -35,8 +36,11 @@ export function createStreamPlanning({ $, signal }) {
   }
 
   function renderSearch() {
-    if (!loaded) return;
     const term = query.value.trim();
+    if (!loaded) {
+      matches.replaceChildren(node('p', 'tw-stream-muted', '歷史搜尋暫無資料，可重新讀取。'));
+      return;
+    }
     const games = term ? selectArchive(loaded.games, { query:term, filter:'all', sort:'recent' }).slice(0, 6) : [];
     if (!games.length) {
       matches.replaceChildren(node('p', 'tw-stream-muted', term ? '找不到已收錄的觀測紀錄。可以試試英文名稱或遊戲 ID。' : '輸入遊戲名稱，開啟熱度與續播建議。'));
@@ -50,29 +54,38 @@ export function createStreamPlanning({ $, signal }) {
     }));
   }
 
-  function row({ game, samples }, benchmarks) {
-    const card = node('article', 'tw-stream-game'); card.dataset.game = game.id;
+  function row({ game, reference, canCompare, samples, message }, benchmarks) {
+    const card = node('article', 'tw-stream-game'); card.dataset.game = game.game_id;
     const gameInfo = node('div', 'tw-stream-game-info');
-    if (game.cover) {
-      const image = node('img'); image.src = game.cover; image.alt = ''; image.width = 44; image.height = 59;
+    if (game.box_art_url) {
+      const image = node('img'); image.src = game.box_art_url; image.alt = ''; image.width = 44; image.height = 59;
       image.loading = 'lazy'; image.decoding = 'async'; gameInfo.append(image);
     }
     const copy = node('div');
-    const href = detailHref(game.id, location.search);
-    const link = node('a', '', game.displayName); link.href = href;
-    const compare = node('a', 'tw-stream-time-link', '比較試播時段 →');
-    compare.href = `${href}#trialTimes`;
-    compare.setAttribute('aria-label', `比較 ${game.displayName} 的試播時段`);
-    copy.append(link, node('small', '', `上市參考 ${game.releaseDate.replaceAll('-', '/')}${game.releaseSource ? ` · ${game.releaseSource}` : ''}`), compare);
+    const title = node(canCompare ? 'a' : 'strong', '', game.game_name);
+    copy.append(title);
+    if (reference?.precision === 'day' && Number.isFinite(dateStart(reference.date))) {
+      copy.append(node('small', '', `上市參考 ${reference.date.replaceAll('-', '/')}${reference.source ? ` · ${reference.source}` : ''}`));
+    }
+    if (canCompare) {
+      title.href = detailHref(game.game_id, location.search);
+      const compare = node('a', 'tw-stream-time-link', '比較試播時段 →');
+      compare.href = `${title.getAttribute('href')}#trialTimes`;
+      compare.setAttribute('aria-label', `比較 ${game.game_name} 的試播時段`);
+      copy.append(compare);
+    }
     gameInfo.append(copy);
     const comparisons = node('div', 'tw-stream-comparisons');
     for (const [key, benchmark] of benchmarks) {
-      const sample = samples[key];
+      const sample = samples?.[key];
       const panel = node('div', 'tw-stream-sample'); panel.dataset.region = key;
       panel.append(node('span', 'tw-stream-scope', regionNames[key]),
-        node('p', 'tw-stream-reason', trialReason(sample, benchmark)));
-      const counts = sample.viewers === null ? '' : `常見 ${fmt(sample.viewers)} 人看 · ${fmt(sample.streamers)} 台同播 · `;
-      panel.append(node('small', '', `${counts}有量測 ${sample.days}／${sample.totalDays} 天`)); comparisons.append(panel);
+        node('p', 'tw-stream-reason', sample ? trialReason(sample, benchmark) : message));
+      if (sample) {
+        const counts = sample.viewers === null ? '' : `常見 ${fmt(sample.viewers)} 人看 · ${fmt(sample.streamers)} 台同播 · `;
+        panel.append(node('small', '', `${counts}有量測 ${sample.days}／${sample.totalDays} 天`));
+      }
+      comparisons.append(panel);
     }
     card.append(gameInfo, comparisons);
     return card;
@@ -81,64 +94,82 @@ export function createStreamPlanning({ $, signal }) {
   async function load(force = false) {
     const token = ++request;
     const active = () => token === request && !signal.aborted;
-    status.textContent = '正在比對這個時段的觀眾與開台數…';
+    status.textContent = '正在讀取目前觀測清單…';
     results.replaceChildren();
-    results.setAttribute('aria-busy', 'true'); refresh.disabled = true;
+    results.setAttribute('aria-busy', 'true'); refresh.disabled = more.disabled = true;
     if (!source || force) {
       const pending = read('./data/twitch_series/index.json', validIndex, force)
-        .then(index => ({ index, games:archiveGames(index), chunks:new Map(), force }));
+        .then(index => ({ index, games:archiveGames(index), chunks:new Map(), force }))
+        .catch(() => { if (source === pending) source = null; return null; });
       source = pending;
-      pending.catch(() => { if (source === pending) source = null; });
     }
     try {
-      const state = await source;
+      const history = source;
+      await ensureSnapshot(force);
       if (!active()) return;
-      loaded = state; renderSearch();
-      const period = trialWindow(hour.value), regions = regionsFor(region.value), primary = regions[0];
-      const games = trialGames(state.index, state.games, period, primary);
+      if (!state.data) {
+        status.textContent = '目前觀測清單暫時無法讀取。請按重新讀取。';
+        more.hidden = true;
+        return;
+      }
+      const { visible } = selectObservation(state);
+      const games = visible.slice(0, state.limit);
+      const period = trialWindow(hour.value), regions = regionsFor(state.region);
+      const scope = `${visible.length} 款 · ${filterNames[state.filter]}${state.query ? ` · 搜尋「${state.query}」` : ''} · 依目前觀測排序`;
+      status.textContent = `${scope} · 正在讀取試播紀錄…`;
+      more.hidden = games.length === visible.length;
+      more.textContent = `再看 ${Math.min(OBSERVATION_PAGE_SIZE, visible.length - games.length)} 款 ↓`;
+      const neutral = regions.map(key => [key, { viewers:null, streamers:null }]);
+      results.replaceChildren(...games.map(game => row({ game, message:'正在讀取試播紀錄…' }, neutral)));
+      const archive = await history;
+      if (!active()) return;
+      loaded = archive;
+      renderSearch();
       const months = monthsFor(period.start, period.end);
-      const observations = await Promise.allSettled(games.map(async game => {
-        const chunks = {};
-        await Promise.all(months.filter(month => state.index.games[game.id].months?.includes(month)).map(async month => {
-          const key = `${game.id}/${month}`;
-          if (!state.chunks.has(key)) {
-            const pending = read(`./data/twitch_series/${key}.json`, value => validChunk(value, game.id, month), state.force);
-            state.chunks.set(key, pending);
-            pending.catch(() => { if (state.chunks.get(key) === pending) state.chunks.delete(key); });
-          }
-          chunks[month] = await state.chunks.get(key);
-        }));
-        return { game, samples:Object.fromEntries(regions.map(key => [key, trialSample(state.index, chunks, game, period, key)])) };
+      const observations = await Promise.all(games.map(async game => {
+        const id = game.game_id, record = archive?.index.games[id];
+        const reference = record?.release_reference;
+        const entry = { game, reference, canCompare:record?.archive_eligible === true && Array.isArray(record.months) && record.months.length > 0 };
+        if (!archive) return { ...entry, message:'逐時資料暫時無法讀取' };
+        if (!Array.isArray(record?.months) || !record.months.length) return { ...entry, message:'尚無逐時紀錄' };
+        try {
+          const chunks = Object.fromEntries(await Promise.all(months.filter(month => record.months.includes(month)).map(async month => {
+            const key = `${id}/${month}`;
+            if (!archive.chunks.has(key)) {
+              const pending = read(`./data/twitch_series/${key}.json`, value => validChunk(value, id, month), archive.force);
+              archive.chunks.set(key, pending);
+              pending.catch(() => { if (archive.chunks.get(key) === pending) archive.chunks.delete(key); });
+            }
+            return [month, await archive.chunks.get(key)];
+          })));
+          const released = reference?.precision === 'day' ? dateStart(reference.date) : NaN;
+          return { ...entry, samples:Object.fromEntries(regions.map(key => [key, trialSample(archive.index, chunks, { id, released }, period, key)])) };
+        } catch { return { ...entry, message:'逐時資料暫時無法讀取' }; }
       }));
       if (!active()) return;
-      const errors = observations.filter(result => result.status === 'rejected').length;
-      const ranked = sortTrialGames(observations.flatMap(result => result.status === 'fulfilled' ? [result.value] : []), primary, order.value);
-      const benchmarks = regions.map(key => [key, trialBenchmarks(ranked, key)]);
-      status.textContent = `${dayOf(period.start)} 至 ${dayOf(period.end)} · 每日 ${hourLabel(hour.value)}（台灣） · 資料更新 ${time(state.index.generated_at)}${errors ? ` · ${errors} 款暫無法讀取` : ''}`;
-      results.replaceChildren(...ranked.map(entry => row(entry, benchmarks)));
-      if (!ranked.length) {
-        results.append(node('p', 'tw-stream-muted', errors && errors === games.length
-          ? '這個時段的歷史資料暫時無法讀取。請按重新讀取。'
-          : `目前沒有至少 ${TRIAL_MIN_DAYS} 天有效紀錄、且這個時段有觀眾的新作。可以換個時段或範圍。`));
-      }
+      const benchmarks = regions.map(key => [key, trialBenchmarks(observations, key)]);
+      status.textContent = `${scope} · ${dayOf(period.start)} 至 ${dayOf(period.end)} · 每日 ${hourLabel(hour.value)}（台灣） · 觀測更新 ${time(state.data.generated_at)}`;
+      results.replaceChildren(...observations.map(entry => row(entry, benchmarks)));
+      if (!games.length) results.append(node('p', 'tw-stream-muted', '目前觀測在這個條件下沒有遊戲。'));
     } catch {
       if (!active()) return;
       status.textContent = '觀測資料暫時無法讀取。請按重新讀取。';
       results.replaceChildren();
     } finally {
-      if (active()) { results.setAttribute('aria-busy', 'false'); refresh.disabled = false; }
+      if (active()) { results.setAttribute('aria-busy', 'false'); refresh.disabled = more.disabled = false; }
     }
   }
 
-  for (const control of [hour, region, order]) control.addEventListener('change', () => { saveURL(); load(); }, { signal });
+  hour.addEventListener('change', () => { saveURL(); load(); }, { signal });
+  region.addEventListener('change', () => { setRegion(region.value); load(); }, { signal });
   query.addEventListener('input', () => { saveURL(); renderSearch(); }, { signal });
   refresh.addEventListener('click', () => load(true), { signal });
+  more.addEventListener('click', () => { state.limit += OBSERVATION_PAGE_SIZE; load(); }, { signal });
   return {
     open() {
       const params = new URLSearchParams(location.search);
       hour.value = String(streamHour(params.get('stream_hour')));
-      region.value = viewOf(params.get('stream_region'));
-      order.value = params.get('stream_order') === 'competition' ? 'competition' : 'viewers';
+      region.value = state.region;
       query.value = (params.get('stream_q') || '').slice(0, 160);
       return load();
     },
