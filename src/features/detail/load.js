@@ -16,7 +16,15 @@ export function createDetailLoader(ctx, render, favorites, related) {
   function setBackLink() {
     try {
       const previous = new URL(document.referrer);
-      if (previous.origin === location.origin && previous.pathname.endsWith("/game.html")) {
+      if (previous.origin !== location.origin) return;
+      if (previous.pathname.endsWith("/twitch.html") && previous.searchParams.get("view") === "streamer") {
+        const back = previous.pathname + previous.search + previous.hash;
+        $("gameBack").href = $("detailStatusBack").href = back;
+        $("gameBack").textContent = "← 返回開台選題";
+        $("detailStatusBack").textContent = "返回開台選題";
+        return;
+      }
+      if (previous.pathname.endsWith("/game.html")) {
         const stored = JSON.parse(window.sessionStorage.getItem("game-trend-radar:return:v1") || "null");
         if (stored && Date.now() - stored.at < 3600000) {
           const destination = new URL(stored.path, location.href);
@@ -25,7 +33,6 @@ export function createDetailLoader(ctx, render, favorites, related) {
         }
       }
       if (
-        previous.origin === location.origin &&
         /\/(?:index|games|upcoming|released|saved|date|explore|growth|analysis)\.html$/.test(
           previous.pathname,
         )

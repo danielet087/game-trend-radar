@@ -21,13 +21,31 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
   }
   await page.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
   const generated = '2026-11-11T03:15:00Z';
+  const steamGames = [
+    { appid:88001, name:'試播遊戲', followers:6000, release_start:'2026-11-05' },
+    { appid:88002, name:'遊戲 2', followers:100, release_start:'2026-11-06' },
+  ];
   await page.route('**/data/twitch_live.json', route => route.fulfill({ json:{
     schema_version:2, generated_at:generated, min_viewers:7000, coverage:{ collection_complete:true },
     candidate_games:Array.from({ length:25 }, (_, i) => ({ game_id:String(i + 1), game_name:i === 0 ? '試播遊戲' : `遊戲 ${i + 1}`,
+      ...(i < steamGames.length ? { steam_matches:[{ steam_appid:steamGames[i].appid, display_name:steamGames[i].name }] } : {}),
+      ...(i === 2 ? { igdb_id:'303' } : {}),
       viewer_count:20000 - i, streamer_count:i + 1, verification:{ status:'new', observed_at:generated } })),
   } }));
-  for (const name of ['twitch_tracking', 'twitch_steam_mapping', 'catalog'])
+  for (const name of ['twitch_tracking', 'twitch_steam_mapping'])
     await page.route(`**/data/${name}.json`, route => route.fulfill({ status:404, body:'{}' }));
+  await page.route('**/data/catalog.json', route => route.fulfill({ json:{
+    version:3, generated_at:generated, count:steamGames.length, games:steamGames,
+  } }));
+  await page.route('**/data/nintendo_upcoming.json', route => route.fulfill({ json:{
+    schema_version:1, generated_at:generated, games:[{
+      id:'igdb:303', igdb_id:303, name:'遊戲 3', hypes:60, sexual_content_screened:true,
+      platforms:[{ id:167, code:'PS5' }],
+      releases:[{ date:'2026-11-20', precision:'day', platform:'PS5', source:'IGDB', region:'worldwide',
+        source_region:'worldwide', source_date:'2026-11-20', date_basis:'igdb_calendar_day',
+        timezone_status:'date_only', time_zone:'Asia/Taipei', taiwan_release_confirmed:false }],
+    }],
+  } }));
   await page.route('**/data/twitch_series/index.json', route => route.fulfill({ json:{
     schema_version:1, timezone:'Asia/Taipei', generated_at:'2026-11-11T03:15:00Z', months:{ '2026-11':indexHours },
     games:{ '1':{ name:'試播遊戲', archive_eligible:true, tracking_status:'active', months:['2026-11'],
@@ -41,6 +59,11 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
 
   await page.goto('twitch.html?view=streamer&sort=viewers&stream_hour=22');
   const card = page.locator('.tw-stream-game[data-game="1"]');
+  const profile = card.getByRole('link', { name:'試播遊戲 遊戲頁', exact:true });
+  const store = card.getByRole('link', { name:'Steam 商店', exact:true });
+  await expect(profile).toHaveAttribute('href', './game.html?appid=88001');
+  await expect(store).toHaveAttribute('href', 'https://store.steampowered.com/app/88001/');
+  await expect(store).toHaveAttribute('target', '_blank');
   const globalCard = card.locator('[data-region="global"]');
   const chineseCard = card.locator('[data-region="zh"]');
   await expect(globalCard.locator('.tw-stream-signal')).toHaveText('已退燒');
@@ -54,7 +77,13 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
   await page.locator('.tw-stream-method summary').click();
   await expect(page.locator('#streamCooldownRule')).toContainText('全球 3,000 人，中文區 100 人');
   await page.locator('.tw-stream-method summary').click();
-  await expect(page.locator('.tw-stream-game[data-game="2"] [data-region="global"] .tw-stream-reason')).toHaveText('尚無逐時紀錄');
+  const storeOnly = page.locator('.tw-stream-game[data-game="2"]');
+  await expect(storeOnly.locator('[data-region="global"] .tw-stream-reason')).toHaveText('尚無逐時紀錄');
+  await expect(storeOnly.getByRole('link', { name:'Steam 商店', exact:true })).toHaveAttribute('href', 'https://store.steampowered.com/app/88002/');
+  await expect(storeOnly.getByRole('link', { name:/遊戲頁|詳細分析/ })).toHaveCount(0);
+  const consoleProfile = page.locator('.tw-stream-game[data-game="3"]').getByRole('link', { name:'遊戲 3 遊戲頁', exact:true });
+  await expect(consoleProfile).toHaveAttribute('href', './game.html?igdb=303&date=2026-11-20');
+  await expect(page.locator('.tw-stream-game[data-game="4"]').getByRole('link')).toHaveCount(0);
   for (const width of [320, 390, 1280]) {
     await page.setViewportSize({ width, height:844 });
     const [left, right] = await Promise.all([globalCard.boundingBox(), chineseCard.boundingBox()]);
@@ -79,7 +108,17 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
   await page.locator('#currentTab').click();
   expect(await currentIds()).toEqual([...reordered, '1']);
   await page.locator('#streamPlanningTab').click();
-  await page.getByRole('link', { name:'試播遊戲', exact:true }).click();
+  await consoleProfile.click();
+  await expect(page.locator('#gameTitle')).toHaveText('遊戲 3');
+  const back = page.getByRole('link', { name:'← 返回開台選題', exact:true });
+  await expect(back).toHaveAttribute('href', /stream_limit=48/);
+  await back.click();
+  await expect(page.locator('.tw-stream-game')).toHaveCount(25);
+  await profile.click();
+  await expect(page.locator('#gameTitle')).toHaveText('試播遊戲');
+  await expect(back).toHaveAttribute('href', /twitch\.html\?.*view=streamer/);
+  await back.click();
+  await card.getByRole('link', { name:'詳細分析', exact:true }).click();
   await expect(page.locator('#historyChart [data-region="global"] .tw-chart-threshold-label')).toHaveText('3,000 人門檻');
   await expect(page.locator('#historyChart [data-region="zh"] .tw-chart-threshold-label')).toHaveText('100 人門檻');
   await expect(page.locator('#global-cooldownRule')).toContainText('3,000 人');

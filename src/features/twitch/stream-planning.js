@@ -1,6 +1,9 @@
 import { RadarStorage } from '../../data/storage.ts';
+import { RadarData } from '../../domain/index.mjs';
 import { archiveGames, selectArchive } from './archive-model.js';
 import { regionNames } from './audience-region.js';
+import { steamStoreLinks } from './identity.js';
+import { canonicalID } from './metrics.js';
 import { filterNames, fmt, node } from './presentation.js';
 import { projectRows, regionsFor } from './region-views.js';
 import { dateStart, detailHref, fullSeriesRows, validChunk, validIndex } from './series.js';
@@ -80,6 +83,8 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
     const term = query.value.trim();
     if (term) url.searchParams.set('stream_q', term);
     else url.searchParams.delete('stream_q');
+    if (state.limit > OBSERVATION_PAGE_SIZE) url.searchParams.set('stream_limit', String(state.limit));
+    else url.searchParams.delete('stream_limit');
     history.replaceState(null, '', url);
   }
 
@@ -106,7 +111,7 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
     }));
   }
 
-  function row({ game, reference, canView, trends, message }) {
+  function row(game, steamPages) {
     const card = node('article', 'tw-stream-game'); card.dataset.game = game.game_id;
     const gameInfo = node('div', 'tw-stream-game-info');
     if (game.box_art_url) {
@@ -114,49 +119,70 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
       image.loading = 'lazy'; image.decoding = 'async'; gameInfo.append(image);
     }
     const copy = node('div', 'tw-stream-game-copy');
-    const title = node('h3', 'tw-stream-game-title');
-    const name = node(canView ? 'a' : 'span', '', game.game_name);
-    if (canView) {
-      name.href = heatHref(game.game_id);
-      const arrow = node('span', 'tw-stream-detail-arrow', ' →');
+    const title = node('h3', 'tw-stream-game-title', game.game_name);
+    const actions = node('div', 'tw-stream-game-actions');
+    const storeLinks = steamStoreLinks(game);
+    const steamPage = storeLinks.map(link => steamPages.get(link.steam_appid)).find(Boolean);
+    function linkTitle(href) {
+      const name = node('a', '', game.game_name);
+      name.href = href;
+      name.append(node('span', 'tw-stream-profile-label', ' 遊戲頁'));
+      title.replaceChildren(name);
+    }
+    if (steamPage) linkTitle(steamPage);
+    for (const link of storeLinks) {
+      const label = storeLinks.length > 1 ? `Steam 商店 · ${link.steam_appid}` : 'Steam 商店';
+      const store = node('a', 'tw-stream-game-action', label);
+      const arrow = node('span', '', ' ↗');
       arrow.setAttribute('aria-hidden', 'true');
-      name.append(arrow);
+      store.append(arrow);
+      store.href = link.store_url;
+      store.target = '_blank';
+      store.rel = 'noopener noreferrer';
+      actions.append(store);
     }
-    title.append(name);
-    copy.append(title);
-    if (reference?.precision === 'day' && Number.isFinite(dateStart(reference.date))) {
-      const release = node('time', 'tw-stream-release', `上市參考 ${reference.date.replaceAll('-', '/')}`);
-      release.dateTime = reference.date;
-      if (reference.source) release.title = reference.source;
-      copy.append(release);
-    }
+    copy.append(title, actions);
     gameInfo.append(copy);
     const comparisons = node('div', 'tw-stream-comparisons');
-    for (const key of comparisonRegions) {
-      const trend = trends?.[key];
-      const signal = trend?.signal ?? (message ? 'insufficient' : 'loading');
-      const panel = node('div', 'tw-stream-sample');
-      panel.dataset.region = key;
-      panel.dataset.signal = signal;
-      const head = node('div', 'tw-stream-sample-head');
-      head.append(node('span', 'tw-stream-scope', regionNames[key]));
-      if (signalLabels[signal]) head.append(node('strong', 'tw-stream-signal', signalLabels[signal]));
-      panel.append(head);
-      if (trend) panel.append(renderMetrics(trend));
-      const reason = trend ? evidence(trend) : message;
-      if (reason) panel.append(node('p', 'tw-stream-reason', reason));
-      comparisons.append(panel);
+    function renderHeat(trends, message) {
+      comparisons.replaceChildren(...comparisonRegions.map(key => {
+        const trend = trends?.[key];
+        const signal = trend?.signal ?? (message ? 'insufficient' : 'loading');
+        const panel = node('div', 'tw-stream-sample');
+        panel.dataset.region = key;
+        panel.dataset.signal = signal;
+        const head = node('div', 'tw-stream-sample-head');
+        head.append(node('span', 'tw-stream-scope', regionNames[key]));
+        if (signalLabels[signal]) head.append(node('strong', 'tw-stream-signal', signalLabels[signal]));
+        panel.append(head);
+        if (trend) panel.append(renderMetrics(trend));
+        const reason = trend ? evidence(trend) : message;
+        if (reason) panel.append(node('p', 'tw-stream-reason', reason));
+        return panel;
+      }));
+    }
+    function renderHistory(record) {
+      const reference = record?.release_reference;
+      if (reference?.precision === 'day' && Number.isFinite(dateStart(reference.date))) {
+        const release = node('time', 'tw-stream-release', `上市參考 ${reference.date.replaceAll('-', '/')}`);
+        release.dateTime = reference.date;
+        if (reference.source) release.title = reference.source;
+        copy.insertBefore(release, actions);
+      }
+      if (record?.archive_eligible === true && Array.isArray(record.months) && record.months.length) {
+        const analysis = node('a', 'tw-stream-game-action', '詳細分析');
+        analysis.href = heatHref(game.game_id);
+        actions.append(analysis);
+      }
     }
     card.append(gameInfo, comparisons);
-    return card;
+    renderHeat();
+    return { card, consoleId: steamPage ? null : canonicalID(game.igdb_id), linkTitle, renderHistory, renderHeat };
   }
 
-  async function observeGame(game, archive, period) {
-    const id = game.game_id, record = archive?.index.games[id];
-    const entry = { game, reference:record?.release_reference,
-      canView:record?.archive_eligible === true && Array.isArray(record.months) && record.months.length > 0 };
-    if (!archive) return { ...entry, message:'逐時資料暫時無法讀取' };
-    if (!Array.isArray(record?.months) || !record.months.length) return { ...entry, message:'尚無逐時紀錄' };
+  async function observeGame(id, record, archive, period) {
+    if (!archive) return { message:'逐時資料暫時無法讀取' };
+    if (!Array.isArray(record?.months) || !record.months.length) return { message:'尚無逐時紀錄' };
     try {
       const chunks = Object.fromEntries(await Promise.all(record.months.map(async month => {
         if (!Object.hasOwn(archive.index.months, month)) throw new Error('觀測月份無法確認');
@@ -171,11 +197,12 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
       const rows = fullSeriesRows(archive.index, chunks, id);
       const trends = comparisonRegions.map(region => [region,
         analyzeStreamHeat(region === 'global' ? rows : projectRows(rows, region), { game:record, region, period })]);
-      return { ...entry, trends:Object.fromEntries(trends) };
-    } catch { return { ...entry, message:'逐時資料暫時無法讀取' }; }
+      return { trends:Object.fromEntries(trends) };
+    } catch { return { message:'逐時資料暫時無法讀取' }; }
   }
 
   async function load(force = false) {
+    saveURL();
     const token = ++request;
     const active = () => token === request && !signal.aborted;
     status.textContent = '正在讀取目前觀測清單…';
@@ -203,15 +230,36 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
       status.textContent = `${scope} · 讀取熱度資料…`;
       more.hidden = games.length === visible.length;
       more.textContent = `再看 ${Math.min(OBSERVATION_PAGE_SIZE, visible.length - games.length)} 款 ↓`;
-      const placeholders = games.map(game => row({ game }));
-      results.replaceChildren(...placeholders);
+      const steamPages = new Map((state.data.public_catalog?.games || []).flatMap(raw => {
+        const profile = RadarData.normalize(raw, true);
+        return profile ? [[String(profile.appid), RadarData.detailURL(profile)]] : [];
+      }));
+      const rows = games.map(game => row(game, steamPages));
+      results.replaceChildren(...rows.map(entry => entry.card));
+      const consoleRows = rows.filter(entry => entry.consoleId);
+      if (consoleRows.length) {
+        RadarStorage.loadNintendo({ force, allowStale:false }).then(catalog => {
+          if (!active()) return;
+          const pages = new Map();
+          for (const profile of RadarData.nintendoGames(catalog)) {
+            const id = String(profile.igdbId);
+            if (!pages.has(id)) pages.set(id, RadarData.detailURL(profile));
+          }
+          for (const entry of consoleRows) {
+            const href = pages.get(entry.consoleId);
+            if (href) entry.linkTitle(href);
+          }
+        }).catch(() => { /* Console profiles are independent of the observation list. */ });
+      }
       const archive = await history;
       if (!active()) return;
       loaded = archive;
       renderSearch();
       await Promise.all(games.map(async (game, index) => {
-        const entry = await observeGame(game, archive, period);
-        if (active()) placeholders[index].replaceWith(row(entry));
+        const id = game.game_id, record = archive?.index.games[id];
+        rows[index].renderHistory(record);
+        const { trends, message } = await observeGame(id, record, archive, period);
+        if (active()) rows[index].renderHeat(trends, message);
       }));
       if (!active()) return;
       const range = [period.recent[0], period.recent.at(-1)].map(shortDate).join('–');
@@ -233,6 +281,8 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
     open() {
       const params = new URLSearchParams(location.search);
       query.value = (params.get('stream_q') || '').slice(0, 160);
+      const limit = Number(params.get('stream_limit'));
+      if (Number.isSafeInteger(limit) && limit > state.limit) state.limit = limit;
       return load();
     },
     close() { request++; },

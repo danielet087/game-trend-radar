@@ -73,6 +73,7 @@ export function initTwitchPage() {
       if (!url.searchParams.has('archive_region')) url.searchParams.set('archive_region', 'global');
     } else if (next === 'streamer') url.searchParams.set('view', 'streamer');
     else url.searchParams.delete('view');
+    if (next !== 'streamer') url.searchParams.delete('stream_limit');
     history.pushState(null, '', url); showView();
   }
   const tabs = [...document.querySelectorAll('[data-twitch-view]')];
