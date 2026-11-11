@@ -2,7 +2,6 @@ import { HOUR } from './metrics.js';
 import { dateStart, dayOf, seriesRows } from './series.js';
 import { quantile } from './statistics-model.js';
 
-export const TRIAL_GAME_LIMIT = 8;
 export const TRIAL_MIN_DAYS = 3;
 const DAY = 24 * HOUR;
 const WINDOW_DAYS = 7;
@@ -17,20 +16,8 @@ export function trialWindow(hour, now = Date.now()) {
   return { slots, start: slots[0], end: slots.at(-1), today, now };
 }
 
-export function trialGames(index, games, window, region) {
-  const peak = game => region === 'zh' ? game.chinesePeak : game.peak;
-  return games.flatMap(game => {
-    const release = index.games[game.id]?.release_reference;
-    const released = release?.precision === 'day' ? dateStart(release.date) : NaN;
-    const last = Date.parse(game.last);
-    if (game.status !== 'active' || !(peak(game) > 0) || !Number.isFinite(released) ||
-        released < window.today - 30 * DAY || released > window.end || last < window.start || last > window.now) return [];
-    return [{ ...game, released, releaseDate: release.date, releaseSource: release.source }];
-  }).sort((a, b) => peak(b) - peak(a) || a.id.localeCompare(b.id)).slice(0, TRIAL_GAME_LIMIT);
-}
-
 export function trialSample(index, chunks, game, window, region) {
-  const paired = window.slots.filter(at => at >= game.released)
+  const paired = window.slots.filter(at => !Number.isFinite(game.released) || at >= game.released)
     .map(at => seriesRows(index, chunks, game.id, at, at, region)[0])
     .map(trialCounts).filter(Boolean);
   return { days: paired.length, totalDays: window.slots.length, ...trialMedians(paired) };
@@ -79,10 +66,10 @@ export function compareTrialTimes(index, chunks, gameId, period, hours, region) 
   return { slots, dates, typicalLead, preferred, releaseDate: Number.isFinite(released) ? reference.date : null };
 }
 
-const hasTrialAudience = sample => sample.viewers > 0 && sample.streamers > 0;
+const hasTrialAudience = sample => sample?.viewers > 0 && sample.streamers > 0;
 
 export function trialBenchmarks(rows, region) {
-  return trialMedians(rows.map(row => row.samples[region]).filter(hasTrialAudience));
+  return trialMedians(rows.map(row => row.samples?.[region]).filter(hasTrialAudience));
 }
 
 export function trialReason(sample, benchmark) {
@@ -92,11 +79,4 @@ export function trialReason(sample, benchmark) {
   const demand = sample.viewers > benchmark.viewers ? '觀眾較多' : sample.viewers < benchmark.viewers ? '觀眾較少' : '';
   const competition = sample.streamers < benchmark.streamers ? '同播較少' : sample.streamers > benchmark.streamers ? '同播較多' : '';
   return [demand, competition].filter(Boolean).join(' · ') || '觀眾與同播居中';
-}
-
-export function sortTrialGames(rows, region, sort) {
-  const audience = row => row.samples[region];
-  return rows.filter(row => hasTrialAudience(audience(row))).sort((a, b) =>
-    (sort === 'competition' ? audience(a).streamers - audience(b).streamers : 0) ||
-    audience(b).viewers - audience(a).viewers || audience(a).streamers - audience(b).streamers || a.game.id.localeCompare(b.game.id));
 }

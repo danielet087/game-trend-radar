@@ -1,13 +1,14 @@
 import { RadarTwitch as D } from "./data.js";
 import { node, fmt, time, filterNames, IGDB_SOURCE, sourceWindow } from "./presentation.js";
-import { forRegion, regionNames } from './audience-region.js';
+import { regionNames } from './audience-region.js';
+import { selectObservation } from './selection.js';
+import { OBSERVATION_PAGE_SIZE } from './state.js';
 export function createTwitchRenderer({ state, $, cards, gameCard, empty, evidence, reset, syncURL, signal }) {
 function render() {
   if (!state.data) return;
   const { legacy } = state.data;
-  const games = state.data.games.map(game => forRegion(game, state.region));
+  const { games, visible } = selectObservation(state);
   scope();
-  const visible = D.select(games,state);
   document.querySelectorAll("[data-filter]").forEach(button => {
     button.setAttribute("aria-pressed",String(button.dataset.filter === state.filter));
     button.disabled = legacy;
@@ -34,12 +35,12 @@ function render() {
   });
   if (!visible.length) {
     const noSignals = games.length && state.filter === D.DEFAULT_FILTER && !state.query;
-    const showAll = () => { state.filter = "all"; state.limit = 24; render(); syncURL(); };
+    const showAll = () => { state.filter = "all"; state.limit = OBSERVATION_PAGE_SIZE; render(); syncURL(); };
     fragment.append(empty(noSignals ? "目前還沒有追蹤中的新作" : games.length ? "這個條件下，還沒有結果" : "目前沒有可呈現的觀測",noSignals ? "目前沒有符合追蹤條件的新作。可以另外查看所有觀測與 IGDB 日期推算。" : games.length ? "試著調整關鍵字或重設篩選。缺少有效日期時，IGDB 推算維持未知。" : "這份快照沒有可呈現的達標遊戲。下一輪有資料後會出現在這裡。",noSignals ? showAll : games.length ? reset : null,noSignals ? "查看所有觀測" : "重設篩選"));
   }
   $("gameResults").replaceChildren(fragment); $("gameResults").setAttribute("aria-busy","false");
   $("loadMore").hidden = visible.length <= state.limit;
-  $("loadMore").textContent = `再看 ${Math.min(24,visible.length-state.limit)} 款 ↓`;
+  $("loadMore").textContent = `再看 ${Math.min(OBSERVATION_PAGE_SIZE,visible.length-state.limit)} 款 ↓`;
 }
 function exclusions() {
   const games = state.data.excluded;

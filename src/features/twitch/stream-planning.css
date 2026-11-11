@@ -12,7 +12,7 @@
 .tw-stream-game:last-child { border-bottom:0; }
 .tw-stream-game-info { display:flex; align-items:center; gap:13px; min-width:0; }
 .tw-stream-game-info img { flex:none; object-fit:cover; border-radius:7px; background:#e9e1f3; }
-.tw-stream-game-info a { color:#4d3469; font-weight:750; line-height:1.4; overflow-wrap:anywhere; }
+.tw-stream-game-info :is(a,strong) { color:#4d3469; font-weight:750; line-height:1.4; overflow-wrap:anywhere; }
 .tw-stream-game-info a:hover { text-decoration:underline; }
 .tw-stream-game-info small { display:block; margin-top:4px; color:#655971; font-size:11px; }
 .tw-stream-game-info .tw-stream-time-link { display:inline-block; margin-top:6px; font-size:12px; text-decoration:underline; text-underline-offset:3px; }

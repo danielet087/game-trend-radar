@@ -1,4 +1,5 @@
 import { SOURCES, DEFAULT_SORT, VIEWER_PRIORITY_THRESHOLD, VIEWER_SECONDARY_THRESHOLD, STREAMER_PRIORITY_THRESHOLD, count } from "./metrics.js";
+import { forRegion } from './audience-region.js';
 function matches(game, filter) {
   if (filter === "signals") return game.is_tracked || game.verification.status !== "not_new" && (game.verification.status === "new" || SOURCES.some(source => game.release_experiment[source].predicted_new === true));
   if (filter === "twitch_new") return game.is_twitch_new || !game.tracking && game.verification.status !== "not_new" && (game.verification.status === "new" || SOURCES.some(source => game.release_experiment[source].predicted_new === true));
@@ -31,6 +32,11 @@ function select(games, { query = "", filter = "all", sort = DEFAULT_SORT } = {})
     const streamerGroup = sort === "median" ? Number(streamerPriority(b)) - Number(streamerPriority(a)) : 0;
     return viewerGroup || streamerGroup || (measure(b) ?? -1) - (measure(a) ?? -1) || (b.viewer_count ?? -1) - (a.viewer_count ?? -1) || a.game_id.localeCompare(b.game_id);
   });
+}
+
+export function selectObservation(state) {
+  const games = state.data.games.map(game => forRegion(game, state.region));
+  return { games, visible: state.data.legacy ? [] : select(games, state) };
 }
 
 export { matches, select };
