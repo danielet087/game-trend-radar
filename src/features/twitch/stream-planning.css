@@ -57,6 +57,8 @@
 .tw-stream-metrics dt { color:#5c506a; font-size:12px; font-weight:500; }
 .tw-stream-metrics dd { margin:0; color:#332746; font-size:16px; font-weight:750; line-height:1.35; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
 .tw-stream-metrics .tw-stream-metric-missing { color:#5c506a; font-size:12px; font-weight:600; }
+.tw-stream-concentration { display:flex; flex-wrap:wrap; gap:2px 12px; margin:0; color:#315940; font-size:12px; font-weight:650; }
+.tw-stream-concentration-coverage { color:#53675a; font-weight:500; }
 .tw-stream-delta[data-direction="up"] dd { color:#275e3b; }
 .tw-stream-delta[data-direction="down"] dd { color:#8d4530; }
 .tw-stream-view .tw-load-more:has(> button[hidden]) { display:none; }

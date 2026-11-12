@@ -14,6 +14,9 @@ export function forRegion(row, region = 'global') {
   const available = value && validCount(row.viewer_count) && validCount(row.streamer_count) && validCount(value.viewer_count) && validCount(value.streamer_count) &&
     value.viewer_count <= row.viewer_count && value.streamer_count <= row.streamer_count &&
     (value.streamer_count > 0 || value.viewer_count === 0);
+  const largest = value?.largest_stream_viewer_count;
+  const concentrationAvailable = available && validCount(largest) && largest <= value.viewer_count &&
+    largest * value.streamer_count >= value.viewer_count;
   const audience = filteredAudience(available ? value.filtered_audience : null);
   if (available && ['complete', 'partial'].includes(audience.status) &&
       (audience.eligible_viewer_count > value.viewer_count ||
@@ -24,5 +27,6 @@ export function forRegion(row, region = 'global') {
     viewer_count: available ? value.viewer_count : null,
     streamer_count: available ? value.streamer_count : null,
     median_viewer_count: available ? value.median_viewer_count ?? null : null,
+    largest_stream_viewer_count: concentrationAvailable ? largest : null,
     filtered_audience: audience };
 }

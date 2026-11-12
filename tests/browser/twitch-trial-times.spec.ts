@@ -16,9 +16,11 @@ test('shows Chinese evening heat and whole-day cooldown with paired trial hours 
       const viewers = audience[day - 5];
       const chinese = hour >= 19 ? chineseAudience[day - 5] + (day === 9 || day === 10 ? 100 : 0)
         : day <= 7 ? 150 : day === 11 ? 5000 : 0;
+      const concentration = day === 10 && hour >= 19;
       hours[stamp] = { generated_at, viewer_count:viewers + (hour === 20 ? 200 : 0),
         streamer_count:hour === 20 ? 4 : 8, audience_regions:hour === 22 && day >= 7
-          ? undefined : { zh:{ viewer_count:chinese, streamer_count:chinese ? 1 : 0 } } };
+          ? undefined : { zh:{ viewer_count:chinese, streamer_count:concentration ? 2 : chinese ? 1 : 0,
+            ...(concentration ? { largest_stream_viewer_count:180 } : {}) } } };
     }
   }
   await page.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
@@ -79,6 +81,8 @@ test('shows Chinese evening heat and whole-day cooldown with paired trial hours 
   await expect(chineseCard.locator('.tw-stream-notes')).toContainText('2/3 天達標');
   await expect(chineseCard.locator('.tw-stream-notes')).toContainText('全天已退燒 · 11/11 確認');
   await expect(chineseCard.locator('.tw-stream-metrics dd')).toHaveText(['0 人', '200 人', '+200 人']);
+  await expect(chineseCard.locator('.tw-stream-concentration span')).toHaveText(['最大台占比 90%', '其餘台 20 人', '1/3 晚']);
+  await expect(globalCard.locator('.tw-stream-concentration')).toHaveCount(0);
   await expect(page.locator('#streamHour')).toHaveCount(0);
   await page.locator('.tw-stream-method summary').click();
   await expect(page.locator('#streamCooldownRule')).toContainText('全球 3,000 人，中文區 100 人');

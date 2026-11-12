@@ -159,6 +159,17 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
         if (label) head.append(node('strong', 'tw-stream-signal', label));
         panel.append(head);
         if (trend) panel.append(renderMetrics(trend, key));
+        const concentration = trend?.concentration;
+        if (concentration) {
+          const metrics = node('p', 'tw-stream-concentration');
+          metrics.append(
+            node('span', '', `最大台占比 ${fmt(concentration.share)}%`),
+            node('span', '', `其餘台 ${fmt(concentration.remaining)} 人`),
+            node('span', 'tw-stream-concentration-coverage', `${concentration.nights}/${STREAM_HEAT_DAYS} 晚`),
+          );
+          metrics.title = '晚間逐時中位數，再取各晚中位數。';
+          panel.append(metrics);
+        }
         const reason = trend ? evidence(trend) : message;
         if (reason || trend?.wholeDay) {
           const notes = node('div', 'tw-stream-notes');
