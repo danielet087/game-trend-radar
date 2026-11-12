@@ -26,11 +26,9 @@
 .tw-stream-game-info img { flex:none; object-fit:cover; border-radius:7px; background:#e9e1f3; }
 .tw-stream-game-copy { min-width:0; }
 .tw-stream-game-title { margin:0; color:#322446; font-size:16px; font-weight:750; line-height:1.35; overflow-wrap:anywhere; }
-.tw-stream-game-title a:hover { text-decoration:underline; text-underline-offset:3px; }
-.tw-stream-profile-label { margin-inline-start:4px; color:#594173; font-size:12px; font-weight:650; white-space:nowrap; text-decoration:underline; text-underline-offset:3px; }
 .tw-stream-release { display:block; margin-top:3px; color:#5c506a; font-size:12px; }
 .tw-stream-game-actions { display:flex; flex-wrap:wrap; gap:0 12px; }
-.tw-stream-game-action { display:inline-flex; align-items:center; gap:3px; min-height:32px; color:#594173; font-size:13px; font-weight:700; text-decoration:underline; text-underline-offset:3px; }
+.tw-stream-game-action { display:inline-flex; align-items:center; min-height:32px; color:#594173; font-size:13px; font-weight:700; text-decoration:underline; text-underline-offset:3px; }
 .tw-stream-game-action:hover { color:#3d2b50; }
 .tw-stream-view :is(a,button,summary,select):focus-visible { outline:2px solid #77559c; outline-offset:3px; }
 

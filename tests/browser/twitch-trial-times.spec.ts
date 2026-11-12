@@ -59,11 +59,12 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
 
   await page.goto('twitch.html?view=streamer&sort=viewers&stream_hour=22');
   const card = page.locator('.tw-stream-game[data-game="1"]');
-  const profile = card.getByRole('link', { name:'試播遊戲 遊戲頁', exact:true });
-  const store = card.getByRole('link', { name:'Steam 商店', exact:true });
+  const profile = card.getByRole('link', { name:'遊戲頁（試播遊戲）', exact:true });
+  await expect(card.getByRole('heading', { name:'試播遊戲', exact:true })).toBeVisible();
+  await expect(card.getByRole('heading').getByRole('link')).toHaveCount(0);
   await expect(profile).toHaveAttribute('href', './game.html?appid=88001');
-  await expect(store).toHaveAttribute('href', 'https://store.steampowered.com/app/88001/');
-  await expect(store).toHaveAttribute('target', '_blank');
+  await expect(card.locator('.tw-stream-game-actions a')).toHaveText(['遊戲頁', '詳細分析']);
+  await expect(page.locator('#streamTrendResults a[href^="https://store.steampowered.com/"]')).toHaveCount(0);
   const globalCard = card.locator('[data-region="global"]');
   const chineseCard = card.locator('[data-region="zh"]');
   await expect(globalCard.locator('.tw-stream-signal')).toHaveText('已退燒');
@@ -79,9 +80,8 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
   await page.locator('.tw-stream-method summary').click();
   const storeOnly = page.locator('.tw-stream-game[data-game="2"]');
   await expect(storeOnly.locator('[data-region="global"] .tw-stream-reason')).toHaveText('尚無逐時紀錄');
-  await expect(storeOnly.getByRole('link', { name:'Steam 商店', exact:true })).toHaveAttribute('href', 'https://store.steampowered.com/app/88002/');
-  await expect(storeOnly.getByRole('link', { name:/遊戲頁|詳細分析/ })).toHaveCount(0);
-  const consoleProfile = page.locator('.tw-stream-game[data-game="3"]').getByRole('link', { name:'遊戲 3 遊戲頁', exact:true });
+  await expect(storeOnly.getByRole('link')).toHaveCount(0);
+  const consoleProfile = page.locator('.tw-stream-game[data-game="3"]').getByRole('link', { name:'遊戲頁（遊戲 3）', exact:true });
   await expect(consoleProfile).toHaveAttribute('href', './game.html?igdb=303&date=2026-11-20');
   await expect(page.locator('.tw-stream-game[data-game="4"]').getByRole('link')).toHaveCount(0);
   for (const width of [320, 390, 1280]) {
@@ -116,6 +116,11 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
   await expect(page.locator('.tw-stream-game')).toHaveCount(25);
   await profile.click();
   await expect(page.locator('#gameTitle')).toHaveText('試播遊戲');
+  await expect(page.locator('#gameSteam')).toHaveAttribute('href', 'https://store.steampowered.com/app/88001/');
+  const mobileStore = page.locator('#gameSteamMobile');
+  await expect(mobileStore).toBeVisible();
+  await expect(mobileStore).toHaveAttribute('href', 'https://store.steampowered.com/app/88001/');
+  await expect(mobileStore).toHaveAttribute('target', '_blank');
   await expect(back).toHaveAttribute('href', /twitch\.html\?.*view=streamer/);
   await back.click();
   await card.getByRole('link', { name:'詳細分析', exact:true }).click();
