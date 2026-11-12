@@ -121,26 +121,14 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
     const copy = node('div', 'tw-stream-game-copy');
     const title = node('h3', 'tw-stream-game-title', game.game_name);
     const actions = node('div', 'tw-stream-game-actions');
-    const storeLinks = steamStoreLinks(game);
-    const steamPage = storeLinks.map(link => steamPages.get(link.steam_appid)).find(Boolean);
-    function linkTitle(href) {
-      const name = node('a', '', game.game_name);
-      name.href = href;
-      name.append(node('span', 'tw-stream-profile-label', ' 遊戲頁'));
-      title.replaceChildren(name);
+    const steamPage = steamStoreLinks(game).map(link => steamPages.get(link.steam_appid)).find(Boolean);
+    function linkProfile(href) {
+      const profile = node('a', 'tw-stream-game-action', '遊戲頁');
+      profile.href = href;
+      profile.setAttribute('aria-label', `遊戲頁（${game.game_name}）`);
+      actions.prepend(profile);
     }
-    if (steamPage) linkTitle(steamPage);
-    for (const link of storeLinks) {
-      const label = storeLinks.length > 1 ? `Steam 商店 · ${link.steam_appid}` : 'Steam 商店';
-      const store = node('a', 'tw-stream-game-action', label);
-      const arrow = node('span', '', ' ↗');
-      arrow.setAttribute('aria-hidden', 'true');
-      store.append(arrow);
-      store.href = link.store_url;
-      store.target = '_blank';
-      store.rel = 'noopener noreferrer';
-      actions.append(store);
-    }
+    if (steamPage) linkProfile(steamPage);
     copy.append(title, actions);
     gameInfo.append(copy);
     const comparisons = node('div', 'tw-stream-comparisons');
@@ -177,7 +165,7 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
     }
     card.append(gameInfo, comparisons);
     renderHeat();
-    return { card, consoleId: steamPage ? null : canonicalID(game.igdb_id), linkTitle, renderHistory, renderHeat };
+    return { card, consoleId: steamPage ? null : canonicalID(game.igdb_id), linkProfile, renderHistory, renderHeat };
   }
 
   async function observeGame(id, record, archive, period) {
@@ -247,7 +235,7 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
           }
           for (const entry of consoleRows) {
             const href = pages.get(entry.consoleId);
-            if (href) entry.linkTitle(href);
+            if (href) entry.linkProfile(href);
           }
         }).catch(() => { /* Console profiles are independent of the observation list. */ });
       }
