@@ -7,7 +7,7 @@ import { canonicalID, HOUR } from './metrics.js';
 import { filterNames, fmt, node } from './presentation.js';
 import { projectRows, regionsFor } from './region-views.js';
 import { dateStart, dayOf, detailHref, fullSeriesRows, validChunk, validIndex } from './series.js';
-import { analyzeStreamHeat, streamHeatDate } from './stream-heat-model.js';
+import { analyzeStreamHeat, streamHeatDate, streamHeatThrough, STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS } from './stream-heat-model.js';
 import { CHINESE_DAILY_HEAT_HITS, cooldownThreshold } from './cooldown-model.js';
 import { selectObservation } from './selection.js';
 import { OBSERVATION_PAGE_SIZE } from './state.js';
@@ -16,7 +16,8 @@ const comparisonRegions = regionsFor('compare');
 const shortDate = date => date.slice(5).replace('-', '/');
 const signalLabels = {
   hot:'有熱度', sporadic:'零星有熱度', low:'熱度偏低',
-  cooled:'已退燒', pending:'統計中', insufficient:'資料不足',
+  cooled:'已退燒', suspected:'降溫觀察', recovered:'熱度回升', insufficient:'資料不足',
+  rising:'熱度上升', falling:'熱度下滑', breakout:'黑馬竄起',
 };
 
 function heatHref(id, date, record) {
@@ -31,18 +32,35 @@ function heatHref(id, date, record) {
   return url.href;
 }
 
-function renderMetrics(day, region) {
+function renderMetrics({ previous, recent, change }, region) {
   const metrics = node('dl', 'tw-stream-metrics');
-  const entries = [];
-  if (region === 'zh') entries.push([`達 ${fmt(day.threshold)} 人`, `${day.hits} 次`]);
-  else if (day.median !== null) entries.push(['觀眾中位數', `${fmt(day.median)} 人`]);
-  entries.push(['有效觀測', `${day.validHours}/24`]);
-  for (const [label, value] of entries) {
+  const absolute = change === null || (region === 'zh' && previous < STREAM_HEAT_FLOORS.zh);
+  const delta = Math.round((absolute ? recent - previous : change) * 10) / 10 || 0;
+  const rows = [
+    [`前 ${STREAM_HEAT_DAYS} 日`, `${fmt(previous)} 人`],
+    [`近 ${STREAM_HEAT_DAYS} 日`, `${fmt(recent)} 人`],
+    ['變化', `${delta > 0 ? '+' : ''}${fmt(delta)}${absolute ? ' 人' : '%'}`],
+  ];
+  for (const [label, value] of rows) {
     const metric = node('div');
+    if (label === '變化') metric.dataset.direction = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
     metric.append(node('dt', '', label), node('dd', '', value));
     metrics.append(metric);
   }
   return metrics;
+}
+
+function dailyEvidence(day, region) {
+  const latest = day.outlook.latest;
+  if (region === 'global') {
+    if (latest) return `${shortDate(latest.date)} 日中位數 ${fmt(latest.median)} 人 · 有效 ${latest.validHours}/24`;
+    return day.validHours ? `${shortDate(day.date)} · 有效 ${day.validHours}/24` : '';
+  }
+  const sample = day.validHours || !latest ? day : {
+    date:latest.date, hits:latest.thresholdHits, validHours:latest.validHours,
+  };
+  const gap = sample.signal === 'insufficient' ? ' · 資料不足' : '';
+  return `${shortDate(sample.date)} · ${sample.hits} 次達 ${fmt(day.threshold)} 人 · 有效 ${sample.validHours}/24${gap}`;
 }
 
 async function read(path, validate, force) {
@@ -58,8 +76,9 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
   let loaded = null, source = null, request = 0, selectedDate = null;
 
   const chineseThreshold = fmt(cooldownThreshold('zh')), hits = CHINESE_DAILY_HEAT_HITS;
+  $('streamTrendRule').textContent = `比較前後各 ${STREAM_HEAT_DAYS} 個已結束日。前期達全球 ${fmt(STREAM_HEAT_FLOORS.global)} 人或中文區 ${fmt(STREAM_HEAT_FLOORS.zh)} 人，且下降至少 25%，標示熱度下滑。`;
   $('streamDailyRule').textContent = `中文區達 ${chineseThreshold} 人至少 ${hits} 次為「有熱度」，1–${hits - 1} 次為「零星有熱度」，0 次為「熱度偏低」。缺測可能改變是否達到 ${hits} 次時顯示「資料不足」。`;
-  $('streamGlobalRule').textContent = `全球以每日觀眾中位數 ${fmt(cooldownThreshold('global'))} 人為門檻，每日至少 12 筆有效觀測。`;
+  $('streamGlobalRule').textContent = `全球用每日觀眾中位數，熱度門檻為 ${fmt(cooldownThreshold('global'))} 人。中文區趨勢用每日第 ${hits} 高觀眾數。趨勢比較每日至少需 12 筆有效觀測。`;
 
   function saveURL() {
     const url = new URL(location.href);
@@ -120,7 +139,7 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
     function renderHeat(days, message) {
       comparisons.replaceChildren(...comparisonRegions.map(key => {
         const day = days?.[key];
-        const signal = day?.signal ?? (message ? 'insufficient' : 'loading');
+        const signal = day?.outlook.signal ?? (message ? 'insufficient' : 'loading');
         const panel = node('div', 'tw-stream-sample');
         panel.dataset.region = key;
         panel.dataset.signal = signal;
@@ -129,7 +148,12 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
         const label = signalLabels[signal];
         if (label) head.append(node('strong', 'tw-stream-signal', label));
         panel.append(head);
-        if (day) panel.append(renderMetrics(day, key));
+        const comparison = day?.outlook.comparison;
+        if (comparison) panel.append(renderMetrics(comparison, key));
+        const evidence = day ? dailyEvidence(day, key) : message;
+        const confirmed = day?.outlook.confirmedOn;
+        if (evidence || confirmed) panel.append(node('p', 'tw-stream-reason',
+          [evidence, confirmed ? `${shortDate(confirmed)} 確認退燒` : ''].filter(Boolean).join(' · ')));
         const concentration = day?.concentration;
         if (concentration) {
           const metrics = node('p', 'tw-stream-concentration');
@@ -140,8 +164,6 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
           metrics.title = '當日有效逐時觀測的中位數';
           panel.append(metrics);
         }
-        const reason = day?.confirmedOn ? `${shortDate(day.confirmedOn)} 確認` : message;
-        if (reason) panel.append(node('p', 'tw-stream-reason', reason));
         return panel;
       }));
     }
@@ -248,7 +270,7 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
         if (active()) rows[index].renderHeat(days, message);
       }));
       if (!active()) return;
-      status.textContent = scope;
+      status.textContent = `${scope} · 趨勢截至 ${shortDate(streamHeatThrough(date, now))}`;
       if (!games.length) results.append(node('p', 'tw-stream-muted', '目前觀測在這個條件下沒有遊戲。'));
     } catch {
       if (!active()) return;

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('shows single-date heat and keeps the hourly comparison on the detail page', async ({ page }) => {
+test('shows an as-of-date trend and keeps the hourly comparison on the detail page', async ({ page }) => {
   await page.setViewportSize({ width:390, height:844 });
   await page.clock.setFixedTime(new Date('2026-11-11T12:00:00+08:00'));
   const hours: Record<string, object> = {}, indexHours: Record<string, string> = {};
@@ -15,7 +15,7 @@ test('shows single-date heat and keeps the hourly comparison on the detail page'
       indexHours[stamp] = generated_at;
       const viewers = audience[day - 5];
       const chinese = hour >= 19 ? chineseAudience[day - 5] + (day === 9 || day === 10 ? 100 : 0)
-        : day <= 7 ? 150 : day === 11 ? 5000 : 0;
+        : day <= 7 ? 500 : day === 11 ? 5000 : 0;
       const concentration = day === 10 && hour >= 19;
       hours[stamp] = { generated_at, viewer_count:viewers + (hour === 20 ? 200 : 0),
         streamer_count:hour === 20 ? 4 : 8, audience_regions:hour === 22 && day >= 7
@@ -73,16 +73,19 @@ test('shows single-date heat and keeps the hourly comparison on the detail page'
   const chineseCard = card.locator('[data-region="zh"]');
   const date = page.getByLabel('觀測日期（台灣）');
   await expect(date).toHaveValue('2026-11-11');
-  await expect(globalCard.locator('.tw-stream-signal')).toHaveText('統計中');
-  await expect(chineseCard.locator('.tw-stream-signal')).toHaveText('有熱度');
-  await expect(chineseCard.locator('.tw-stream-metrics dd')).toHaveText(['12 次', '12/24']);
+  await expect(page.locator('#streamPlanStatus')).toContainText('趨勢截至 11/10');
+  await expect(globalCard.locator('.tw-stream-signal')).toHaveText('已退燒');
+  await expect(globalCard.locator('.tw-stream-reason')).toContainText('11/10 日中位數 1,200 人');
+  await expect(chineseCard.locator('.tw-stream-signal')).toHaveText('熱度下滑');
+  await expect(chineseCard.locator('.tw-stream-reason')).toContainText('11/11 · 12 次達 100 人');
   await date.fill('2026-11-10');
   await expect(page).toHaveURL(/stream_date=2026-11-10/);
   await expect(globalCard.locator('.tw-stream-signal')).toHaveText('已退燒');
   await expect(globalCard.locator('.tw-stream-reason')).toContainText('11/11 確認');
-  await expect(globalCard.locator('.tw-stream-metrics dd')).toHaveText(['1,200 人', '24/24']);
-  await expect(chineseCard.locator('.tw-stream-signal')).toHaveText('有熱度');
-  await expect(chineseCard.locator('.tw-stream-metrics dd')).toHaveText(['4 次', '23/24']);
+  await expect(globalCard.locator('.tw-stream-metrics dd')).toHaveText(['3,800 人', '1,400 人', '-63.2%']);
+  await expect(chineseCard.locator('.tw-stream-signal')).toHaveText('熱度下滑');
+  await expect(chineseCard.locator('.tw-stream-metrics dd')).toHaveText(['500 人', '200 人', '-60%']);
+  await expect(chineseCard.locator('.tw-stream-reason')).toContainText('11/10 · 4 次達 100 人 · 有效 23/24');
   await expect(chineseCard.locator('.tw-stream-concentration span')).toHaveText(['最大台占比 90%', '其餘台 20 人']);
   await expect(globalCard.locator('.tw-stream-concentration')).toHaveCount(0);
   await expect(page.locator('#streamHour')).toHaveCount(0);
