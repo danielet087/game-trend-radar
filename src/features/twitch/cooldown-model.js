@@ -7,8 +7,8 @@ export const CHINESE_DAILY_HEAT_HITS = 4;
 export const cooldownThreshold = region => region === 'zh' ? 100 : 3000;
 const iso = at => new Date(at).toISOString().replace('.000Z', 'Z');
 const dayStart = at => Math.floor((at + TAIPEI_OFFSET) / DAY) * DAY - TAIPEI_OFFSET;
-const median = values => {
-  const sorted = [...values].sort((a, b) => a - b), middle = Math.floor(sorted.length / 2);
+const median = sorted => {
+  const middle = Math.floor(sorted.length / 2);
   return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
 };
 
@@ -60,11 +60,13 @@ export function analyzeCooldown(rows, { now = Date.now(), region, releaseDate } 
     const isClosed = at + DAY <= now;
     const missingHours = 24 - values.length;
     const thresholdHits = values.filter(value => value >= threshold).length;
-    const value = isClosed && values.length >= MIN_VALID_HOURS ? median(values) : null;
+    const sorted = isClosed && values.length >= MIN_VALID_HOURS ? values.sort((a, b) => a - b) : null;
+    const value = sorted ? median(sorted) : null;
+    const fourthHighestViewers = minimumHits && sorted ? sorted.at(-minimumHits) : null;
     const high = minimumHits ? thresholdHits >= minimumHits : value !== null && value >= threshold;
     const complete = isClosed && (minimumHits ? high || thresholdHits + missingHours < minimumHits : value !== null);
     const day = { date: iso(at + TAIPEI_OFFSET).slice(0, 10), startAt: iso(at), endAt: iso(at + DAY),
-      median: value, thresholdHits, validHours: values.length, missingHours, totalHours: 24,
+      median: value, fourthHighestViewers, thresholdHits, validHours: values.length, missingHours, totalHours: 24,
       complete, isClosed, belowThreshold: complete ? !high : null, status, lowDays };
 
     // Today's unfinished observations neither confirm nor reset yesterday's run.

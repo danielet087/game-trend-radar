@@ -45,16 +45,18 @@
 .tw-stream-sample-head { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:2px 5px; }
 .tw-stream-scope { display:inline-flex; align-items:baseline; flex-wrap:wrap; gap:0 6px; color:var(--stream-region-ink); font-size:13px; font-weight:750; }
 .tw-stream-signal { padding:2px 7px; border-radius:5px; color:#4e405c; background:#eae1f2; font-size:13px; font-weight:750; line-height:1.45; }
-.tw-stream-sample[data-signal="hot"] .tw-stream-signal { color:#1c5635; background:#d9efdf; }
+.tw-stream-sample:is([data-signal="hot"],[data-signal="rising"],[data-signal="breakout"],[data-signal="recovered"]) .tw-stream-signal { color:#1c5635; background:#d9efdf; }
 .tw-stream-sample[data-signal="cooled"] .tw-stream-signal { color:#80331f; background:#f6dfd4; }
-.tw-stream-sample[data-signal="sporadic"] .tw-stream-signal { color:#744719; background:#f6e7cf; }
-.tw-stream-sample:is([data-signal="insufficient"],[data-signal="pending"]) .tw-stream-signal { color:#574e62; background:#ebe6ed; }
+.tw-stream-sample:is([data-signal="sporadic"],[data-signal="falling"],[data-signal="suspected"]) .tw-stream-signal { color:#744719; background:#f6e7cf; }
+.tw-stream-sample[data-signal="insufficient"] .tw-stream-signal { color:#574e62; background:#ebe6ed; }
 .tw-stream-reason { margin:0; color:#51445f; font-size:13px; line-height:1.4; overflow-wrap:anywhere; }
 .tw-stream-sample[data-signal="loading"]::after { content:""; width:65%; height:.6em; border-radius:4px; background:currentColor; opacity:.09; }
 .tw-stream-metrics { display:flex; flex-wrap:wrap; gap:3px 16px; margin:0; }
 .tw-stream-metrics > div { display:flex; align-items:baseline; flex-wrap:wrap; gap:0 5px; min-width:0; }
 .tw-stream-metrics dt { color:#5c506a; font-size:12px; font-weight:500; }
 .tw-stream-metrics dd { margin:0; color:#332746; font-size:16px; font-weight:750; line-height:1.35; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.tw-stream-metrics [data-direction="up"] dd { color:#275e3b; }
+.tw-stream-metrics [data-direction="down"] dd { color:#8d4530; }
 .tw-stream-concentration { display:flex; flex-wrap:wrap; gap:2px 12px; margin:0; color:#315940; font-size:12px; font-weight:650; }
 .tw-stream-view .tw-load-more:has(> button[hidden]) { display:none; }
 

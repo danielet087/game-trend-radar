@@ -77,6 +77,29 @@ test('global daily heat uses the selected closed day median and excludes pre-rel
   assert.deepEqual([dailyGlobal.signal, dailyGlobal.median, dailyGlobal.validHours], ['hot',4000,24]);
 });
 
+test('the global outlook uses the last completed day before today has closed', () => {
+  const rows = [...daily('2026-11-10', 4200), ...daily('2026-11-11', 0)];
+  const result = heat(rows, '2026-11-11', { region:'global' });
+  assert.equal(result.signal, 'pending');
+  assert.equal(result.outlook.signal, 'hot');
+  assert.equal(result.outlook.latest.date, '2026-11-10');
+  assert.equal(result.outlook.latest.median, 4200);
+});
+
+test('Chinese outlook detects falling audiences when both periods reach the same number of hours', () => {
+  const rows = Array.from({ length:6 }, (_, i) => daily(`2026-11-${String(i + 5).padStart(2, '0')}`, hour => {
+    if (hour === 21) return 10000;
+    return [4,7,11].includes(hour) ? i < 3 ? 400 : 200 : 0;
+  })).flat();
+  const open = daily('2026-11-11', 9000);
+  const selected = heat([...rows, ...open], '2026-11-11');
+  assert.equal(selected.signal, 'hot');
+  assert.deepEqual(selected.outlook.comparison, { previous:400, recent:200, change:-50, signal:'falling' });
+  assert.equal(selected.outlook.signal, 'falling');
+  assert.equal(selected.outlook.latest.thresholdHits, 4);
+  assert.equal(heat([...rows, ...open], '2026-11-09').outlook.comparison, null);
+});
+
 function trialFixture(period, hours, counts, releaseDate) {
   const index = { months:{}, games:{ '1':{ release_reference:{ date:releaseDate, precision:'day' } } } }, chunks = {};
   period.slots.forEach((day, i) => hours.forEach((hour, j) => {
