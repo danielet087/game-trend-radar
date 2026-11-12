@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('shows regional heat on the planning list and keeps paired trial hours on the game detail', async ({ page }) => {
+test('shows Chinese evening heat and whole-day cooldown with paired trial hours on the game detail', async ({ page }) => {
   await page.setViewportSize({ width:390, height:844 });
   await page.clock.setFixedTime(new Date('2026-11-11T12:00:00+08:00'));
   const hours: Record<string, object> = {}, indexHours: Record<string, string> = {};
@@ -13,7 +13,9 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
       const stamp = new Date(at).toISOString().replace('.000Z', 'Z');
       const generated_at = new Date(at + 600000).toISOString().replace('.000Z', 'Z');
       indexHours[stamp] = generated_at;
-      const viewers = audience[day - 5], chinese = chineseAudience[day - 5];
+      const viewers = audience[day - 5];
+      const chinese = hour >= 19 ? chineseAudience[day - 5] + (day === 9 || day === 10 ? 100 : 0)
+        : day <= 7 ? 150 : day === 11 ? 5000 : 0;
       hours[stamp] = { generated_at, viewer_count:viewers + (hour === 20 ? 200 : 0),
         streamer_count:hour === 20 ? 4 : 8, audience_regions:hour === 22 && day >= 7
           ? undefined : { zh:{ viewer_count:chinese, streamer_count:chinese ? 1 : 0 } } };
@@ -67,13 +69,16 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
   await expect(page.locator('#streamTrendResults a[href^="https://store.steampowered.com/"]')).toHaveCount(0);
   const globalCard = card.locator('[data-region="global"]');
   const chineseCard = card.locator('[data-region="zh"]');
+  await expect(globalCard.locator('.tw-stream-hours')).toHaveText('全天');
+  await expect(chineseCard.locator('.tw-stream-hours')).toHaveText('19:00–23:59');
   await expect(globalCard.locator('.tw-stream-signal')).toHaveText('已退燒');
   await expect(globalCard.locator('.tw-stream-reason')).toContainText('11/11 確認');
   await expect(globalCard.locator('.tw-stream-metrics')).toContainText('3,800 人');
   await expect(globalCard.locator('.tw-stream-metrics')).toContainText('1,400 人');
   await expect(chineseCard.locator('.tw-stream-signal')).toHaveText('黑馬竄起');
-  await expect(chineseCard.locator('.tw-stream-reason')).toContainText('2/3 天達標');
-  await expect(chineseCard.locator('.tw-stream-metrics dd')).toHaveText(['0 人', '100 人']);
+  await expect(chineseCard.locator('.tw-stream-notes')).toContainText('2/3 天達標');
+  await expect(chineseCard.locator('.tw-stream-notes')).toContainText('全天已退燒 · 11/11 確認');
+  await expect(chineseCard.locator('.tw-stream-metrics dd')).toHaveText(['0 人', '200 人', '+200 人']);
   await expect(page.locator('#streamHour')).toHaveCount(0);
   await page.locator('.tw-stream-method summary').click();
   await expect(page.locator('#streamCooldownRule')).toContainText('全球 3,000 人，中文區 100 人');
@@ -128,7 +133,7 @@ test('shows regional heat on the planning list and keeps paired trial hours on t
   await expect(page.locator('#historyChart [data-region="zh"] .tw-chart-threshold-label')).toHaveText('100 人門檻');
   await expect(page.locator('#global-cooldownRule')).toContainText('3,000 人');
   await expect(page.locator('#zh-cooldownRule')).toContainText('100 人');
-  await expect(page.locator('#zh-cooldownStatus')).toHaveText('尚未符合退燒條件');
+  await expect(page.locator('#zh-cooldownStatus')).toHaveText('已退燒');
   await page.locator('#trialTimesJump').click();
   await expect(page).toHaveURL(/#trialTimes$/);
   await expect(page.locator('#trialHourA')).toHaveValue('22');

@@ -27,7 +27,8 @@ function heatFixture(values, region, releaseDate = '2026-11-05') {
   const period = streamHeatWindow(now);
   const rows = [...period.previous, ...period.recent].flatMap((day, i) =>
     Array.from({ length:values[i] === null ? 11 : 24 }, (_, hour) => ({
-      hour:iso(dateStart(day) + hour * 3600000), status:'observed', viewer_count:values[i] ?? 80000,
+      hour:iso(dateStart(day) + hour * 3600000), status:'observed',
+      viewer_count:typeof values[i] === 'function' ? values[i](hour) : values[i] ?? 80000,
     })));
   rows.push({ hour:iso(dateStart(dayOf(now)) + 8 * 3600000), status:'observed', viewer_count:100000 });
   const game = { tracking_status:'active', release_reference:{ date:releaseDate, precision:'day' } };
@@ -60,11 +61,42 @@ test('stream heat requires a meaningful regional breakout with two qualifying da
   assert.equal(breakout.recent.median, 100);
   assert.equal(breakout.change, null);
   assert.equal(heatFixture(counts, 'global').signal, 'not_popular');
-  assert.equal(heatFixture([0, 0, 2, 150, 100, 7], 'zh').signal, 'suspected');
-  assert.equal(heatFixture([0, 0, 2, 7, 150, 7], 'zh').signal, 'suspected');
+  const lastNightLow = heatFixture([0, 0, 2, 150, 100, 7], 'zh');
+  assert.equal(lastNightLow.signal, 'hot');
+  assert.equal(lastNightLow.wholeDay.signal, 'suspected');
+  const oneNightSpike = heatFixture([0, 0, 2, 7, 150, 7], 'zh');
+  assert.equal(oneNightSpike.signal, 'not_popular');
+  assert.equal(oneNightSpike.wholeDay.signal, 'suspected');
   assert.equal(heatFixture([0, 50, 2, 7, 150, 100], 'zh').signal, 'rising');
   assert.equal(heatFixture(counts, 'zh', '2026-11-06').previous.median, null);
   assert.equal(heatFixture([0, 0, 2, 7, 150, null], 'zh').signal, 'insufficient');
+});
+
+test('Chinese evening trends can rise while the whole-day cooldown rule confirms a decline', () => {
+  const night = viewers => hour => hour >= 19 ? viewers : 0;
+  const trend = heatFixture([150, 150, 150, night(100), night(250), night(400)], 'zh');
+  assert.equal(trend.signal, 'rising');
+  assert.equal(trend.growthDays, 2);
+  assert.equal(trend.previous.median, 150);
+  assert.deepEqual(trend.recent, { values:[100, 250, 400], median:250 });
+  assert.deepEqual(trend.wholeDay, { signal:'cooled', confirmedOn:'2026-11-11', threshold:100, lowDays:3 });
+});
+
+test('Chinese evening medians require three evening observations and include measured zeros', () => {
+  const sparse = heatFixture([0, 0, 0, 0, 0, hour => hour < 19 ? 900 : hour < 21 ? 400 : null], 'zh');
+  assert.equal(sparse.signal, 'insufficient');
+  assert.deepEqual(sparse.recent, { values:[0, 0], median:null });
+  const spike = heatFixture([0, 0, 0, 0, 0, hour => {
+    if (hour < 19) return 900;
+    if (hour === 19 || hour === 23) return 0;
+    return hour === 20 ? 10000 : null;
+  }], 'zh');
+  assert.equal(spike.signal, 'not_popular');
+  assert.deepEqual(spike.recent, { values:[0, 0, 0], median:0 });
+  const eveningOnly = heatFixture([0, 0, 0, 100, 200, hour => hour >= 19 ? 300 : null], 'zh');
+  assert.equal(eveningOnly.signal, 'breakout');
+  assert.equal(eveningOnly.recent.median, 200);
+  assert.equal(eveningOnly.wholeDay, undefined);
 });
 
 function trialFixture(period, hours, counts, releaseDate) {

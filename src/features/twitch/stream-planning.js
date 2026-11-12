@@ -4,21 +4,23 @@ import { archiveGames, selectArchive } from './archive-model.js';
 import { regionNames } from './audience-region.js';
 import { steamStoreLinks } from './identity.js';
 import { canonicalID } from './metrics.js';
-import { filterNames, fmt, node } from './presentation.js';
+import { filterNames, fmt, hourLabel, node } from './presentation.js';
 import { projectRows, regionsFor } from './region-views.js';
 import { dateStart, detailHref, fullSeriesRows, validChunk, validIndex } from './series.js';
-import { analyzeStreamHeat, streamHeatWindow, STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS } from './stream-heat-model.js';
+import { analyzeStreamHeat, streamHeatWindow, STREAM_EVENING, STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS } from './stream-heat-model.js';
 import { cooldownThreshold } from './cooldown-model.js';
 import { selectObservation } from './selection.js';
 import { OBSERVATION_PAGE_SIZE } from './state.js';
 
 const comparisonRegions = regionsFor('compare');
+const eveningRange = `${hourLabel(STREAM_EVENING.startHour)}–23:59`;
 const shortDate = date => date.slice(5).replace('-', '/');
 const signalLabels = {
   cooled:'已退燒', suspected:'降溫觀察', recovered:'熱度回升', falling:'觀眾下滑',
   breakout:'黑馬竄起', rising:'熱度上升', hot:'仍有熱度', not_popular:'尚未熱門',
   insufficient:'資料不足', ended:'已結束追蹤',
 };
+const eveningSignalLabels = { hot:'晚間有熱度', not_popular:'晚間觀眾少' };
 
 function heatHref(id) {
   const url = new URL(detailHref(id, location.search), location.href);
@@ -26,14 +28,19 @@ function heatHref(id) {
   return url.href;
 }
 
-function evidence(trend) {
+function evidence(trend, wholeDay = false) {
   switch (trend.signal) {
     case 'cooled': {
       const confirmed = trend.confirmedOn ? `${shortDate(trend.confirmedOn)} 確認 · ` : '';
+      const detail = `${confirmed}${trend.lowDays} 天低於 ${fmt(trend.threshold)} 人`;
+      if (wholeDay) return detail;
       const rising = trend.previous.median !== null && trend.recent.median !== null && trend.recent.median > trend.previous.median;
-      return `${confirmed}${trend.lowDays} 天低於 ${fmt(trend.threshold)} 人${rising ? '，近期回升' : '，可考慮收尾'}`;
+      return detail + (rising ? '，近期回升' : '，可考慮收尾');
     }
-    case 'suspected': return `${trend.lowDays}/${trend.confirmDays} 天低於 ${fmt(trend.threshold)} 人，先觀察`;
+    case 'suspected': {
+      const detail = `${trend.lowDays}/${trend.confirmDays} 天低於 ${fmt(trend.threshold)} 人`;
+      return wholeDay ? detail : `${detail}，先觀察`;
+    }
     case 'breakout': return `${trend.growthDays}/${STREAM_HEAT_DAYS} 天達標，可先試播`;
     case 'rising': return `${trend.growthDays}/${STREAM_HEAT_DAYS} 天達成成長門檻`;
     case 'recovered': return `最新有效日回到 ${fmt(trend.threshold)} 人門檻`;
@@ -43,7 +50,7 @@ function evidence(trend) {
   }
 }
 
-function renderMetrics(trend) {
+function renderMetrics(trend, region) {
   const metrics = node('dl', 'tw-stream-metrics');
   for (const [label, sample] of [['前 3 日', trend.previous], ['近 3 日', trend.recent]]) {
     const metric = node('div');
@@ -52,11 +59,14 @@ function renderMetrics(trend) {
     metric.append(node('dt', '', label), node('dd', missing ? 'tw-stream-metric-missing' : '', value));
     metrics.append(metric);
   }
-  if (trend.change !== null) {
-    const change = Math.round(trend.change * 10) / 10 || 0;
+  const smallChineseBase = region === 'zh' && trend.previous.median !== null && trend.recent.median !== null &&
+    trend.previous.median < STREAM_HEAT_FLOORS.zh;
+  const delta = smallChineseBase ? trend.recent.median - trend.previous.median : trend.change;
+  if (delta !== null) {
+    const change = Math.round(delta * 10) / 10 || 0;
     const metric = node('div', 'tw-stream-delta');
     metric.dataset.direction = change > 0 ? 'up' : change < 0 ? 'down' : 'flat';
-    metric.append(node('dt', '', '變化'), node('dd', '', `${change > 0 ? '+' : ''}${fmt(change)}%`));
+    metric.append(node('dt', '', '變化'), node('dd', '', `${change > 0 ? '+' : ''}${fmt(change)}${smallChineseBase ? ' 人' : '%'}`));
     metrics.append(metric);
   }
   return metrics;
@@ -75,8 +85,10 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
   let loaded = null, source = null, request = 0;
 
   const globalFloor = STREAM_HEAT_FLOORS.global, chineseFloor = STREAM_HEAT_FLOORS.zh;
-  $('streamCooldownRule').textContent = `全球 ${fmt(cooldownThreshold('global'))} 人，中文區 ${fmt(cooldownThreshold('zh'))} 人。曾達各區門檻後，連續 3 個有效日低於該門檻。`;
-  $('streamBreakoutRule').textContent = `較前 3 日成長至少 50%（基準為 0 時以增加人數判斷）。全球達 ${fmt(globalFloor)} 人且至少增加 ${fmt(globalFloor / 2)} 人，中文區達 ${fmt(chineseFloor)} 人且至少增加 ${fmt(chineseFloor / 2)} 人。近 3 日至少 2 天達標，包含最新一日，且此前未達區域門檻。`;
+  const chineseThreshold = fmt(cooldownThreshold('zh'));
+  $('streamEveningRule').textContent = `中文區採台灣 ${eveningRange}，每晚至少 ${STREAM_EVENING.minHours} 筆。晚間近 3 日中位數至少 ${chineseThreshold} 人為有熱度。前 3 日中位數低於 ${fmt(chineseFloor)} 人時顯示增減人數。`;
+  $('streamCooldownRule').textContent = `依全天每日中位數判定。全球 ${fmt(cooldownThreshold('global'))} 人，中文區 ${chineseThreshold} 人。曾達各區門檻後，連續 3 個有效日低於該門檻。`;
+  $('streamBreakoutRule').textContent = `較前 3 日成長至少 50%（基準為 0 時以增加人數判斷）。全球達 ${fmt(globalFloor)} 人且至少增加 ${fmt(globalFloor / 2)} 人，中文區晚間達 ${fmt(chineseFloor)} 人且至少增加 ${fmt(chineseFloor / 2)} 人。近 3 日至少 2 天達標，包含最新一日，且此前未達區域門檻。`;
 
   function saveURL() {
     const url = new URL(location.href);
@@ -140,12 +152,25 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
         panel.dataset.region = key;
         panel.dataset.signal = signal;
         const head = node('div', 'tw-stream-sample-head');
-        head.append(node('span', 'tw-stream-scope', regionNames[key]));
-        if (signalLabels[signal]) head.append(node('strong', 'tw-stream-signal', signalLabels[signal]));
+        const scope = node('span', 'tw-stream-scope', regionNames[key]);
+        scope.append(node('span', 'tw-stream-hours', key === 'zh' ? eveningRange : '全天'));
+        head.append(scope);
+        const label = (key === 'zh' ? eveningSignalLabels[signal] : null) ?? signalLabels[signal];
+        if (label) head.append(node('strong', 'tw-stream-signal', label));
         panel.append(head);
-        if (trend) panel.append(renderMetrics(trend));
+        if (trend) panel.append(renderMetrics(trend, key));
         const reason = trend ? evidence(trend) : message;
-        if (reason) panel.append(node('p', 'tw-stream-reason', reason));
+        if (reason || trend?.wholeDay) {
+          const notes = node('div', 'tw-stream-notes');
+          if (reason) notes.append(node('p', 'tw-stream-reason', reason));
+          if (trend?.wholeDay) {
+            const daily = node('p', 'tw-stream-reason');
+            daily.append(node('strong', '', `全天${signalLabels[trend.wholeDay.signal]}`),
+              ` · ${evidence(trend.wholeDay, true)}`);
+            notes.append(daily);
+          }
+          panel.append(notes);
+        }
         return panel;
       }));
     }
