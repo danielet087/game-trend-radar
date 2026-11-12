@@ -41,13 +41,15 @@
 }
 .tw-stream-sample[data-region="zh"] { --stream-region-ink:#315940; background:#eff7ef; border-color:#d3e6d7; }
 .tw-stream-sample-head { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:2px 5px; }
-.tw-stream-scope { color:var(--stream-region-ink); font-size:13px; font-weight:750; }
+.tw-stream-scope { display:inline-flex; align-items:baseline; flex-wrap:wrap; gap:0 6px; color:var(--stream-region-ink); font-size:13px; font-weight:750; }
+.tw-stream-hours { color:#5c506a; font-size:12px; font-weight:600; white-space:nowrap; }
 .tw-stream-signal { padding:2px 7px; border-radius:5px; color:#4e405c; background:#eae1f2; font-size:13px; font-weight:750; line-height:1.45; }
 .tw-stream-sample[data-signal="breakout"] .tw-stream-signal { color:#1c5635; background:#d9efdf; }
 .tw-stream-sample:is([data-signal="rising"],[data-signal="recovered"]) .tw-stream-signal { color:#295b3c; background:#e1efdf; }
 .tw-stream-sample[data-signal="cooled"] .tw-stream-signal { color:#80331f; background:#f6dfd4; }
 .tw-stream-sample:is([data-signal="suspected"],[data-signal="falling"]) .tw-stream-signal { color:#744719; background:#f6e7cf; }
 .tw-stream-sample:is([data-signal="insufficient"],[data-signal="ended"]) .tw-stream-signal { color:#574e62; background:#ebe6ed; }
+.tw-stream-notes { display:grid; gap:3px; }
 .tw-stream-reason { margin:0; color:#51445f; font-size:13px; line-height:1.4; overflow-wrap:anywhere; }
 .tw-stream-sample[data-signal="loading"]::after { content:""; width:65%; height:.6em; border-radius:4px; background:currentColor; opacity:.09; }
 .tw-stream-metrics { display:flex; flex-wrap:wrap; gap:3px 16px; margin:0; }
