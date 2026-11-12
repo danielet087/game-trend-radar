@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dateStart, dayOf, detailHref } from '../src/features/twitch/series.js';
 import { compareTrialTimes, trialWindow } from '../src/features/twitch/stream-planning-model.js';
-import { analyzeStreamHeat, streamHeatWindow } from '../src/features/twitch/stream-heat-model.js';
+import { analyzeStreamHeat, streamHeatDate } from '../src/features/twitch/stream-heat-model.js';
 import { analyzeCooldown } from '../src/features/twitch/cooldown-model.js';
 import { streamerAdvice } from '../src/features/twitch/heat-overview.js';
 
@@ -18,85 +18,63 @@ test('trial windows use the selected Taipei hour across seven closed days', () =
 });
 
 test('trial detail links carry the shared current filters and accept the previous region parameter', () => {
-  const link = new URL(detailHref('2', '?view=streamer&sort=streamers&stream_hour=0&stream_region=compare&stream_order=competition&stream_q=Game'), 'https://example.com/');
+  const link = new URL(detailHref('2', '?view=streamer&sort=streamers&stream_hour=0&stream_region=compare&stream_order=competition&stream_q=Game&stream_date=2026-11-10'), 'https://example.com/');
   assert.equal(link.searchParams.get('region'), 'compare');
-  assert.equal(link.searchParams.get('back'), 'sort=streamers&view=streamer&stream_hour=0&region=compare&stream_q=Game');
+  assert.equal(link.searchParams.get('back'), 'sort=streamers&view=streamer&stream_hour=0&stream_date=2026-11-10&region=compare&stream_q=Game');
 });
 
-function heatFixture(values, region, releaseDate = '2026-11-05') {
-  const period = streamHeatWindow(now);
-  const rows = [...period.previous, ...period.recent].flatMap((day, i) =>
-    Array.from({ length:values[i] === null ? 11 : 24 }, (_, hour) => ({
-      hour:iso(dateStart(day) + hour * 3600000), status:'observed',
-      viewer_count:typeof values[i] === 'function' ? values[i](hour) : values[i] ?? 80000,
-    })));
-  rows.push({ hour:iso(dateStart(dayOf(now)) + 8 * 3600000), status:'observed', viewer_count:100000 });
-  const game = { tracking_status:'active', release_reference:{ date:releaseDate, precision:'day' } };
-  return analyzeStreamHeat(rows, { game, region, period });
-}
+const game = { tracking_status:'active', release_reference:{ date:'2026-11-05', precision:'day' } };
+const daily = (date, viewers, missing = []) => Array.from({ length:24 }, (_, hour) => ({
+  hour:iso(dateStart(date) + hour * 3600000), status:missing.includes(hour) ? 'missing' : 'observed',
+  viewer_count:typeof viewers === 'function' ? viewers(hour) : viewers,
+}));
+const heat = (rows, date, options = {}) => analyzeStreamHeat(rows, { game, region:'zh', date, now, ...options });
+const high = hour => [4, 7, 11, 21].includes(hour) ? 100 : 0;
 
-test('stream heat uses closed Taipei days and the established cooldown date and coverage', () => {
-  const period = streamHeatWindow(now);
-  assert.deepEqual(period.previous, ['2026-11-05', '2026-11-06', '2026-11-07']);
-  assert.deepEqual(period.recent, ['2026-11-08', '2026-11-09', '2026-11-10']);
-  const cooled = heatFixture([3600, 3800, 4000, 1600, 1400, 1200], 'global');
-  assert.equal(cooled.signal, 'cooled');
-  assert.equal(cooled.confirmedOn, '2026-11-11');
-  assert.equal(cooled.lowDays, 3);
-  assert.equal(cooled.previous.median, 3800);
-  assert.equal(cooled.recent.median, 1400);
-  const gap = heatFixture([3600, 3800, 4000, 1600, null, 1200], 'global');
-  assert.equal(gap.signal, 'suspected');
-  assert.equal(gap.lowDays, 1);
-  assert.equal(gap.recent.median, null);
-  assert.equal(heatFixture([2200, 2500, 2800, 1000, 900, 800], 'global').signal, 'falling');
+test('Chinese daily heat counts all Taipei hours and separates sustained, sporadic, low and missing days', () => {
+  const date = '2026-11-10';
+  const warm = heat(daily(date, high), date);
+  assert.equal(warm.signal, 'hot');
+  assert.equal(warm.hits, 4);
+  assert.equal(warm.median, 0);
+  assert.equal(heat(daily(date, h => h === 11 ? 848 : 0), date).signal, 'sporadic');
+  assert.equal(heat(daily(date, 0, [0,1,2]), date).signal, 'low');
+  const ambiguous = heat(daily(date, h => [0,11,23].includes(h) ? 150 : 0, [3,4,5]), date);
+  assert.deepEqual([ambiguous.signal, ambiguous.hits, ambiguous.validHours], ['insufficient',3,21]);
 });
 
-test('stream heat requires a meaningful regional breakout with two qualifying days and a qualifying last day', () => {
-  const counts = [0, 0, 2, 7, 150, 100];
-  const breakout = heatFixture(counts, 'zh');
-  assert.equal(breakout.signal, 'breakout');
-  assert.equal(breakout.growthDays, 2);
-  assert.equal(breakout.previous.median, 0);
-  assert.equal(breakout.recent.median, 100);
-  assert.equal(breakout.change, null);
-  assert.equal(heatFixture(counts, 'global').signal, 'not_popular');
-  const lastNightLow = heatFixture([0, 0, 2, 150, 100, 7], 'zh');
-  assert.equal(lastNightLow.signal, 'hot');
-  assert.equal(lastNightLow.wholeDay.signal, 'suspected');
-  const oneNightSpike = heatFixture([0, 0, 2, 7, 150, 7], 'zh');
-  assert.equal(oneNightSpike.signal, 'not_popular');
-  assert.equal(oneNightSpike.wholeDay.signal, 'suspected');
-  assert.equal(heatFixture([0, 50, 2, 7, 150, 100], 'zh').signal, 'rising');
-  assert.equal(heatFixture(counts, 'zh', '2026-11-06').previous.median, null);
-  assert.equal(heatFixture([0, 0, 2, 7, 150, null], 'zh').signal, 'insufficient');
+test('open Taiwan day becomes hot at the fourth hit and retains its date across timezone boundaries', () => {
+  const date = '2026-11-11';
+  const rows = daily(date, h => [0,2,8,11].includes(h) ? 100 : 0);
+  const morning = heat(rows, date, { now:dateStart(date) + 10 * 3600000 });
+  assert.deepEqual([morning.signal, morning.hits, morning.validHours], ['pending',3,11]);
+  const noon = heat(rows, date, { now:dateStart(date) + 11 * 3600000 });
+  assert.deepEqual([noon.signal, noon.hits, noon.validHours], ['hot',4,12]);
+  assert.equal(streamHeatDate('2026-11-12', now), '2026-11-11');
+  assert.equal(streamHeatDate('2026-02-30', now), '2026-11-11');
 });
 
-test('Chinese evening trends can rise while the whole-day cooldown rule confirms a decline', () => {
-  const night = viewers => hour => hour >= 19 ? viewers : 0;
-  const trend = heatFixture([150, 150, 150, night(100), night(250), night(400)], 'zh');
-  assert.equal(trend.signal, 'rising');
-  assert.equal(trend.growthDays, 2);
-  assert.equal(trend.previous.median, 150);
-  assert.deepEqual(trend.recent, { values:[100, 250, 400], median:250 });
-  assert.deepEqual(trend.wholeDay, { signal:'cooled', confirmedOn:'2026-11-11', threshold:100, lowDays:3 });
+test('daily cooldown requires earlier heat and three weak determinate days, pausing short ambiguous gaps', () => {
+  const prior = daily('2026-11-05', high);
+  const weak = [...daily('2026-11-06', 0), ...daily('2026-11-08', h => h === 7 ? 120 : 0), ...daily('2026-11-09', 0)];
+  const shortGap = daily('2026-11-07', 0, [0,1,2,3]);
+  const rows = [...prior, ...shortGap, ...weak, ...daily('2026-11-10', high)];
+  assert.equal(heat(rows, '2026-11-07').signal, 'insufficient');
+  assert.equal(heat(rows, '2026-11-08').signal, 'sporadic');
+  const cooled = heat(rows, '2026-11-09');
+  assert.deepEqual([cooled.signal, cooled.confirmedOn], ['cooled','2026-11-10']);
+  assert.equal(heat(rows, '2026-11-10').signal, 'hot');
+  assert.equal(heat([...weak, ...shortGap], '2026-11-09').signal, 'low');
+  const longGap = daily('2026-11-07', 0, Array.from({ length:13 }, (_, h) => h));
+  assert.equal(heat([...prior, ...weak, ...longGap], '2026-11-09').signal, 'low');
 });
 
-test('Chinese evening medians require three evening observations and include measured zeros', () => {
-  const sparse = heatFixture([0, 0, 0, 0, 0, hour => hour < 19 ? 900 : hour < 21 ? 400 : null], 'zh');
-  assert.equal(sparse.signal, 'insufficient');
-  assert.deepEqual(sparse.recent, { values:[0, 0], median:null });
-  const spike = heatFixture([0, 0, 0, 0, 0, hour => {
-    if (hour < 19) return 900;
-    if (hour === 19 || hour === 23) return 0;
-    return hour === 20 ? 10000 : null;
-  }], 'zh');
-  assert.equal(spike.signal, 'not_popular');
-  assert.deepEqual(spike.recent, { values:[0, 0, 0], median:0 });
-  const eveningOnly = heatFixture([0, 0, 0, 100, 200, hour => hour >= 19 ? 300 : null], 'zh');
-  assert.equal(eveningOnly.signal, 'breakout');
-  assert.equal(eveningOnly.recent.median, 200);
-  assert.equal(eveningOnly.wholeDay, undefined);
+test('global daily heat uses the selected closed day median and excludes pre-release observations', () => {
+  const date = '2026-11-10';
+  const rows = [...daily('2026-11-04', 9000), ...daily(date, 4000)];
+  assert.equal(heat(rows, '2026-11-04', { region:'global' }).signal, 'insufficient');
+  const dailyGlobal = heat(rows, date, { region:'global' });
+  assert.deepEqual([dailyGlobal.signal, dailyGlobal.median, dailyGlobal.validHours], ['hot',4000,24]);
 });
 
 function trialFixture(period, hours, counts, releaseDate) {

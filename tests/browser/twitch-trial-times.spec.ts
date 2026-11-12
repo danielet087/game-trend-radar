@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('shows Chinese evening heat and whole-day cooldown with paired trial hours on the game detail', async ({ page }) => {
+test('shows single-date heat and keeps the hourly comparison on the detail page', async ({ page }) => {
   await page.setViewportSize({ width:390, height:844 });
   await page.clock.setFixedTime(new Date('2026-11-11T12:00:00+08:00'));
   const hours: Record<string, object> = {}, indexHours: Record<string, string> = {};
@@ -71,21 +71,23 @@ test('shows Chinese evening heat and whole-day cooldown with paired trial hours 
   await expect(page.locator('#streamTrendResults a[href^="https://store.steampowered.com/"]')).toHaveCount(0);
   const globalCard = card.locator('[data-region="global"]');
   const chineseCard = card.locator('[data-region="zh"]');
-  await expect(globalCard.locator('.tw-stream-hours')).toHaveText('全天');
-  await expect(chineseCard.locator('.tw-stream-hours')).toHaveText('19:00–23:59');
+  const date = page.getByLabel('觀測日期（台灣）');
+  await expect(date).toHaveValue('2026-11-11');
+  await expect(globalCard.locator('.tw-stream-signal')).toHaveText('統計中');
+  await expect(chineseCard.locator('.tw-stream-signal')).toHaveText('有熱度');
+  await expect(chineseCard.locator('.tw-stream-metrics dd')).toHaveText(['12 次', '12/24']);
+  await date.fill('2026-11-10');
+  await expect(page).toHaveURL(/stream_date=2026-11-10/);
   await expect(globalCard.locator('.tw-stream-signal')).toHaveText('已退燒');
   await expect(globalCard.locator('.tw-stream-reason')).toContainText('11/11 確認');
-  await expect(globalCard.locator('.tw-stream-metrics')).toContainText('3,800 人');
-  await expect(globalCard.locator('.tw-stream-metrics')).toContainText('1,400 人');
-  await expect(chineseCard.locator('.tw-stream-signal')).toHaveText('黑馬竄起');
-  await expect(chineseCard.locator('.tw-stream-notes')).toContainText('2/3 天達標');
-  await expect(chineseCard.locator('.tw-stream-notes')).toContainText('全天已退燒 · 11/11 確認');
-  await expect(chineseCard.locator('.tw-stream-metrics dd')).toHaveText(['0 人', '200 人', '+200 人']);
-  await expect(chineseCard.locator('.tw-stream-concentration span')).toHaveText(['最大台占比 90%', '其餘台 20 人', '1/3 晚']);
+  await expect(globalCard.locator('.tw-stream-metrics dd')).toHaveText(['1,200 人', '24/24']);
+  await expect(chineseCard.locator('.tw-stream-signal')).toHaveText('有熱度');
+  await expect(chineseCard.locator('.tw-stream-metrics dd')).toHaveText(['4 次', '23/24']);
+  await expect(chineseCard.locator('.tw-stream-concentration span')).toHaveText(['最大台占比 90%', '其餘台 20 人']);
   await expect(globalCard.locator('.tw-stream-concentration')).toHaveCount(0);
   await expect(page.locator('#streamHour')).toHaveCount(0);
   await page.locator('.tw-stream-method summary').click();
-  await expect(page.locator('#streamCooldownRule')).toContainText('全球 3,000 人，中文區 100 人');
+  await expect(page.locator('#streamDailyRule')).toContainText('達 100 人至少 4 次');
   await page.locator('.tw-stream-method summary').click();
   const storeOnly = page.locator('.tw-stream-game[data-game="2"]');
   await expect(storeOnly.locator('[data-region="global"] .tw-stream-reason')).toHaveText('尚無逐時紀錄');
@@ -123,6 +125,7 @@ test('shows Chinese evening heat and whole-day cooldown with paired trial hours 
   await expect(back).toHaveAttribute('href', /stream_limit=48/);
   await back.click();
   await expect(page.locator('.tw-stream-game')).toHaveCount(25);
+  await expect(date).toHaveValue('2026-11-10');
   await profile.click();
   await expect(page.locator('#gameTitle')).toHaveText('試播遊戲');
   await expect(page.locator('#gameSteam')).toHaveAttribute('href', 'https://store.steampowered.com/app/88001/');
@@ -133,11 +136,14 @@ test('shows Chinese evening heat and whole-day cooldown with paired trial hours 
   await expect(back).toHaveAttribute('href', /twitch\.html\?.*view=streamer/);
   await back.click();
   await card.getByRole('link', { name:'詳細分析', exact:true }).click();
+  await expect(page.locator('#historyStart')).toHaveValue('2026-11-10');
+  await expect(page.locator('#historyEnd')).toHaveValue('2026-11-10');
+  await page.locator('[data-history-range="7d"]').click();
   await expect(page.locator('#historyChart [data-region="global"] .tw-chart-threshold-label')).toHaveText('3,000 人門檻');
-  await expect(page.locator('#historyChart [data-region="zh"] .tw-chart-threshold-label')).toHaveText('100 人門檻');
+  await expect(page.locator('#historyChart [data-region="zh"] .tw-chart-threshold-label')).toHaveCount(0);
   await expect(page.locator('#global-cooldownRule')).toContainText('3,000 人');
-  await expect(page.locator('#zh-cooldownRule')).toContainText('100 人');
-  await expect(page.locator('#zh-cooldownStatus')).toHaveText('已退燒');
+  await expect(page.locator('#zh-cooldownRule')).toContainText('達 100 人至少 4 次');
+  await expect(page.locator('#zh-cooldownStatus')).toHaveText('今日有熱度');
   await page.locator('#trialTimesJump').click();
   await expect(page).toHaveURL(/#trialTimes$/);
   await expect(page.locator('#trialHourA')).toHaveValue('22');

@@ -30,7 +30,7 @@ test('Chinese cooldown activates at 100 and recovers at the same boundary indepe
   assert.equal(chinese.episodes[0].confirmedAt, hour(120));
   const recovered = analyzeCooldown(daily(99, 100, 99, 99, 99, 100), { now, region: 'zh' });
   assert.equal(recovered.status, 'recovered');
-  assert.equal(cooldownPresentation(recovered).label, '已回到 100 人門檻');
+  assert.equal(cooldownPresentation(recovered).label, '已回到每日熱度門檻');
   assert.equal(analyzeCooldown(daily(99, 99, 99, 99), { now, region: 'zh' }).status, 'not_popular');
 });
 
