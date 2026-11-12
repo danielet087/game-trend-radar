@@ -3,70 +3,43 @@ import { RadarData } from '../../domain/index.mjs';
 import { archiveGames, selectArchive } from './archive-model.js';
 import { regionNames } from './audience-region.js';
 import { steamStoreLinks } from './identity.js';
-import { canonicalID } from './metrics.js';
-import { filterNames, fmt, hourLabel, node } from './presentation.js';
+import { canonicalID, HOUR } from './metrics.js';
+import { filterNames, fmt, node } from './presentation.js';
 import { projectRows, regionsFor } from './region-views.js';
-import { dateStart, detailHref, fullSeriesRows, validChunk, validIndex } from './series.js';
-import { analyzeStreamHeat, streamHeatWindow, STREAM_EVENING, STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS } from './stream-heat-model.js';
-import { cooldownThreshold } from './cooldown-model.js';
+import { dateStart, dayOf, detailHref, fullSeriesRows, validChunk, validIndex } from './series.js';
+import { analyzeStreamHeat, streamHeatDate } from './stream-heat-model.js';
+import { CHINESE_DAILY_HEAT_HITS, cooldownThreshold } from './cooldown-model.js';
 import { selectObservation } from './selection.js';
 import { OBSERVATION_PAGE_SIZE } from './state.js';
 
 const comparisonRegions = regionsFor('compare');
-const eveningRange = `${hourLabel(STREAM_EVENING.startHour)}–23:59`;
 const shortDate = date => date.slice(5).replace('-', '/');
 const signalLabels = {
-  cooled:'已退燒', suspected:'降溫觀察', recovered:'熱度回升', falling:'觀眾下滑',
-  breakout:'黑馬竄起', rising:'熱度上升', hot:'仍有熱度', not_popular:'尚未熱門',
-  insufficient:'資料不足', ended:'已結束追蹤',
+  hot:'有熱度', sporadic:'零星有熱度', low:'熱度偏低',
+  cooled:'已退燒', pending:'統計中', insufficient:'資料不足',
 };
-const eveningSignalLabels = { hot:'晚間有熱度', not_popular:'晚間觀眾少' };
 
-function heatHref(id) {
+function heatHref(id, date, record) {
   const url = new URL(detailHref(id, location.search), location.href);
   url.searchParams.set('region', 'compare');
+  const start = dateStart(date);
+  if (Date.parse(record?.first_hour) < start + 24 * HOUR && Date.parse(record?.last_hour) >= start) {
+    url.searchParams.set('range', 'custom');
+    url.searchParams.set('start', date);
+    url.searchParams.set('end', date);
+  }
   return url.href;
 }
 
-function evidence(trend, wholeDay = false) {
-  switch (trend.signal) {
-    case 'cooled': {
-      const confirmed = trend.confirmedOn ? `${shortDate(trend.confirmedOn)} 確認 · ` : '';
-      const detail = `${confirmed}${trend.lowDays} 天低於 ${fmt(trend.threshold)} 人`;
-      if (wholeDay) return detail;
-      const rising = trend.previous.median !== null && trend.recent.median !== null && trend.recent.median > trend.previous.median;
-      return detail + (rising ? '，近期回升' : '，可考慮收尾');
-    }
-    case 'suspected': {
-      const detail = `${trend.lowDays}/${trend.confirmDays} 天低於 ${fmt(trend.threshold)} 人`;
-      return wholeDay ? detail : `${detail}，先觀察`;
-    }
-    case 'breakout': return `${trend.growthDays}/${STREAM_HEAT_DAYS} 天達標，可先試播`;
-    case 'rising': return `${trend.growthDays}/${STREAM_HEAT_DAYS} 天達成成長門檻`;
-    case 'recovered': return `最新有效日回到 ${fmt(trend.threshold)} 人門檻`;
-    case 'ended': return trend.lastDay ? `最後有效日 ${shortDate(trend.lastDay)}` : '';
-    case 'insufficient': return '等待近期有效資料';
-    default: return '';
-  }
-}
-
-function renderMetrics(trend, region) {
+function renderMetrics(day, region) {
   const metrics = node('dl', 'tw-stream-metrics');
-  for (const [label, sample] of [['前 3 日', trend.previous], ['近 3 日', trend.recent]]) {
+  const entries = [];
+  if (region === 'zh') entries.push([`達 ${fmt(day.threshold)} 人`, `${day.hits} 次`]);
+  else if (day.median !== null) entries.push(['觀眾中位數', `${fmt(day.median)} 人`]);
+  entries.push(['有效觀測', `${day.validHours}/24`]);
+  for (const [label, value] of entries) {
     const metric = node('div');
-    const missing = sample.median === null;
-    const value = missing ? `${sample.values.length}/${STREAM_HEAT_DAYS} 天有資料` : `${fmt(sample.median)} 人`;
-    metric.append(node('dt', '', label), node('dd', missing ? 'tw-stream-metric-missing' : '', value));
-    metrics.append(metric);
-  }
-  const smallChineseBase = region === 'zh' && trend.previous.median !== null && trend.recent.median !== null &&
-    trend.previous.median < STREAM_HEAT_FLOORS.zh;
-  const delta = smallChineseBase ? trend.recent.median - trend.previous.median : trend.change;
-  if (delta !== null) {
-    const change = Math.round(delta * 10) / 10 || 0;
-    const metric = node('div', 'tw-stream-delta');
-    metric.dataset.direction = change > 0 ? 'up' : change < 0 ? 'down' : 'flat';
-    metric.append(node('dt', '', '變化'), node('dd', '', `${change > 0 ? '+' : ''}${fmt(change)}${smallChineseBase ? ' 人' : '%'}`));
+    metric.append(node('dt', '', label), node('dd', '', value));
     metrics.append(metric);
   }
   return metrics;
@@ -79,22 +52,22 @@ async function read(path, validate, force) {
 }
 
 export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
-  const query = $('streamGameSearch');
+  const query = $('streamGameSearch'), dateInput = $('streamDate');
   const status = $('streamPlanStatus'), results = $('streamTrendResults'), matches = $('streamGameMatches');
   const refresh = $('streamRefresh'), more = $('streamLoadMore');
-  let loaded = null, source = null, request = 0;
+  let loaded = null, source = null, request = 0, selectedDate = null;
 
-  const globalFloor = STREAM_HEAT_FLOORS.global, chineseFloor = STREAM_HEAT_FLOORS.zh;
-  const chineseThreshold = fmt(cooldownThreshold('zh'));
-  $('streamEveningRule').textContent = `中文區採台灣 ${eveningRange}，每晚至少 ${STREAM_EVENING.minHours} 筆。晚間近 3 日中位數至少 ${chineseThreshold} 人為有熱度。前 3 日中位數低於 ${fmt(chineseFloor)} 人時顯示增減人數。`;
-  $('streamCooldownRule').textContent = `依全天每日中位數判定。全球 ${fmt(cooldownThreshold('global'))} 人，中文區 ${chineseThreshold} 人。曾達各區門檻後，連續 3 個有效日低於該門檻。`;
-  $('streamBreakoutRule').textContent = `較前 3 日成長至少 50%（基準為 0 時以增加人數判斷）。全球達 ${fmt(globalFloor)} 人且至少增加 ${fmt(globalFloor / 2)} 人，中文區晚間達 ${fmt(chineseFloor)} 人且至少增加 ${fmt(chineseFloor / 2)} 人。近 3 日至少 2 天達標，包含最新一日，且此前未達區域門檻。`;
+  const chineseThreshold = fmt(cooldownThreshold('zh')), hits = CHINESE_DAILY_HEAT_HITS;
+  $('streamDailyRule').textContent = `中文區達 ${chineseThreshold} 人至少 ${hits} 次為「有熱度」，1–${hits - 1} 次為「零星有熱度」，0 次為「熱度偏低」。缺測可能改變是否達到 ${hits} 次時顯示「資料不足」。`;
+  $('streamGlobalRule').textContent = `全球以每日觀眾中位數 ${fmt(cooldownThreshold('global'))} 人為門檻，每日至少 12 筆有效觀測。`;
 
   function saveURL() {
     const url = new URL(location.href);
     const term = query.value.trim();
     if (term) url.searchParams.set('stream_q', term);
     else url.searchParams.delete('stream_q');
+    if (selectedDate) url.searchParams.set('stream_date', selectedDate);
+    else url.searchParams.delete('stream_date');
     if (state.limit > OBSERVATION_PAGE_SIZE) url.searchParams.set('stream_limit', String(state.limit));
     else url.searchParams.delete('stream_limit');
     history.replaceState(null, '', url);
@@ -144,48 +117,35 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
     copy.append(title, actions);
     gameInfo.append(copy);
     const comparisons = node('div', 'tw-stream-comparisons');
-    function renderHeat(trends, message) {
+    function renderHeat(days, message) {
       comparisons.replaceChildren(...comparisonRegions.map(key => {
-        const trend = trends?.[key];
-        const signal = trend?.signal ?? (message ? 'insufficient' : 'loading');
+        const day = days?.[key];
+        const signal = day?.signal ?? (message ? 'insufficient' : 'loading');
         const panel = node('div', 'tw-stream-sample');
         panel.dataset.region = key;
         panel.dataset.signal = signal;
         const head = node('div', 'tw-stream-sample-head');
-        const scope = node('span', 'tw-stream-scope', regionNames[key]);
-        scope.append(node('span', 'tw-stream-hours', key === 'zh' ? eveningRange : '全天'));
-        head.append(scope);
-        const label = (key === 'zh' ? eveningSignalLabels[signal] : null) ?? signalLabels[signal];
+        head.append(node('span', 'tw-stream-scope', regionNames[key]));
+        const label = signalLabels[signal];
         if (label) head.append(node('strong', 'tw-stream-signal', label));
         panel.append(head);
-        if (trend) panel.append(renderMetrics(trend, key));
-        const concentration = trend?.concentration;
+        if (day) panel.append(renderMetrics(day, key));
+        const concentration = day?.concentration;
         if (concentration) {
           const metrics = node('p', 'tw-stream-concentration');
           metrics.append(
             node('span', '', `最大台占比 ${fmt(concentration.share)}%`),
             node('span', '', `其餘台 ${fmt(concentration.remaining)} 人`),
-            node('span', 'tw-stream-concentration-coverage', `${concentration.nights}/${STREAM_HEAT_DAYS} 晚`),
           );
-          metrics.title = '晚間逐時中位數，再取各晚中位數。';
+          metrics.title = '當日有效逐時觀測的中位數';
           panel.append(metrics);
         }
-        const reason = trend ? evidence(trend) : message;
-        if (reason || trend?.wholeDay) {
-          const notes = node('div', 'tw-stream-notes');
-          if (reason) notes.append(node('p', 'tw-stream-reason', reason));
-          if (trend?.wholeDay) {
-            const daily = node('p', 'tw-stream-reason');
-            daily.append(node('strong', '', `全天${signalLabels[trend.wholeDay.signal]}`),
-              ` · ${evidence(trend.wholeDay, true)}`);
-            notes.append(daily);
-          }
-          panel.append(notes);
-        }
+        const reason = day?.confirmedOn ? `${shortDate(day.confirmedOn)} 確認` : message;
+        if (reason) panel.append(node('p', 'tw-stream-reason', reason));
         return panel;
       }));
     }
-    function renderHistory(record) {
+    function renderHistory(record, date) {
       const reference = record?.release_reference;
       if (reference?.precision === 'day' && Number.isFinite(dateStart(reference.date))) {
         const release = node('time', 'tw-stream-release', `上市參考 ${reference.date.replaceAll('-', '/')}`);
@@ -195,7 +155,7 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
       }
       if (record?.archive_eligible === true && Array.isArray(record.months) && record.months.length) {
         const analysis = node('a', 'tw-stream-game-action', '詳細分析');
-        analysis.href = heatHref(game.game_id);
+        analysis.href = heatHref(game.game_id, date, record);
         actions.append(analysis);
       }
     }
@@ -204,7 +164,7 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
     return { card, consoleId: steamPage ? null : canonicalID(game.igdb_id), linkProfile, renderHistory, renderHeat };
   }
 
-  async function observeGame(id, record, archive, period) {
+  async function observeGame(id, record, archive, date, now) {
     if (!archive) return { message:'逐時資料暫時無法讀取' };
     if (!Array.isArray(record?.months) || !record.months.length) return { message:'尚無逐時紀錄' };
     try {
@@ -219,13 +179,16 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
         return [month, await archive.chunks.get(key)];
       })));
       const rows = fullSeriesRows(archive.index, chunks, id);
-      const trends = comparisonRegions.map(region => [region,
-        analyzeStreamHeat(region === 'global' ? rows : projectRows(rows, region), { game:record, region, period })]);
-      return { trends:Object.fromEntries(trends) };
+      const days = comparisonRegions.map(region => [region,
+        analyzeStreamHeat(region === 'global' ? rows : projectRows(rows, region), { game:record, region, date, now })]);
+      return { days:Object.fromEntries(days) };
     } catch { return { message:'逐時資料暫時無法讀取' }; }
   }
 
   async function load(force = false) {
+    const now = Date.now(), date = streamHeatDate(selectedDate, now);
+    dateInput.max = dayOf(now);
+    dateInput.value = date;
     saveURL();
     const token = ++request;
     const active = () => token === request && !signal.aborted;
@@ -249,7 +212,6 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
       }
       const { visible } = selectObservation(state);
       const games = visible.slice(0, state.limit);
-      const period = streamHeatWindow();
       const scope = `${visible.length} 款 · ${filterNames[state.filter]}${state.query ? ` · 搜尋「${state.query}」` : ''}`;
       status.textContent = `${scope} · 讀取熱度資料…`;
       more.hidden = games.length === visible.length;
@@ -281,13 +243,12 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
       renderSearch();
       await Promise.all(games.map(async (game, index) => {
         const id = game.game_id, record = archive?.index.games[id];
-        rows[index].renderHistory(record);
-        const { trends, message } = await observeGame(id, record, archive, period);
-        if (active()) rows[index].renderHeat(trends, message);
+        rows[index].renderHistory(record, date);
+        const { days, message } = await observeGame(id, record, archive, date, now);
+        if (active()) rows[index].renderHeat(days, message);
       }));
       if (!active()) return;
-      const range = [period.recent[0], period.recent.at(-1)].map(shortDate).join('–');
-      status.textContent = `${scope} · 觀眾中位數 · 近 3 日 ${range}（台灣）`;
+      status.textContent = scope;
       if (!games.length) results.append(node('p', 'tw-stream-muted', '目前觀測在這個條件下沒有遊戲。'));
     } catch {
       if (!active()) return;
@@ -299,12 +260,19 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
   }
 
   query.addEventListener('input', () => { saveURL(); renderSearch(); }, { signal });
+  dateInput.addEventListener('change', () => {
+    const now = Date.now(), date = streamHeatDate(dateInput.value, now);
+    selectedDate = date === dayOf(now) ? null : date;
+    load();
+  }, { signal });
   refresh.addEventListener('click', () => load(true), { signal });
   more.addEventListener('click', () => { state.limit += OBSERVATION_PAGE_SIZE; load(); }, { signal });
   return {
     open() {
       const params = new URLSearchParams(location.search);
       query.value = (params.get('stream_q') || '').slice(0, 160);
+      const now = Date.now(), date = streamHeatDate(params.get('stream_date'), now);
+      selectedDate = date === dayOf(now) ? null : date;
       const limit = Number(params.get('stream_limit'));
       if (Number.isSafeInteger(limit) && limit > state.limit) state.limit = limit;
       return load();

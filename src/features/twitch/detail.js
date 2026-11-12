@@ -99,7 +99,7 @@ export function initTwitchDetail() {
       const chart = mount(roots.get(group.region), { rows: group.data, gameName: (game.display_name || game.name) + ' · ' + regionNames[group.region],
         rangeOptions: [], initialRange: daily ? Number.MAX_SAFE_INTEGER : rows.length, rangeHours: rows.length,
         initialMetric: metric, granularity: daily ? 'daily' : 'hourly', connectGaps: false, domainMaximum: max,
-        ...(daily ? { referenceValue: cooldownThreshold(group.region) } : {}),
+        ...(daily && group.region === 'global' ? { referenceValue: cooldownThreshold(group.region) } : {}),
         onSelect(i) { charts.forEach(other => { if (other !== chart) other.select(i, false); }); },
         onMetricChange(value) {
           metric = value; syncURL(); renderHistory();
@@ -113,7 +113,8 @@ export function initTwitchDetail() {
       charts.forEach(chart => chart.select(selected, false));
     }
     $('historyChartNote').textContent = (scopes.history === 'compare' ? '全球包含中文區；兩圖使用相同時間與縱軸刻度，資料點與時間軸同步定位。' : '') +
-      (daily ? '每日總觀眾中位數以已結束的台灣日期統計。虛線標示各區退燒門檻。' : '逐時數值保留原始紀錄。單台觀眾中位數與每日總觀眾中位數為不同指標。');
+      (daily ? '每日總觀眾中位數以已結束的台灣日期統計。' + (scopes.history === 'zh' ? '' : '虛線標示全球每日門檻。')
+        : '逐時數值保留原始紀錄。單台觀眾中位數與每日總觀眾中位數為不同指標。');
   }
   function table() {
     const regions = regionsFor(scopes.history), data = regions.map(region => projectRows(rows, region));
@@ -162,7 +163,12 @@ export function initTwitchDetail() {
     try {
       const full = await fullHistoryLoader();
       if (disposed || token !== summaryRequest || version !== request) return;
-      roots.forEach((root, region) => renderHeatOverview(root, cooldownPresentation(analyzeCooldown(projectRows(full, region), { region }), context(region))));
+      roots.forEach((root, region) => {
+        const reference = game.release_reference;
+        const releaseDate = region === 'zh' && reference?.precision === 'day' ? reference.date : null;
+        const data = analyzeCooldown(projectRows(full, region), { region, releaseDate });
+        renderHeatOverview(root, cooldownPresentation(data, context(region)));
+      });
     } catch {
       if (disposed || token !== summaryRequest || version !== request) return;
       roots.forEach((root, region) => renderHeatOverview(root, { status: 'unavailable', label: '全期摘要暫時無法讀取，請重新載入。', scope: regionNames[region] }));

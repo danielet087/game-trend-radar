@@ -8,13 +8,13 @@
   <meta name="description" content="Twitch 熱門新作與 Steam 近期上市遊戲的直播觀測，查看中文區與全球觀眾、開台數、中位數與互動逐時曲線。">
   <title>Twitch 新作觀測・實驗｜Game Trend Radar</title>
   <link rel="icon" id="siteFavicon" type="image/svg+xml">
-  <script type="module" crossorigin src="/game-trend-radar/assets/app/twitch-ClmlN9m6.js"></script>
+  <script type="module" crossorigin src="/game-trend-radar/assets/app/twitch-B2NHsfNc.js"></script>
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/contracts-CXfvy2kB.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/storage-BcgAUlou.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/followers-Czt0-Vco.js">
-  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-Bj_NPVic.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-BkGV4OBx.js">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/bootstrap-oTuMO7h7.css">
-  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/twitch-BR5l5Zr8.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/twitch-BBRPPw3a.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-C_gCAust.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/styles-BXThwy_-.css">
 </head>
@@ -101,14 +101,14 @@
           </div>
         </div>
         <div class="tw-stream-summary">
+          <label class="tw-stream-date">觀測日期（台灣）<input id="streamDate" type="date"></label>
           <p id="streamPlanStatus" class="tw-stream-status" role="status"></p>
           <details class="tw-stream-method">
             <summary>判讀方式</summary>
             <div>
-              <p>比較近 3 日與前 3 日的每日觀眾中位數。只用已結束的台灣日，已知上市日則從上市起算。</p>
-              <p>全球採全天，每日至少 12 筆。<span id="streamEveningRule"></span></p>
-              <p><strong>全天退燒</strong> <span id="streamCooldownRule"></span></p>
-              <p><strong>黑馬竄起</strong> <span id="streamBreakoutRule"></span></p>
+              <p id="streamDailyRule"></p>
+              <p id="streamGlobalRule"></p>
+              <p>今天先顯示統計中，中文區達標即可顯示有熱度。曾有熱度後連續 3 個可判定日轉弱，確認已退燒。</p>
             </div>
           </details>
         </div>

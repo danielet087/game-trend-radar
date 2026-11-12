@@ -71,8 +71,10 @@ export function overviewQuery(search) {
   if (['archive', 'streamer'].includes(view)) output.set('view', view);
   if (view === 'streamer') {
     const hour = input.get('stream_hour'), query = input.get('stream_q')?.slice(0, 160);
+    const date = input.get('stream_date');
     const limit = Number(input.get('stream_limit'));
     if (/^(?:[01]?\d|2[0-3])$/.test(hour || '')) output.set('stream_hour', hour);
+    if (Number.isFinite(dateStart(date))) output.set('stream_date', date);
     if (Number.isSafeInteger(limit) && limit > 0) output.set('stream_limit', String(limit));
     if (!output.has('region') && ['global', 'zh', 'compare'].includes(input.get('stream_region'))) output.set('region', input.get('stream_region'));
     if (query) output.set('stream_q', query);

@@ -1,4 +1,4 @@
-import { analyzeCooldown, cooldownThreshold } from './cooldown-model.js';
+import { analyzeCooldown, CHINESE_DAILY_HEAT_HITS, cooldownThreshold } from './cooldown-model.js';
 
 const NS = 'http://www.w3.org/2000/svg', HOUR = 3600000;
 const finite = value => typeof value === 'number' && Number.isFinite(value);
@@ -51,10 +51,15 @@ export function cooldownPresentation(data, context = {}, now = Date.now()) {
   const tolerance = (data.settings.maxMissingHours ?? 12) * HOUR;
   const stale = context.trackingStatus === 'active' &&
     (!Number.isFinite(last) || Number.isFinite(latest) && latest - last > tolerance || now - last > tolerance);
-  const status = stale ? 'stale' : data.status;
+  const latestDay = data.days.at(-1);
+  const todayHasHeat = Boolean(!stale && context.trackingStatus !== 'ended' && data.settings.minimumHits &&
+    latestDay && !latestDay.isClosed && Date.parse(latestDay.startAt) <= now && Date.parse(latestDay.endAt) > now &&
+    latestDay.thresholdHits >= data.settings.minimumHits);
+  const status = stale ? 'stale' : todayHasHeat ? 'watching' : data.status;
   const reference = context.releaseReference;
-  const label = status === 'recovered' ? `已回到 ${fmt(data.settings.threshold)} 人門檻` : statuses[status] || statuses.insufficient;
-  return { data, status, label,
+  const recoveryLabel = data.settings.minimumHits ? '已回到每日熱度門檻' : `已回到 ${fmt(data.settings.threshold)} 人門檻`;
+  const label = todayHasHeat ? '今日有熱度' : status === 'recovered' ? recoveryLabel : statuses[status] || statuses.insufficient;
+  return { data, status, label, todayHasHeat,
     releaseDate: reference?.precision === 'day' && calendarDate(reference.date) !== null ? reference.date : null,
     historical: context.trackingStatus === 'ended', scope: context.scope };
 }
@@ -95,6 +100,10 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
   root.replaceChildren(head, intro, range, releaseSummary, controls, stateLine, summary, evidence, decline, figure, reader, events, method);
 
   const thresholdLabel = () => `${fmt(cooldownThreshold(context.region))} 人`;
+  const usesHits = () => context.region === 'zh';
+  const hotRule = () => usesHits() ? `每日達 ${thresholdLabel()}至少 ${CHINESE_DAILY_HEAT_HITS} 次` : `每日中位數達 ${thresholdLabel()}`;
+  const lowRule = () => usesHits() ? `每日達標少於 ${CHINESE_DAILY_HEAT_HITS} 次` : `每日中位數低於 ${thresholdLabel()}`;
+  const recoveryRule = () => usesHits() ? '回到每日熱度門檻' : `回到 ${thresholdLabel()}門檻`;
 
   function releaseDate() {
     const reference = context.releaseReference;
@@ -110,7 +119,7 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
     }
     const point = episode?.candidateAt, label = dayHint(point);
     const firstDay = releaseDayIndex(data.firstHour, date);
-    releaseSummary.append(el('strong', '', point ? `${label}起連續低於 ${thresholdLabel()}` : '以上市日 Day 0 對齊觀測'));
+    releaseSummary.append(el('strong', '', point ? `${label}起 ${lowRule()}` : '以上市日 Day 0 對齊觀測'));
     if (episode?.confirmedAt) releaseSummary.append(el('p', '', `${dayHint(episode.confirmedAt)}確認退燒；確認時間 ${at(episode.confirmedAt)}。`));
     else if (point) releaseSummary.append(el('p', '', '尚未累積滿 3 個有效統計日，暫不確認退燒。'));
     releaseSummary.append(el('p', '', `上市日 ${date.replaceAll('-', '/')}（${context.releaseReference.source || '已保存的上市日期'}）`));
@@ -125,8 +134,8 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
     for (const [index, episode] of (data?.episodes || []).entries()) {
       result.push({ at: episode.candidateAt, label: `第 ${index + 1} 波連續低熱度起始日`, type: 'candidate' },
         { at: episode.confirmedAt, label: `第 ${index + 1} 波退燒確認`, type: 'confirmed' });
-      if (episode.recoveryAt) result.push({ at: episode.recoveryAt, label: `回到 ${thresholdLabel()}門檻的統計日`, type: 'recovery' });
-      if (episode.recoveryConfirmedAt) result.push({ at: episode.recoveryConfirmedAt, label: `已回到 ${thresholdLabel()}門檻`, type: 'recovered' });
+      if (episode.recoveryAt) result.push({ at: episode.recoveryAt, label: `${recoveryRule()}的統計日`, type: 'recovery' });
+      if (episode.recoveryConfirmedAt) result.push({ at: episode.recoveryConfirmedAt, label: `已${recoveryRule()}`, type: 'recovered' });
       if (episode.interruptedAt) result.push({ at: episode.interruptedAt, label: '觀測中斷，需重新確認', type: 'gap' });
       for (const confirmation of episode.reconfirmations || [])
         result.push({ at: confirmation.confirmedAt, label: `第 ${index + 1} 波中斷後再次確認`, type: 'confirmed' });
@@ -139,7 +148,8 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
     for (const day of data?.days || []) {
       if (!day.isClosed) continue;
       const time = Date.parse(day.endAt);
-      points.set(time, { ...(points.get(time) || { hour: day.endAt }), day: day.date, median: day.median, validHours: day.validHours });
+      points.set(time, { ...(points.get(time) || { hour: day.endAt }), day: day.date, median: day.median,
+        thresholdHits: day.thresholdHits, validHours: day.validHours });
     }
     for (const event of eventEntries()) {
       const time = Date.parse(event.at);
@@ -153,7 +163,8 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
     const point = points[selected];
     const labels = point ? eventEntries().filter(item => Date.parse(item.at) === Date.parse(point.hour)).map(item => item.label) : [];
     const observed = point && Object.hasOwn(point, 'raw') ? ` · 總觀眾 ${fmt(point.raw)} 人` : '';
-    const daily = point?.day ? ` · ${point.day} 每日中位數 ${fmt(point.median)}${finite(point.median) ? ' 人' : '（資料不足）'} · 有效 ${point.validHours} / 24 筆` : '';
+    const dailyValue = usesHits() ? `達標 ${point?.thresholdHits} 次` : `每日中位數 ${fmt(point?.median)}${finite(point?.median) ? ' 人' : '（資料不足）'}`;
+    const daily = point?.day ? ` · ${point.day} ${dailyValue} · 有效 ${point.validHours} / 24 筆` : '';
     const text = point ? `${at(point.hour)}${dayHint(point.hour) ? ` · ${dayHint(point.hour)}` : ''}${observed}${daily} · 固定門檻 ${thresholdLabel()}${labels.length ? ` · ${labels.join('、')}` : ''}` : '沒有可查看的觀測。';
     readout.textContent = text; scrubber.setAttribute('aria-valuetext', text);
     if (geometry && point) {
@@ -198,13 +209,14 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
     const y = value => top + (h - top - bottom) * (1 - value / high);
     const svg = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, role: 'img', 'aria-labelledby': `${uid('cooldownSvgTitle')} ${uid('cooldownSvgDesc')}` });
     svg.append(svgEl('title', { id: uid('cooldownSvgTitle') }, `${context.gameName || '遊戲'}的全期熱度退潮觀測`),
-      svgEl('desc', { id: uid('cooldownSvgDesc') }, '淡線為逐時總觀眾，紫線為每日觀眾中位數（日結束時標示），橘色虛線固定在三千人。連續低熱度起始日與退燒確認時間分開標示；可使用下方滑桿或事件按鈕查看。'));
+      svgEl('desc', { id: uid('cooldownSvgDesc') }, `淡線為逐時總觀眾，紫線為每日觀眾中位數，橘色虛線標示 ${thresholdLabel()}。使用滑桿或事件按鈕查看退燒起始與確認時間。`));
     const lastClosedEnd = Date.parse((data.days || []).findLast(day => day.isClosed)?.endAt);
     for (const episode of data.episodes) {
       const phases = [{ startedAt: episode.candidateAt, confirmedAt: episode.confirmedAt }, ...(episode.reconfirmations || [])];
       for (const phase of phases) {
         const from = Date.parse(phase.startedAt), confirmed = Date.parse(phase.confirmedAt);
-        const gap = (data.days || []).find(day => day.isClosed && !day.complete && Date.parse(day.startAt) >= confirmed);
+        const gap = (data.days || []).find(day => day.isClosed && !day.complete &&
+          day.missingHours > data.settings.maxMissingHours && Date.parse(day.startAt) >= confirmed);
         const to = Math.min(end, lastClosedEnd, ...[episode.recoveryAt, gap?.startAt].filter(Boolean).map(value => Date.parse(value)));
         if (Number.isFinite(from) && Number.isFinite(to) && to > from)
           svg.append(svgEl('rect', { x: x(from), y: top, width: Math.max(1, x(to) - x(from)), height: h - top - bottom, class: 'tw-cooldown-band' }));
@@ -268,9 +280,11 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
     const list = el('div', 'tw-cooldown-daily-list');
     for (const day of days) {
       const item = el('div', 'tw-cooldown-day'); item.dataset.below = String(day.belowThreshold);
-      item.append(el('span', '', day.date.replaceAll('-', '/')), el('strong', '', finite(day.median) ? `${fmt(day.median)} 人` : '資料不足'),
+      const value = usesHits() ? `達標 ${day.thresholdHits} 次` : finite(day.median) ? `${fmt(day.median)} 人` : '資料不足';
+      const gap = day.missingHours > data.settings.maxMissingHours ? '缺測超過 12 小時，中斷計數' : '缺測可能影響判定，暫停計數';
+      item.append(el('span', '', day.date.replaceAll('-', '/')), el('strong', '', value),
         el('small', '', `有效 ${day.validHours} / 24 筆 · 缺 ${day.missingHours ?? 24 - day.validHours} 小時`),
-        el('small', '', !day.complete ? '缺測超過 12 小時，中斷計數' : day.status === 'not_popular' ? '尚未達熱門門檻，不累積退燒天數' : day.belowThreshold ? `低於 ${thresholdLabel()}` : `達到 ${thresholdLabel()}，低熱度計數歸零`));
+        el('small', '', !day.complete ? gap : day.status === 'not_popular' ? '尚未達熱門門檻，不累積退燒天數' : day.belowThreshold ? lowRule() : `${hotRule()}，低熱度計數歸零`));
       list.append(item);
     }
     evidence.append(list);
@@ -278,7 +292,7 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
   function renderDecline() {
     decline.replaceChildren(el('h3', '', '相對高峰衰退紀錄（輔助提示）'));
     const { peak, milestones } = data.relativeDecline;
-    decline.append(el('p', 'tw-cooldown-event-hint', `退燒判定依每日中位數連續 3 天低於 ${thresholdLabel()}。`));
+    decline.append(el('p', 'tw-cooldown-event-hint', `退燒判定依連續 3 個可判定日${lowRule()}。`));
     if (!peak || peak.median <= 0) {
       decline.append(el('p', '', '尚無大於零的有效每日中位數高峰，無法計算比例衰退。')); return;
     }
@@ -300,7 +314,7 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
   function render() {
     if (disposed || root.hidden || !rows) return;
     try {
-      data = analyzeCooldown(rows, { region:context.region });
+      data = analyzeCooldown(rows, { region:context.region, releaseDate:usesHits() ? releaseDate() : null });
       const presentation = cooldownPresentation(data, context);
       const displayStatus = presentation.status, stale = displayStatus === 'stale';
       root.dataset.cooldownStatus = displayStatus; root.dataset.cooldownModelStatus = data.status;
@@ -310,30 +324,37 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
       const prefix = historical ? `歷史判定，截至 ${at(context.lastHour || data.lastHour)}。` : `追蹤中，截至 ${at(context.lastHour || data.lastHour)}。`;
       let detail = '';
       const threshold = thresholdLabel();
+      const openDay = data.days.at(-1);
       const lowDays = data.pendingRecheck?.days ?? data.latest?.lowDays ?? data.candidate?.days ?? 0;
       if (stale) detail = '最新觀測已落後超過 12 小時，保留既有事件與日級計數；目前熱度狀態需等待新資料。';
-      else if (data.status === 'not_popular') detail = `已保存的每日觀眾中位數尚未達 ${threshold}。首次達標後才開始檢查退燒。`;
+      else if (presentation.todayHasHeat) detail = `今日已有 ${openDay.thresholdHits} 次達 ${threshold}。`;
+      else if (data.status === 'not_popular') detail = `首次出現${hotRule()}的統計日後，開始檢查退燒。`;
       else if (data.status === 'suspected') detail = data.pendingRecheck
-        ? `缺測中斷後重新計數，已有 ${lowDays} / 3 天低於 ${threshold}，最新狀態待確認。`
-        : `每日觀眾中位數已有 ${lowDays} / 3 天低於 ${threshold}。${historical ? '後續有效統計日不足。' : '滿 3 個連續有效日後確認。'}`;
-      else if (data.status === 'cooled') detail = `每日觀眾中位數已連續 3 天低於 ${threshold}。後續回到門檻時會更新狀態。`;
-      else if (data.status === 'recovered') detail = `最新有效日的觀眾中位數已達 ${threshold}，解除退燒狀態。`;
-      else if (data.status === 'gap') detail = '已結束的統計日缺測超過 12 小時，連續計數中斷；缺測不視為零，也不刪除已確認的歷史事件。';
-      else if (data.status === 'insufficient') detail = '需要已結束的台灣日期，每天至少 12 筆有效逐時總觀眾；有效統計日不足時暫不判定。';
-      else detail = `每日觀眾中位數尚未連續 3 天低於 ${threshold}。`;
-      const openDay = (data.days || []).at(-1);
-      const pendingDay = openDay && !openDay.isClosed ? ` ${openDay.date} 尚未結束，不列入計數。` : '';
+        ? `缺測中斷後重新計數，已有 ${lowDays} / 3 天符合「${lowRule()}」。`
+        : `已有 ${lowDays} / 3 天符合「${lowRule()}」。${historical ? '後續可判定日不足。' : '滿 3 個可判定日後確認。'}`;
+      else if (data.status === 'cooled') detail = `連續 3 個可判定日符合「${lowRule()}」。`;
+      else if (data.status === 'recovered') detail = `最新有效日已${recoveryRule()}。`;
+      else if (data.status === 'gap') detail = data.latest.missingHours > data.settings.maxMissingHours
+        ? '已結束的統計日缺測超過 12 小時，連續計數中斷。' : '缺測可能影響單日判定，退燒計數暫停。';
+      else if (data.status === 'insufficient') detail = usesHits()
+        ? '需要已結束的台灣日期，且資料足以判定達標次數。' : '需要已結束的台灣日期，每天至少 12 筆有效逐時總觀眾。';
+      else detail = `依「${lowRule()}」檢查退燒。`;
+      const pendingDay = openDay && !openDay.isClosed && !presentation.todayHasHeat ? ` ${openDay.date} 統計中。` : '';
       stateDetail.textContent = `${prefix} ${detail}${pendingDay}`;
       const episode = data.candidate || data.episodes.at(-1);
       renderRelease(episode);
       summary.replaceChildren(
         card('連續低熱度起始日', episode?.candidateAt ? at(episode.candidateAt) : '尚未出現', episode?.candidateAt ? `${dayHint(episode.candidateAt) ? `${dayHint(episode.candidateAt)} · ` : ''}第一個低於門檻的統計日` : `依 ${threshold}門檻觀察`),
-        card('退燒確認時間', episode?.confirmedAt ? at(episode.confirmedAt) : '尚未確認', episode?.confirmedAt ? `${dayHint(episode.confirmedAt) ? `${dayHint(episode.confirmedAt)} · ` : ''}第三個連續有效統計日結束` : `連續 3 天每日中位數低於 ${threshold}`),
-        card('最新每日觀眾中位數', finite(data.latest?.median) ? `${fmt(data.latest.median)} 人` : '—', data.latest?.day ? `${data.latest.day} · 當日有效逐時總觀眾的中位數` : '尚無已結束的統計日'),
-        card('退燒檢查', !data.popularAt ? '尚未啟用' : lowDays >= 3 ? `${lowDays} 天` : `${lowDays} / 3 天`, !data.popularAt ? `每日中位數曾達 ${threshold}後啟用` : data.pendingRecheck ? '缺測中斷後重新累積' : `連續低於 ${threshold} · 每日最多缺測 12 小時`),
+        card('退燒確認時間', episode?.confirmedAt ? at(episode.confirmedAt) : '尚未確認', episode?.confirmedAt ? `${dayHint(episode.confirmedAt) ? `${dayHint(episode.confirmedAt)} · ` : ''}第三個連續有效統計日結束` : `連續 3 個可判定日${lowRule()}`),
+        usesHits() ? card('最近完整日達標次數', data.latest.day ? `${data.latest.thresholdHits} 次` : '—',
+          data.latest.day ? `${data.latest.day} · 達 ${threshold} · 有效 ${data.latest.validHours}/24 筆` : '尚無已結束的統計日')
+          : card('最新每日觀眾中位數', finite(data.latest?.median) ? `${fmt(data.latest.median)} 人` : '—', data.latest?.day ? `${data.latest.day} · 當日有效逐時總觀眾的中位數` : '尚無已結束的統計日'),
+        card('退燒檢查', !data.popularAt ? '尚未啟用' : lowDays >= 3 ? `${lowDays} 天` : `${lowDays} / 3 天`, !data.popularAt ? `${hotRule()}後啟用` : data.pendingRecheck ? '缺測中斷後重新累積' : lowRule()),
       );
       range.textContent = `全期判定：${at(data.firstHour)} — ${at(data.lastHour)} · 有效 ${data.coverage.valid} / ${data.coverage.total} 個時段 · 可判定 ${data.coverage.completeDays} / ${data.coverage.totalDays} 天 · 台灣時間`;
-      method.textContent = `以台灣時間統計。日期結束且至少有 12 小時有效量測，才計算逐時總觀眾的每日中位數。首次達 ${threshold}後開始檢查退燒。連續 3 個有效日低於 ${threshold}即確認退燒，缺測超過 12 小時會中斷計數。後續有效日回到門檻時解除退燒狀態。`;
+      method.textContent = usesHits()
+        ? '缺測可能讓達標次數跨過門檻時，當日暫不計入。缺測超過 12 小時會中斷計數。'
+        : `以台灣時間統計。日期結束且至少有 12 小時有效量測，才計算逐時總觀眾的每日中位數。首次達 ${threshold}後開始檢查退燒。連續 3 個有效日低於 ${threshold}即確認退燒，缺測超過 12 小時會中斷計數。後續有效日回到門檻時解除退燒狀態。`;
       renderEvidence(); renderDecline(); renderEvents(); draw();
       onSummary({ data, status: displayStatus, label: status.textContent,
         releaseDate: releaseDate(), historical, scope: context.scope });
@@ -372,8 +393,8 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
     update(nextContext = {}) {
       context = nextContext;
       const threshold = thresholdLabel();
-      intro.textContent = `每日觀眾中位數曾達 ${threshold}後，連續 3 個有效日低於門檻，即確認退燒。判定採用全部已保存的觀測。`;
-      rule.textContent = `每日中位數門檻 ${threshold} · 連續低於門檻 3 天 · 每日至少 12 小時量測`;
+      intro.textContent = `曾有熱度後，連續 3 個可判定日符合「${lowRule()}」，即確認退燒。`;
+      rule.textContent = usesHits() ? `單日熱度 · ${hotRule()}` : `每日中位數門檻 ${threshold} · 連續低於門檻 3 天 · 每日至少 12 小時量測`;
       legend.textContent = `淡紫線 逐時總觀眾　｜　紫線 每日中位數　｜　橘色虛線 ${threshold}門檻　｜　橘色區間 已確認的低熱度觀測`;
       load();
     },
