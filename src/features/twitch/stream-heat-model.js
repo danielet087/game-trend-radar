@@ -34,6 +34,33 @@ function eveningMedians({ days, points }, released) {
   return medians;
 }
 
+function eveningConcentration(rows, dates, released) {
+  const { startHour, minHours } = STREAM_EVENING;
+  const byHour = new Map();
+  for (const row of rows) {
+    const { viewer_count: viewers, largest_stream_viewer_count: largest } = row;
+    if (row.status === 'observed' && Number.isSafeInteger(viewers) && viewers > 0 &&
+        Number.isSafeInteger(largest) && largest >= 0 && largest <= viewers) {
+      byHour.set(Date.parse(row.hour), { share: largest / viewers * 100, remaining: viewers - largest });
+    }
+  }
+  const nights = [];
+  for (const date of dates) {
+    const start = dateStart(date);
+    if (start < released) continue;
+    const hours = Array.from({ length: 24 - startHour }, (_, i) => byHour.get(start + (startHour + i) * HOUR)).filter(Boolean);
+    if (hours.length >= minHours) nights.push({
+      share: quantile(hours.map(hour => hour.share), .5),
+      remaining: quantile(hours.map(hour => hour.remaining), .5),
+    });
+  }
+  return nights.length ? {
+    share: quantile(nights.map(night => night.share), .5),
+    remaining: quantile(nights.map(night => night.remaining), .5),
+    nights: nights.length,
+  } : null;
+}
+
 function wholeDayTrend(data, status) {
   const { threshold, confirmDays } = data.settings;
   const { lowDays } = data.latest;
@@ -61,6 +88,10 @@ export function analyzeStreamHeat(rows, { game, region, period }) {
   const comparable = previous.median !== null && recent.median !== null;
   const change = comparable && previous.median > 0 ? (recent.median - previous.median) / previous.median * 100 : null;
   const comparison = { previous, recent, change };
+  if (evening) {
+    const concentration = eveningConcentration(rows, period.recent, released);
+    if (concentration) comparison.concentration = concentration;
+  }
 
   if (snapshot.historical) return { ...comparison, signal: 'ended', lastDay: [...dailyMedians.keys()].at(-1) };
   const current = snapshot.status !== 'stale';
