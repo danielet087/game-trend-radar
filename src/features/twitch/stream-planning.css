@@ -49,7 +49,8 @@
 .tw-stream-sample[data-signal="cooled"] .tw-stream-signal { color:#80331f; background:#f6dfd4; }
 .tw-stream-sample:is([data-signal="sporadic"],[data-signal="falling"],[data-signal="suspected"]) .tw-stream-signal { color:#744719; background:#f6e7cf; }
 .tw-stream-sample[data-signal="insufficient"] .tw-stream-signal { color:#574e62; background:#ebe6ed; }
-.tw-stream-reason { margin:0; color:#51445f; font-size:13px; line-height:1.4; overflow-wrap:anywhere; }
+.tw-stream-reason,.tw-stream-movement { margin:0; color:#51445f; font-size:13px; line-height:1.4; overflow-wrap:anywhere; }
+.tw-stream-week { margin:0; color:var(--stream-region-ink); font-size:14px; font-weight:700; line-height:1.4; }
 .tw-stream-sample[data-signal="loading"]::after { content:""; width:65%; height:.6em; border-radius:4px; background:currentColor; opacity:.09; }
 .tw-stream-metrics { display:flex; flex-wrap:wrap; gap:3px 16px; margin:0; }
 .tw-stream-metrics > div { display:flex; align-items:baseline; flex-wrap:wrap; gap:0 5px; min-width:0; }

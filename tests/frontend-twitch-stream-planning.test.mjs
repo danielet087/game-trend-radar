@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dateStart, dayOf, detailHref } from '../src/features/twitch/series.js';
 import { compareTrialTimes, trialWindow } from '../src/features/twitch/stream-planning-model.js';
-import { analyzeStreamHeat, streamHeatDate } from '../src/features/twitch/stream-heat-model.js';
+import { analyzeStreamHeat, remainingAudienceTrend, streamHeatDate } from '../src/features/twitch/stream-heat-model.js';
 import { analyzeCooldown } from '../src/features/twitch/cooldown-model.js';
 import { streamerAdvice } from '../src/features/twitch/heat-overview.js';
 
@@ -98,6 +98,42 @@ test('Chinese outlook detects falling audiences when both periods reach the same
   assert.equal(selected.outlook.signal, 'falling');
   assert.equal(selected.outlook.latest.thresholdHits, 4);
   assert.equal(heat([...rows, ...open], '2026-11-09').outlook.comparison, null);
+});
+
+test('weekly heat counts closed post-release days and preserves uncertain and fully missing days', () => {
+  const rows = [
+    ...daily('2026-11-04', 1000), ...daily('2026-11-05', high),
+    ...daily('2026-11-06', high, [21]), ...daily('2026-11-07', 0),
+    ...daily('2026-11-09', 0), ...daily('2026-11-10', high), ...daily('2026-11-11', 2000),
+  ];
+  assert.deepEqual(heat(rows, '2026-11-11').week, { total:6, hot:2, unknown:2 });
+  assert.deepEqual(heat(rows, '2026-11-07').week, { total:3, hot:1, unknown:1 });
+  assert.equal(heat(daily('2026-11-11', 1000), '2026-11-11').week, null);
+});
+
+test('today is compared only against previously published observations for the same hours', () => {
+  const days = ['2026-11-08', '2026-11-09', '2026-11-10'];
+  const past = days.flatMap(date => daily(date, hour => hour < 6 ? 50 : 1000));
+  const current = daily('2026-11-11', hour => hour < 6 ? 100 : 2000).map((row, hour) => ({
+    ...row, generated_at:iso(Date.parse(row.hour) + (hour < 6 ? 60000 : 6 * 3600000)),
+  }));
+  assert.deepEqual(heat([...past, ...current], '2026-11-11').todayChange, { change:50, hours:6 });
+  assert.equal(heat([...past, ...current.slice(1)], '2026-11-11').todayChange, null);
+  assert.equal(heat([...past, ...current], '2026-11-10').todayChange, null);
+});
+
+test('other-stream trends pair hours across days, retain measured zero, and skip legacy records', () => {
+  const day = '2026-11-10', previous = '2026-11-09';
+  const rows = [
+    ...daily(previous, hour => hour < 6 ? 0 : 1000).map((row, hour) => ({
+      ...row, streamer_count:hour < 6 ? 0 : 5, largest_stream_viewer_count:hour < 6 ? 0 : null,
+    })),
+    ...daily(day, 120).map(row => ({ ...row, streamer_count:3, largest_stream_viewer_count:90 })),
+  ];
+  const options = { date:day, now };
+  assert.deepEqual(remainingAudienceTrend(rows, options), [{ date:day, viewers:30, streams:3, hours:6, partial:false }]);
+  assert.deepEqual(remainingAudienceTrend(rows.slice(1), options), []);
+  assert.deepEqual(remainingAudienceTrend(rows, { ...options, releaseDate:day }), []);
 });
 
 function trialFixture(period, hours, counts, releaseDate) {

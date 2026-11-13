@@ -1,6 +1,33 @@
 import { node, fmt, time } from './presentation.js';
 import { releaseDayLabel } from './cooldown.js';
 import { HOUR } from './metrics.js';
+import { MIN_PAIRED_HEAT_HOURS } from './stream-heat-model.js';
+
+function renderRemainingTrend(trend) {
+  const section = node('section', 'tw-remaining-trend');
+  section.append(node('h3', '', '其餘台觀看趨勢'));
+  if (!trend.length) {
+    section.append(node('p', 'tw-heat-note', '跨日觀測尚不足。'));
+    return section;
+  }
+  const table = node('table', 'tw-compare-table');
+  const head = node('thead'), header = node('tr'), body = node('tbody');
+  for (const label of ['日期', '其餘台觀眾變化', '總開台數變化', '配對時段']) {
+    const th = node('th', '', label); th.scope = 'col'; header.append(th);
+  }
+  head.append(header);
+  const signed = (value, unit) => `${value > 0 ? '+' : ''}${fmt(value)} ${unit}`;
+  for (const entry of trend.toReversed()) {
+    const row = node('tr');
+    const date = entry.date.slice(5).replace('-', '/') + (entry.partial ? '（截至目前）' : '');
+    row.append(node('td', '', date), node('td', '', signed(entry.viewers, '人')),
+      node('td', '', signed(entry.streams, '台')), node('td', '', fmt(entry.hours)));
+    body.append(row);
+  }
+  table.append(head, body);
+  section.append(node('p', 'tw-heat-note', `與前一日相同時段相比。扣除最大台後取觀眾差的中位數，至少配對 ${MIN_PAIRED_HEAT_HOURS} 個時段。`), table);
+  return section;
+}
 
 export function streamerAdvice({ data, status, historical }, now = Date.now()) {
   if (historical) return ['先核對近期表現', '這款已結束追蹤。要再排這個主題，可以先看自己近期同時段播這類遊戲的表現。'];
@@ -73,4 +100,5 @@ export function renderHeatOverview(root, snapshot) {
   else note.append(node('span', '', ' 上市日尚未確認時顯示觀測日期。'));
   const link = node('a', '', '查看判定依據與高峰衰退紀錄 ↓'); link.href = '#historyCooldown';
   root.append(action, cards, note, link);
+  if (snapshot.remainingTrend) root.append(renderRemainingTrend(snapshot.remainingTrend));
 }

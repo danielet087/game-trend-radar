@@ -10,6 +10,7 @@ import { regionNames, viewOf } from './audience-region.js';
 import { blockScopes, scopeKeys, regionsFor, projectRows, writeBlockScopes } from './region-views.js';
 import { dailyRows } from './daily-series.js';
 import { renderHeatOverview } from './heat-overview.js';
+import { remainingAudienceTrend } from './stream-heat-model.js';
 import { createTrialTimeComparison } from './trial-time-comparison.js';
 
 export function initTwitchDetail() {
@@ -166,8 +167,15 @@ export function initTwitchDetail() {
       roots.forEach((root, region) => {
         const reference = game.release_reference;
         const releaseDate = region === 'zh' && reference?.precision === 'day' ? reference.date : null;
-        const data = analyzeCooldown(projectRows(full, region), { region, releaseDate });
-        renderHeatOverview(root, cooldownPresentation(data, context(region)));
+        const scoped = projectRows(full, region);
+        const data = analyzeCooldown(scoped, { region, releaseDate });
+        const snapshot = cooldownPresentation(data, context(region));
+        if (region === 'zh') {
+          const last = scoped.findLast(row => row.largest_stream_viewer_count !== null);
+          if (last) snapshot.remainingTrend = remainingAudienceTrend(scoped, { releaseDate,
+            date:snapshot.historical ? dayOf(Date.parse(last.hour)) : undefined });
+        }
+        renderHeatOverview(root, snapshot);
       });
     } catch {
       if (disposed || token !== summaryRequest || version !== request) return;

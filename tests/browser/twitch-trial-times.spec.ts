@@ -16,11 +16,12 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
       const viewers = audience[day - 5];
       const chinese = hour >= 19 ? chineseAudience[day - 5] + (day === 9 || day === 10 ? 100 : 0)
         : day <= 7 ? 500 : day === 11 ? 5000 : 0;
-      const concentration = day === 10 && hour >= 19;
+      const concentration = (day === 9 || day === 10) && hour >= 19;
       hours[stamp] = { generated_at, viewer_count:viewers + (hour === 20 ? 200 : 0),
         streamer_count:hour === 20 ? 4 : 8, audience_regions:hour === 22 && day >= 7
           ? undefined : { zh:{ viewer_count:chinese, streamer_count:concentration ? 2 : chinese ? 1 : 0,
-            ...(concentration ? { largest_stream_viewer_count:180 } : {}) } } };
+            ...(concentration ? { largest_stream_viewer_count:day === 9 ? 200 : 180 }
+              : (day === 9 || day === 10) && hour < 2 ? { largest_stream_viewer_count:0 } : {}) } } };
     }
   }
   await page.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
@@ -75,11 +76,15 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await expect(date).toHaveValue('2026-11-11');
   await expect(page.locator('#streamPlanStatus')).toContainText('趨勢截至 11/10');
   await expect(globalCard.locator('.tw-stream-signal')).toHaveText('已退燒');
+  await expect(globalCard.locator('.tw-stream-week')).toHaveText('近 6 日有 3 天達標');
   await expect(globalCard.locator('.tw-stream-reason')).toContainText('11/10 日中位數 1,200 人');
+  await expect(globalCard.locator('.tw-stream-movement')).toHaveText('今日較平常 +7,400 人');
   await expect(chineseCard.locator('.tw-stream-signal')).toHaveText('熱度下滑');
+  await expect(chineseCard.locator('.tw-stream-week')).toHaveText('近 6 日有 5 天達標');
   await expect(chineseCard.locator('.tw-stream-reason')).toContainText('11/11 · 12 次達 100 人');
   await date.fill('2026-11-10');
   await expect(page).toHaveURL(/stream_date=2026-11-10/);
+  await expect(globalCard.locator('.tw-stream-movement')).toHaveCount(0);
   await expect(globalCard.locator('.tw-stream-signal')).toHaveText('已退燒');
   await expect(globalCard.locator('.tw-stream-reason')).toContainText('11/11 確認');
   await expect(globalCard.locator('.tw-stream-metrics dd')).toHaveText(['3,800 人', '1,400 人', '-63.2%']);
@@ -141,6 +146,9 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await card.getByRole('link', { name:'詳細分析', exact:true }).click();
   await expect(page.locator('#historyStart')).toHaveValue('2026-11-10');
   await expect(page.locator('#historyEnd')).toHaveValue('2026-11-10');
+  const trend = page.locator('#heatOverview-zh .tw-remaining-trend');
+  await expect(trend.getByRole('row', { name:/11\/10/ }).getByRole('cell')).toHaveText(['11/10', '-30 人', '0 台', '6']);
+  await expect(page.locator('#heatOverview-global .tw-remaining-trend')).toHaveCount(0);
   await page.locator('[data-history-range="7d"]').click();
   await expect(page.locator('#historyChart [data-region="global"] .tw-chart-threshold-label')).toHaveText('3,000 人門檻');
   await expect(page.locator('#historyChart [data-region="zh"] .tw-chart-threshold-label')).toHaveCount(0);
