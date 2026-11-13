@@ -7,7 +7,7 @@ import { canonicalID, HOUR } from './metrics.js';
 import { filterNames, fmt, node } from './presentation.js';
 import { projectRows, regionsFor } from './region-views.js';
 import { dateStart, dayOf, detailHref, fullSeriesRows, validChunk, validIndex } from './series.js';
-import { analyzeStreamHeat, streamHeatDate, streamHeatThrough, STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS } from './stream-heat-model.js';
+import { analyzeStreamHeat, streamHeatDate, streamHeatThrough, STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS, STREAM_HEAT_WEEK, MIN_PAIRED_HEAT_HOURS } from './stream-heat-model.js';
 import { CHINESE_DAILY_HEAT_HITS, cooldownThreshold } from './cooldown-model.js';
 import { selectObservation } from './selection.js';
 import { OBSERVATION_PAGE_SIZE } from './state.js';
@@ -63,6 +63,11 @@ function dailyEvidence(day, region) {
   return `${shortDate(sample.date)} · ${sample.hits} 次達 ${fmt(day.threshold)} 人 · 有效 ${sample.validHours}/24${gap}`;
 }
 
+function weeklyEvidence({ total, hot, unknown }) {
+  if (unknown === total) return `近 ${total} 日無可判定資料`;
+  return `近 ${total} 日有 ${hot} 天達標${unknown ? ` · ${unknown} 天不明` : ''}`;
+}
+
 async function read(path, validate, force) {
   const result = await RadarStorage.readJSONResult(path, validate, { force, allowStale:false });
   if (!result.data) throw new Error('觀測資料暫時無法讀取');
@@ -79,6 +84,7 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
   $('streamTrendRule').textContent = `比較前後各 ${STREAM_HEAT_DAYS} 個已結束日。前期達全球 ${fmt(STREAM_HEAT_FLOORS.global)} 人或中文區 ${fmt(STREAM_HEAT_FLOORS.zh)} 人，且下降至少 25%，標示熱度下滑。`;
   $('streamDailyRule').textContent = `中文區達 ${chineseThreshold} 人至少 ${hits} 次為「有熱度」，1–${hits - 1} 次為「零星有熱度」，0 次為「熱度偏低」。缺測可能改變是否達到 ${hits} 次時顯示「資料不足」。`;
   $('streamGlobalRule').textContent = `全球用每日觀眾中位數，熱度門檻為 ${fmt(cooldownThreshold('global'))} 人。中文區趨勢用每日第 ${hits} 高觀眾數。趨勢比較每日至少需 12 筆有效觀測。`;
+  $('streamWeekRule').textContent = `達標天數取最近 ${STREAM_HEAT_WEEK} 個已結束日，從有觀測的日期起算。今日觀眾與過去 ${STREAM_HEAT_WEEK} 日同時段比較，至少配對 ${MIN_PAIRED_HEAT_HOURS} 個時段才顯示明顯變動。`;
 
   function saveURL() {
     const url = new URL(location.href);
@@ -148,12 +154,19 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
         const label = signalLabels[signal];
         if (label) head.append(node('strong', 'tw-stream-signal', label));
         panel.append(head);
+        if (day?.week) panel.append(node('p', 'tw-stream-week', weeklyEvidence(day.week)));
         const comparison = day?.outlook.comparison;
         if (comparison) panel.append(renderMetrics(comparison, key));
         const evidence = day ? dailyEvidence(day, key) : message;
         const confirmed = day?.outlook.confirmedOn;
         if (evidence || confirmed) panel.append(node('p', 'tw-stream-reason',
           [evidence, confirmed ? `${shortDate(confirmed)} 確認退燒` : ''].filter(Boolean).join(' · ')));
+        if (day?.todayChange) {
+          const { change, hours } = day.todayChange;
+          const movement = node('p', 'tw-stream-reason', `今日較平常 ${change > 0 ? '+' : ''}${fmt(change)} 人`);
+          movement.title = `對照過去 ${STREAM_HEAT_WEEK} 日同時段 · ${hours} 個配對時段`;
+          panel.append(movement);
+        }
         const concentration = day?.concentration;
         if (concentration) {
           const metrics = node('p', 'tw-stream-concentration');

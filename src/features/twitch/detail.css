@@ -19,6 +19,9 @@ body[data-page="twitch-game"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; -
 .tw-heat-stat small,.tw-heat-note { color:#746780; font-size:12px; line-height:1.8; }
 .tw-heat-note { margin:15px 0 9px; }
 .tw-heat-overview > a { color:#67518f; font-size:12px; text-decoration:underline; text-underline-offset:4px; }
+.tw-remaining-trend { margin-top:20px; }
+.tw-remaining-trend h3 { margin:0; color:#473658; font-size:15px; }
+.tw-remaining-trend .tw-heat-note { margin-top:4px; }
 .tw-history-resolution { display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin:0 25px 12px; }
 .tw-history-resolution > span { color:#746780; font-size:12px; margin-right:4px; }
 .tw-history-resolution button[aria-pressed="true"] { color:#fff; background:#67518f; border-color:#67518f; }
