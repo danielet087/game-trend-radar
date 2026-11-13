@@ -163,7 +163,7 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
           [evidence, confirmed ? `${shortDate(confirmed)} 確認退燒` : ''].filter(Boolean).join(' · ')));
         if (day?.todayChange) {
           const { change, hours } = day.todayChange;
-          const movement = node('p', 'tw-stream-reason', `今日較平常 ${change > 0 ? '+' : ''}${fmt(change)} 人`);
+          const movement = node('p', 'tw-stream-movement', `今日較平常 ${change > 0 ? '+' : ''}${fmt(change)} 人`);
           movement.title = `對照過去 ${STREAM_HEAT_WEEK} 日同時段 · ${hours} 個配對時段`;
           panel.append(movement);
         }

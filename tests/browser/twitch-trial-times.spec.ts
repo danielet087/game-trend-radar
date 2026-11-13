@@ -78,11 +78,13 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await expect(globalCard.locator('.tw-stream-signal')).toHaveText('已退燒');
   await expect(globalCard.locator('.tw-stream-week')).toHaveText('近 6 日有 3 天達標');
   await expect(globalCard.locator('.tw-stream-reason')).toContainText('11/10 日中位數 1,200 人');
+  await expect(globalCard.locator('.tw-stream-movement')).toHaveText('今日較平常 +7,400 人');
   await expect(chineseCard.locator('.tw-stream-signal')).toHaveText('熱度下滑');
   await expect(chineseCard.locator('.tw-stream-week')).toHaveText('近 6 日有 5 天達標');
   await expect(chineseCard.locator('.tw-stream-reason')).toContainText('11/11 · 12 次達 100 人');
   await date.fill('2026-11-10');
   await expect(page).toHaveURL(/stream_date=2026-11-10/);
+  await expect(globalCard.locator('.tw-stream-movement')).toHaveCount(0);
   await expect(globalCard.locator('.tw-stream-signal')).toHaveText('已退燒');
   await expect(globalCard.locator('.tw-stream-reason')).toContainText('11/11 確認');
   await expect(globalCard.locator('.tw-stream-metrics dd')).toHaveText(['3,800 人', '1,400 人', '-63.2%']);
