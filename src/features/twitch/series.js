@@ -49,6 +49,7 @@ export function seriesRows(index, chunks, game, start, end, region = 'global') {
     if (raw && raw.generated_at !== generated) throw new Error('歷史資料正在更新，請按「重新載入」取得同一版紀錄。');
     rows.push(forRegion({ hour, generated_at: generated || null, status: !generated ? 'missing' : raw ? 'observed' : 'absent',
       viewer_count: raw ? count(raw.viewer_count) : null, streamer_count: raw ? count(raw.streamer_count) : null,
+      streamer_counts_above_viewers: raw?.streamer_counts_above_viewers,
       filtered_audience: filteredAudience(raw?.filtered_audience), audience_regions: raw?.audience_regions }, region));
   }
   return rows;

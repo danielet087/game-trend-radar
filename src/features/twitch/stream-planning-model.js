@@ -1,6 +1,7 @@
 import { HOUR } from './metrics.js';
 import { dateStart, dayOf, seriesRows } from './series.js';
 import { quantile } from './statistics-model.js';
+import { VIEWER_TIERS } from './audience-region.js';
 
 export const TRIAL_MIN_DAYS = 3;
 const DAY = 24 * HOUR;
@@ -57,4 +58,20 @@ export function compareTrialTimes(index, chunks, gameId, period, hours, region) 
   const typicalLead = slots.find((slot, i) => hasTimeAdvantage(slot, slots[1 - i])) ?? null;
   const preferred = typicalLead && typicalLead.strongerDays * 2 > pairs.length ? typicalLead : null;
   return { slots, dates, typicalLead, preferred, releaseDate: Number.isFinite(released) ? reference.date : null };
+}
+
+export function compareViewerTier(index, chunks, gameId, period, hour, viewers, region) {
+  const tier = VIEWER_TIERS.indexOf(viewers);
+  const reference = index.games[gameId].release_reference;
+  const released = reference?.precision === 'day' ? dateStart(reference.date) : NaN;
+  const samples = [];
+  for (const day of period.slots) {
+    const at = day + hour * HOUR;
+    if (at < released) continue;
+    const row = seriesRows(index, chunks, gameId, at, at, region)[0];
+    const count = row.streamer_counts_above_viewers?.[tier];
+    if (row.status === 'observed' && Number.isSafeInteger(count) && Date.parse(row.generated_at) <= period.now) samples.push(count);
+  }
+  return { sampledDays: samples.length, ahead: samples.length >= TRIAL_MIN_DAYS
+    ? Math.round(quantile(samples, .5)) : null };
 }

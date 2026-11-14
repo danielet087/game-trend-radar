@@ -31,6 +31,25 @@
       <div class="tw-scope-toolbar"><h2 id="heatOverviewTitle">熱度摘要</h2><label class="tw-local-region">熱度摘要範圍 <select id="summaryRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label></div>
       <div id="heatOverviewPanels"></div>
     </section>
+    <section class="tw-scope-section" id="viewerRank" aria-labelledby="viewerRankTitle" hidden>
+      <div class="tw-scope-toolbar"><h2 id="viewerRankTitle">我大概排第幾？</h2><label class="tw-local-region">觀看範圍 <select id="viewerRankRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label></div>
+      <div class="tw-workspace tw-trial-workspace">
+        <div class="tw-trial-controls">
+          <label class="tw-local-region">平常同時觀眾 <select id="viewerRankAudience"><option value="30">30 人</option><option value="50" selected>50 人</option><option value="100">100 人</option></select></label>
+          <label class="tw-local-region">試播時段（台灣） <select id="viewerRankHour"></select></label>
+        </div>
+        <p class="tw-trial-status" id="viewerRankStatus" role="status"></p>
+        <div class="tw-trial-results" id="viewerRankResults" aria-live="polite"></div>
+      </div>
+    </section>
+    <section class="tw-scope-section" id="launchCurves" aria-labelledby="launchCurveTitle" hidden>
+      <div class="tw-scope-toolbar"><h2 id="launchCurveTitle">同類新作的上市曲線</h2><label class="tw-local-region">遊戲類型 <select id="launchCurveGenre"></select></label></div>
+      <div class="tw-workspace tw-trial-workspace">
+        <p class="tw-trial-status" id="launchCurveStatus" role="status"></p>
+        <div class="tw-trial-results" id="launchCurveResults" aria-live="polite"></div>
+        <details class="tw-method"><summary>比較方式 <span aria-hidden="true">＋</span></summary><div><p>Steam 台灣上市日的隔天算第 1 天。每日至少有 12 筆有效觀測才計算中位數。同類曲線採用本作上市前已量完首週、Steam 類型與上市分組相同的作品。搶先體驗依 Steam 類型標示辨識。</p></div></details>
+      </div>
+    </section>
     <section class="tw-scope-section" id="trialTimes" aria-labelledby="trialTimeTitle" hidden>
       <div class="tw-scope-toolbar"><h2 id="trialTimeTitle">比較試播時段</h2><label class="tw-local-region">試播時段範圍 <select id="trialRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label></div>
       <div class="tw-workspace tw-trial-workspace">

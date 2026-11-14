@@ -63,6 +63,7 @@ def assert_real_builder_replay(self, tmp_path):
             "follower_checked_at": "2026-10-08T15:00:00Z"}]}
         source_files = {"data/catalog.json": json.dumps(catalog).encode(),
                         "data/twitch_live.json": b'{"channels":["original"]}\n',
+                        "data/twitch_series/index.json": b'{"schema_version":1,"timezone":"Asia/Taipei","generated_at":"2026-10-08T15:00:00Z","months":{},"games":{}}\n',
                         "data/nintendo_master.json": b'{"unrelated_history":[1,2,3]}\n'}
         primary_store.bootstrap_primary(database, FRONTEND, source_files, "a" * 40)
         primary_store.bootstrap_primary(database, BACKEND,
@@ -73,7 +74,7 @@ def assert_real_builder_replay(self, tmp_path):
         (seed / "scripts").mkdir(parents=True)
         (seed / "data").mkdir()
         # Run the production builder and its real shared admission adapter.
-        for name in ("build_radar_insights.py", "twitch_steam_admission.py"):
+        for name in ("build_radar_insights.py", "build_twitch_launch_curves.py", "twitch_steam_admission.py"):
             shutil.copyfile(ROOT / "scripts" / name, seed / "scripts" / name)
         (seed / "data/catalog.json").write_text('{"count":0,"games":[]}\n')
         (seed / "README.md").write_text("Frontend source code remains intact\n")
@@ -130,6 +131,7 @@ def assert_real_builder_replay(self, tmp_path):
         assert growth["games"][0]["history"][-1]["followers"] == 6000
         assert json.loads(actual["data/scheduler_queue_status.json"]) == expected_queue
         assert actual["data/catalog.json"] == source_files["data/catalog.json"]
+        assert json.loads(actual["data/twitch-launch-curves.json"])["games"] == {}
         assert actual["data/nintendo_master.json"] == source_files["data/nintendo_master.json"]
         assert json.loads(actual["data/twitch_live.json"])["channels"] == ["newer-concurrent-channel"]
         assert git(remote, "show", "main:README.md") == "Frontend source code remains intact"

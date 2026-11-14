@@ -18,6 +18,7 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
         : day <= 7 ? 500 : day === 11 ? 5000 : 0;
       const concentration = (day === 9 || day === 10) && hour >= 19;
       hours[stamp] = { generated_at, viewer_count:viewers + (hour === 20 ? 200 : 0),
+        ...(day >= 8 && hour === 22 ? { streamer_counts_above_viewers:[5, 3, 2] } : {}),
         streamer_count:hour === 20 ? 4 : 8, audience_regions:hour === 22 && day >= 7
           ? undefined : { zh:{ viewer_count:chinese, streamer_count:concentration ? 2 : chinese ? 1 : 0,
             ...(concentration ? { largest_stream_viewer_count:day === 9 ? 200 : 180 }
@@ -56,11 +57,18 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
     schema_version:1, timezone:'Asia/Taipei', generated_at:'2026-11-11T03:15:00Z', months:{ '2026-11':indexHours },
     games:{ '1':{ name:'試播遊戲', archive_eligible:true, tracking_status:'active', months:['2026-11'],
       first_hour:'2026-11-04T16:00:00Z', last_hour:'2026-11-11T03:00:00Z', sample_count:156, peak_viewer_count:10000,
-      release_reference:{ date:'2026-11-05', precision:'day', source:'Steam 台灣商店' },
+      release_reference:{ date:'2026-11-05', precision:'day', source:'Steam 台灣商店', steam_appid:'88001' },
       audience_regions:{ zh:{ sample_count:152, peak_viewer_count:5000 } } } },
   } }));
   await page.route('**/data/twitch_series/1/2026-11.json', route => route.fulfill({ json:{
     schema_version:1, timezone:'Asia/Taipei', game_id:'1', month:'2026-11', hours,
+  } }));
+  const curve = { date:'2026-10-01', edition:'standard_store_date', genres:['Action'], daily:[500,400,300,200,100,90,80] };
+  await page.route('**/data/twitch-launch-curves.json', route => route.fulfill({ json:{
+    schema_version:1, generated_at:generated, genres:{ Action:'動作', Strategy:'策略' }, games:{
+      ...Object.fromEntries([2,3,4,5,6].map(id => [String(id), curve])),
+      '1':{ ...curve, date:'2026-11-05', genres:['Action','Strategy'], daily:[900,800,700,600,500,400,null] },
+    },
   } }));
 
   await page.goto('twitch.html?view=streamer&sort=viewers&stream_hour=22');
@@ -153,6 +161,17 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await expect(trend.getByRole('row', { name:/11\/09/ }).getByRole('cell')).toHaveText(['11/09', '80%', '—', '—', '0']);
   await expect(trend.getByRole('row', { name:/11\/11/ })).toHaveCount(0);
   await expect(page.locator('#heatOverview-global .tw-remaining-trend')).toHaveCount(0);
+  const ranking = page.getByRole('region', {name:'我大概排第幾？'});
+  await expect(ranking.locator('[data-region="global"]')).toContainText('約第 4 名');
+  await expect(ranking.locator('[data-region="zh"]')).toContainText('級距紀錄不足');
+  await ranking.locator('#viewerRankAudience').selectOption('100');
+  await expect(ranking.locator('[data-region="global"]')).toContainText('約第 3 名');
+  const curves = page.getByRole('region', {name:'同類新作的上市曲線'});
+  await expect(curves).toContainText('同類中位數 · 5 款');
+  await expect(curves.getByRole('row', {name:/這款遊戲/})).toContainText('700 人');
+  await expect(curves.getByRole('row', {name:/這款遊戲/})).toContainText('—');
+  await curves.locator('#launchCurveGenre').selectOption('Strategy');
+  await expect(curves).toContainText('至少需要 5 款');
   await page.locator('[data-history-range="7d"]').click();
   await expect(trend).toContainText('截至 2026/11/11');
   await expect(trend.getByRole('row', { name:/11\/11/ }).getByRole('cell')).toHaveText(['11/11（截至目前）', '100%', '—', '—', '2']);
