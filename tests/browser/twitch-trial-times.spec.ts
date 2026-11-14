@@ -21,7 +21,8 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
         streamer_count:hour === 20 ? 4 : 8, audience_regions:hour === 22 && day >= 7
           ? undefined : { zh:{ viewer_count:chinese, streamer_count:concentration ? 2 : chinese ? 1 : 0,
             ...(concentration ? { largest_stream_viewer_count:day === 9 ? 200 : 180 }
-              : (day === 9 || day === 10) && hour < 2 ? { largest_stream_viewer_count:0 } : {}) } } };
+              : (day === 9 || day === 10) && hour < 2 ? { largest_stream_viewer_count:0 }
+              : day === 11 && hour < 8 ? { largest_stream_viewer_count:5000 } : {}) } } };
     }
   }
   await page.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
@@ -147,9 +148,17 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await expect(page.locator('#historyStart')).toHaveValue('2026-11-10');
   await expect(page.locator('#historyEnd')).toHaveValue('2026-11-10');
   const trend = page.locator('#heatOverview-zh .tw-remaining-trend');
-  await expect(trend.getByRole('row', { name:/11\/10/ }).getByRole('cell')).toHaveText(['11/10', '-30 人', '0 台', '6']);
+  await expect(trend).toContainText('截至 2026/11/10');
+  await expect(trend.getByRole('row', { name:/11\/10/ }).getByRole('cell')).toHaveText(['11/10', '90%', '-30 人', '0 台', '6']);
+  await expect(trend.getByRole('row', { name:/11\/09/ }).getByRole('cell')).toHaveText(['11/09', '80%', '—', '—', '0']);
+  await expect(trend.getByRole('row', { name:/11\/11/ })).toHaveCount(0);
   await expect(page.locator('#heatOverview-global .tw-remaining-trend')).toHaveCount(0);
   await page.locator('[data-history-range="7d"]').click();
+  await expect(trend).toContainText('截至 2026/11/11');
+  await expect(trend.getByRole('row', { name:/11\/11/ }).getByRole('cell')).toHaveText(['11/11（截至目前）', '100%', '—', '—', '2']);
+  await page.setViewportSize({ width:320, height:844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.setViewportSize({ width:390, height:844 });
   await expect(page.locator('#historyChart [data-region="global"] .tw-chart-threshold-label')).toHaveText('3,000 人門檻');
   await expect(page.locator('#historyChart [data-region="zh"] .tw-chart-threshold-label')).toHaveCount(0);
   await expect(page.locator('#global-cooldownRule')).toContainText('3,000 人');

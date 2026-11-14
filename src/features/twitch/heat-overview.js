@@ -1,31 +1,33 @@
 import { node, fmt, time } from './presentation.js';
 import { releaseDayLabel } from './cooldown.js';
 import { HOUR } from './metrics.js';
-import { MIN_PAIRED_HEAT_HOURS } from './stream-heat-model.js';
+import { MIN_CONCENTRATION_HOURS, MIN_PAIRED_HEAT_HOURS, STREAM_HEAT_WEEK } from './stream-heat-model.js';
 
-function renderRemainingTrend(trend) {
+function renderRemainingTrend({ through, rows }) {
   const section = node('section', 'tw-remaining-trend');
   section.append(node('h3', '', '其餘台觀看趨勢'));
-  if (!trend.length) {
-    section.append(node('p', 'tw-heat-note', '跨日觀測尚不足。'));
+  const period = `截至 ${through.replaceAll('-', '/')} 的近 ${STREAM_HEAT_WEEK} 日`;
+  if (!rows.length) {
+    section.append(node('p', 'tw-heat-note', `${period}資料不足。`));
     return section;
   }
   const table = node('table', 'tw-compare-table');
   const head = node('thead'), header = node('tr'), body = node('tbody');
-  for (const label of ['日期', '其餘台觀眾變化', '總開台數變化', '配對時段']) {
+  for (const label of ['日期', '最大台占比', '其餘台觀眾變化', '總開台數變化', '配對時段']) {
     const th = node('th', '', label); th.scope = 'col'; header.append(th);
   }
   head.append(header);
-  const signed = (value, unit) => `${value > 0 ? '+' : ''}${fmt(value)} ${unit}`;
-  for (const entry of trend.toReversed()) {
+  const signed = (value, unit) => value === null ? '—' : `${value > 0 ? '+' : ''}${fmt(value)} ${unit}`;
+  for (const entry of rows.toReversed()) {
     const row = node('tr');
     const date = entry.date.slice(5).replace('-', '/') + (entry.partial ? '（截至目前）' : '');
-    row.append(node('td', '', date), node('td', '', signed(entry.viewers, '人')),
+    const share = entry.share === null ? '—' : `${fmt(entry.share)}%`;
+    row.append(node('td', '', date), node('td', '', share), node('td', '', signed(entry.viewers, '人')),
       node('td', '', signed(entry.streams, '台')), node('td', '', fmt(entry.hours)));
     body.append(row);
   }
   table.append(head, body);
-  section.append(node('p', 'tw-heat-note', `與前一日相同時段相比。扣除最大台後取觀眾差的中位數，至少配對 ${MIN_PAIRED_HEAT_HOURS} 個時段。`), table);
+  section.append(node('p', 'tw-heat-note', `${period}。最大台占比取有觀眾時的中位數（至少 ${MIN_CONCENTRATION_HOURS} 筆）。增減取前一日同時段差值的中位數（至少配對 ${MIN_PAIRED_HEAT_HOURS} 筆）。`), table);
   return section;
 }
 

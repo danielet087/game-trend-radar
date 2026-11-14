@@ -171,9 +171,8 @@ export function initTwitchDetail() {
         const data = analyzeCooldown(scoped, { region, releaseDate });
         const snapshot = cooldownPresentation(data, context(region));
         if (region === 'zh') {
-          const last = scoped.findLast(row => row.largest_stream_viewer_count !== null);
-          if (last) snapshot.remainingTrend = remainingAudienceTrend(scoped, { releaseDate,
-            date:snapshot.historical ? dayOf(Date.parse(last.hour)) : undefined });
+          const through = dayOf(window.end);
+          snapshot.remainingTrend = { through, rows:remainingAudienceTrend(scoped, { releaseDate, date:through }) };
         }
         renderHeatOverview(root, snapshot);
       });

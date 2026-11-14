@@ -131,9 +131,12 @@ test('other-stream trends pair hours across days, retain measured zero, and skip
     ...daily(day, 120).map(row => ({ ...row, streamer_count:3, largest_stream_viewer_count:90 })),
   ];
   const options = { date:day, now };
-  assert.deepEqual(remainingAudienceTrend(rows, options), [{ date:day, viewers:30, streams:3, hours:6, partial:false }]);
-  assert.deepEqual(remainingAudienceTrend(rows.slice(1), options), []);
-  assert.deepEqual(remainingAudienceTrend(rows, { ...options, releaseDate:day }), []);
+  const paired = { date:day, share:75, viewers:30, streams:3, hours:6, partial:false };
+  assert.deepEqual(remainingAudienceTrend(rows, options), [paired]);
+  assert.deepEqual(remainingAudienceTrend(rows.slice(1), options), [{ ...paired, viewers:null, streams:null, hours:5 }]);
+  assert.deepEqual(remainingAudienceTrend(rows, { ...options, releaseDate:day }), [{ ...paired, viewers:null, streams:null, hours:0 }]);
+  assert.deepEqual(remainingAudienceTrend(rows, { ...options, date:previous }), []);
+  assert.deepEqual(remainingAudienceTrend(rows.slice(0, 26), { ...options, releaseDate:day }), []);
 });
 
 function trialFixture(period, hours, counts, releaseDate) {
