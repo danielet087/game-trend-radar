@@ -8,6 +8,7 @@ export const STREAM_HEAT_DAYS = 3;
 export const STREAM_HEAT_FLOORS = { global:1000, zh:50 };
 export const STREAM_HEAT_WEEK = 7;
 export const MIN_PAIRED_HEAT_HOURS = 6;
+export const MIN_CONCENTRATION_HOURS = 3;
 const median = values => quantile(values, .5);
 
 export function streamHeatDate(date, now = Date.now()) {
@@ -117,18 +118,23 @@ export function remainingAudienceTrend(rows, { date, now = Date.now(), releaseDa
     Number.isFinite(released) ? Math.max(start - DAY, released) : start - DAY, selected + DAY, now);
   const trend = [];
   for (let day = start; day <= selected; day += DAY) {
-    const viewers = [], streams = [];
+    const shares = [], viewers = [], streams = [];
     for (let at = day; at < day + DAY; at += HOUR) {
       const current = samples.get(at), previous = samples.get(at - DAY);
       const currentViewers = remainingViewers(current), previousViewers = remainingViewers(previous);
+      if (currentViewers !== null && current.viewer_count > 0) {
+        shares.push(current.largest_stream_viewer_count / current.viewer_count * 100);
+      }
       const currentStreams = count(current?.streamer_count), previousStreams = count(previous?.streamer_count);
       if ([currentViewers, previousViewers, currentStreams, previousStreams].includes(null)) continue;
       viewers.push(currentViewers - previousViewers);
       streams.push(currentStreams - previousStreams);
     }
-    if (viewers.length >= MIN_PAIRED_HEAT_HOURS) {
-      trend.push({ date:dayOf(day), viewers:median(viewers), streams:median(streams), hours:viewers.length, partial:isToday && day === selected });
-    }
+    const share = shares.length >= MIN_CONCENTRATION_HOURS ? median(shares) : null;
+    const paired = viewers.length >= MIN_PAIRED_HEAT_HOURS;
+    if (share === null && !paired) continue;
+    trend.push({ date:dayOf(day), share, viewers:paired ? median(viewers) : null,
+      streams:paired ? median(streams) : null, hours:viewers.length, partial:isToday && day === selected });
   }
   return trend;
 }
@@ -141,7 +147,7 @@ function concentration(rows, start, end, now) {
       samples.push({ share: row.largest_stream_viewer_count / row.viewer_count * 100, remaining });
     }
   }
-  return samples.length >= 3 ? {
+  return samples.length >= MIN_CONCENTRATION_HOURS ? {
     share: quantile(samples.map(sample => sample.share), .5),
     remaining: quantile(samples.map(sample => sample.remaining), .5),
   } : null;
@@ -175,7 +181,7 @@ export function analyzeStreamHeat(rows, { game, region = 'global', date, now = D
     date, signal, threshold, hits, validHours, median: day?.median ?? null,
     week:heatWeek(data.days, through), todayChange:open ? todayChange(available, start, now, region) : null,
     confirmedOn: signal === 'cooled' ? confirmationDate(data) : null,
-    concentration: minimumHits && validHours >= 3 ? concentration(available, start, end, now) : null,
+    concentration: minimumHits && validHours >= MIN_CONCENTRATION_HOURS ? concentration(available, start, end, now) : null,
     outlook: { signal:outlookSignal, comparison, latest,
       confirmedOn: outlookSignal === 'cooled' ? confirmationDate(data) : null },
   };
