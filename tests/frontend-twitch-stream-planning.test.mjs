@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dateStart, dayOf, detailHref } from '../src/features/twitch/series.js';
-import { compareTrialTimes, trialWindow } from '../src/features/twitch/stream-planning-model.js';
+import { compareTrialTimes, compareViewerTier, trialWindow } from '../src/features/twitch/stream-planning-model.js';
+import { launchComparison } from '../src/features/twitch/launch-curves.js';
 import { analyzeStreamHeat, remainingAudienceTrend, streamHeatDate } from '../src/features/twitch/stream-heat-model.js';
 import { analyzeCooldown } from '../src/features/twitch/cooldown-model.js';
 import { streamerAdvice } from '../src/features/twitch/heat-overview.js';
@@ -172,6 +173,36 @@ test('time comparison uses matched Taiwan dates across months and keeps regional
   assert.deepEqual(chinese.dates, ['2026-10-30','2026-11-03']);
   assert.deepEqual(chinese.slots.map(slot => [slot.observed, slot.viewers]), [[4,null],[3,null]]);
   assert.equal(chinese.preferred, null);
+});
+
+test('viewer tier ranking requires three days and preserves measured zero and old missing data', () => {
+  const period = trialWindow(0, now), hour = 11;
+  const counts = [[[900,10,[200,5]]], [[900,10,[200,5]]], [[900,10,[200,5]]], [[900,10,[200,5]]]];
+  const { index, chunks } = trialFixture(period, [hour], counts, '2026-11-05');
+  const rows = Object.values(chunks['2026-11'].hours);
+  for (const row of rows.slice(1)) row.streamer_counts_above_viewers = [5, 3, 2];
+  rows[1].audience_regions.zh.streamer_counts_above_viewers = [2, 0, 0];
+  rows[2].audience_regions.zh.streamer_counts_above_viewers = [2, 1, 0];
+  rows[3].audience_regions.zh.streamer_counts_above_viewers = [2, 1, 0];
+  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 50, 'global'), { sampledDays:3, ahead:3 });
+  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 100, 'zh'), { sampledDays:3, ahead:0 });
+  rows[3].audience_regions.zh.streamer_counts_above_viewers = [50, 50, 50];
+  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 50, 'zh'), { sampledDays:2, ahead:null });
+});
+
+test('launch curves use complete older peers in the same edition and hide values after the selected date', () => {
+  const row = { date:'2026-10-01', edition:'standard_store_date', genres:['Action'], daily:[100,90,80,70,60,50,40] };
+  const game = { ...row, date:'2026-11-01', daily:[200,200,160,150,130,110,80] };
+  const games = Object.fromEntries([1,2,3,4,5].map(id => [String(id), row]));
+  const payload = { games:{ ...games, '6':game,
+    '7':{ ...row, edition:'early_access' }, '8':{ ...row, date:'2026-10-29' },
+    '9':{ ...row, daily:[100,null,80,70,60,50,40] } } };
+  const selected = launchComparison(payload, '6', 'Action', dateStart('2026-11-05'));
+  assert.equal(selected.peers, 5);
+  assert.deepEqual(selected.typicalDay, row.daily);
+  assert.deepEqual(selected.game.daily, [200,200,160,null,null,null,null]);
+  assert.equal(selected.gameRemaining, null);
+  assert.equal(selected.remainingOnDay7, 40);
 });
 
 test('time comparison withholds a preferred hour when the median advantage lacks a majority of paired days', () => {

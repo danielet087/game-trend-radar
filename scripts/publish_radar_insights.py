@@ -14,7 +14,7 @@ from radar_core.storage import primary
 from scripts import sync_scheduler_queue_status as queue
 
 PATHS = ("data/insights-state.json", "data/activity.json", "data/growth.json",
-         "data/scheduler_queue_status.json")
+         "data/scheduler_queue_status.json", "data/twitch-launch-curves.json")
 
 
 def frozen_queue():
@@ -44,6 +44,13 @@ def publish(root, *, observed_at=None, repository=None, queue_snapshot=None):
         subprocess.run([sys.executable, "-B", str(current / "scripts/build_radar_insights.py"),
                         "--data-dir", str(current / "data"), "--observed-at", observation],
                        check=True, timeout=120, capture_output=True, text=True)
+        if (current / "data/twitch_series/index.json").is_file():
+            try:
+                subprocess.run([sys.executable, "-B", str(current / "scripts/build_twitch_launch_curves.py"),
+                                "--data-dir", str(current / "data")],
+                               check=True, timeout=120, capture_output=True, text=True)
+            except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+                print("Launch curves could not be refreshed; preserving the existing projection.", file=sys.stderr)
         if frozen is not None:
             queue.sync_snapshot(current / "data/scheduler_queue_status.json",
                                 fetcher=lambda: deepcopy(frozen))

@@ -716,6 +716,22 @@ class NintendoInsightTests(unittest.TestCase):
         self.assertEqual([row["appid"] for row in growth["games"]], [1])
         self.assertNotIn("history", first["nintendo_records"]["igdb:1"])
 
+    def test_igdb_hypes_seeds_existing_catalog_and_keeps_one_snapshot_per_taipei_day(self):
+        source = nintendo_catalog(nintendo_game())
+        first = self.update(document=source)
+        legacy = deepcopy(first)
+        legacy.pop("nintendo_hypes_source_digest")
+        legacy["nintendo_records"]["igdb:1"].pop("hypes_history")
+        self.assertEqual(self.update(legacy, source), first)
+        later = nintendo_catalog(nintendo_game(hypes=51), at="2026-10-04T02:00:00Z")
+        current = self.update(first, later)
+        self.assertEqual(current["nintendo_records"]["igdb:1"]["hypes_history"], [
+            {"at": later["generated_at"], "hypes": 51, "releases": {"NS2": "2026-11-05"}},
+        ])
+        self.assertEqual(self.update(current, source), current)
+        with self.assertRaises(ValueError):
+            self.update(first, nintendo_catalog(nintendo_game(hypes=46)))
+
     def test_incomplete_other_platform_metadata_does_not_override_public_native_qualification(self):
         state = self.update(document=nintendo_catalog(nintendo_game(platform_data_complete=False)))
         self.assertEqual(state["events"][0]["platforms"], ["NS2"])

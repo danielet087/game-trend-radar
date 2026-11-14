@@ -350,7 +350,7 @@ def accepted_nintendo(catalog, now):
         name = row.get("display_name") or row.get("name_zh_tw") or row.get("name_en")
         if not isinstance(name, str) or not name.strip():
             raise ValueError("IGDB display name required")
-        result[key] = {"igdb_id": igdb_id, "name": name, "releases": releases}
+        result[key] = {"igdb_id": igdb_id, "name": name, "releases": releases, "hypes": hypes}
     return instant, result
 
 
@@ -426,11 +426,18 @@ def merge_nintendo(state, catalog, now, receipt=None):
     previous_time = stamp(state.get("nintendo_source_at"))
     if previous_time and instant < previous_time:
         return  # A lagging checkout must not roll back the accepted state.
-    digest = hashlib.sha256(json.dumps(current, sort_keys=True).encode()).hexdigest()
-    if previous_time and instant == previous_time and state.get("nintendo_source_digest") not in {None, digest}:
-        raise ValueError("Conflicting IGDB catalogs share a source timestamp")
+    release_records = {key: {field: row[field] for field in ("igdb_id", "name", "releases")}
+                       for key, row in current.items()}
+    digest = hashlib.sha256(json.dumps(release_records, sort_keys=True).encode()).hexdigest()
+    hypes_digest = hashlib.sha256(json.dumps(current, sort_keys=True).encode()).hexdigest()
+    if previous_time and instant == previous_time:
+        if (state.get("nintendo_source_digest") not in {None, digest}
+                or state.get("nintendo_hypes_source_digest") not in {None, hypes_digest}):
+            raise ValueError("Conflicting IGDB catalogs share a source timestamp")
     at = nintendo_event_time(instant, receipt, now, source=catalog["source"]).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
     records = state.setdefault("nintendo_records", {})
+    observed_on = instant.astimezone(TAIPEI).date()
+    observed_stamp = instant.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
     for record in records.values():
         record["active"] = False
     for key, row in current.items():
@@ -450,6 +457,15 @@ def merge_nintendo(state, catalog, now, receipt=None):
                 changes.setdefault((kind, release, old), []).append(platform)
         prior.update(name=row["name"], active=True, current_releases=row["releases"])
         prior["release_dates"].update(row["releases"])
+        upcoming = {platform: release for platform, release in row["releases"].items() if observed_on < day(release)}
+        if upcoming:
+            history = prior.setdefault("hypes_history", [])
+            observation = {"at": observed_stamp, "hypes": row["hypes"], "releases": upcoming}
+            if history and stamp(history[-1]["at"]).astimezone(TAIPEI).date() == observed_on:
+                history[-1] = observation
+            else:
+                history.append(observation)
+                del history[:-400]
         for (kind, release, old), platforms in changes.items():
             event = {"source": "nintendo", "igdb_id": row["igdb_id"], "game_id": key,
                      "platforms": sorted(platforms, key=lambda item: list(IGDB_PLATFORMS).index(item)),
@@ -460,6 +476,7 @@ def merge_nintendo(state, catalog, now, receipt=None):
             state["events"].append(event)
     state["nintendo_source_at"] = instant.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
     state["nintendo_source_digest"] = digest
+    state["nintendo_hypes_source_digest"] = hypes_digest
 
 
 def annotate_activity_origins(state, current, origin_ledger=None, nintendo_catalog=None):

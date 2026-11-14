@@ -12,6 +12,7 @@ import { dailyRows } from './daily-series.js';
 import { renderHeatOverview } from './heat-overview.js';
 import { remainingAudienceTrend } from './stream-heat-model.js';
 import { createTrialTimeComparison } from './trial-time-comparison.js';
+import { createLaunchCurves } from './launch-curves.js';
 
 export function initTwitchDetail() {
   const $ = id => document.getElementById(id);
@@ -20,6 +21,7 @@ export function initTwitchDetail() {
   let resolution = ['daily', 'hourly'].includes(params.get('resolution')) ? params.get('resolution') : '';
   const id = canonicalID(params.get('game')), cache = new Map(), back = overviewQuery(params.get('back') || '');
   const trialTimes = createTrialTimeComparison({ $, params, back, onChange: syncURL });
+  const launchCurves = createLaunchCurves({ $, params, onChange: syncURL });
   let index, game, window, rows = [], fullHistoryLoader, page = 0, descending = true, request = 0, summaryRequest = 0;
   let charts = [], statsMode = '', cooldownMode = '', stats = new Map(), cooldowns = new Map(), disposed = false;
   const controls = { summary: 'summaryRegion', history: 'audienceRegion', cooldown: 'cooldownRegion', statistics: 'statisticsRegion' };
@@ -230,7 +232,7 @@ export function initTwitchDetail() {
   }
   async function load(refresh = false) {
     const token = ++request; summaryRequest++;
-    if (refresh) trialTimes.reset();
+    if (refresh) { trialTimes.reset(); launchCurves.reset(); }
     for (const key of ['historyOverview', 'historyCooldown', 'historyStatistics', 'historyContent', 'historyCooldownJump', 'historyStatisticsJump']) $(key).hidden = true;
     stats.forEach(controller => controller.hide()); cooldowns.forEach(controller => controller.hide());
     $('historyPanel').setAttribute('aria-busy', 'true'); $('historyExport').disabled = true; message('正在讀取逐時歷史…');
@@ -273,7 +275,8 @@ export function initTwitchDetail() {
       renderHistory(); renderStatistics(); renderCooldown();
       const alignTrialTimes = $('trialTimes').hidden && location.hash === '#trialTimes';
       const overview = renderOverview();
-      const comparison = trialTimes.update(index, id, chunksFor);
+      const comparison = trialTimes.update(index, id, chunksFor, window.end);
+      launchCurves.update(id, game, window.end, refresh);
       if (alignTrialTimes) Promise.all([overview, comparison]).then(() => {
         if (token === request && !disposed && location.hash === '#trialTimes') $('trialTimes').scrollIntoView();
       });
@@ -303,5 +306,5 @@ export function initTwitchDetail() {
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   load();
-  return () => { disposed = true; request++; summaryRequest++; trialTimes.reset(); charts.forEach(dispose => dispose()); stats.forEach(c => c.destroy()); cooldowns.forEach(c => c.destroy()); };
+  return () => { disposed = true; request++; summaryRequest++; trialTimes.reset(); launchCurves.reset(); charts.forEach(dispose => dispose()); stats.forEach(c => c.destroy()); cooldowns.forEach(c => c.destroy()); };
 }

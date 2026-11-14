@@ -1,8 +1,9 @@
-import { regionNames, viewOf } from './audience-region.js';
+import { regionNames, viewOf, VIEWER_TIERS } from './audience-region.js';
 import { fmt, hourLabel, node } from './presentation.js';
 import { regionsFor } from './region-views.js';
-import { dayOf, monthsFor } from './series.js';
-import { compareTrialTimes, streamHour, trialWindow, TRIAL_MIN_DAYS } from './stream-planning-model.js';
+import { dateStart, dayOf, monthsFor } from './series.js';
+import { HOUR } from './metrics.js';
+import { compareTrialTimes, compareViewerTier, streamHour, trialWindow, TRIAL_MIN_DAYS } from './stream-planning-model.js';
 
 function timeAdvice({ slots: [first, second], dates, releaseDate, typicalLead, preferred }, tracking) {
   if (dates.length < TRIAL_MIN_DAYS) return ['先等更多紀錄',
@@ -59,12 +60,14 @@ function renderRegion(region, comparison, totalDays, tracking) {
 
 export function createTrialTimeComparison({ $, params, back, onChange }) {
   const section = $('trialTimes'), jump = $('trialTimesJump'), results = $('trialTimeResults'), status = $('trialTimeStatus');
+  const rank = $('viewerRank'), rankResults = $('viewerRankResults'), rankStatus = $('viewerRankStatus');
+  const rankHour = $('viewerRankHour'), rankAudience = $('viewerRankAudience'), rankRegion = $('viewerRankRegion');
   const first = $('trialHourA'), second = $('trialHourB'), region = $('trialRegion');
   const source = new URLSearchParams(back);
   const firstDefault = streamHour(source.get('stream_hour'));
   const secondDefault = firstDefault === 22 ? 20 : 22;
   const regionDefault = source.get('view') === 'streamer' ? 'compare' : viewOf(source.get('region') ?? source.get('stream_region'));
-  for (const select of [first, second]) {
+  for (const select of [first, second, rankHour]) {
     for (let hour = 0; hour < 24; hour++) {
       const option = node('option', '', hourLabel(hour)); option.value = String(hour); select.append(option);
     }
@@ -72,7 +75,37 @@ export function createTrialTimeComparison({ $, params, back, onChange }) {
   first.value = String(streamHour(params.get('trial_hour_a') ?? firstDefault));
   second.value = String(streamHour(params.get('trial_hour_b') ?? secondDefault));
   region.value = viewOf(params.get('trial_region') ?? regionDefault);
+  const rankRegionDefault = viewOf(params.get('summary_region') ?? params.get('region') ?? regionDefault);
+  rankHour.value = String(streamHour(params.get('rank_hour') ?? firstDefault));
+  const chosenViewers = Number(params.get('rank_viewers'));
+  rankAudience.value = String(VIEWER_TIERS.includes(chosenViewers) ? chosenViewers : 50);
+  rankRegion.value = viewOf(params.get('rank_region') ?? rankRegionDefault);
   let current = null;
+
+  function renderRank() {
+    const { index, gameId, rankPeriod: period, rankChunks: chunks, rankError: error } = current;
+    const mode = rankRegion.value;
+    rankResults.replaceChildren();
+    rankResults.classList.toggle('tw-region-compare', mode === 'compare');
+    if (error) { rankStatus.textContent = '暫時無法取得逐時紀錄。請按頁首的重新載入。'; return; }
+    if (!chunks) { rankStatus.textContent = '正在讀取最近的逐時紀錄…'; return; }
+    try {
+      rankStatus.textContent = `${dayOf(period.start)} 至 ${dayOf(period.end)} · 依觀眾數排序，同人數並列`;
+      const hour = Number(rankHour.value), viewers = Number(rankAudience.value);
+      rankResults.append(...regionsFor(mode).map(scope => {
+        const { sampledDays, ahead } = compareViewerTier(index, chunks, gameId, period, hour, viewers, scope);
+        const card = node('section', 'tw-trial-region');
+        card.dataset.region = scope;
+        card.append(node('h3', 'tw-region-caption', regionNames[scope]),
+          node('p', 'tw-trial-action', ahead === null ? '級距紀錄不足' : `約第 ${fmt(ahead + 1)} 名`),
+          node('p', 'tw-trial-coverage', `有紀錄 ${sampledDays}／${period.slots.length} 天${ahead === null
+            ? ` · 至少需要 ${TRIAL_MIN_DAYS} 天` : ` · 通常約 ${fmt(ahead)} 台觀眾比你多`}`));
+        return card;
+      }));
+    } catch {
+      rankStatus.textContent = '暫時無法取得同一版本的逐時紀錄。請按頁首的重新載入。';
+    }
+  }
 
   function render() {
     const { index, gameId, period, chunks, error } = current;
@@ -95,27 +128,36 @@ export function createTrialTimeComparison({ $, params, back, onChange }) {
 
   for (const [control, key, fallback] of [
     [first, 'trial_hour_a', firstDefault], [second, 'trial_hour_b', secondDefault], [region, 'trial_region', regionDefault],
+    [rankHour, 'rank_hour', firstDefault], [rankAudience, 'rank_viewers', 50], [rankRegion, 'rank_region', rankRegionDefault],
   ]) control.addEventListener('change', () => {
     if (control.value === String(fallback)) params.delete(key);
     else params.set(key, control.value);
     onChange();
-    if (current) render();
+    if (current) (key.startsWith('rank_') ? renderRank : render)();
   });
 
   return {
-    async update(index, gameId, chunksFor) {
+    async update(index, gameId, chunksFor, selectedEnd) {
       const period = trialWindow(0);
-      if (current?.index === index && current.period.today === period.today && !current.error) return;
-      const entry = { index, gameId, period, chunks: null, error: false };
+      const rankEnd = dateStart(dayOf(selectedEnd)) + 24 * HOUR;
+      const rankPeriod = rankEnd > period.now ? period : trialWindow(0, rankEnd);
+      if (current?.index === index && current.period.today === period.today &&
+          current.rankPeriod.today === rankPeriod.today && !current.error && !current.rankError) return;
+      const entry = { index, gameId, period, rankPeriod, chunks: null, rankChunks: null, error: false, rankError: false };
       current = entry;
-      section.hidden = false; jump.hidden = false;
-      render();
+      section.hidden = false; jump.hidden = false; rank.hidden = false;
+      render(); renderRank();
       const gameMonths = index.games[gameId].months;
-      try {
-        entry.chunks = await chunksFor(monthsFor(period.start, period.end).filter(month => gameMonths.includes(month)));
-      } catch { entry.error = true; }
-      if (current === entry) render();
+      const chunksIn = window => chunksFor(monthsFor(window.start, window.end).filter(month => gameMonths.includes(month)));
+      const trialRequest = chunksIn(period);
+      const rankRequest = rankPeriod === period ? trialRequest : chunksIn(rankPeriod);
+      await Promise.all([
+        trialRequest.then(chunks => { entry.chunks = chunks; }).catch(() => { entry.error = true; })
+          .finally(() => { if (current === entry) render(); }),
+        rankRequest.then(chunks => { entry.rankChunks = chunks; }).catch(() => { entry.rankError = true; })
+          .finally(() => { if (current === entry) renderRank(); }),
+      ]);
     },
-    reset() { current = null; section.hidden = true; jump.hidden = true; },
+    reset() { current = null; section.hidden = true; jump.hidden = true; rank.hidden = true; },
   };
 }
