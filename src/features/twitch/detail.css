@@ -103,6 +103,12 @@ circle.tw-launch-peer { fill:#28776e; }
 .tw-launch-legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin:0; color:#655971; font-size:12px; }
 .tw-launch-key::before { content:''; display:inline-block; border-top:2px solid #67518f; width:18px; margin-right:6px; vertical-align:middle; }
 .tw-launch-key-peer::before { border-top:2px dashed #28776e; }
+.tw-launch-heat { margin:0 0 16px; padding:12px 14px; border:1px solid #ded3e8; border-radius:10px; background:#fbf8fe; }
+.tw-launch-heat h3 { margin-bottom:8px; }
+.tw-launch-heat-metrics { display:flex; flex-wrap:wrap; gap:8px 26px; margin:0; }
+.tw-launch-heat-metrics dt { color:#655971; font-size:12px; }
+.tw-launch-heat-metrics dd { color:#503b6b; font-size:20px; font-weight:700; margin:0; font-variant-numeric:tabular-nums; }
+.tw-launch-heat-signal { margin:7px 0 0; color:#67518f; font-size:13px; font-weight:650; }
 .tw-detail-chart .tw-chart-plot { height:300px; }
 .tw-detail-chart .tw-chart-ranges { display:none; }
 .tw-detail-chart .tw-chart-point { r:2; }
