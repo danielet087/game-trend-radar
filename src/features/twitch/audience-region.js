@@ -21,8 +21,10 @@ function viewerTiers(sample) {
 export function forRegion(row, region = 'global') {
   if (region !== 'zh') return { ...row, audience_region: 'global', streamer_counts_above_viewers: viewerTiers(row) };
   const value = row.audience_regions?.zh;
-  const available = value && validCount(row.viewer_count) && validCount(row.streamer_count) && validCount(value.viewer_count) && validCount(value.streamer_count) &&
-    value.viewer_count <= row.viewer_count && value.streamer_count <= row.streamer_count &&
+  const independent = value?.measurement_source === 'helix_language_filter';
+  const available = value && validCount(value.viewer_count) && validCount(value.streamer_count) &&
+    (independent || (validCount(row.viewer_count) && validCount(row.streamer_count) &&
+      value.viewer_count <= row.viewer_count && value.streamer_count <= row.streamer_count)) &&
     (value.streamer_count > 0 || value.viewer_count === 0);
   const largest = value?.largest_stream_viewer_count;
   const concentrationAvailable = available && validCount(largest) && largest <= value.viewer_count &&

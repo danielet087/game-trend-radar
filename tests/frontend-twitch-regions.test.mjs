@@ -44,6 +44,23 @@ test('Chinese medians validate their own population and foreign unknowns do not 
   row.audience_regions.zh.viewer_count = 10001;
   assert.equal(forRegion(row, 'zh').viewer_count, null);
 });
+test('language-filtered Chinese data uses its own counts in live and historical views', () => {
+  const row = { ...raw(), viewer_count: 50, streamer_count: 1 };
+  row.audience_regions.zh.measurement_source = 'helix_language_filter';
+  row.audience_regions.zh.largest_stream_viewer_count = 100;
+  row.audience_regions.zh.streamer_counts_above_viewers = [1, 1, 0];
+  const scoped = forRegion(row, 'zh');
+  assert.equal(scoped.viewer_count, 100);
+  assert.equal(scoped.largest_stream_viewer_count, 100);
+  assert.equal(valueOf(scoped, 'median'), 100);
+  assert.deepEqual(scoped.streamer_counts_above_viewers, [1, 1, 0]);
+  assert.equal(forRegion(row, 'global').viewer_count, 50);
+  const hour = '2026-11-15T06:00:00Z', generated = '2026-11-15T06:10:00Z';
+  const index = { months: { '2026-11': { [hour]: generated } } };
+  const chunks = { '2026-11': { hours: { [hour]: { ...row, generated_at: generated } } } };
+  const [historical] = seriesRows(index, chunks, '1', Date.parse(hour), Date.parse(hour), 'zh');
+  assert.equal(historical.viewer_count, 100);
+});
 test('daily and monthly charts project the same region; CSV identifies missing Chinese data', () => {
   const hour = '2026-10-31T00:00:00Z', at = Date.parse(hour), generated = '2026-10-31T00:10:00Z';
   const index = { months: { '2026-10': { [hour]: generated } } };
