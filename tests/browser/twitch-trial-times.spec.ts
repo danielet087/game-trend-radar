@@ -63,11 +63,11 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await page.route('**/data/twitch_series/1/2026-11.json', route => route.fulfill({ json:{
     schema_version:1, timezone:'Asia/Taipei', game_id:'1', month:'2026-11', hours,
   } }));
-  const curve = { date:'2026-10-01', edition:'standard_store_date', genres:['Action'], daily:[500,400,300,200,100,90,80] };
+  const curve = { date:'2026-10-01', edition:'standard_store_date', genres:['Action'], daily:[3500,4000,300,200,100,90,80] };
   await page.route('**/data/twitch-launch-curves.json', route => route.fulfill({ json:{
     schema_version:1, generated_at:generated, genres:{ Action:'動作', Strategy:'策略' }, games:{
       ...Object.fromEntries([2,3,4,5,6].map(id => [String(id), curve])),
-      '1':{ ...curve, date:'2026-11-05', genres:['Action','Strategy'], daily:[900,800,700,600,500,400,null] },
+      '1':{ ...curve, date:'2026-11-05', genres:['Action','Strategy'], daily:[3000,5000,700,4000,500,400,null] },
     },
   } }));
 
@@ -168,6 +168,11 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await expect(ranking.locator('[data-region="global"]')).toContainText('約第 3 名');
   const curves = page.getByRole('region', {name:'同類新作的上市曲線'});
   await expect(curves).toContainText('同類中位數 · 5 款');
+  await expect(curves.locator('.tw-launch-heat-metrics dd')).toHaveText(['3 天', '2 天']);
+  await expect(curves).toContainText('第 3 天跌破門檻 · 第 4 天再次達標');
+  await expect(curves).toContainText('同類 5／5 款在前 5 天曾達標');
+  await expect(curves.getByRole('img', {name:'上市後首週每日全球觀眾中位數'})).toBeVisible();
+  await expect(curves.locator('svg .tw-chart-threshold')).toHaveCSS('stroke', 'rgb(183, 122, 67)');
   await expect(curves.getByRole('row', {name:/這款遊戲/})).toContainText('700 人');
   await expect(curves.getByRole('row', {name:/這款遊戲/})).toContainText('—');
   await curves.locator('#launchCurveGenre').selectOption('Strategy');

@@ -203,6 +203,33 @@ test('launch curves use complete older peers in the same edition and hide values
   assert.deepEqual(selected.game.daily, [200,200,160,null,null,null,null]);
   assert.equal(selected.gameRemaining, null);
   assert.equal(selected.remainingOnDay7, 40);
+  assert.equal(selected.closedDays, 3);
+  assert.deepEqual(selected.heat, { hot:0, observed:3, longest:0, firstHot:null, firstDrop:null, returnDay:null });
+  assert.deepEqual(selected.peerHeat, { hot:0, longest:null });
+});
+
+test('launch heat counts runs and visible re-entry using the same number of days for peers', () => {
+  const date = '2026-11-01', edition = 'standard_store_date', genres = ['Action'];
+  const peer = { date:'2026-10-15', edition, genres, daily:[4000,3000,2400,2500,3000,3000,3000] };
+  const games = Object.fromEntries([1,2,3,4,5].map(id => [String(id), peer]));
+  games['6'] = { date, edition, genres, daily:[3000,5000,2500,2400,2500,3600,3700] };
+  const data = { generated_at:'2026-11-10T00:00:00+08:00', games };
+  const full = launchComparison(data, '6', 'Action');
+  assert.deepEqual(full.heat, { hot:4, observed:7, longest:2, firstHot:1, firstDrop:3, returnDay:6 });
+  assert.deepEqual(full.peerHeat, { hot:5, longest:3 });
+  const early = launchComparison(data, '6', 'Action', dateStart('2026-11-06'));
+  assert.deepEqual(early.heat, { hot:2, observed:4, longest:2, firstHot:1, firstDrop:3, returnDay:null });
+  assert.deepEqual(early.peerHeat, { hot:5, longest:2 });
+});
+
+test('launch heat stops at the published day and does not infer a change across missing days', () => {
+  const games = { '1':{ date:'2026-11-01', edition:'early_access', genres:['Action'], daily:[3000,null,0,4500,6000,7000,7500] } };
+  const data = { generated_at:'2026-11-06T00:00:00+08:00', games };
+  const result = launchComparison(data, '1', 'Action');
+  assert.equal(result.closedDays, 4);
+  assert.deepEqual(result.game.daily, [3000,null,0,4500,null,null,null]);
+  assert.deepEqual(result.heat, { hot:2, observed:3, longest:1, firstHot:1, firstDrop:null, returnDay:null });
+  assert.equal(result.peerHeat, null);
 });
 
 test('time comparison withholds a preferred hour when the median advantage lacks a majority of paired days', () => {

@@ -1,14 +1,16 @@
 import { RadarStorage } from '../../data/storage.ts';
+import { cooldownThreshold } from './cooldown-model.js';
 import { fmt, node } from './presentation.js';
 import { dateStart, dayOf } from './series.js';
 import { quantile } from './statistics-model.js';
-import { timestamp } from './metrics.js';
+import { HOUR, timestamp } from './metrics.js';
 
 const DAYS = 7;
-const DAY = 86_400_000;
+const DAY = 24 * HOUR;
 const MIN_PEERS = 5;
 const NS = 'http://www.w3.org/2000/svg';
 const measured = value => Number.isFinite(value) && value >= 0;
+const threshold = cooldownThreshold('global');
 
 function validCurves(data) {
   return data?.schema_version === 1 && Boolean(timestamp(data.generated_at)) && data.genres && typeof data.genres === 'object' &&
@@ -19,18 +21,52 @@ function validCurves(data) {
       Array.isArray(game.daily) && game.daily.length === DAYS && game.daily.every(value => value === null || measured(value)));
 }
 
+function launchHeat(days) {
+  let hot = 0, observed = 0, longest = 0, run = 0, firstHot = null, firstDrop = null, returnDay = null;
+  let sawHot = false;
+  days.forEach((viewers, i) => {
+    if (!measured(viewers)) {
+      run = 0; sawHot = false;
+      return;
+    }
+    observed++;
+    const day = i + 1;
+    if (viewers >= threshold) {
+      if (sawHot && run === 0) returnDay ??= day;
+      hot++; run++;
+      longest = Math.max(longest, run);
+      firstHot ??= day;
+      sawHot = true;
+    } else {
+      if (run > 0) firstDrop ??= day;
+      run = 0;
+    }
+  });
+  return { hot, observed, longest, firstHot, firstDrop, returnDay };
+}
+
 export function launchComparison(data, id, genre, until = Infinity) {
   const game = data.games[id];
   const release = dateStart(game.date);
-  const daily = game.daily.map((value, i) => release + (i + 2) * DAY <= until ? value : null);
+  const published = Date.parse(data.generated_at);
+  const cutoff = Number.isFinite(published) ? Math.min(until, published) : until;
+  const closedDays = Math.min(DAYS, Math.max(0, Math.floor((cutoff - release) / DAY) - 1));
+  const daily = game.daily.map((value, i) => i < closedDays ? value : null);
   const peers = Object.entries(data.games).filter(([otherId, other]) => otherId !== id &&
     other.edition === game.edition && other.genres.includes(genre) && other.daily.every(measured) &&
-    dateStart(other.date) + (DAYS + 1) * DAY <= Math.min(until, release)).map(([, other]) => other);
-  const typicalDay = peers.length >= MIN_PEERS ? daily.map((_, i) => quantile(peers.map(peer => peer.daily[i]), .5)) : null;
+    dateStart(other.date) + (DAYS + 1) * DAY <= Math.min(cutoff, release)).map(([, other]) => other);
+  const enoughPeers = peers.length >= MIN_PEERS;
+  const typicalDay = enoughPeers ? daily.map((_, i) => quantile(peers.map(peer => peer.daily[i]), .5)) : null;
   const retained = (value, start) => measured(value) && start > 0 ? value / start * 100 : null;
-  const remainingOnDay7 = peers.length >= MIN_PEERS
+  const remainingOnDay7 = enoughPeers
     ? quantile(peers.map(peer => retained(peer.daily.at(-1), peer.daily[0])), .5) : null;
-  return { game: { ...game, daily }, peers: peers.length, typicalDay, gameRemaining: retained(daily.at(-1), daily[0]), remainingOnDay7 };
+  const peerRuns = enoughPeers && closedDays ? peers.map(peer => launchHeat(peer.daily.slice(0, closedDays)).longest)
+    .filter(run => run > 0) : [];
+  const peerHeat = enoughPeers && closedDays ? {
+    hot:peerRuns.length, longest:peerRuns.length >= MIN_PEERS ? quantile(peerRuns, .5) : null,
+  } : null;
+  return { game: { ...game, daily }, peers: peers.length, typicalDay, gameRemaining: retained(daily.at(-1), daily[0]),
+    remainingOnDay7, closedDays, heat:launchHeat(daily.slice(0, closedDays)), peerHeat };
 }
 
 function svgNode(tag, attrs, value) {
@@ -49,6 +85,9 @@ function viewerChart(game, typical) {
     svg.append(svgNode('line', { x1:x(0), x2:x(DAYS - 1), y1:y(tick), y2:y(tick), class:'tw-launch-grid' }),
       svgNode('text', { x:51, y:y(tick) + 4, 'text-anchor':'end' }, fmt(tick)));
   }
+  if (maximum >= threshold) {
+    svg.append(svgNode('line', { x1:x(0), x2:x(DAYS - 1), y1:y(threshold), y2:y(threshold), class:'tw-chart-threshold' }));
+  }
   for (let i = 0; i < DAYS; i++) svg.append(svgNode('text', { x:x(i), y:165, 'text-anchor':'middle' }, `第 ${i + 1} 天`));
   for (const [values, kind] of [[typical, 'peer'], [game, 'game']]) {
     if (!values) continue;
@@ -64,6 +103,35 @@ function viewerChart(game, typical) {
     if (path) svg.append(svgNode('path', { d:path, class:`tw-launch-${kind}`, fill:'none' }), ...dots);
   }
   return svg;
+}
+
+function heatSummary({ closedDays, heat, peerHeat, peers }) {
+  const summary = node('div', 'tw-launch-heat');
+  const heading = node('h3', 'tw-region-caption', '首週熱度');
+  summary.append(heading);
+  if (!closedDays) {
+    summary.append(node('p', 'tw-trial-coverage', '首個完整觀測日尚未發布。'));
+    return summary;
+  }
+  const metrics = node('dl', 'tw-launch-heat-metrics');
+  for (const [label, value] of [['達標天數', heat.hot], ['最長連續達標', heat.longest]]) {
+    const item = node('div');
+    item.append(node('dt', '', label), node('dd', '', heat.observed ? `${value} 天` : '—'));
+    metrics.append(item);
+  }
+  const coverage = node('p', 'tw-trial-coverage', `前 ${closedDays} 天有 ${heat.observed} 天可判定 · ${fmt(threshold)} 人門檻`);
+  const events = [
+    heat.firstHot > 1 && `第 ${heat.firstHot} 天觀測到達標`,
+    heat.firstDrop && `第 ${heat.firstDrop} 天跌破門檻`,
+    heat.returnDay && `第 ${heat.returnDay} 天再次達標`,
+  ].filter(Boolean);
+  summary.append(metrics, coverage);
+  if (events.length) summary.append(node('p', 'tw-launch-heat-signal', events.join(' · ')));
+  if (peerHeat) {
+    const duration = peerHeat.longest === null ? '' : ` · 達標作品的最長連續中位數 ${fmt(peerHeat.longest)} 天`;
+    summary.append(node('p', 'tw-trial-coverage', `同類 ${peerHeat.hot}／${peers} 款在前 ${closedDays} 天曾達標${duration}`));
+  }
+  return summary;
 }
 
 function compactTable({ game, typicalDay }) {
@@ -99,8 +167,7 @@ export function createLaunchCurves({ $, params, onChange }) {
     const legend = node('p', 'tw-launch-legend');
     legend.append(node('span', 'tw-launch-key tw-launch-key-game', '這款遊戲'));
     if (typicalDay) legend.append(node('span', 'tw-launch-key tw-launch-key-peer', `同類中位數 · ${fmt(peers)} 款`));
-    results.append(legend, viewerChart(game.daily, typicalDay), compactTable(comparison));
-    if (!game.daily.some(measured)) results.append(node('p', 'tw-trial-coverage', '這款遊戲的首週逐時紀錄仍不足。'));
+    results.append(heatSummary(comparison), legend, viewerChart(game.daily, typicalDay), compactTable(comparison));
     if (!typicalDay) results.append(node('p', 'tw-trial-coverage', `同類有 ${fmt(peers)} 款首週資料齊全。至少需要 ${MIN_PEERS} 款才顯示比較線。`));
     if (gameRemaining !== null || remainingOnDay7 !== null) {
       const format = value => value === null ? '—' : `${fmt(value)}%`;
