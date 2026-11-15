@@ -69,7 +69,7 @@ function gameCard(g) {
         const line = node('div', 'tw-metric-region'); line.dataset.region = region;
         line.append(node('span', '', regionNames[region]), node('strong', '', fmt(number))); metric.append(line);
       }
-      metric.append(node('small', '', zh.audience_region_status === 'unavailable' ? '中文區未收集' : '全球包含中文區'));
+      if (zh.audience_region_status === 'unavailable') metric.append(node('small', '', '中文區未收集'));
     }
     if (i === 2) {
       const zh = state.region === 'compare' ? forRegion(g, 'zh') : null;
