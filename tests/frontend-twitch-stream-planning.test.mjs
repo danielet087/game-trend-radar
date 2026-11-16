@@ -216,10 +216,40 @@ test('viewer tier ranking requires three days and preserves measured zero and ol
   rows[1].audience_regions.zh.streamer_counts_above_viewers = [2, 0, 0];
   rows[2].audience_regions.zh.streamer_counts_above_viewers = [2, 1, 0];
   rows[3].audience_regions.zh.streamer_counts_above_viewers = [2, 1, 0];
-  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 50, 'global'), { sampledDays:3, ahead:3 });
-  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 100, 'zh'), { sampledDays:3, ahead:0 });
+  const lastHour = iso(period.slots[3] + hour * 3600000);
+  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 50, 'global'), {
+    sampledDays:3, ahead:3, latest:{ hour:lastHour, tiers:[5, 3, 2] },
+  });
+  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 100, 'zh'), {
+    sampledDays:3, ahead:0, latest:{ hour:lastHour, tiers:[2, 1, 0] },
+  });
   rows[3].audience_regions.zh.streamer_counts_above_viewers = [50, 50, 50];
-  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 50, 'zh'), { sampledDays:2, ahead:null });
+  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 50, 'zh'), {
+    sampledDays:2, ahead:null, latest:{ hour:iso(period.slots[2] + hour * 3600000), tiers:[2, 1, 0] },
+  });
+});
+
+test('viewer tiers use the Chinese collection active at the latest selected hour', () => {
+  const period = trialWindow(0, Date.parse('2026-11-16T09:00:00+08:00'));
+  const counts = period.slots.map(() => [[900,10,[500,5]], [900,10,[500,5]]]);
+  const { index, chunks } = trialFixture(period, [11, 22], counts, '2026-11-01');
+  const rows = chunks['2026-11'].hours;
+  for (const row of Object.values(rows)) {
+    row.streamer_counts_above_viewers = [5, 4, 2];
+    row.audience_regions.zh.streamer_counts_above_viewers = [5, 4, 2];
+  }
+  const hour = '2026-11-15T14:00:00Z';
+  rows[hour].audience_regions.zh = { viewer_count:40, streamer_count:2,
+    measurement_source:'helix_language_filter', streamer_counts_above_viewers:[1, 0, 0] };
+  assert.deepEqual(compareViewerTier(index, chunks, '1', period, 22, 50, 'zh'), {
+    sampledDays:1, ahead:null, latest:{ hour, tiers:[1, 0, 0] },
+  });
+  assert.equal(compareViewerTier(index, chunks, '1', period, 11, 50, 'zh').ahead, 4);
+  assert.equal(compareViewerTier(index, chunks, '1', period, 22, 50, 'global').sampledDays, 7);
+  delete rows[hour].audience_regions.zh.measurement_source;
+  assert.deepEqual(compareViewerTier(index, chunks, '1', period, 22, 50, 'zh'), {
+    sampledDays:0, ahead:null, latest:null,
+  });
 });
 
 test('launch curves use complete older peers in the same edition and hide values after the selected date', () => {
