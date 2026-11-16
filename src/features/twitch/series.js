@@ -86,6 +86,13 @@ export function overviewQuery(search) {
   if (Number.isSafeInteger(page) && page > 1 && page <= 100000) output.set('archive_page', String(page));
   return output.toString();
 }
+export function streamPlanningHref(search = '') {
+  const input = new URLSearchParams(search);
+  input.set('view', 'streamer');
+  const output = new URLSearchParams(overviewQuery(input));
+  output.delete('view');
+  return './stream-planning.html' + (output.size ? '?' + output : '');
+}
 export function detailHref(id, search = '') {
   const params = new URLSearchParams({ game: id }), back = overviewQuery(search);
   const source = new URLSearchParams(search);

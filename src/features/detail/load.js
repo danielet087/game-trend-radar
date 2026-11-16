@@ -17,7 +17,8 @@ export function createDetailLoader(ctx, render, favorites, related) {
     try {
       const previous = new URL(document.referrer);
       if (previous.origin !== location.origin) return;
-      if (previous.pathname.endsWith("/twitch.html") && previous.searchParams.get("view") === "streamer") {
+      if (previous.pathname.endsWith("/stream-planning.html") ||
+          previous.pathname.endsWith("/twitch.html") && previous.searchParams.get("view") === "streamer") {
         const back = previous.pathname + previous.search + previous.hash;
         $("gameBack").href = $("detailStatusBack").href = back;
         $("gameBack").textContent = "← 返回開台選題";

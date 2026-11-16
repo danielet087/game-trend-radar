@@ -9,7 +9,7 @@ import { initInteractions } from '../shared/interactions/index.js';
 import '../shared/styles/index.css';
 import radarMark from '../../assets/radar-mark.svg';
 
-export type RadarPage = 'home' | 'all' | 'upcoming' | 'released' | 'saved' | 'date' | 'explore' | 'game' | 'growth' | 'analysis' | 'twitch' | 'twitch-game' | 'scheduler';
+export type RadarPage = 'home' | 'all' | 'upcoming' | 'released' | 'saved' | 'date' | 'explore' | 'game' | 'growth' | 'analysis' | 'twitch' | 'stream-planning' | 'twitch-game' | 'scheduler';
 
 // A single compatibility boundary supports the existing native SVG/lifecycle
 // renderers while new feature code imports its dependencies explicitly.
@@ -25,7 +25,7 @@ export async function bootstrap(page: RadarPage) {
   await nextTick();
   const motion = (window as unknown as { RadarMotion: { enabled: boolean } }).RadarMotion;
   let interactions;
-  if (!['twitch', 'twitch-game', 'scheduler'].includes(page)) {
+  if (!['twitch', 'stream-planning', 'twitch-game', 'scheduler'].includes(page)) {
     interactions = initInteractions({ insights: RadarInsights, storage: RadarStorage, motion });
     installBoundary(interactions);
   }
@@ -48,6 +48,10 @@ export async function bootstrap(page: RadarPage) {
   if (page === 'twitch') {
     const { initTwitchPage } = await import('../features/twitch/index.js');
     return initTwitchPage();
+  }
+  if (page === 'stream-planning') {
+    const { initStreamPlanningPage } = await import('../features/twitch/stream-planning.js');
+    return initStreamPlanningPage();
   }
   const { initSchedulerPage } = await import('../features/scheduler/index.js');
   return initSchedulerPage();

@@ -10,7 +10,10 @@ const analysisDisclosure = ref<HTMLDetailsElement>();
 const count = ref(savedCount());
 const motion = ref(readMotion());
 const exploreActive = computed(() => ['all', 'games', 'upcoming', 'released', 'explore'].includes(props.page));
-const analysisActive = computed(() => ['growth', 'analysis', 'twitch', 'twitch-game'].includes(props.page));
+const analysisActive = computed(() => ['growth', 'analysis', 'twitch', 'twitch-game', 'stream-planning'].includes(props.page));
+const fromPlanning = new URLSearchParams(new URLSearchParams(location.search).get('back') ?? '').get('view') === 'streamer';
+const planningActive = computed(() => props.page === 'stream-planning' || props.page === 'twitch-game' && fromPlanning);
+const twitchActive = computed(() => props.page === 'twitch' || props.page === 'twitch-game' && !fromPlanning);
 const motionLabel = computed(() => motion.value.reduced
   ? '裝置已設定減少動態效果'
   : motion.value.enabled ? '關閉動態效果' : '開啟動態效果');
@@ -139,10 +142,15 @@ onBeforeUnmount(() => {
               <span class="explore-route-copy"><span class="explore-route-title">遊戲比較 <small>實驗</small></span><span class="explore-route-note">一次並排 2～3 款</span></span>
               <span class="explore-route-arrow" aria-hidden="true">{{ page === 'analysis' ? '✓' : '↗' }}</span>
             </a>
-            <a class="explore-route explore-route-twitch" href="./twitch.html" :aria-current="['twitch', 'twitch-game'].includes(page) ? 'page' : undefined">
+            <a class="explore-route explore-route-twitch" href="./twitch.html" :aria-current="twitchActive ? 'page' : undefined">
               <span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><rect x="15" y="25" width="50" height="38" rx="10" /><path d="m28 12 12 13 12-13M29 72h22M31 39v8m18-8v8m-16 7h14M6 34v16m68-16v16" /></svg></span>
-              <span class="explore-route-copy"><span class="explore-route-title">Twitch 新作觀測 <small>實驗</small></span><span class="explore-route-note">開台選題、熱度與歷史紀錄</span></span>
-              <span class="explore-route-arrow" aria-hidden="true">{{ ['twitch', 'twitch-game'].includes(page) ? '✓' : '↗' }}</span>
+              <span class="explore-route-copy"><span class="explore-route-title">Twitch 新作觀測 <small>實驗</small></span><span class="explore-route-note">目前觀測與歷史資料庫</span></span>
+              <span class="explore-route-arrow" aria-hidden="true">{{ twitchActive ? '✓' : '↗' }}</span>
+            </a>
+            <a class="explore-route explore-route-twitch" href="./stream-planning.html" :aria-current="planningActive ? 'page' : undefined">
+              <span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><rect x="16" y="19" width="49" height="46" rx="7" /><path d="M16 32h49M27 14v11m26-11v11M29 48l7 7 15-15" /></svg></span>
+              <span class="explore-route-copy"><span class="explore-route-title">開台選題</span><span class="explore-route-note">查看每日選題與熱度</span></span>
+              <span class="explore-route-arrow" aria-hidden="true">{{ planningActive ? '✓' : '↗' }}</span>
             </a>
           </div>
         </details>

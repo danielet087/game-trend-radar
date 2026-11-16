@@ -8,17 +8,33 @@ function historyDays(at) {
   const end = Math.floor(Date.parse(at) / HOUR) * HOUR;
   return Number.isFinite(end) ? [...new Set([taipeiDay(end - 23 * HOUR), taipeiDay(end)])] : [];
 }
+function* validHistoryHours(file, cutoff) {
+  if (file?.schema_version !== 1 || file.timezone !== 'Asia/Taipei' || !file.hours) return;
+  for (const [key, entry] of Object.entries(file.hours)) {
+    const time = timestamp(key) ? Date.parse(key) : NaN;
+    const observed = timestamp(entry?.generated_at) ? Date.parse(entry.generated_at) : NaN;
+    const started = entry?.collection_schedule && timestamp(entry.collection_started_at);
+    const bucketAt = started ? Date.parse(started) : observed;
+    if (!Number.isFinite(time) || time % HOUR || !Number.isFinite(observed) || observed > cutoff ||
+        Math.floor(bucketAt / HOUR) * HOUR !== time || taipeiDay(bucketAt) !== file.date || !Array.isArray(entry.games)) continue;
+    yield { time, observed, entry };
+  }
+}
+
+function latestHistorySnapshot(file, cutoff) {
+  let latest;
+  for (const hour of validHistoryHours(file, cutoff)) {
+    if (!latest || hour.time > latest.time) latest = hour;
+  }
+  return latest?.entry ?? null;
+}
+
 function historyRows(files, gameID, at, region = 'global') {
   const cutoff = Date.parse(at), end = Math.floor(cutoff / HOUR) * HOUR;
   if (!Number.isFinite(end)) return [];
   const hours = new Map();
   for (const file of files) {
-    if (file?.schema_version !== 1 || file.timezone !== "Asia/Taipei" || !file.hours) continue;
-    for (const [key, entry] of Object.entries(file.hours)) {
-      const time = timestamp(key) ? Date.parse(key) : NaN;
-      const observed = timestamp(entry?.generated_at) ? Date.parse(entry.generated_at) : NaN;
-      const bucketAt = entry?.collection_schedule && timestamp(entry.collection_started_at) ? Date.parse(entry.collection_started_at) : observed;
-      if (!Number.isFinite(time) || time % HOUR || !Number.isFinite(observed) || observed > cutoff || Math.floor(bucketAt / HOUR) * HOUR !== time || taipeiDay(bucketAt) !== file.date || !Array.isArray(entry.games)) continue;
+    for (const { time, observed, entry } of validHistoryHours(file, cutoff)) {
       const previous = hours.get(time);
       if (!previous || observed > Date.parse(previous.generated_at)) hours.set(time, entry);
     }
@@ -35,5 +51,5 @@ function historyRows(files, gameID, at, region = 'global') {
   });
 }
 
-export { taipeiDay, historyDays, historyRows };
+export { taipeiDay, historyDays, historyRows, latestHistorySnapshot };
 

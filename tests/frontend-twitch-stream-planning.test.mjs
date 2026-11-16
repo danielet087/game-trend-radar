@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dateStart, dayOf, detailHref } from '../src/features/twitch/series.js';
+import { dateStart, dayOf, detailHref, streamPlanningHref } from '../src/features/twitch/series.js';
+import { latestHistorySnapshot } from '../src/features/twitch/history.js';
 import { compareTrialTimes, compareViewerTier, trialWindow } from '../src/features/twitch/stream-planning-model.js';
 import { launchComparison } from '../src/features/twitch/launch-curves.js';
 import { analyzeStreamHeat, remainingAudienceTrend, streamHeatDate } from '../src/features/twitch/stream-heat-model.js';
@@ -22,6 +23,26 @@ test('trial detail links carry the shared current filters and accept the previou
   const link = new URL(detailHref('2', '?view=streamer&sort=streamers&stream_hour=0&stream_region=compare&stream_order=competition&stream_q=Game&stream_date=2026-11-10'), 'https://example.com/');
   assert.equal(link.searchParams.get('region'), 'compare');
   assert.equal(link.searchParams.get('back'), 'sort=streamers&view=streamer&stream_hour=0&stream_date=2026-11-10&region=compare&stream_q=Game');
+  const planning = new URL(streamPlanningHref(link.searchParams.get('back')), 'https://example.com/');
+  assert.equal(planning.pathname, '/stream-planning.html');
+  assert.equal(planning.searchParams.get('stream_date'), '2026-11-10');
+  assert.equal(planning.searchParams.get('sort'), 'streamers');
+  assert.equal(planning.searchParams.get('view'), null);
+});
+
+test('planning replay selects the latest valid Taipei snapshot before the cutoff', () => {
+  const earlier = { generated_at:'2026-11-10T02:18:00Z', games:[{ game_id:'1' }] };
+  const latest = { generated_at:'2026-11-10T14:18:00Z', games:[{ game_id:'2' }] };
+  const hours = {
+    '2026-11-10T14:00:00Z':latest,
+    '2026-11-10T02:00:00Z':earlier,
+    '2026-11-10T15:00:00Z':{ generated_at:'2026-11-10T16:01:00Z', collection_started_at:'2026-11-10T15:50:00Z',
+      collection_schedule:{ trigger_source:'cloudflare' }, games:[{ game_id:'3' }] },
+  };
+  const file = { schema_version:1, date:'2026-11-10', timezone:'Asia/Taipei', hours };
+  assert.equal(latestHistorySnapshot(file, dateStart('2026-11-11') - 1), latest);
+  assert.equal(latestHistorySnapshot(file, Date.parse('2026-11-10T11:00:00+08:00')), earlier);
+  assert.equal(latestHistorySnapshot(file, dateStart('2026-11-10')), null);
 });
 
 const game = { tracking_status:'active', release_reference:{ date:'2026-11-05', precision:'day' } };

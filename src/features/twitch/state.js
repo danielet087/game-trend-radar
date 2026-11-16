@@ -9,8 +9,7 @@ export function createTwitchURLState(state, $) {
 function urlState() {
   const p = new URLSearchParams(location.search);
   const old = [state.region,state.query,state.filter,state.sort];
-  const streamer = p.get('view') === 'streamer';
-  state.region = viewOf(p.get('region') ?? (streamer ? p.get('stream_region') : null));
+  state.region = viewOf(p.get('region'));
   if ($('audienceRegion')) $('audienceRegion').value = state.region;
   state.query = (p.get("q") || "").slice(0,160);
   state.filter = Object.hasOwn(filterNames, p.get("state")) ? p.get("state") : D.DEFAULT_FILTER;
@@ -19,14 +18,12 @@ function urlState() {
   if (old.some((value, i) => value !== current[i])) state.limit = OBSERVATION_PAGE_SIZE;
   $("gameSearch").value = state.query;
   $("gameSort").value = state.sort;
-  document.querySelector(".tw-signal-filters").open = ![D.DEFAULT_FILTER,"twitch_new","steam_recent"].includes(state.filter);
-  if (p.has("state") && !Object.hasOwn(filterNames,p.get("state")) || streamer && (p.has('stream_region') || p.has('stream_order'))) syncURL();
+  const signalFilters = document.querySelector(".tw-signal-filters");
+  if (signalFilters) signalFilters.open = ![D.DEFAULT_FILTER,"twitch_new","steam_recent"].includes(state.filter);
+  if (p.has("state") && !Object.hasOwn(filterNames,p.get("state"))) syncURL();
 }
 function syncURL() {
   const url = new URL(location.href);
-  if (url.searchParams.get('view') === 'streamer') {
-    url.searchParams.delete('stream_region'); url.searchParams.delete('stream_order');
-  }
   for (const [key,value,defaultValue] of [["q",state.query,""],["state",state.filter,D.DEFAULT_FILTER],["sort",state.sort,D.DEFAULT_SORT],['region',state.region,DEFAULT_REGION]]) {
     if (value === defaultValue) url.searchParams.delete(key); else url.searchParams.set(key,value);
   }

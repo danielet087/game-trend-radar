@@ -32,12 +32,26 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
     { appid:88001, name:'試播遊戲', followers:6000, release_start:'2026-11-05' },
     { appid:88002, name:'遊戲 2', followers:100, release_start:'2026-11-06' },
   ];
+  const candidates = Array.from({ length:25 }, (_, i) => ({ game_id:String(i + 1), game_name:i === 0 ? '試播遊戲' : `遊戲 ${i + 1}`,
+    ...(i < steamGames.length ? { steam_matches:[{ steam_appid:steamGames[i].appid, display_name:steamGames[i].name }] } : {}),
+    ...(i === 2 ? { igdb_id:'303' } : {}),
+    viewer_count:20000 - i, streamer_count:i + 1, verification:{ status:'new', observed_at:generated } }));
   await page.route('**/data/twitch_live.json', route => route.fulfill({ json:{
     schema_version:2, generated_at:generated, min_viewers:7000, coverage:{ collection_complete:true },
-    candidate_games:Array.from({ length:25 }, (_, i) => ({ game_id:String(i + 1), game_name:i === 0 ? '試播遊戲' : `遊戲 ${i + 1}`,
-      ...(i < steamGames.length ? { steam_matches:[{ steam_appid:steamGames[i].appid, display_name:steamGames[i].name }] } : {}),
-      ...(i === 2 ? { igdb_id:'303' } : {}),
-      viewer_count:20000 - i, streamer_count:i + 1, verification:{ status:'new', observed_at:generated } })),
+    candidate_games:candidates,
+  } }));
+  const historicalAt = '2026-11-10T15:18:00Z';
+  const archived = [
+    ...candidates.slice(0, 24),
+    { game_id:'99', game_name:'當日限定遊戲', viewer_count:30000, streamer_count:50, verification:{ status:'new' } },
+  ].map(game => ({ ...game, verification:{ ...game.verification, observed_at:historicalAt } }));
+  await page.route('**/data/twitch_history/**', route => route.fulfill({ status:404, body:'{}' }));
+  await page.route('**/data/twitch_history/2026-11-10.json', route => route.fulfill({ json:{
+    schema_version:1, date:'2026-11-10', timezone:'Asia/Taipei',
+    hours:{
+      '2026-11-10T15:00:00Z':{ generated_at:historicalAt, min_viewers:7000, games:archived },
+      '2026-11-10T14:00:00Z':{ generated_at:'2026-11-10T14:18:00Z', min_viewers:7000, games:candidates },
+    },
   } }));
   for (const name of ['twitch_tracking', 'twitch_steam_mapping'])
     await page.route(`**/data/${name}.json`, route => route.fulfill({ status:404, body:'{}' }));
@@ -74,6 +88,9 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   } }));
 
   await page.goto('twitch.html?view=streamer&sort=viewers&stream_hour=22');
+  await expect(page).toHaveURL(/stream-planning\.html.*stream_hour=22/);
+  await expect(page.getByRole('heading', { name:'開台選題', exact:true })).toBeVisible();
+  await expect(page.getByRole('tab', { name:'目前觀測' })).toHaveCount(0);
   const card = page.locator('.tw-stream-game[data-game="1"]');
   const profile = card.getByRole('link', { name:'遊戲頁（試播遊戲）', exact:true });
   await expect(card.getByRole('heading', { name:'試播遊戲', exact:true })).toBeVisible();
@@ -95,6 +112,9 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await expect(chineseCard.locator('.tw-stream-reason')).toContainText('11/11 · 12 次達 100 人');
   await date.fill('2026-11-10');
   await expect(page).toHaveURL(/stream_date=2026-11-10/);
+  await expect(page.locator('#streamPlanStatus')).toContainText('23:18');
+  await expect(page.locator('.tw-stream-game').first()).toHaveAttribute('data-game', '99');
+  await expect(page.locator('.tw-stream-game[data-game="25"]')).toHaveCount(0);
   await expect(globalCard.locator('.tw-stream-movement')).toHaveCount(0);
   await expect(globalCard.locator('.tw-stream-signal')).toHaveText('已退燒');
   await expect(globalCard.locator('.tw-stream-reason')).toContainText('11/11 確認');
@@ -122,22 +142,15 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   }
   await page.setViewportSize({ width:390, height:844 });
-  const ids = () => page.locator('.tw-stream-game').evaluateAll(cards => cards.map(card => card.getAttribute('data-game')));
-  const currentIds = () => page.locator('#gameResults .tw-game').evaluateAll(cards => cards.map(card => card.getAttribute('data-game-id')));
-  const initial = await ids();
-  await page.locator('#currentTab').click();
-  expect(await currentIds()).toEqual(initial);
+  await date.fill('2026-11-04');
+  await expect(page.locator('#streamPlanStatus')).toContainText('沒有已發布的觀測快照');
+  await expect(page.locator('.tw-stream-game')).toHaveCount(0);
+  await date.fill('2026-11-10');
   await page.locator('#gameSort').selectOption('streamers');
-  const reordered = await currentIds();
-  expect(reordered[0]).toBe('25');
-  await page.locator('#streamPlanningTab').click();
   await expect(page.locator('.tw-stream-game')).toHaveCount(24);
-  expect(await ids()).toEqual(reordered);
+  await expect(page.locator('.tw-stream-game').first()).toHaveAttribute('data-game', '99');
   await page.locator('#streamLoadMore').click();
   await expect(page.locator('.tw-stream-game')).toHaveCount(25);
-  await page.locator('#currentTab').click();
-  expect(await currentIds()).toEqual([...reordered, '1']);
-  await page.locator('#streamPlanningTab').click();
   await consoleProfile.click();
   await expect(page.locator('#gameTitle')).toHaveText('遊戲 3');
   const back = page.getByRole('link', { name:'← 返回開台選題', exact:true });
@@ -152,10 +165,11 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await expect(mobileStore).toBeVisible();
   await expect(mobileStore).toHaveAttribute('href', 'https://store.steampowered.com/app/88001/');
   await expect(mobileStore).toHaveAttribute('target', '_blank');
-  await expect(back).toHaveAttribute('href', /twitch\.html\?.*view=streamer/);
+  await expect(back).toHaveAttribute('href', /stream-planning\.html\?.*stream_date=2026-11-10/);
   await back.click();
   await card.getByRole('link', { name:'詳細分析', exact:true }).click();
   await expect(page.locator('#historyStart')).toHaveValue('2026-11-10');
+  await expect(page.locator('#historyBack')).toHaveAttribute('href', /stream-planning\.html\?.*stream_date=2026-11-10/);
   await expect(page.locator('#historyEnd')).toHaveValue('2026-11-10');
   const trend = page.locator('#heatOverview-zh .tw-remaining-trend');
   await expect(trend).toContainText('截至 2026/11/10');
@@ -221,4 +235,15 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await expect(page.locator('#trialRegion')).toHaveValue('zh');
   await expect(page.locator('#trialTimes')).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.locator('.analysis-nav > summary').click();
+  const menu = page.locator('#analysisMenu');
+  await expect(menu.getByRole('link', { name:/開台選題/ })).toHaveAttribute('aria-current', 'page');
+  await menu.getByRole('link', { name:/Twitch 新作觀測/ }).click();
+  await expect(page).toHaveURL(/twitch\.html$/);
+  await expect(page.getByRole('tab')).toHaveText(['目前觀測', '歷史資料庫']);
+  await page.locator('.analysis-nav > summary').click();
+  await menu.getByRole('link', { name:/開台選題/ }).click();
+  await expect(page).toHaveURL(/stream-planning\.html$/);
+  await expect(date).toHaveValue('2026-11-11');
+
 });

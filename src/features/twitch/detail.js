@@ -2,7 +2,7 @@ import { RadarStorage } from '../../data/storage.ts';
 import { canonicalID } from './metrics.js';
 import { mount, valueOf, statusOf } from './chart.js';
 import { node, fmt, time } from './presentation.js';
-import { validIndex, validChunk, windowFor, monthsFor, seriesRows, fullSeriesRows, overviewQuery, dayOf, metrics, csvRows } from './series.js';
+import { validIndex, validChunk, windowFor, monthsFor, seriesRows, fullSeriesRows, overviewQuery, streamPlanningHref, dayOf, metrics, csvRows } from './series.js';
 import { createStatistics } from './statistics.js';
 import { createCooldown, cooldownPresentation } from './cooldown.js';
 import { analyzeCooldown, cooldownThreshold } from './cooldown-model.js';
@@ -26,8 +26,8 @@ export function initTwitchDetail() {
   let charts = [], statsMode = '', cooldownMode = '', stats = new Map(), cooldowns = new Map(), disposed = false;
   const controls = { summary: 'summaryRegion', history: 'audienceRegion', cooldown: 'cooldownRegion', statistics: 'statisticsRegion' };
   for (const block of Object.keys(scopeKeys)) $(controls[block]).value = scopes[block];
-  $('historyBack').href = './twitch.html' + (back ? '?' + back : '');
   const backView = new URLSearchParams(back).get('view');
+  $('historyBack').href = backView === 'streamer' ? streamPlanningHref(back) : './twitch.html' + (back ? '?' + back : '');
   if (backView === 'archive') $('historyBack').textContent = '← 歷史資料庫';
   if (backView === 'streamer') $('historyBack').textContent = '← 開台選題';
   function syncURL() {
@@ -36,7 +36,6 @@ export function initTwitchDetail() {
     const p = new URLSearchParams(back);
     const next = p.toString();
     if (next) params.set('back', next); else params.delete('back');
-    $('historyBack').href = './twitch.html' + (next ? '?' + next : '');
     history.replaceState(null, '', location.pathname + '?' + params + location.hash);
   }
   function message(text, error = false) { $('historyStatus').textContent = text; $('historyStatus').dataset.error = String(error); }
