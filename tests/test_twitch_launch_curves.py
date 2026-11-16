@@ -20,13 +20,17 @@ class LaunchCurvesTests(unittest.TestCase):
             games = {"42": game, "43": {**game, "release_reference": {**reference, "date": "2026-10-30"}}}
             slots, samples = {}, {}
             start = datetime(2026, 10, 31, 16, tzinfo=timezone.utc)
-            for offset, count in [(0, 12), (1, 11), (2, 12), (3, 12)]:
+            for offset, count in [(0, 12), (1, 11), (2, 24), (3, 12)]:
                 for hour in range(count):
                     at = start + timedelta(days=offset, hours=hour)
                     key = at.isoformat().replace("+00:00", "Z")
                     receipt = (at + timedelta(minutes=10)).isoformat().replace("+00:00", "Z")
                     slots[key] = receipt
                     samples[key] = {"generated_at": receipt, "viewer_count": [0, 700, 300, 400][offset]}
+                    regional = {"viewer_count": 100 if hour < (4 if offset == 0 else 3 if offset == 1 else 0) else 0}
+                    if offset == 0:
+                        regional["measurement_source"] = "helix_language_filter"
+                    samples[key]["audience_regions"] = {"zh": regional}
             index = {"schema_version": 1, "timezone": "Asia/Taipei", "generated_at": "2026-11-04T10:00:00Z",
                      "months": {"2026-11": slots}, "games": games}
             index_path = root / "index.json"
@@ -35,7 +39,10 @@ class LaunchCurvesTests(unittest.TestCase):
             (root / "42/2026-11.json").write_text(json.dumps(chunk), encoding="utf-8")
             projected = build(data)
             self.assertEqual(projected["games"], {"42": {"date": "2026-10-31", "edition": "early_access",
-                "genres": ["Action"], "daily": [0, None, 300, None, None, None, None]}})
+                "genres": ["Action"], "daily": [0, None, 300, None, None, None, None],
+                "audience_regions": {"zh": {"daily": [0, None, 0, None, None, None, None],
+                    "heat": [True, None, False, None, None, None, None],
+                    "measurement_sources": ["helix_language_filter", "global_census", "global_census", None, None, None, None]}}}})
             index["generated_at"] = "2026-11-04T12:00:00Z"
             index_path.write_text(json.dumps(index), encoding="utf-8")
             self.assertEqual(build(data), projected)

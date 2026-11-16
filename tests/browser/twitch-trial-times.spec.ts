@@ -67,7 +67,9 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await page.route('**/data/twitch-launch-curves.json', route => route.fulfill({ json:{
     schema_version:1, generated_at:generated, genres:{ Action:'動作', Strategy:'策略' }, games:{
       ...Object.fromEntries([2,3,4,5,6].map(id => [String(id), curve])),
-      '1':{ ...curve, date:'2026-11-05', genres:['Action','Strategy'], daily:[3000,5000,700,4000,500,400,null] },
+      '1':{ ...curve, date:'2026-11-05', genres:['Action','Strategy'], daily:[3000,5000,700,4000,500,400,null],
+        audience_regions:{ zh:{ daily:[90,80,70,45,50,null,null], heat:[true,true,null,false,false,null,null],
+          measurement_sources:['global_census','global_census','global_census','global_census','global_census',null,null] } } },
     },
   } }));
 
@@ -175,6 +177,11 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await expect(curves.locator('svg .tw-chart-threshold')).toHaveCSS('stroke', 'rgb(183, 122, 67)');
   await expect(curves.getByRole('row', {name:/這款遊戲/})).toContainText('700 人');
   await expect(curves.getByRole('row', {name:/這款遊戲/})).toContainText('—');
+  await curves.getByLabel('曲線範圍').selectOption('zh');
+  await expect(curves.getByRole('img', {name:'上市後首週每日中文區觀眾中位數'})).toBeVisible();
+  await expect(curves.locator('.tw-launch-heat-metrics dd')).toHaveText(['2 天', '2 天']);
+  await expect(curves).toContainText('前 5 天有 4 天可判定 · 100 人至少 4 個時段');
+  await curves.getByLabel('曲線範圍').selectOption('global');
   await curves.locator('#launchCurveGenre').selectOption('Strategy');
   await expect(curves).toContainText('至少需要 5 款');
   await page.locator('[data-history-range="7d"]').click();
