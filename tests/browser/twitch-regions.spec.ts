@@ -160,3 +160,34 @@ test('current list and archive keep separate comparison choices', async ({ page 
   await expect(page.locator('.tw-archive-card')).toContainText('20,000');
   await expect(page.locator('.tw-archive-card')).toContainText('300');
 });
+
+const compactDay = (day: string, hours: Record<string, object>) => ({ schema_version: 1, date: day, timezone: 'Asia/Taipei', view: 'compact', hours });
+const earlier = { generated_at: '2026-10-30T23:10:00Z', games: [{ game_id: '1', viewer_count: 12000, streamer_count: 4 }] };
+const latest = { generated_at: generated, games: [{ game_id: '1', viewer_count: 20000, streamer_count: 4, filtered_audience: audience(20000, 4) }] };
+
+test('the hourly panel reads the compact history without downloading raw day files', async ({ page }) => {
+  const raw: string[] = [];
+  page.on('request', request => { if (request.url().includes('/data/twitch_history/')) raw.push(request.url()); });
+  await page.route('**/data/twitch_history/**', route => route.fulfill({ status: 404, body: '{}' }));
+  await page.route('**/data/twitch_history_compact/2026-10-30.json', route => route.fulfill({ json: compactDay('2026-10-30', {}) }));
+  await page.route('**/data/twitch_history_compact/2026-10-31.json', route => route.fulfill({ json:
+    compactDay('2026-10-31', { '2026-10-30T23:00:00Z': earlier, [hour]: latest }) }));
+  await page.goto('twitch.html?sort=viewers');
+  const first = page.locator('.tw-game').first();
+  await first.locator('summary').first().click();
+  await first.locator('.tw-history > summary').click();
+  await expect(first.locator('.tw-history-chart .tw-chart-value')).toHaveText('20,000');
+  expect(raw).toEqual([]);
+});
+
+test('the hourly panel falls back to the raw day file when no compact view exists', async ({ page }) => {
+  await page.route('**/data/twitch_history_compact/**', route => route.fulfill({ status: 404, body: '{}' }));
+  await page.route('**/data/twitch_history/2026-10-30.json', route => route.fulfill({ json: { ...compactDay('2026-10-30', {}), view: undefined } }));
+  await page.route('**/data/twitch_history/2026-10-31.json', route => route.fulfill({ json:
+    { schema_version: 1, date: '2026-10-31', timezone: 'Asia/Taipei', hours: { '2026-10-30T23:00:00Z': earlier, [hour]: latest } } }));
+  await page.goto('twitch.html?sort=viewers');
+  const first = page.locator('.tw-game').first();
+  await first.locator('summary').first().click();
+  await first.locator('.tw-history > summary').click();
+  await expect(first.locator('.tw-history-chart .tw-chart-value')).toHaveText('20,000');
+});

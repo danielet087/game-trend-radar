@@ -1,7 +1,7 @@
 import { RadarTwitch as D } from './data.js';
 import { RadarTwitchChart, valueOf } from './chart.js';
 import { node, time } from './presentation.js';
-import { readPublishedJSON } from './load.js';
+import { readHistoryDay } from './load.js';
 import { regionNames, viewOf } from './audience-region.js';
 import { regionsFor, projectRows } from './region-views.js';
 
@@ -37,7 +37,7 @@ export function createTwitchHistory({ state, historyCache, chartDisposers, signa
       const token = ++request, snapshot = state.data;
       content.replaceChildren(node('p', '', '正在讀取已保存的逐時紀錄…'));
       const results = await Promise.allSettled(D.historyDays(snapshot.generated_at).map(day => {
-        if (!historyCache.has(day)) historyCache.set(day, readPublishedJSON('./data/twitch_history/' + day + '.json', true).then(file => {
+        if (!historyCache.has(day)) historyCache.set(day, readHistoryDay(day).then(file => {
           if (file && (file.schema_version !== 1 || file.date !== day || file.timezone !== 'Asia/Taipei' || !file.hours || typeof file.hours !== 'object')) throw new Error('INVALID_HISTORY');
           return file;
         }));
