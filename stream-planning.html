@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#e4dcf7">
+  <meta name="description" content="根據 Twitch 全球與中文區的熱度和觀看分布挑選開台遊戲。">
+  <title>開台選題｜Game Trend Radar</title>
+  <link rel="icon" id="siteFavicon" type="image/svg+xml">
+  <script type="module" crossorigin src="/game-trend-radar/assets/app/stream-planning-CVDHACQq.js"></script>
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/contracts-CXfvy2kB.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/storage-BcgAUlou.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/followers-Czt0-Vco.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-BZQuXdVU.js">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/bootstrap-oTuMO7h7.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/stream-planning-BdOKOeyi.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-C_gCAust.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/styles-BXThwy_-.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/archive-DeE4CPy0.css">
+</head>
+<body data-page="stream-planning">
+  <a class="skip-link" href="#mainContent">跳到主要內容</a>
+  <div id="siteHeader"></div>
+  <main class="page-shell twitch-shell" id="mainContent">
+    <section class="tw-heading" aria-labelledby="pageTitle">
+      <h1 id="pageTitle">開台選題</h1>
+    </section>
+
+    <div id="streamPlanning" class="tw-stream-view">
+      <section class="tw-workspace" aria-labelledby="streamPlanTitle">
+        <div class="tw-workspace-head tw-stream-head">
+          <h2 id="streamPlanTitle">選題清單</h2>
+          <div class="tw-stream-links">
+            <a class="tw-stream-link" href="./growth.html?period=future">找待上市遊戲 →</a>
+            <a class="tw-stream-link" href="#streamCheck">查續播建議 ↓</a>
+            <button id="streamRefresh" type="button" class="tw-archive-refresh">重新讀取</button>
+          </div>
+        </div>
+        <div class="tw-stream-summary">
+          <label class="tw-stream-date">觀測日期（台灣）<input id="streamDate" type="date"></label>
+          <p id="streamPlanStatus" class="tw-stream-status" role="status"></p>
+          <details class="tw-stream-method">
+            <summary>判讀方式</summary>
+            <div>
+              <p id="streamTrendRule"></p>
+              <p id="streamDailyRule"></p>
+              <p id="streamGlobalRule"></p>
+              <p id="streamWeekRule"></p>
+              <p>曾有熱度後連續 3 個可判定日轉弱，確認已退燒。</p>
+            </div>
+          </details>
+        </div>
+        <div class="tw-tools tw-planning-filters">
+          <label class="tw-search"><span class="sr-only">搜尋選題清單</span><input id="gameSearch" type="search" placeholder="搜尋選題清單…" maxlength="160" autocomplete="off"></label>
+          <label class="tw-sort">來源<select id="streamSource"><option value="signals">全部追蹤</option><option value="twitch_new">Twitch 熱門新作</option><option value="steam_recent">Steam 近期上市</option><option value="igdb">IGDB 推算命中</option><option value="all">所有觀測</option></select></label>
+          <label class="tw-sort">排序語言區<select id="audienceRegion"><option value="global">全球</option><option value="zh">中文區</option></select></label>
+          <label class="tw-sort">排序<select id="gameSort"><option value="median">篩選後中位數</option><option value="viewers">觀眾人數最多</option><option value="streamers">開台數最多</option></select></label>
+        </div>
+        <div id="streamTrendResults" class="tw-stream-results" aria-busy="false"></div>
+        <div class="tw-load-more"><button id="streamLoadMore" type="button" hidden>再看 24 款 ↓</button></div>
+      </section>
+      <section id="streamCheck" class="tw-workspace" aria-labelledby="streamCheckTitle">
+        <div class="tw-workspace-head"><h2 id="streamCheckTitle">這款還值得繼續播嗎？</h2></div>
+        <div class="tw-stream-search">
+          <label class="tw-search"><span class="sr-only">搜尋正在播的遊戲</span><input id="streamGameSearch" type="search" placeholder="輸入正在播的遊戲名稱…" maxlength="160" autocomplete="off"></label>
+          <div id="streamGameMatches" class="tw-stream-matches"></div>
+        </div>
+      </section>
+    </div>
+    <noscript><p class="tw-notice">請啟用 JavaScript 以讀取選題清單。</p></noscript>
+  </main>
+  <div id="siteFooter"></div>
+</body>
+</html>

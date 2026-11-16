@@ -6,7 +6,6 @@ import { createTwitchCards } from "./cards.js";
 import { createTwitchRenderer } from "./render.js";
 import { createTwitchLoader } from "./load.js";
 import { createTwitchArchive } from "./archive.js";
-import { createStreamPlanning } from "./stream-planning.js";
 export { RadarTwitch } from "./data.js";
 export { RadarTwitchChart } from "./chart.js";
 
@@ -38,25 +37,20 @@ export function initTwitchPage() {
   }
   const render = () => { renderer.render(); archive.updateHint(state.query); };
   const load = () => pendingSnapshot ??= loader.load().finally(() => { pendingSnapshot = null; });
-  const planning = createStreamPlanning({ $, signal, state,
-    ensureSnapshot: force => force || !state.data || pendingSnapshot ? load() : null });
   renderer = createTwitchRenderer({ state, $, cards, gameCard, empty, evidence, reset, syncURL, signal });
   loader = createTwitchLoader({ state, $, cards, historyCache, chartDisposers, ...renderer, render, empty });
   function showView() {
     clearTimeout(searchTimer);
     const requestedView = new URLSearchParams(location.search).get('view');
-    if (view === 'streamer' && requestedView !== 'streamer') planning.close();
-    view = ['archive', 'streamer'].includes(requestedView) ? requestedView : 'current';
+    view = requestedView === 'archive' ? 'archive' : 'current';
     $('currentObservation').hidden = $('currentSnapshot').hidden = view !== 'current';
     $('historyArchive').hidden = view !== 'archive';
-    $('streamPlanning').hidden = view !== 'streamer';
     document.querySelectorAll('[data-twitch-view]').forEach(button => {
       const selected = button.dataset.twitchView === view;
       button.setAttribute('aria-selected', String(selected)); button.tabIndex = selected ? 0 : -1;
     });
     urlState(); archive.readURL();
     if (view === 'archive') archive.load();
-    else if (view === 'streamer') planning.open();
     else if (state.data) render(); else load();
   }
   function switchView(next) {
@@ -71,9 +65,7 @@ export function initTwitchPage() {
     if (next === 'archive') {
       url.searchParams.set('view', 'archive');
       if (!url.searchParams.has('archive_region')) url.searchParams.set('archive_region', 'global');
-    } else if (next === 'streamer') url.searchParams.set('view', 'streamer');
-    else url.searchParams.delete('view');
-    if (next !== 'streamer') url.searchParams.delete('stream_limit');
+    } else url.searchParams.delete('view');
     history.pushState(null, '', url); showView();
   }
   const tabs = [...document.querySelectorAll('[data-twitch-view]')];
@@ -106,12 +98,12 @@ on(document, "keydown",event => {
   if (event.isComposing || event.ctrlKey || event.metaKey || event.altKey) return;
   if (event.key === "/" && !event.target.closest("input,textarea,select,[contenteditable]")) {
     event.preventDefault();
-    $({ archive:'archiveSearch', streamer:'streamGameSearch', current:'gameSearch' }[view]).focus();
+    $(view === 'archive' ? 'archiveSearch' : 'gameSearch').focus();
   }
   if (event.key === "Escape" && event.target === $("gameSearch")) { clearTimeout(searchTimer); $("gameSearch").value = ""; state.query = ""; state.limit = OBSERVATION_PAGE_SIZE; syncURL(); render(); }
 });
 on(window, "popstate",showView);
-  const controller = { state, refresh: () => view === 'archive' ? archive.load(true) : view === 'streamer' ? planning.refresh() : load(), destroy() {
+  const controller = { state, refresh: () => view === 'archive' ? archive.load(true) : load(), destroy() {
     if (state.disposed) return;
     state.disposed = true; events.abort(); clearTimeout(searchTimer); archive.destroy(); unsubscribeSaved();
     chartDisposers.forEach(dispose => dispose()); chartDisposers.clear();

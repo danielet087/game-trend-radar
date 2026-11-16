@@ -1,16 +1,20 @@
 import { RadarStorage } from '../../data/storage.ts';
 import { RadarData } from '../../domain/index.mjs';
 import { archiveGames, selectArchive } from './archive-model.js';
-import { regionNames } from './audience-region.js';
+import { regionNames, regionOf } from './audience-region.js';
 import { steamStoreLinks } from './identity.js';
 import { canonicalID, HOUR } from './metrics.js';
-import { filterNames, fmt, node } from './presentation.js';
+import { filterNames, fmt, node, time } from './presentation.js';
 import { projectRows, regionsFor } from './region-views.js';
 import { dateStart, dayOf, detailHref, fullSeriesRows, validChunk, validIndex } from './series.js';
 import { analyzeStreamHeat, streamHeatDate, streamHeatThrough, STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS, STREAM_HEAT_WEEK, MIN_PAIRED_HEAT_HOURS } from './stream-heat-model.js';
 import { CHINESE_DAILY_HEAT_HITS, cooldownThreshold } from './cooldown-model.js';
 import { selectObservation } from './selection.js';
-import { OBSERVATION_PAGE_SIZE } from './state.js';
+import { createTwitchState, createTwitchURLState, OBSERVATION_PAGE_SIZE } from './state.js';
+import { latestHistorySnapshot } from './history.js';
+import { readCurrentTwitchSnapshot, readPublishedJSON } from './load.js';
+import { normalize } from './snapshot.js';
+import { publicCatalog } from './model.js';
 
 const comparisonRegions = regionsFor('compare');
 const shortDate = date => date.slice(5).replace('-', '/');
@@ -21,7 +25,9 @@ const signalLabels = {
 };
 
 function heatHref(id, date, record) {
-  const url = new URL(detailHref(id, location.search), location.href);
+  const back = new URLSearchParams(location.search);
+  back.set('view', 'streamer');
+  const url = new URL(detailHref(id, back), location.href);
   url.searchParams.set('region', 'compare');
   const start = dateStart(date);
   if (Date.parse(record?.first_hour) < start + 24 * HOUR && Date.parse(record?.last_hour) >= start) {
@@ -74,11 +80,36 @@ async function read(path, validate, force) {
   return result.data;
 }
 
-export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
+async function readHistoricalPlanningSnapshot(date) {
+  const [day, catalog] = await Promise.all([
+    readPublishedJSON(`./data/twitch_history/${date}.json`, true),
+    readPublishedJSON('./data/catalog.json', true).catch(() => null),
+  ]);
+  const latest = latestHistorySnapshot(day, dateStart(date) + 24 * HOUR - 1);
+  if (!latest) return null;
+  const snapshot = normalize({ ...latest, schema_version:2, candidate_games:latest.games });
+  // The current catalog only resolves links to game pages.
+  return { ...snapshot, public_catalog:publicCatalog(catalog) };
+}
+
+export function initStreamPlanningPage() {
+  const $ = id => document.getElementById(id);
+  const events = new AbortController(), { signal } = events;
+  const state = createTwitchState(), { urlState, syncURL } = createTwitchURLState(state, $);
   const query = $('streamGameSearch'), dateInput = $('streamDate');
   const status = $('streamPlanStatus'), results = $('streamTrendResults'), matches = $('streamGameMatches');
   const refresh = $('streamRefresh'), more = $('streamLoadMore');
-  let loaded = null, source = null, request = 0, selectedDate = null;
+  const sort = $('gameSort'), region = $('audienceRegion'), sources = $('streamSource'), search = $('gameSearch');
+  let loaded = null, source = null, snapshot = null, request = 0, selectedDate = null, searchTimer;
+
+  function getSnapshot(date, today, force) {
+    if (!force && snapshot?.date === date) return snapshot.promise;
+    const promise = date === today ? readCurrentTwitchSnapshot() : readHistoricalPlanningSnapshot(date);
+    const current = { date, promise };
+    snapshot = current;
+    promise.catch(() => { if (snapshot === current) snapshot = null; });
+    return promise;
+  }
 
   const chineseThreshold = fmt(cooldownThreshold('zh')), hits = CHINESE_DAILY_HEAT_HITS;
   $('streamTrendRule').textContent = `比較前後各 ${STREAM_HEAT_DAYS} 個已結束日。前期達全球 ${fmt(STREAM_HEAT_FLOORS.global)} 人或中文區 ${fmt(STREAM_HEAT_FLOORS.zh)} 人，且下降至少 25%，標示熱度下滑。`;
@@ -221,13 +252,13 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
   }
 
   async function load(force = false) {
-    const now = Date.now(), date = streamHeatDate(selectedDate, now);
-    dateInput.max = dayOf(now);
+    const now = Date.now(), today = dayOf(now), date = streamHeatDate(selectedDate, now);
+    dateInput.max = today;
     dateInput.value = date;
     saveURL();
     const token = ++request;
     const active = () => token === request && !signal.aborted;
-    status.textContent = '正在讀取目前觀測清單…';
+    status.textContent = '正在讀取選題清單…';
     results.replaceChildren();
     results.setAttribute('aria-busy', 'true'); refresh.disabled = more.disabled = true;
     if (!source || force) {
@@ -237,21 +268,22 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
       source = pending;
     }
     try {
-      const history = source;
-      await ensureSnapshot(force);
+      const [data, archive] = await Promise.all([getSnapshot(date, today, force), source]);
       if (!active()) return;
-      if (!state.data) {
-        status.textContent = '目前觀測清單暫時無法讀取。請按重新讀取。';
+      loaded = archive;
+      renderSearch();
+      if (!data) {
+        status.textContent = `${shortDate(date)} 沒有已發布的觀測快照。`;
         more.hidden = true;
         return;
       }
-      const { visible } = selectObservation(state);
+      const { visible } = selectObservation({ ...state, data });
       const games = visible.slice(0, state.limit);
-      const scope = `${visible.length} 款 · ${filterNames[state.filter]}${state.query ? ` · 搜尋「${state.query}」` : ''}`;
+      const scope = `${time(data.generated_at)} 快照 · ${visible.length} 款 · ${filterNames[state.filter]}${state.query ? ` · 搜尋「${state.query}」` : ''}`;
       status.textContent = `${scope} · 讀取熱度資料…`;
       more.hidden = games.length === visible.length;
       more.textContent = `再看 ${Math.min(OBSERVATION_PAGE_SIZE, visible.length - games.length)} 款 ↓`;
-      const steamPages = new Map((state.data.public_catalog?.games || []).flatMap(raw => {
+      const steamPages = new Map((data.public_catalog?.games || []).flatMap(raw => {
         const profile = RadarData.normalize(raw, true);
         return profile ? [[String(profile.appid), RadarData.detailURL(profile)]] : [];
       }));
@@ -272,10 +304,6 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
           }
         }).catch(() => { /* Console profiles are independent of the observation list. */ });
       }
-      const archive = await history;
-      if (!active()) return;
-      loaded = archive;
-      renderSearch();
       await Promise.all(games.map(async (game, index) => {
         const id = game.game_id, record = archive?.index.games[id];
         rows[index].renderHistory(record, date);
@@ -284,10 +312,11 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
       }));
       if (!active()) return;
       status.textContent = `${scope} · 趨勢截至 ${shortDate(streamHeatThrough(date, now))}`;
-      if (!games.length) results.append(node('p', 'tw-stream-muted', '目前觀測在這個條件下沒有遊戲。'));
+      if (!games.length) results.append(node('p', 'tw-stream-muted', '這個條件下沒有符合的遊戲。'));
     } catch {
       if (!active()) return;
       status.textContent = '觀測資料暫時無法讀取。請按重新讀取。';
+      more.hidden = true;
       results.replaceChildren();
     } finally {
       if (active()) { results.setAttribute('aria-busy', 'false'); refresh.disabled = more.disabled = false; }
@@ -298,21 +327,44 @@ export function createStreamPlanning({ $, signal, state, ensureSnapshot }) {
   dateInput.addEventListener('change', () => {
     const now = Date.now(), date = streamHeatDate(dateInput.value, now);
     selectedDate = date === dayOf(now) ? null : date;
+    state.limit = OBSERVATION_PAGE_SIZE;
     load();
   }, { signal });
   refresh.addEventListener('click', () => load(true), { signal });
   more.addEventListener('click', () => { state.limit += OBSERVATION_PAGE_SIZE; load(); }, { signal });
-  return {
-    open() {
-      const params = new URLSearchParams(location.search);
-      query.value = (params.get('stream_q') || '').slice(0, 160);
-      const now = Date.now(), date = streamHeatDate(params.get('stream_date'), now);
-      selectedDate = date === dayOf(now) ? null : date;
-      const limit = Number(params.get('stream_limit'));
-      if (Number.isSafeInteger(limit) && limit > state.limit) state.limit = limit;
-      return load();
-    },
-    close() { request++; },
-    refresh: () => load(true),
-  };
+  function updateFilters() {
+    clearTimeout(searchTimer);
+    state.query = search.value;
+    state.sort = sort.value;
+    state.region = region.value;
+    state.filter = sources.value;
+    state.limit = OBSERVATION_PAGE_SIZE;
+    syncURL();
+    load();
+  }
+  for (const control of [sort, region, sources]) control.addEventListener('change', updateFilters, { signal });
+  search.addEventListener('input', event => {
+    clearTimeout(searchTimer);
+    if (!event.isComposing) searchTimer = setTimeout(updateFilters, 140);
+  }, { signal });
+  search.addEventListener('compositionend', updateFilters, { signal });
+  document.addEventListener('keydown', event => {
+    if (event.key === '/' && !event.isComposing && !event.ctrlKey && !event.metaKey && !event.altKey &&
+        !event.target.closest?.('input,textarea,select,[contenteditable]')) {
+      event.preventDefault();
+      search.focus();
+    }
+  }, { signal });
+
+  urlState();
+  region.value = state.region = regionOf(state.region);
+  sources.value = state.filter;
+  const params = new URLSearchParams(location.search);
+  query.value = (params.get('stream_q') || '').slice(0, 160);
+  const now = Date.now(), date = streamHeatDate(params.get('stream_date'), now);
+  selectedDate = date === dayOf(now) ? null : date;
+  const limit = Number(params.get('stream_limit'));
+  if (Number.isSafeInteger(limit) && limit > state.limit) state.limit = limit;
+  load();
+  return { destroy() { events.abort(); clearTimeout(searchTimer); } };
 }

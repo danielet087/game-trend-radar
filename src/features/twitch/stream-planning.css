@@ -68,6 +68,8 @@
 .tw-stream-match:hover { text-decoration:underline; }
 .tw-stream-muted { margin:12px 0; line-height:1.65; }
 
+.tw-planning-filters { flex-wrap:wrap; }
+
 @media (max-width:740px) {
   .tw-stream-view { --stream-gutter:14px; }
   .tw-stream-game { grid-template-columns:minmax(0,1fr); gap:8px; }
