@@ -10,7 +10,8 @@ function publishedContract(path, value) {
   if (path.endsWith("/twitch_tracking.json")) return Boolean(registry(value));
   if (path.endsWith("/twitch_steam_mapping.json")) return Boolean(mapping(value));
   if (path.endsWith("/catalog.json")) return Boolean(publicCatalog(value));
-  const day = path.match(/\/twitch_history\/(\d{4}-\d{2}-\d{2})\.json$/)?.[1];
+  // Compact and closing views keep the raw day file's shape.
+  const day = path.match(/\/twitch_history(?:_compact|_close)?\/(\d{4}-\d{2}-\d{2})\.json$/)?.[1];
   return !day || value.schema_version === 1 && value.date === day && value.timezone === "Asia/Taipei" && isRecord(value.hours);
 }
 export async function readPublishedJSON(path, optional = false, sources = null) {
@@ -19,6 +20,15 @@ export async function readPublishedJSON(path, optional = false, sources = null) 
   if (result.data) return result.data;
   if (optional && result.status === "unavailable" && result.error === "http_404") return null;
   throw new Error(result.error || "INVALID_JSON");
+}
+// The compact view holds only the chart fields of the newest days; the raw day
+// file stays the fallback for any day without one.
+export async function readHistoryDay(day) {
+  try {
+    const compact = await readPublishedJSON(`./data/twitch_history_compact/${day}.json`, true);
+    if (compact) return compact;
+  } catch { /* An unreadable view never hides the raw day file. */ }
+  return readPublishedJSON(`./data/twitch_history/${day}.json`, true);
 }
 export async function readCurrentTwitchSnapshot(previousData = null, sources = null) {
   const readJSON = (path, optional) => readPublishedJSON(path, optional, sources);

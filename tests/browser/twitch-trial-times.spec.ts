@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-test('shows an as-of-date trend and keeps the hourly comparison on the detail page', async ({ page }) => {
+// A past date replays its closing hour from the small closing view, or from
+// the raw day file when no view exists.
+for (const historySource of ['closing view', 'raw day file']) {
+test(`shows an as-of-date trend and keeps the hourly comparison on the detail page (${historySource})`, async ({ page }) => {
   await page.setViewportSize({ width:390, height:844 });
   await page.clock.setFixedTime(new Date('2026-11-11T12:00:00+08:00'));
   const hours: Record<string, object> = {}, indexHours: Record<string, string> = {};
@@ -45,13 +48,14 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
     ...candidates.slice(0, 24),
     { game_id:'99', game_name:'當日限定遊戲', viewer_count:30000, streamer_count:50, verification:{ status:'new' } },
   ].map(game => ({ ...game, verification:{ ...game.verification, observed_at:historicalAt } }));
-  await page.route('**/data/twitch_history/**', route => route.fulfill({ status:404, body:'{}' }));
-  await page.route('**/data/twitch_history/2026-11-10.json', route => route.fulfill({ json:{
-    schema_version:1, date:'2026-11-10', timezone:'Asia/Taipei',
-    hours:{
-      '2026-11-10T15:00:00Z':{ generated_at:historicalAt, min_viewers:7000, games:archived },
-      '2026-11-10T14:00:00Z':{ generated_at:'2026-11-10T14:18:00Z', min_viewers:7000, games:candidates },
-    },
+  for (const folder of ['twitch_history', 'twitch_history_close'])
+    await page.route(`**/data/${folder}/**`, route => route.fulfill({ status:404, body:'{}' }));
+  const closingHour = { '2026-11-10T15:00:00Z':{ generated_at:historicalAt, min_viewers:7000, games:archived } };
+  const dayHours = historySource === 'closing view' ? closingHour : { ...closingHour,
+    '2026-11-10T14:00:00Z':{ generated_at:'2026-11-10T14:18:00Z', min_viewers:7000, games:candidates } };
+  const dayFolder = historySource === 'closing view' ? 'twitch_history_close' : 'twitch_history';
+  await page.route(`**/data/${dayFolder}/2026-11-10.json`, route => route.fulfill({ json:{
+    schema_version:1, date:'2026-11-10', timezone:'Asia/Taipei', hours:dayHours,
   } }));
   for (const name of ['twitch_tracking', 'twitch_steam_mapping'])
     await page.route(`**/data/${name}.json`, route => route.fulfill({ status:404, body:'{}' }));
@@ -252,3 +256,4 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await expect(date).toHaveValue('2026-11-11');
 
 });
+}

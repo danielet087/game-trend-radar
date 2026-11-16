@@ -80,12 +80,22 @@ async function read(path, validate, force) {
   return result.data;
 }
 
+// The closing view holds only the day's last usable hour; the raw day file
+// stays the fallback.
+async function readClosingSnapshot(date) {
+  const end = dateStart(date) + 24 * HOUR - 1;
+  try {
+    const latest = latestHistorySnapshot(await readPublishedJSON(`./data/twitch_history_close/${date}.json`, true), end);
+    if (latest) return latest;
+  } catch { /* An unreadable view never hides the raw day file. */ }
+  return latestHistorySnapshot(await readPublishedJSON(`./data/twitch_history/${date}.json`, true), end);
+}
+
 async function readHistoricalPlanningSnapshot(date) {
-  const [day, catalog] = await Promise.all([
-    readPublishedJSON(`./data/twitch_history/${date}.json`, true),
+  const [latest, catalog] = await Promise.all([
+    readClosingSnapshot(date),
     readPublishedJSON('./data/catalog.json', true).catch(() => null),
   ]);
-  const latest = latestHistorySnapshot(day, dateStart(date) + 24 * HOUR - 1);
   if (!latest) return null;
   const snapshot = normalize({ ...latest, schema_version:2, candidate_games:latest.games });
   // The current catalog only resolves links to game pages.
