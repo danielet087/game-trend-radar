@@ -1,5 +1,5 @@
 import { regionNames, viewOf, VIEWER_TIERS } from './audience-region.js';
-import { fmt, hourLabel, node } from './presentation.js';
+import { fmt, hourLabel, node, time } from './presentation.js';
 import { regionsFor } from './region-views.js';
 import { dateStart, dayOf, monthsFor } from './series.js';
 import { HOUR } from './metrics.js';
@@ -58,6 +58,23 @@ function renderRegion(region, comparison, totalDays, tracking) {
   return card;
 }
 
+function renderTierSnapshot({ hour, tiers }, viewers) {
+  const root = node('div', 'tw-rank-snapshot');
+  const summary = node('p', 'tw-trial-coverage');
+  const observed = node('time', '', time(hour));
+  observed.dateTime = hour;
+  const ahead = tiers[VIEWER_TIERS.indexOf(viewers)];
+  summary.append(observed, node('span', '', `當次約第 ${fmt(ahead + 1)} 名`));
+  const counts = node('dl', 'tw-rank-tiers');
+  for (const [i, threshold] of VIEWER_TIERS.entries()) {
+    const tier = node('div');
+    tier.append(node('dt', '', `超過 ${threshold} 人`), node('dd', '', `${fmt(tiers[i])} 台`));
+    counts.append(tier);
+  }
+  root.append(summary, counts);
+  return root;
+}
+
 export function createTrialTimeComparison({ $, params, back, onChange }) {
   const section = $('trialTimes'), jump = $('trialTimesJump'), results = $('trialTimeResults'), status = $('trialTimeStatus');
   const rank = $('viewerRank'), rankResults = $('viewerRankResults'), rankStatus = $('viewerRankStatus');
@@ -93,13 +110,14 @@ export function createTrialTimeComparison({ $, params, back, onChange }) {
       rankStatus.textContent = `${dayOf(period.start)} 至 ${dayOf(period.end)} · 依觀眾數排序，同人數並列`;
       const hour = Number(rankHour.value), viewers = Number(rankAudience.value);
       rankResults.append(...regionsFor(mode).map(scope => {
-        const { sampledDays, ahead } = compareViewerTier(index, chunks, gameId, period, hour, viewers, scope);
+        const { sampledDays, ahead, latest } = compareViewerTier(index, chunks, gameId, period, hour, viewers, scope);
         const card = node('section', 'tw-trial-region');
         card.dataset.region = scope;
         card.append(node('h3', 'tw-region-caption', regionNames[scope]),
-          node('p', 'tw-trial-action', ahead === null ? '級距紀錄不足' : `約第 ${fmt(ahead + 1)} 名`),
+          node('p', 'tw-trial-action', ahead === null ? '級距紀錄不足' : `常見約第 ${fmt(ahead + 1)} 名`),
           node('p', 'tw-trial-coverage', `有紀錄 ${sampledDays}／${period.slots.length} 天${ahead === null
             ? ` · 至少需要 ${TRIAL_MIN_DAYS} 天` : ` · 通常約 ${fmt(ahead)} 台觀眾比你多`}`));
+        if (latest) card.append(renderTierSnapshot(latest, viewers));
         return card;
       }));
     } catch {

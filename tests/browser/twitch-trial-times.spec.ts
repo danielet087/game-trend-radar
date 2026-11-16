@@ -178,10 +178,15 @@ test('shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await expect(trend.getByRole('row', { name:/11\/11/ })).toHaveCount(0);
   await expect(page.locator('#heatOverview-global .tw-remaining-trend')).toHaveCount(0);
   const ranking = page.getByRole('region', {name:'我大概排第幾？'});
-  await expect(ranking.locator('[data-region="global"]')).toContainText('約第 4 名');
+  const globalRank = ranking.locator('[data-region="global"]');
+  await expect(globalRank.locator('.tw-trial-action')).toHaveText('常見約第 4 名');
+  await expect(globalRank.locator('.tw-rank-snapshot time')).toHaveAttribute('datetime', '2026-11-10T14:00:00Z');
+  await expect(globalRank.locator('.tw-rank-tiers dt')).toHaveText(['超過 30 人', '超過 50 人', '超過 100 人']);
+  await expect(globalRank.locator('.tw-rank-tiers dd')).toHaveText(['5 台', '3 台', '2 台']);
   await expect(ranking.locator('[data-region="zh"]')).toContainText('級距紀錄不足');
+  await expect(ranking.locator('[data-region="zh"] .tw-rank-snapshot')).toHaveCount(0);
   await ranking.locator('#viewerRankAudience').selectOption('100');
-  await expect(ranking.locator('[data-region="global"]')).toContainText('約第 3 名');
+  await expect(globalRank.locator('.tw-rank-snapshot')).toContainText('當次約第 3 名');
   const curves = page.getByRole('region', {name:'同類新作的上市曲線'});
   await expect(curves).toContainText('同類中位數 · 5 款');
   await expect(curves.locator('.tw-launch-heat-metrics dd')).toHaveText(['3 天', '2 天']);

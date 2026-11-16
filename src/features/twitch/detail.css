@@ -90,6 +90,10 @@ body[data-page="twitch-game"] { --page-wash:#e1daf5; --page-wash-soft:#f0e5ef; -
 .tw-trial-action { margin:0; color:#503b6b; font-size:17px; font-weight:700; }
 .tw-trial-reason { margin:4px 0 10px; color:#61536e; font-size:13px; line-height:1.65; }
 .tw-trial-coverage { display:flex; flex-wrap:wrap; gap:4px 10px; margin:10px 0 0; color:#655971; font-size:11px; }
+.tw-rank-snapshot { margin-top:12px; border-top:1px solid #e6dfea; }
+.tw-rank-tiers { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0 0; }
+.tw-rank-tiers dt { color:#655971; font-size:11px; }
+.tw-rank-tiers dd { margin:3px 0 0; color:#503b6b; font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; }
 #launchCurveStatus { padding-top:14px; }
 #launchCurveResults svg { display:block; width:100%; max-width:650px; margin:0 auto 12px; }
 #launchCurveResults svg text { font-size:11px; fill:#655971; }
