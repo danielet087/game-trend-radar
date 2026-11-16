@@ -8,7 +8,6 @@
   "name_zh_cn": "S.O.N.A.R. - 潜艇菜鸟团",
   "name_zh_tw_traditional": "S.O.N.A.R. - 潛艇菜鳥團",
   "name_zh_cn_traditional": "S.O.N.A.R. - 潛艇菜鳥團",
-  "name_en_traditional": "S.O.N.A.R. - Submarine Operators Not Actually Ready",
   "language_support": {
     "tchinese": true,
     "schinese": true,
@@ -161,26 +160,27 @@
   "release_date_normalization": "steam_store_date_matches_taipei",
   "content_descriptorids": [],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 4096830,
-    "twitch_game_id": "2144016909",
-    "igdb_id": "410320",
     "checked_at": "2026-10-30T15:14:22Z",
-    "source_database_revision": "b8f0d41ffada76f1328dbfc3c03d34ea89eb5871b052f3ce87420df9a6138a38",
+    "igdb_id": "410320",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 891,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "b8f0d41ffada76f1328dbfc3c03d34ea89eb5871b052f3ce87420df9a6138a38",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-10-30T15:14:22Z",
       "source": "igdb_first_release_date",
       "viewer_count": 11054
-    }
+    },
+    "twitch_game_id": "2144016909"
   },
   "content_enrichment_signature": "4096830:None:2026-10-29",
   "storage_version": 2,
   "followers": null,
   "follower_checked_at": null,
   "follower_source": null,
-  "description_next_check_at": "2026-11-21T05:32:20Z"
+  "description_next_check_at": "2026-11-21T05:32:20Z",
+  "community_url": "https://steamcommunity.com/app/4096830/"
 }

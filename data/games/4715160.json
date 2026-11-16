@@ -6,7 +6,6 @@
   "name_en": "Finals Week ✍🏻",
   "name_zh_cn": "逢考弊过",
   "name_zh_cn_traditional": "逢考弊過",
-  "name_en_traditional": "Finals Week ✍🏻",
   "language_support": {
     "tchinese": true,
     "schinese": true,
@@ -158,23 +157,24 @@
   "release_date_normalization": "steam_utc_date_normalized_to_taipei",
   "content_descriptorids": [],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 4715160,
-    "twitch_game_id": "1032872922",
-    "igdb_id": "423593",
     "checked_at": "2026-11-03T20:25:07Z",
-    "source_database_revision": "c14655dce0be4c4f4be7df507374a7613e0180cbbfbafd4c7a7c25ebc582c4c3",
+    "igdb_id": "423593",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 1128,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "c14655dce0be4c4f4be7df507374a7613e0180cbbfbafd4c7a7c25ebc582c4c3",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-11-03T20:25:07Z",
       "source": "igdb_first_release_date",
       "viewer_count": 13856
-    }
+    },
+    "twitch_game_id": "1032872922"
   },
   "content_enrichment_signature": "4715160:1523:2026-10-30",
   "storage_version": 2,
-  "description_next_check_at": "2026-11-17T23:32:39Z"
+  "description_next_check_at": "2026-11-17T23:32:39Z",
+  "community_url": "https://steamcommunity.com/app/4715160/"
 }

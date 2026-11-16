@@ -4,7 +4,6 @@
   "display_name": "DreamWorks Shrek 2 Remastered",
   "display_name_source": "english",
   "name_en": "DreamWorks Shrek 2 Remastered",
-  "name_en_traditional": "DreamWorks Shrek 2 Remastered",
   "language_support": {
     "tchinese": false,
     "schinese": false,
@@ -163,23 +162,24 @@
     "reason": "no_primary_erotic_evidence"
   },
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 2523740,
-    "twitch_game_id": "1734648205",
-    "igdb_id": "424208",
     "checked_at": "2026-11-10T18:29:07Z",
-    "source_database_revision": "008f58c92bf526815bd07bd73bf907f86dadb9c87a12b6c7a73b5fe9704c46e3",
+    "igdb_id": "424208",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 1573,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "008f58c92bf526815bd07bd73bf907f86dadb9c87a12b6c7a73b5fe9704c46e3",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-11-10T18:29:07Z",
       "source": "igdb_first_release_date",
       "viewer_count": 40455
-    }
+    },
+    "twitch_game_id": "1734648205"
   },
   "content_enrichment_signature": "2523740:1337:2026-11-11",
   "storage_version": 2,
-  "description_next_check_at": "2026-11-17T05:32:43Z"
+  "description_next_check_at": "2026-11-17T05:32:43Z",
+  "community_url": "https://steamcommunity.com/app/2523740/"
 }

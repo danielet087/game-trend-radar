@@ -6,7 +6,6 @@
   "name_en": "Put Your Toys Away Together!",
   "name_zh_cn": "捡起你的玩具来",
   "name_zh_cn_traditional": "撿起你的玩具來",
-  "name_en_traditional": "Put Your Toys Away Together!",
   "language_support": {
     "tchinese": true,
     "schinese": true,
@@ -167,22 +166,23 @@
     "reason": "no_primary_erotic_evidence"
   },
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 5041530,
-    "twitch_game_id": "1938283374",
-    "igdb_id": "416292",
     "checked_at": "2026-11-12T08:13:49Z",
-    "source_database_revision": "f86b78cb17de3a60135f1b2f203d297236cd709a998760a81fe36a3f02605448",
+    "igdb_id": "416292",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 1685,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "f86b78cb17de3a60135f1b2f203d297236cd709a998760a81fe36a3f02605448",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-11-12T08:13:49Z",
       "source": "igdb_first_release_date",
       "viewer_count": 9281
-    }
+    },
+    "twitch_game_id": "1938283374"
   },
   "content_enrichment_signature": "5041530:144:2026-10-30",
-  "storage_version": 2
+  "storage_version": 2,
+  "community_url": "https://steamcommunity.com/app/5041530/"
 }

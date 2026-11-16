@@ -31,21 +31,21 @@
   "store_url": "https://store.steampowered.com/app/5160800/",
   "community_url": "https://steamcommunity.com/app/5160800/",
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 5160800,
-    "twitch_game_id": "1458901309",
-    "igdb_id": "415859",
     "checked_at": "2026-10-28T05:13:55Z",
-    "source_database_revision": "57f05fc7e3ba904e7fcbdb87d9298feb3095daa5c9dc76aebc8a241e7b51f16e",
+    "igdb_id": "415859",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 798,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "57f05fc7e3ba904e7fcbdb87d9298feb3095daa5c9dc76aebc8a241e7b51f16e",
     "source_enrollment": {
-      "source": "igdb_first_release_date",
+      "min_viewers": 7000,
       "observed_at": "2026-10-03T16:12:05Z",
-      "viewer_count": 7542,
-      "min_viewers": 7000
-    }
+      "source": "igdb_first_release_date",
+      "viewer_count": 7542
+    },
+    "twitch_game_id": "1458901309"
   },
   "display_name": "Find The Needle",
   "display_name_source": "english",
@@ -58,7 +58,6 @@
   "description_checked_at": "2026-11-13T17:32:27Z",
   "description_next_check_at": "2026-11-20T17:32:27Z",
   "content_enrichment_signature": "5160800:8087:2026-11-06",
-  "name_en_traditional": "Find The Needle",
   "language_support": {
     "tchinese": true,
     "schinese": true,

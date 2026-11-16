@@ -6,7 +6,6 @@
   "name_en": "Tom the Postgirl",
   "name_zh_cn": "快递员汤姆",
   "name_zh_cn_traditional": "快遞員湯姆",
-  "name_en_traditional": "Tom the Postgirl",
   "language_support": {
     "tchinese": false,
     "schinese": true,
@@ -144,26 +143,27 @@
     5
   ],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 2257440,
-    "twitch_game_id": "189654361",
-    "igdb_id": "265267",
     "checked_at": "2026-10-30T19:17:39Z",
-    "source_database_revision": "c828f46caca1f33e6cbcbfecd302dba47f2f22bb37a01a4d3e2973e7c0382971",
+    "igdb_id": "265267",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 894,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "c828f46caca1f33e6cbcbfecd302dba47f2f22bb37a01a4d3e2973e7c0382971",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-10-30T19:17:39Z",
       "source": "igdb_first_release_date",
       "viewer_count": 18305
-    }
+    },
+    "twitch_game_id": "189654361"
   },
   "content_enrichment_signature": "2257440:None:2026-10-29",
   "storage_version": 2,
   "followers": null,
   "follower_checked_at": null,
   "follower_source": null,
-  "description_next_check_at": "2026-11-21T05:32:20Z"
+  "description_next_check_at": "2026-11-21T05:32:20Z",
+  "community_url": "https://steamcommunity.com/app/2257440/"
 }

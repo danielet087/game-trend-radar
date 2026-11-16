@@ -4,7 +4,6 @@
   "display_name": "Sushiamo",
   "display_name_source": "english",
   "name_en": "Sushiamo",
-  "name_en_traditional": "Sushiamo",
   "language_support": {
     "tchinese": false,
     "schinese": false,
@@ -139,26 +138,27 @@
   "release_date_normalization": "steam_utc_date_normalized_to_taipei",
   "content_descriptorids": [],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 4555040,
-    "twitch_game_id": "1530669044",
-    "igdb_id": "400462",
     "checked_at": "2026-11-06T17:20:02Z",
-    "source_database_revision": "c6dfb3b69405388112636ea9a5a5b920cf4f5ca91ae18e69ef923efa3983051e",
+    "igdb_id": "400462",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 1296,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "c6dfb3b69405388112636ea9a5a5b920cf4f5ca91ae18e69ef923efa3983051e",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-11-06T17:20:02Z",
       "source": "igdb_first_release_date",
       "viewer_count": 9340
-    }
+    },
+    "twitch_game_id": "1530669044"
   },
   "content_enrichment_signature": "4555040:None:2026-11-05",
   "storage_version": 2,
   "followers": null,
   "follower_checked_at": null,
   "follower_source": null,
-  "description_next_check_at": "2026-11-20T23:32:07Z"
+  "description_next_check_at": "2026-11-20T23:32:07Z",
+  "community_url": "https://steamcommunity.com/app/4555040/"
 }

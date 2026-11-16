@@ -4,7 +4,6 @@
   "display_name": "Hunting Simulator 3",
   "display_name_source": "english",
   "name_en": "Hunting Simulator 3",
-  "name_en_traditional": "Hunting Simulator 3",
   "language_support": {
     "tchinese": false,
     "schinese": true,
@@ -135,26 +134,27 @@
   "release_date_normalization": "steam_store_date_matches_taipei",
   "content_descriptorids": [],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 2482760,
-    "twitch_game_id": "1099254808",
-    "igdb_id": "323189",
     "checked_at": "2026-11-01T21:17:59Z",
-    "source_database_revision": "01bde8b89f84777e6fe059f40b1ef7311c10cd299feb406dc1eaf1228cfc49b0",
+    "igdb_id": "323189",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 1016,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "01bde8b89f84777e6fe059f40b1ef7311c10cd299feb406dc1eaf1228cfc49b0",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-11-01T21:17:59Z",
       "source": "igdb_first_release_date",
       "viewer_count": 12882
-    }
+    },
+    "twitch_game_id": "1099254808"
   },
   "content_enrichment_signature": "2482760:None:2026-10-29",
   "storage_version": 2,
   "followers": null,
   "follower_checked_at": null,
   "follower_source": null,
-  "description_next_check_at": "2026-11-22T23:32:45Z"
+  "description_next_check_at": "2026-11-22T23:32:45Z",
+  "community_url": "https://steamcommunity.com/app/2482760/"
 }

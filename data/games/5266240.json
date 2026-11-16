@@ -4,7 +4,6 @@
   "display_name": "Potato Please",
   "display_name_source": "english",
   "name_en": "Potato Please",
-  "name_en_traditional": "Potato Please",
   "language_support": {
     "tchinese": true,
     "schinese": true,
@@ -142,23 +141,24 @@
   "release_date_normalization": "steam_store_date_matches_taipei",
   "content_descriptorids": [],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 5266240,
-    "twitch_game_id": "1514404776",
-    "igdb_id": "420360",
     "checked_at": "2026-11-06T20:25:30Z",
-    "source_database_revision": "8b5a9962938b2605a34352c7ac8bf50c794b5d51034886b0f7f56a9a42032081",
+    "igdb_id": "420360",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 1301,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "8b5a9962938b2605a34352c7ac8bf50c794b5d51034886b0f7f56a9a42032081",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-11-06T20:25:30Z",
       "source": "igdb_first_release_date",
       "viewer_count": 27329
-    }
+    },
+    "twitch_game_id": "1514404776"
   },
   "content_enrichment_signature": "5266240:2298:2026-11-03",
   "storage_version": 2,
-  "description_next_check_at": "2026-11-20T23:32:07Z"
+  "description_next_check_at": "2026-11-20T23:32:07Z",
+  "community_url": "https://steamcommunity.com/app/5266240/"
 }

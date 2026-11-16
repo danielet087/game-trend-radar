@@ -4,7 +4,6 @@
   "display_name": "Menthal",
   "display_name_source": "english",
   "name_en": "Menthal",
-  "name_en_traditional": "Menthal",
   "language_support": {
     "tchinese": false,
     "schinese": false,
@@ -144,22 +143,23 @@
     "reason": "no_primary_erotic_evidence"
   },
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 5033060,
-    "twitch_game_id": "385116558",
-    "igdb_id": "424921",
     "checked_at": "2026-11-12T05:11:53Z",
-    "source_database_revision": "6cc626a4f3fc5c8c5b9583c327402d34261a04b46085d7a957579264a71f0b40",
+    "igdb_id": "424921",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 1675,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "6cc626a4f3fc5c8c5b9583c327402d34261a04b46085d7a957579264a71f0b40",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-11-12T05:11:53Z",
       "source": "igdb_first_release_date",
       "viewer_count": 59403
-    }
+    },
+    "twitch_game_id": "385116558"
   },
   "content_enrichment_signature": "5033060:26:2026-11-10",
-  "storage_version": 2
+  "storage_version": 2,
+  "community_url": "https://steamcommunity.com/app/5033060/"
 }

@@ -4,7 +4,6 @@
   "display_name": "Backrooms Insane",
   "display_name_source": "english",
   "name_en": "Backrooms Insane",
-  "name_en_traditional": "Backrooms Insane",
   "language_support": {
     "tchinese": false,
     "schinese": false,
@@ -118,23 +117,24 @@
     5
   ],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 5073990,
-    "twitch_game_id": "877278718",
-    "igdb_id": "420280",
     "checked_at": "2026-10-30T01:19:03Z",
-    "source_database_revision": "78cb29c867d129d6e203a6fdfac7610d587e89ae33ae6553f05837d8f601081a",
+    "igdb_id": "420280",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 850,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "78cb29c867d129d6e203a6fdfac7610d587e89ae33ae6553f05837d8f601081a",
     "source_enrollment": {
-      "source": "igdb_first_release_date",
+      "min_viewers": 7000,
       "observed_at": "2026-10-30T01:19:03Z",
-      "viewer_count": 16681,
-      "min_viewers": 7000
-    }
+      "source": "igdb_first_release_date",
+      "viewer_count": 16681
+    },
+    "twitch_game_id": "877278718"
   },
   "content_enrichment_signature": "5073990:5:2026-10-29",
   "storage_version": 2,
-  "description_next_check_at": "2026-11-16T17:32:37Z"
+  "description_next_check_at": "2026-11-16T17:32:37Z",
+  "community_url": "https://steamcommunity.com/app/5073990/"
 }

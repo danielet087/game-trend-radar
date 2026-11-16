@@ -4,7 +4,6 @@
   "display_name": "Remothered: Red Nun's Legacy",
   "display_name_source": "english",
   "name_en": "Remothered: Red Nun's Legacy",
-  "name_en_traditional": "Remothered: Red Nun's Legacy",
   "language_support": {
     "tchinese": true,
     "schinese": true,
@@ -144,23 +143,24 @@
     5
   ],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 3335310,
-    "twitch_game_id": "82446336",
-    "igdb_id": "394670",
     "checked_at": "2026-10-29T17:17:02Z",
-    "source_database_revision": "44fe2b713d00252ba4bf937523212af7ed1ef32084e07f9aed78522a726654e6",
+    "igdb_id": "394670",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 861,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "44fe2b713d00252ba4bf937523212af7ed1ef32084e07f9aed78522a726654e6",
     "source_enrollment": {
-      "source": "igdb_first_release_date",
+      "min_viewers": 7000,
       "observed_at": "2026-10-27T16:18:18Z",
-      "viewer_count": 13753,
-      "min_viewers": 7000
-    }
+      "source": "igdb_first_release_date",
+      "viewer_count": 13753
+    },
+    "twitch_game_id": "82446336"
   },
   "content_enrichment_signature": "3335310:6010:2026-10-27",
   "storage_version": 2,
-  "description_next_check_at": "2026-11-20T17:32:27Z"
+  "description_next_check_at": "2026-11-20T17:32:27Z",
+  "community_url": "https://steamcommunity.com/app/3335310/"
 }

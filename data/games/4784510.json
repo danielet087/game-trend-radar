@@ -4,7 +4,6 @@
   "display_name": "Leviathan: Rhino",
   "display_name_source": "english",
   "name_en": "Leviathan: Rhino",
-  "name_en_traditional": "Leviathan: Rhino",
   "language_support": {
     "tchinese": false,
     "schinese": true,
@@ -133,23 +132,24 @@
     "reason": "no_primary_erotic_evidence"
   },
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 4784510,
-    "twitch_game_id": "1826528022",
-    "igdb_id": "413486",
     "checked_at": "2026-11-08T22:19:06Z",
-    "source_database_revision": "30a3cb903175538d07950eaca8c9608ef09d0e6e2bacabc399c98ec6439a9c2b",
+    "igdb_id": "413486",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 1424,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "30a3cb903175538d07950eaca8c9608ef09d0e6e2bacabc399c98ec6439a9c2b",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-11-08T22:19:05Z",
       "source": "igdb_first_release_date",
       "viewer_count": 14867
-    }
+    },
+    "twitch_game_id": "1826528022"
   },
   "content_enrichment_signature": "4784510:148:2026-11-07",
   "storage_version": 2,
-  "description_next_check_at": "2026-11-22T23:32:45Z"
+  "description_next_check_at": "2026-11-22T23:32:45Z",
+  "community_url": "https://steamcommunity.com/app/4784510/"
 }

@@ -4,7 +4,6 @@
   "display_name": "Kimodameshi Online",
   "display_name_source": "english",
   "name_en": "Kimodameshi Online",
-  "name_en_traditional": "Kimodameshi Online",
   "language_support": {
     "tchinese": true,
     "schinese": true,
@@ -164,23 +163,24 @@
   "release_date_normalization": "steam_store_date_matches_taipei",
   "content_descriptorids": [],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 5321510,
-    "twitch_game_id": "1985425951",
-    "igdb_id": "425989",
     "checked_at": "2026-10-29T13:15:16Z",
-    "source_database_revision": "44fe2b713d00252ba4bf937523212af7ed1ef32084e07f9aed78522a726654e6",
+    "igdb_id": "425989",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 861,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "44fe2b713d00252ba4bf937523212af7ed1ef32084e07f9aed78522a726654e6",
     "source_enrollment": {
-      "source": "igdb_first_release_date",
+      "min_viewers": 7000,
       "observed_at": "2026-10-29T13:15:16Z",
-      "viewer_count": 13024,
-      "min_viewers": 7000
-    }
+      "source": "igdb_first_release_date",
+      "viewer_count": 13024
+    },
+    "twitch_game_id": "1985425951"
   },
   "content_enrichment_signature": "5321510:159:2026-10-26",
   "storage_version": 2,
-  "description_next_check_at": "2026-11-20T17:32:27Z"
+  "description_next_check_at": "2026-11-20T17:32:27Z",
+  "community_url": "https://steamcommunity.com/app/5321510/"
 }

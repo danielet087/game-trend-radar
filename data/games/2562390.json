@@ -28,21 +28,21 @@
   "steam_type": "game",
   "store_url": "https://store.steampowered.com/app/2562390/",
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 2562390,
-    "twitch_game_id": "1343122280",
-    "igdb_id": "303109",
     "checked_at": "2026-10-28T22:18:06Z",
-    "source_database_revision": "7c10d5a1d7857261c122d8abef6e3760836c0dadcd26cd270622fe7b674501b4",
+    "igdb_id": "303109",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 796,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "7c10d5a1d7857261c122d8abef6e3760836c0dadcd26cd270622fe7b674501b4",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-10-28T22:18:06Z",
       "source": "igdb_first_release_date",
       "viewer_count": 33678
-    }
+    },
+    "twitch_game_id": "1343122280"
   },
   "display_name": "Benny's Backrooms",
   "display_name_source": "english",
@@ -55,7 +55,6 @@
   "description_checked_at": "2026-11-13T17:32:27Z",
   "description_next_check_at": "2026-11-20T17:32:27Z",
   "content_enrichment_signature": "2562390:6270:2026-10-28",
-  "name_en_traditional": "Benny's Backrooms",
   "language_support": {
     "tchinese": false,
     "schinese": true,

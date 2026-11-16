@@ -32,21 +32,21 @@
   "store_url": "https://store.steampowered.com/app/5327150/",
   "community_url": "https://steamcommunity.com/app/5327150/",
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 5327150,
-    "twitch_game_id": "921120732",
-    "igdb_id": "425898",
     "checked_at": "2026-10-28T03:16:30Z",
-    "source_database_revision": "57f05fc7e3ba904e7fcbdb87d9298feb3095daa5c9dc76aebc8a241e7b51f16e",
+    "igdb_id": "425898",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 798,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "57f05fc7e3ba904e7fcbdb87d9298feb3095daa5c9dc76aebc8a241e7b51f16e",
     "source_enrollment": {
-      "source": "igdb_first_release_date",
+      "min_viewers": 7000,
       "observed_at": "2026-10-28T03:16:30Z",
-      "viewer_count": 53829,
-      "min_viewers": 7000
-    }
+      "source": "igdb_first_release_date",
+      "viewer_count": 53829
+    },
+    "twitch_game_id": "921120732"
   },
   "display_name": "On My Watch",
   "display_name_source": "english",
@@ -59,7 +59,6 @@
   "description_checked_at": "2026-11-15T17:32:37Z",
   "description_next_check_at": "2026-11-16T17:32:37Z",
   "content_enrichment_signature": "5327150:7:2026-10-27",
-  "name_en_traditional": "On My Watch",
   "language_support": {
     "tchinese": false,
     "schinese": true,
