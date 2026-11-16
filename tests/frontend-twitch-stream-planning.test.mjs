@@ -99,7 +99,13 @@ test('Chinese outlook detects falling audiences when both periods reach the same
   assert.equal(selected.outlook.signal, 'falling');
   assert.equal(selected.outlook.latest.thresholdHits, 4);
   assert.equal(heat([...rows, ...open], '2026-11-09').outlook.comparison, null);
+  const mixed = [...rows.slice(0, 72), ...rows.slice(72).map(independentlyMeasured)];
+  assert.equal(heat(mixed, '2026-11-11').outlook.comparison, null);
+  assert.deepEqual(heat(mixed, '2026-11-11').week, heat(rows, '2026-11-11').week);
+  assert.deepEqual(heat(rows.map(independentlyMeasured), '2026-11-11').outlook.comparison, selected.outlook.comparison);
 });
+
+const independentlyMeasured = row => ({ ...row, audience_regions: { zh: { measurement_source: 'helix_language_filter' } } });
 
 test('weekly heat counts closed post-release days and preserves uncertain and fully missing days', () => {
   const rows = [
@@ -121,6 +127,8 @@ test('today is compared only against previously published observations for the s
   assert.deepEqual(heat([...past, ...current], '2026-11-11').todayChange, { change:50, hours:6 });
   assert.equal(heat([...past, ...current.slice(1)], '2026-11-11').todayChange, null);
   assert.equal(heat([...past, ...current], '2026-11-10').todayChange, null);
+  assert.equal(heat([...past, ...current.map(independentlyMeasured)], '2026-11-11').todayChange, null);
+  assert.deepEqual(heat([...past, ...current].map(independentlyMeasured), '2026-11-11').todayChange, { change:50, hours:6 });
 });
 
 test('other-stream trends pair hours across days, retain measured zero, and skip legacy records', () => {
@@ -138,6 +146,9 @@ test('other-stream trends pair hours across days, retain measured zero, and skip
   assert.deepEqual(remainingAudienceTrend(rows, { ...options, releaseDate:day }), [{ ...paired, viewers:null, streams:null, hours:0 }]);
   assert.deepEqual(remainingAudienceTrend(rows, { ...options, date:previous }), []);
   assert.deepEqual(remainingAudienceTrend(rows.slice(0, 26), { ...options, releaseDate:day }), []);
+  const mixed = [...rows.slice(0, 24), ...rows.slice(24).map(independentlyMeasured)];
+  assert.deepEqual(remainingAudienceTrend(mixed, options), [{ ...paired, viewers:null, streams:null, hours:0 }]);
+  assert.deepEqual(remainingAudienceTrend(rows.map(independentlyMeasured), options), [paired]);
 });
 
 function trialFixture(period, hours, counts, releaseDate) {

@@ -5,6 +5,8 @@ export const regionNames = { zh: '中文區', global: '全球', compare: '兩區
 export const regionOf = value => ['global', 'zh'].includes(value) ? value : DEFAULT_REGION;
 export const viewOf = value => ['global', 'zh', 'compare'].includes(value) ? value : DEFAULT_REGION;
 export const VIEWER_TIERS = [30, 50, 100];
+export const CHINESE_MEASUREMENT_CHANGE_AT = '2026-11-15T08:00:00Z';
+export const isIndependentChineseMeasurement = row => row?.audience_regions?.zh?.measurement_source === 'helix_language_filter';
 const validCount = value => Number.isSafeInteger(value) && value >= 0;
 
 function viewerTiers(sample) {
@@ -21,7 +23,7 @@ function viewerTiers(sample) {
 export function forRegion(row, region = 'global') {
   if (region !== 'zh') return { ...row, audience_region: 'global', streamer_counts_above_viewers: viewerTiers(row) };
   const value = row.audience_regions?.zh;
-  const independent = value?.measurement_source === 'helix_language_filter';
+  const independent = isIndependentChineseMeasurement(row);
   const available = value && validCount(value.viewer_count) && validCount(value.streamer_count) &&
     (independent || (validCount(row.viewer_count) && validCount(row.streamer_count) &&
       value.viewer_count <= row.viewer_count && value.streamer_count <= row.streamer_count)) &&
