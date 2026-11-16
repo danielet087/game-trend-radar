@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-15T23:32:45Z",
+  "generated_at": "2026-11-16T05:32:43Z",
   "checkpoints": {
     "1167820": {
       "attempted_at": "2026-11-13T17:32:27Z",
@@ -38,9 +38,9 @@
       "next_check_at": "2026-11-18T11:31:12Z"
     },
     "4182430": {
-      "attempted_at": "2026-10-17T05:31:04Z",
+      "attempted_at": "2026-11-16T05:32:43Z",
       "outcome": "success",
-      "next_check_at": "2026-11-16T05:31:04Z"
+      "next_check_at": "2026-12-16T05:32:43Z"
     },
     "1173980": {
       "attempted_at": "2026-11-13T17:32:27Z",
@@ -723,9 +723,9 @@
       "next_check_at": "2026-12-15T23:32:45Z"
     },
     "4450660": {
-      "attempted_at": "2026-11-09T05:32:04Z",
+      "attempted_at": "2026-11-16T05:32:43Z",
       "outcome": "success",
-      "next_check_at": "2026-11-16T05:32:04Z"
+      "next_check_at": "2026-11-23T05:32:43Z"
     },
     "5258340": {
       "attempted_at": "2026-11-13T11:32:10Z",
@@ -808,9 +808,9 @@
       "next_check_at": "2026-11-20T17:32:27Z"
     },
     "3499790": {
-      "attempted_at": "2026-11-06T17:31:54Z",
+      "attempted_at": "2026-11-16T05:32:43Z",
       "outcome": "success",
-      "next_check_at": "2026-11-13T17:31:54Z"
+      "next_check_at": "2026-11-23T05:32:43Z"
     },
     "4150720": {
       "attempted_at": "2026-11-15T17:32:37Z",
@@ -873,9 +873,9 @@
       "next_check_at": "2026-11-20T17:32:27Z"
     },
     "4530370": {
-      "attempted_at": "2026-11-06T11:32:12Z",
+      "attempted_at": "2026-11-16T05:32:43Z",
       "outcome": "success",
-      "next_check_at": "2026-11-13T11:32:12Z"
+      "next_check_at": "2026-11-23T05:32:43Z"
     },
     "5160800": {
       "attempted_at": "2026-11-13T17:32:27Z",
@@ -948,14 +948,14 @@
       "next_check_at": "2026-11-22T23:32:45Z"
     },
     "4876650": {
-      "attempted_at": "2026-11-09T05:32:04Z",
+      "attempted_at": "2026-11-16T05:32:43Z",
       "outcome": "success",
-      "next_check_at": "2026-11-16T05:32:04Z"
+      "next_check_at": "2026-11-23T05:32:43Z"
     },
     "4761550": {
-      "attempted_at": "2026-11-09T05:32:04Z",
+      "attempted_at": "2026-11-16T05:32:43Z",
       "outcome": "success",
-      "next_check_at": "2026-11-16T05:32:04Z"
+      "next_check_at": "2026-11-23T05:32:43Z"
     },
     "4312190": {
       "attempted_at": "2026-11-09T23:32:27Z",
@@ -973,9 +973,9 @@
       "next_check_at": "2026-11-16T17:32:37Z"
     },
     "3188660": {
-      "attempted_at": "2026-11-15T05:32:28Z",
+      "attempted_at": "2026-11-16T05:32:43Z",
       "outcome": "success",
-      "next_check_at": "2026-11-16T05:32:28Z"
+      "next_check_at": "2026-11-17T05:32:43Z"
     },
     "3339970": {
       "attempted_at": "2026-11-15T17:32:37Z",
@@ -1073,9 +1073,9 @@
       "next_check_at": "2026-11-18T11:32:11Z"
     },
     "2523740": {
-      "attempted_at": "2026-11-15T05:32:28Z",
+      "attempted_at": "2026-11-16T05:32:43Z",
       "outcome": "success",
-      "next_check_at": "2026-11-16T05:32:28Z"
+      "next_check_at": "2026-11-17T05:32:43Z"
     },
     "3473210": {
       "attempted_at": "2026-11-15T17:32:37Z",
@@ -1106,33 +1106,43 @@
       "attempted_at": "2026-11-15T23:32:45Z",
       "outcome": "success",
       "next_check_at": "2026-11-22T23:32:45Z"
+    },
+    "5173660": {
+      "attempted_at": "2026-11-16T05:32:43Z",
+      "outcome": "success",
+      "next_check_at": "2026-11-17T05:32:43Z"
+    },
+    "2638080": {
+      "attempted_at": "2026-11-16T05:32:43Z",
+      "outcome": "success",
+      "next_check_at": "2026-11-23T05:32:43Z"
     }
   },
   "due_count": 10,
   "attempted": 10,
   "refreshed": 10,
   "updated_appids": [
-    4251460,
-    4784510,
-    1742440,
-    1799840,
-    2482760,
-    2929250,
-    4954910,
-    5335510,
-    3218350,
-    5378110
+    5173660,
+    2638080,
+    3499790,
+    4530370,
+    4182430,
+    4450660,
+    4761550,
+    4876650,
+    2523740,
+    3188660
   ],
   "failed_appids": [],
   "sources": {
-    "steam_tchinese": 5,
-    "steam_schinese_converted": 3,
-    "steam_english": 2
+    "steam_english": 4,
+    "steam_schinese_converted": 2,
+    "steam_tchinese": 4
   },
   "pending_count": 0,
   "retry_pending_appids": [],
   "complete": true,
   "stop_reason": "",
-  "next_due_at": "2026-11-16T00:06:27Z",
+  "next_due_at": "2026-11-16T08:33:21Z",
   "superseded_appids": []
 }
