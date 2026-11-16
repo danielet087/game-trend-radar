@@ -243,6 +243,29 @@ test('launch heat stops at the published day and does not infer a change across 
   assert.equal(result.peerHeat, null);
 });
 
+test('Chinese launch heat retains exact hourly threshold decisions and matches peers by measurement method', () => {
+  const legacy = 'global_census', independent = 'helix_language_filter';
+  const curve = { daily:[80,90,12,30,50,70,80], heat:[true,true,false,false,false,true,true],
+    measurement_sources:Array(7).fill(legacy) };
+  const candidate = { date:'2026-10-01', edition:'standard_store_date', genres:['Action'], daily:Array(7).fill(200),
+    audience_regions:{ zh:curve } };
+  const game = { ...candidate, date:'2026-11-01', audience_regions:{ zh:{ ...curve,
+    measurement_sources:[legacy,legacy,legacy,legacy,legacy,independent,independent] } } };
+  const games = Object.fromEntries([1,2,3,4,5].map(id => [String(id), candidate]));
+  games['6'] = { ...candidate, audience_regions:{ zh:{ ...curve, measurement_sources:Array(7).fill(independent) } } };
+  games['7'] = game;
+  const data = { games };
+  const early = launchComparison(data, '7', 'Action', dateStart('2026-11-06'), 'zh');
+  assert.equal(early.peers, 5);
+  assert.equal(early.measurementSource, legacy);
+  assert.deepEqual(early.heat, { hot:2, observed:4, longest:2, firstHot:1, firstDrop:3, returnDay:null });
+  const mixed = launchComparison(data, '7', 'Action', dateStart('2026-11-10'), 'zh');
+  assert.equal(mixed.peers, 0);
+  assert.equal(mixed.typicalDay, null);
+  assert.equal(mixed.gameRemaining, null);
+  assert.equal(mixed.heat.hot, 4);
+});
+
 test('time comparison withholds a preferred hour when the median advantage lacks a majority of paired days', () => {
   const period = trialWindow(0, now), hours = [20, 22];
   const { index, chunks } = trialFixture(period, hours,

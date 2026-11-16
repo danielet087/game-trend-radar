@@ -16,6 +16,9 @@ except ModuleNotFoundError:
 TAIPEI = timezone(timedelta(hours=8))
 DAYS = 7
 MIN_HOURS = 12
+CHINESE_HOT_VIEWERS = 100
+CHINESE_HOT_HOURS = 4
+CHINESE_INDEPENDENT_SOURCE = "helix_language_filter"
 GENRES = {
     "Action": "動作", "Adventure": "冒險", "RPG": "角色扮演", "Strategy": "策略",
     "Simulation": "模擬", "Casual": "休閒", "Racing": "競速", "Sports": "運動",
@@ -40,8 +43,19 @@ def release_metadata(game, catalog):
     return released, "early_access" if "Early Access" in raw_genres else "standard_store_date", genres
 
 
+def chinese_heat(viewers):
+    hits = sum(value >= CHINESE_HOT_VIEWERS for value in viewers)
+    if hits >= CHINESE_HOT_HOURS:
+        return True
+    if hits + 24 - len(viewers) < CHINESE_HOT_HOURS:
+        return False
+    return None
+
+
 def launch_days(series_root, game_id, expected):
     daily = [[] for _ in range(DAYS)]
+    chinese = [[] for _ in range(DAYS)]
+    sources = [set() for _ in range(DAYS)]
     for month, slots in expected.items():
         path = series_root / game_id / f"{month}.json"
         chunk = json.loads(path.read_text(encoding="utf-8"))
@@ -53,7 +67,27 @@ def launch_days(series_root, game_id, expected):
             viewers = row.get("viewer_count") if isinstance(row, dict) else None
             if type(viewers) is int and viewers >= 0 and row.get("generated_at") == expected_stamp:
                 daily[offset].append(viewers)
-    return [median(values) if len(values) >= MIN_HOURS else None for values in daily]
+                regions = row.get("audience_regions")
+                region = regions.get("zh") if isinstance(regions, dict) else None
+                if not isinstance(region, dict):
+                    continue
+                regional_count = region.get("viewer_count")
+                source = region.get("measurement_source")
+                if (type(regional_count) is not int or regional_count < 0
+                        or source not in (None, CHINESE_INDEPENDENT_SOURCE)
+                        or source is None and regional_count > viewers):
+                    continue
+                chinese[offset].append(regional_count)
+                sources[offset].add(source or "global_census")
+    curve = {"daily": [median(values) if len(values) >= MIN_HOURS else None for values in daily]}
+    if any(sources):
+        curve["audience_regions"] = {"zh": {
+            "daily": [median(values) if len(values) >= MIN_HOURS else None for values in chinese],
+            "heat": [chinese_heat(values) for values in chinese],
+            "measurement_sources": [None if not day_sources else next(iter(day_sources)) if len(day_sources) == 1 else "mixed"
+                                    for day_sources in sources],
+        }}
+    return curve
 
 
 def build(data_dir):
@@ -89,7 +123,7 @@ def build(data_dir):
                 if month in game.get("months", []):
                     expected.setdefault(month, {})[hour] = (received, offset)
         curve = launch_days(root, game_id, expected)
-        output[game_id] = {"date": released.isoformat(), "edition": edition, "genres": genres, "daily": curve}
+        output[game_id] = {"date": released.isoformat(), "edition": edition, "genres": genres, **curve}
     # The window changes at Taipei midnight; stable data needs no hourly Git commit.
     cutoff = datetime.combine(complete_through, time.min, TAIPEI).astimezone(timezone.utc)
     return {"schema_version": 1, "generated_at": cutoff.isoformat().replace("+00:00", "Z"),
