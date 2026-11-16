@@ -2,6 +2,7 @@ import { count, HOUR } from './metrics.js';
 import { dateStart, dayOf } from './series.js';
 import { analyzeCooldown } from './cooldown-model.js';
 import { quantile } from './statistics-model.js';
+import { isIndependentChineseMeasurement } from './audience-region.js';
 
 const DAY = 24 * HOUR;
 export const STREAM_HEAT_DAYS = 3;
@@ -30,7 +31,7 @@ function dailySignal(day, open, minimumHits) {
   return minimumHits && day.thresholdHits > 0 ? 'sporadic' : 'low';
 }
 
-function compareHeat(days, recentStart, region) {
+function compareHeat(days, recentStart, region, rows) {
   const previousStart = recentStart - STREAM_HEAT_DAYS * DAY;
   const observed = days.flatMap(day => {
     const value = region === 'zh' ? day.fourthHighestViewers : day.median;
@@ -39,6 +40,13 @@ function compareHeat(days, recentStart, region) {
   const previousValues = observed.filter(day => day.start >= previousStart && day.start < recentStart).map(day => day.value);
   const recentValues = observed.filter(day => day.start >= recentStart).map(day => day.value);
   if (previousValues.length !== STREAM_HEAT_DAYS || recentValues.length !== STREAM_HEAT_DAYS) return null;
+  if (region === 'zh') {
+    const end = recentStart + STREAM_HEAT_DAYS * DAY;
+    const samples = observedHours(rows, previousStart, end, end);
+    const methods = new Set([...samples.values()].filter(row => count(row.viewer_count) !== null)
+      .map(isIndependentChineseMeasurement));
+    if (methods.size > 1) return null;
+  }
 
   const previous = quantile(previousValues, .5), recent = quantile(recentValues, .5);
   const change = previous > 0 ? (recent - previous) / previous * 100 : null;
@@ -85,11 +93,14 @@ function todayChange(rows, start, now, region) {
   const samples = observedHours(rows, start - STREAM_HEAT_WEEK * DAY, start + DAY, now);
   const differences = [], baselines = [];
   for (let at = start; at < start + DAY; at += HOUR) {
-    const current = count(samples.get(at)?.viewer_count);
+    const row = samples.get(at);
+    const current = count(row?.viewer_count);
     if (current === null) continue;
     const earlier = [];
     for (let day = 1; day <= STREAM_HEAT_WEEK; day++) {
-      const value = count(samples.get(at - day * DAY)?.viewer_count);
+      const prior = samples.get(at - day * DAY);
+      if (region === 'zh' && isIndependentChineseMeasurement(row) !== isIndependentChineseMeasurement(prior)) continue;
+      const value = count(prior?.viewer_count);
       if (value !== null) earlier.push(value);
     }
     if (earlier.length < STREAM_HEAT_DAYS) continue;
@@ -127,6 +138,7 @@ export function remainingAudienceTrend(rows, { date, now = Date.now(), releaseDa
       }
       const currentStreams = count(current?.streamer_count), previousStreams = count(previous?.streamer_count);
       if ([currentViewers, previousViewers, currentStreams, previousStreams].includes(null)) continue;
+      if (isIndependentChineseMeasurement(current) !== isIndependentChineseMeasurement(previous)) continue;
       viewers.push(currentViewers - previousViewers);
       streams.push(currentStreams - previousStreams);
     }
@@ -167,7 +179,7 @@ export function analyzeStreamHeat(rows, { game, region = 'global', date, now = D
   const signal = dailySignal(day, open, minimumHits);
   const through = dateStart(streamHeatThrough(date, now));
   const recentStart = through - (STREAM_HEAT_DAYS - 1) * DAY;
-  const comparison = compareHeat(data.days, recentStart, region);
+  const comparison = compareHeat(data.days, recentStart, region, available);
   const latest = data.days.findLast(item => item.complete && Date.parse(item.startAt) >= recentStart);
   const recentSignal = dailySignal(latest, false, minimumHits);
   let outlookSignal = comparison?.signal ?? recentSignal;

@@ -6,7 +6,7 @@ import { validIndex, validChunk, windowFor, monthsFor, seriesRows, fullSeriesRow
 import { createStatistics } from './statistics.js';
 import { createCooldown, cooldownPresentation } from './cooldown.js';
 import { analyzeCooldown, cooldownThreshold } from './cooldown-model.js';
-import { regionNames, viewOf } from './audience-region.js';
+import { CHINESE_MEASUREMENT_CHANGE_AT, regionNames, viewOf } from './audience-region.js';
 import { blockScopes, scopeKeys, regionsFor, projectRows, writeBlockScopes } from './region-views.js';
 import { dailyRows } from './daily-series.js';
 import { renderHeatOverview } from './heat-overview.js';
@@ -102,6 +102,7 @@ export function initTwitchDetail() {
       const chart = mount(roots.get(group.region), { rows: group.data, gameName: (game.display_name || game.name) + ' · ' + regionNames[group.region],
         rangeOptions: [], initialRange: daily ? Number.MAX_SAFE_INTEGER : rows.length, rangeHours: rows.length,
         initialMetric: metric, granularity: daily ? 'daily' : 'hourly', connectGaps: false, domainMaximum: max,
+        ...(group.region === 'zh' ? { measurementChangeAt: CHINESE_MEASUREMENT_CHANGE_AT } : {}),
         ...(daily && group.region === 'global' ? { referenceValue: cooldownThreshold(group.region) } : {}),
         onSelect(i) { charts.forEach(other => { if (other !== chart) other.select(i, false); }); },
         onMetricChange(value) {

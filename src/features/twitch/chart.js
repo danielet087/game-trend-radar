@@ -118,6 +118,9 @@ function mount(container, options) {
     ? '每日總觀眾中位數：依台灣日期彙整逐時總觀眾。日期已結束且至少有 12 筆才顯示；首日未完整涵蓋的日期不納入。滑過、點選或拖動時間軸查看數值與有效筆數。'
     : `滑過或點選圖表查看數值，也可拖動下方時間軸。台灣時間；${continuity}`);
   footer.append(scrubber, hint);
+  const measurementNote = element('p', 'tw-chart-hint');
+  measurementNote.hidden = true;
+  footer.append(measurementNote);
   const announcement = element("p", "tw-chart-announcement");
   announcement.setAttribute("role", "status"); announcement.setAttribute("aria-live", "polite"); announcement.setAttribute("aria-atomic", "true");
   chart.append(toolbar, inspector, plot, footer, announcement);
@@ -207,6 +210,18 @@ function mount(container, options) {
       svg.append(svgElement('line', { class: 'tw-chart-threshold', x1: left, x2: width - right, y1: y(settings.referenceValue), y2: y(settings.referenceValue) }));
       svg.append(svgElement('text', { class: 'tw-chart-threshold-label', x: width - right, y: y(settings.referenceValue) - 6, 'text-anchor': 'end' }, `${number(settings.referenceValue)} 人門檻`));
     }
+    const change = Date.parse(settings.measurementChangeAt);
+    const first = Date.parse(visible[0]?.hour), last = Date.parse(visible.at(-1)?.hour);
+    const spansChange = first < change && change <= last;
+    measurementNote.hidden = !spansChange;
+    if (spansChange) {
+      const position = x((change - first) / (last - first) * (visible.length - 1));
+      measurementNote.textContent = `${time(settings.measurementChangeAt)} 起，按遊戲獨立量測中文區。`;
+      const marker = svgElement('line', { x1:position, x2:position, y1:above, y2:height - below,
+        stroke:'var(--tw-chart-ink, #59677d)', 'stroke-width':1.5, 'stroke-dasharray':'4 4' });
+      marker.append(svgElement('title', {}, measurementNote.textContent));
+      svg.append(marker);
+    }
     let segment = [], previous = null;
     function line(points, bridge = false) {
       svg.append(svgElement("path", { class: bridge ? "tw-chart-line tw-chart-bridge" : "tw-chart-line", d: points.map(([px, py], index) => `${index ? "L" : "M"}${px.toFixed(2)},${py.toFixed(2)}`).join(" "), fill: "none", stroke: "var(--tw-chart-accent, #6453d9)", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round", "stroke-dasharray": bridge ? "6 5" : "none", "vector-effect": "non-scaling-stroke" }));
@@ -217,6 +232,9 @@ function mount(container, options) {
     }
     values.forEach((value, index) => {
       if (value === null) { flush(); return; }
+      if (spansChange && previous && Date.parse(visible[previous.index].hour) < change && Date.parse(visible[index].hour) >= change) {
+        flush(); previous = null;
+      }
       const point = [x(index), y(value)];
       if (settings.connectGaps !== false && previous && index > previous.index + 1) line([previous.point, point], true);
       segment.push(point);
