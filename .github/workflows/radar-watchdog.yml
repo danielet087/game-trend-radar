@@ -1,0 +1,49 @@
+name: Radar watchdog
+run-name: "Radar watchdog | ${{ github.event_name }}"
+
+# Collector jobs use continue-on-error and only email after 100 failures, so a
+# green run can hide days of real failures. This hourly check reads published
+# receipts, the per-workflow failure counters and recent runs across all radar
+# repositories, then opens, updates or closes one labelled issue. It runs on
+# GitHub's own schedule, so it also notices when the Cloudflare scheduler stops.
+on:
+  schedule:
+    - cron: '50 * * * *'
+  workflow_dispatch:
+  pull_request:
+    paths: ['scripts/radar-watchdog.cjs', 'tests/radar-watchdog.test.cjs', '.github/workflows/radar-watchdog.yml']
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: radar-watchdog
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          # Only the checker; published data is read through the API.
+          sparse-checkout: |
+            scripts/radar-watchdog.cjs
+            tests/radar-watchdog.test.cjs
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test watchdog rules
+        run: node --test tests/radar-watchdog.test.cjs
+      - name: Check the pipeline and update the alert issue
+        if: github.event_name != 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { run } = require(`${process.env.GITHUB_WORKSPACE}/scripts/radar-watchdog.cjs`);
+            await run({ github, context, core });
