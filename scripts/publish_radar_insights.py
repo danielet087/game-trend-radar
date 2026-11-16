@@ -8,13 +8,19 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 
 from radar_core.publication import SubprocessGitRepository, publish_with_retry, snapshot_revision
 from radar_core.storage import primary
+from radar_core.storage.sql import StorageError
 from scripts import sync_scheduler_queue_status as queue
 
 PATHS = ("data/insights-state.json", "data/activity.json", "data/growth.json",
          "data/scheduler_queue_status.json", "data/twitch-launch-curves.json")
+# Heavy Steam jobs can hold the storage lease past one bounded wait. A busy
+# lease fails before any write, so the whole publication can simply run again.
+LEASE_RETRIES = 2
+LEASE_RETRY_SECONDS = 90
 
 
 def frozen_queue():
@@ -63,8 +69,19 @@ def publish(root, *, observed_at=None, repository=None, queue_snapshot=None):
                               max_attempts=5)
 
 
+def publish_when_lease_frees(root, queue_snapshot, *, sleep=time.sleep):
+    for attempt in range(LEASE_RETRIES + 1):
+        try:
+            return publish(root, queue_snapshot=queue_snapshot)
+        except StorageError as error:
+            if error.code != "LEASE_BUSY" or attempt == LEASE_RETRIES:
+                raise
+            print(f"Storage lease is busy; retrying in {LEASE_RETRY_SECONDS} seconds.", file=sys.stderr)
+            sleep(LEASE_RETRY_SECONDS)
+
+
 def main():
-    receipt = publish(Path.cwd(), queue_snapshot=frozen_queue())
+    receipt = publish_when_lease_frees(Path.cwd(), frozen_queue())
     print(json.dumps(receipt.to_dict(), sort_keys=True))
     if os.environ.get("GITHUB_OUTPUT"):
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as stream:

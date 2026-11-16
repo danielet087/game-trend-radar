@@ -164,6 +164,30 @@ class InsightsPrimaryPublicationTests(unittest.TestCase):
     def test_invalid_primary_queue_is_fail_closed(self):
         assert_primary_queue_failure(self, True)
 
+    def test_busy_lease_reruns_publication_with_the_same_frozen_queue(self):
+        calls, waits = [], []
+        def publish(root, *, queue_snapshot):
+            calls.append(queue_snapshot)
+            if len(calls) < 3:
+                raise StorageError("LEASE_BUSY", "busy")
+            return "receipt"
+        self.patch_object(publication, "publish", publish)
+        frozen = queue_snapshot()
+        self.assertEqual(publication.publish_when_lease_frees(ROOT, frozen, sleep=waits.append), "receipt")
+        self.assertEqual(calls, [frozen] * 3)
+        self.assertEqual(waits, [publication.LEASE_RETRY_SECONDS] * 2)
+
+    def test_lease_retries_are_bounded_and_other_errors_are_not_retried(self):
+        for code, attempts in (("LEASE_BUSY", publication.LEASE_RETRIES + 1), ("NETWORK_ERROR", 1)):
+            calls = []
+            def publish(root, *, queue_snapshot, code=code):
+                calls.append(code)
+                raise StorageError(code, "failed")
+            self.patch_object(publication, "publish", publish)
+            with self.assertRaises(StorageError):
+                publication.publish_when_lease_frees(ROOT, queue_snapshot(), sleep=lambda seconds: None)
+            self.assertEqual(len(calls), attempts)
+
     def test_real_database_builder_publication_replay(self):
         with tempfile.TemporaryDirectory() as directory:
             assert_real_builder_replay(self, Path(directory))

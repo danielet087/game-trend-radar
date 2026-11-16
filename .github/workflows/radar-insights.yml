@@ -43,7 +43,8 @@ jobs:
     continue-on-error: true
     if: vars.RADAR_DATABASE_MIGRATION_PAUSE != '1'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Two lease retries can add about nine minutes to a contended run.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
