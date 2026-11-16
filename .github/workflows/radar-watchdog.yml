@@ -1,15 +1,27 @@
 name: Radar watchdog
-run-name: "Radar watchdog | ${{ github.event_name }}"
+run-name: "Radar watchdog | slot=${{ inputs.target_slot || 'manual' }} | source=${{ inputs.trigger_source || github.event_name }}"
 
 # Collector jobs use continue-on-error and only email after 100 failures, so a
 # green run can hide days of real failures. This hourly check reads published
 # receipts, the per-workflow failure counters and recent runs across all radar
-# repositories, then opens, updates or closes one labelled issue. It runs on
-# GitHub's own schedule, so it also notices when the Cloudflare scheduler stops.
+# repositories, then opens, updates or closes one labelled issue.
+# The Cloudflare scheduler dispatches it hourly; GitHub's own (best-effort)
+# schedule is kept so it can still notice when the Cloudflare scheduler stops.
 on:
   schedule:
     - cron: '50 * * * *'
   workflow_dispatch:
+    inputs:
+      target_slot:
+        description: External scheduler slot identifier (leave empty for a manual run)
+        required: false
+        type: string
+        default: ''
+      trigger_source:
+        description: Trigger source for run identification
+        required: false
+        type: string
+        default: manual
   pull_request:
     paths: ['scripts/radar-watchdog.cjs', 'tests/radar-watchdog.test.cjs', '.github/workflows/radar-watchdog.yml']
 
