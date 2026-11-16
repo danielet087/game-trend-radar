@@ -51,5 +51,5 @@ function historyRows(files, gameID, at, region = 'global') {
   });
 }
 
-export { taipeiDay, historyDays, historyRows, latestHistorySnapshot };
+export { taipeiDay, historyDays, historyRows, latestHistorySnapshot, validHistoryHours };
 
