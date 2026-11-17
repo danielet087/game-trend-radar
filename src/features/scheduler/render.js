@@ -34,10 +34,32 @@ function renderSchedule() {
   }).join("")}</div></div>`).join("");
   $("scheduleCaption").textContent = `藍線為現在 ${clockLabel(now)}。圓點位置代表原定時段；點選可查看實際開始時間與 Actions。「Follower 回查盤點」顯示最近實際盤點回報的時間與今日筆數，盤點完成後由「官方 Followers」分批查詢。每日候選更新與 Steam 成長追蹤每 6 小時檢查，當日完整成功後略過後續時段。維護工作另保留 GitHub 原生排程作備援，備援執行會記在它涵蓋的原定時段；憑證到期檢查把四個儲存庫合成一點，點選可看各自結果。資料更新觸發的前端動態若在 :17 時還在跑，控制器不再另派，該時段記為那次執行。灰色過去時段代表尚未取得紀錄，不直接判定失敗。`;
 }
+const STATE_LABEL = { success: "已完成", interrupted: "已中斷", running: "進行中", waiting: "等待", skipped: "已略過", unknown: "待確認" };
+function eventItem(e) {
+  return `<li class="timeline-event is-${e.state}" id="${e.id}"><time class="event-time" datetime="${new Date(e.at).toISOString()}">${clockLabel(e.at)}</time><div class="event-card"><span class="event-state state-${e.state}">${STATE_LABEL[e.state]}</span><h3>${esc(e.title)}</h3><p>${esc(e.detail)}</p>${e.url ? `<a class="event-link" href="${e.url}" target="_blank" rel="noopener noreferrer">查看這次執行 ↗</a>` : ""}</div></li>`;
+}
+// One folded line per job for today's routine successes; every one stays reachable.
+function routineItem(group) {
+  const latest = group.events[0], attempts = group.key === "official_attempts";
+  const summary = attempts ? `${group.title} · 今天 ${group.events.length} 款` : `${group.title} · 今天 ${group.events.length} 次例行執行完成`;
+  const entries = group.events.map(e => {
+    const text = esc(clockLabel(e.at) + (e.brief ? " " + e.brief : ""));
+    return e.url ? `<a href="${e.url}" target="_blank" rel="noopener noreferrer">${text}</a>` : `<span>${text}</span>`;
+  }).join(" · ");
+  return `<li class="timeline-event is-success is-routine" id="routine-${esc(group.key)}"><time class="event-time" datetime="${new Date(latest.at).toISOString()}">${clockLabel(latest.at)}</time><div class="event-card"><span class="event-state state-success">例行</span><details class="routine-group"><summary>${esc(summary)}</summary><p class="routine-runs">${entries}</p></details></div></li>`;
+}
 function renderEvents() {
   const events = eventHistory(state.queue, state.runs, state.growth, Date.now(), freshRepos());
-  $("eventTimeline").innerHTML = events.length ? events.map(e => `<li class="timeline-event is-${e.state}" id="${e.id}"><time class="event-time" datetime="${new Date(e.at).toISOString()}">${clockLabel(e.at)}</time><div class="event-card"><span class="event-state state-${e.state}">${({ success: "已完成", interrupted: "已中斷", running: "進行中", waiting: "等待", skipped: "已略過", unknown: "待確認" })[e.state]}</span><h3>${esc(e.title)}</h3><p>${esc(e.detail)}</p>${e.url ? `<a class="event-link" href="${e.url}" target="_blank" rel="noopener noreferrer">查看這次執行 ↗</a>` : ""}</div></li>`).join("") : '<li class="empty-state">今日執行紀錄尚未取得。原定排程不會被當成實際執行。</li>';
-  $("eventTimelineNote").textContent = "由新到舊呈現今日已觀測事件。實際查詢中斷會單獨記錄，即使 Actions 最後顯示成功。";
+  const groups = new Map();
+  for (const e of events) {
+    if (!e.routine) continue;
+    if (!groups.has(e.group)) groups.set(e.group, { key: e.group, title: e.group_title, events: [] });
+    groups.get(e.group).events.push(e);
+  }
+  const folded = [...groups.values()].map(routineItem);
+  const listed = events.filter(e => !e.routine).map(eventItem).concat(folded.length ? ['<li class="timeline-group-label">例行成功（依工作收合，時間為最近一次）</li>', ...folded] : []);
+  $("eventTimeline").innerHTML = listed.length ? listed.join("") : '<li class="empty-state">今日執行紀錄尚未取得。原定排程不會被當成實際執行。</li>';
+  $("eventTimelineNote").textContent = "由新到舊列出需要注意的事件與手動執行；例行成功依工作收合在最後，點開可看每一次。實際查詢中斷會單獨記錄，即使 Actions 最後顯示成功。";
 }
 function render() {
   const q = state.queue, fresh = freshRepos(), hero = dashboardState(q, state.runs, fresh);

@@ -150,7 +150,10 @@ function eventHistory(snapshot, runs, growth, now = Date.now(), freshness = {}) 
     if (priorSuccess && (s.state === "success" || run.conclusion === "skipped")) s = skippedAfterSuccess(priorSuccess);
     const active = ACTIVE.has(run.status);
     const batchSlot = instant(run.slot), scheduleAt = batchSlot === null ? null : batchSlot + (job.id === "twitch" ? 5 * 60000 : 0);
-    events.push({ id: "run-" + run.id, at: start || instant(run.created_at), job_id: job.id, state: s.state,
+    // Successful automatic runs (a scheduled slot, a data push, GitHub's fallback
+    // cron) are routine; the page folds them per job and lists the rest.
+    const routine = (scheduleAt !== null || run.event === "push" || run.event === "schedule") && ["success", "skipped"].includes(s.state);
+    events.push({ id: "run-" + run.id, at: start || instant(run.created_at), job_id: job.id, state: s.state, routine, group: job.id, group_title: job.name,
       title: job.name + " · " + s.text, detail: `${scheduleAt !== null ? "原定 " + clockLabel(scheduleAt) : run.event === "schedule" ? "GitHub 備援排程" : run.event === "push" ? "資料更新觸發" : "手動／其他入口"} → ${clockLabel(start || instant(run.created_at))} ${start ? "開始" : "建立／排隊"}${!active && end ? " → " + clockLabel(end) + " 結束" : ""}。${s.state === "success" ? "流程完成與實際資料成果分開核對。" : ""}`, url: run.url });
   }
   for (const [index, e] of (snapshot?.events || []).entries()) {
@@ -158,6 +161,8 @@ function eventHistory(snapshot, runs, growth, now = Date.now(), freshness = {}) 
     const limited = e.http === 429 || /rate_limit/.test(String(e.status)), ok = e.status === "ok";
     const matched = runs.find(r => r.job_id === "steam_catchup" && (e.run_id ? r.id === String(e.run_id) : instant(r.started_at) !== null && at >= instant(r.started_at) && at <= instant(r.updated_at) + 60000));
     events.push({ id: "attempt-" + index, at, job_id: "steam_catchup", state: limited ? "interrupted" : ok ? "success" : "interrupted",
+      routine: ok, group: "official_attempts", group_title: "官方 Followers 查詢成功",
+      brief: `${e.name || "AppID " + e.appid}${num(e.official_followers) !== null ? "（" + Number(e.official_followers).toLocaleString("zh-TW") + "）" : ""}`,
       title: `${e.name || "Steam AppID " + e.appid} · ${limited ? "429 中斷查詢" : ok ? "官方查詢成功" : "官方查詢未完成"}`,
       detail: limited ? "本輪停止查詢，遊戲仍留在佇列。" : ok ? `已取得官方 Followers${num(e.official_followers) !== null ? "：" + Number(e.official_followers).toLocaleString("zh-TW") : ""}；是否收錄由資格流程判定。` : "保留實際錯誤，等待後續處理。",
       url: matched?.url || (/^[1-9]\d{0,19}$/.test(String(e.run_id)) ? runUrl(JOBS.find(j => j.id === "steam_catchup"), e.run_id) : null) });
@@ -165,7 +170,7 @@ function eventHistory(snapshot, runs, growth, now = Date.now(), freshness = {}) 
   const collection = growth?.collection, growthAt = instant(collection?.at);
   if (growthAt !== null && day(growthAt) === date) {
     const done = ["completed", "complete"].includes(collection.status), limited = collection.status === "rate_limited", partial = collection.status === "bounded_run";
-    events.push({ id: "growth-measurement", at: growthAt, job_id: "steam_growth", state: done ? "success" : partial ? "waiting" : "interrupted", title: "Steam 成長 · " + (limited ? "部分量測後遇到 429" : done ? "本輪量測完成" : partial ? "本輪時間範圍已到，部分完成" : "本輪量測未完成"), detail: `實際取得／重用 ${num(collection.measurements) ?? "未知"} 筆量測；這是量測時間，與前端檔案更新時間分開顯示。` });
+    events.push({ id: "growth-measurement", at: growthAt, job_id: "steam_growth", routine: false, state: done ? "success" : partial ? "waiting" : "interrupted", title: "Steam 成長 · " + (limited ? "部分量測後遇到 429" : done ? "本輪量測完成" : partial ? "本輪時間範圍已到，部分完成" : "本輪量測未完成"), detail: `實際取得／重用 ${num(collection.measurements) ?? "未知"} 筆量測；這是量測時間，與前端檔案更新時間分開顯示。` });
   }
   return events.sort((a, b) => b.at - a.at);
 }
