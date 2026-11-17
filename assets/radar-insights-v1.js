@@ -92,16 +92,32 @@
     }
     return [...days.values()].sort((a, b) => a.day.localeCompare(b.day));
   }
+  /* Accepted games are measured weekly (every 2 days in the last 14 days), so a
+     ranking compares the latest point with the one nearest to `span` days
+     earlier, within a tolerance, and scales the rate to exactly `span` days. */
+  const STALE_DAYS = 8;
+  const BASELINE_TOLERANCE = { 7: 3, 30: 7, 90: 10 };
+  const between = (from, to) => Math.round((Date.parse(to + "T12:00:00Z") - Date.parse(from + "T12:00:00Z")) / DAY);
+  function nearest(series, target, tolerance, before) {
+    let found = null, distance = Infinity;
+    for (const point of series) {
+      if (before && point.day >= before) continue;
+      const gap = Math.abs(between(point.day, target));
+      if (gap <= tolerance && gap < distance) { found = point; distance = gap; }
+    }
+    return found;
+  }
   function metric(history, span, today) {
     const series = points(history, today);
     const latest = series.at(-1);
     if (!latest) return { status: "missing", series };
-    if (latest.day < offset(today, -2)) return { status: "stale", latest, series };
-    const baseline = series.find(point => point.day === offset(latest.day, -span));
+    if (latest.day < offset(today, -STALE_DAYS)) return { status: "stale", latest, series };
+    const baseline = nearest(series, offset(latest.day, -span), BASELINE_TOLERANCE[span] ?? 0, latest.day);
     if (!baseline) return { status: "accumulating", latest, series };
+    const days = between(baseline.day, latest.day);
     const delta = latest.followers - baseline.followers;
-    return { status: "ready", latest, baseline, delta,
-      percent: baseline.followers > 0 ? delta / baseline.followers * 100 : null, series };
+    return { status: "ready", latest, baseline, delta, days,
+      percent: baseline.followers > 0 ? delta / baseline.followers * 100 * span / days : null, series };
   }
   // Followers are tracked through the release day; that measurement is final.
   const POST_RELEASE_DAYS = 0;
@@ -135,13 +151,17 @@
     const start = offset(end, -span);
     const days = Array.from({ length: span + 1 }, (_, index) => offset(start, index));
     const series = selected.map(game => {
+      const reach = BASELINE_TOLERANCE[span] ?? 0;
       const visible = game.history.filter(point => point.day >= start && point.day <= end);
+      const nearby = game.history.filter(point => point.day >= offset(start, -reach) && point.day <= end);
       const byDay = new Map(visible.map(point => [point.day, point]));
       const values = days.map(date => byDay.get(date)?.followers ?? null);
       const daily = values.map((value, index) => index > 0 && value !== null && values[index - 1] !== null
         ? value - values[index - 1] : null);
-      const baseline = byDay.get(start) || null;
-      const endPoint = byDay.get(end) || null;
+      // Weekly samples rarely fall on the exact days: use the latest point within
+      // a week of the end and the point nearest to the start, within tolerance.
+      const endPoint = [...visible].reverse().find(point => point.day >= offset(end, -7)) || null;
+      const baseline = endPoint ? nearest(nearby, start, reach, endPoint.day) : null;
       const delta = baseline && endPoint ? endPoint.followers - baseline.followers : null;
       const percent = delta !== null && baseline.followers > 0 ? delta / baseline.followers * 100 : null;
       return {

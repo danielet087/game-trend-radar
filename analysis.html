@@ -14,11 +14,11 @@
     <link rel="preconnect" href="https://shared.akamai.steamstatic.com" crossorigin />
     <link rel="preconnect" href="https://shared.fastly.steamstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
-  <script type="module" crossorigin src="/game-trend-radar/assets/app/analysis-B3SunFZf.js"></script>
+  <script type="module" crossorigin src="/game-trend-radar/assets/app/analysis-C1lQv4P6.js"></script>
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/contracts-CXfvy2kB.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/storage-BcgAUlou.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/followers-Czt0-Vco.js">
-  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-C-yrVbhg.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-CbrJSfMI.js">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/bootstrap-oTuMO7h7.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-C_gCAust.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/styles-CjRmT2h6.css">
@@ -56,7 +56,7 @@
           <p id="historyPlotEmpty" class="history-plot-empty" hidden></p>
           <div class="history-scrubber"><label for="historyCursor">檢視日期 <output id="historyCursorDate" for="historyCursor"></output></label><input id="historyCursor" type="range" min="0" max="30" step="1" value="30"></div>
           <div id="historyReadout" class="history-readout" aria-live="polite"></div>
-          <details class="history-method"><summary>歷史紀錄與計算方式</summary><p>每日排程取得官方 Steam Followers 後，保留實際量測時間；同一個台灣日期取最後一筆。重複發布資料不算新的量測。</p><p>期間淨增＝共同截止日關注數 − 共同比較起點關注數；成長率以起點人數為基準。每日淨增只在連續兩天都有實測時顯示。缺日保持空白、曲線斷開，起點為零時不計百分比。</p><p>各遊戲追蹤到上市當天，當天的量測就是最終關注數；停止追蹤後仍可選擇較早的截止日期，查看已保存的歷史。此頁提供各遊戲最近 100 筆日紀錄。這裡的關注數與 Steam 願望清單數不同。</p></details>
+          <details class="history-method"><summary>歷史紀錄與計算方式</summary><p>官方 Steam Followers 每週量測一次，上市前 14 天內每 2 天一次，上市當天量最後一次；保留實際量測時間，同一個台灣日期取最後一筆。重複發布資料不算新的量測。</p><p>期間淨增＝截止日前一週內最新一筆關注數 − 比較起點附近最接近的一筆；成長率以起點人數為基準。每日淨增只在連續兩天都有實測時顯示。缺日保持空白、曲線斷開，起點為零時不計百分比。</p><p>各遊戲追蹤到上市當天，當天的量測就是最終關注數；停止追蹤後仍可選擇較早的截止日期，查看已保存的歷史。此頁提供各遊戲最近 100 筆日紀錄。這裡的關注數與 Steam 願望清單數不同。</p></details>
         </div>
         <details class="comparison-reference"><summary>遊戲資料參考 <span>發售日期、語言與 TAG</span></summary>
           <div class="comparison-table-scroll" role="region" aria-label="遊戲資料比較表，可左右捲動" tabindex="0"><table class="comparison-table"><caption class="sr-only">所選遊戲目前的發售資訊與遊戲特色；每日歷史比較見上方</caption><thead id="comparisonHead"></thead><tbody id="comparisonBody"></tbody></table></div>

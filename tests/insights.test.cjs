@@ -16,12 +16,22 @@ test('daily observations use Taipei dates and the latest authentic measurement w
   assert.equal(I.day('2026-02-30'), null);
 });
 
-test('growth requires an exact baseline and a fresh latest measurement; missing is never zero', () => {
+test('growth uses the nearest weekly baseline within tolerance and a fresh latest point; missing is never zero', () => {
   const ready = I.metric([observation('2026-09-21', 6000), observation('2026-09-28', 6600)], 7, '2026-09-28');
   assert.equal(ready.status, 'ready'); assert.equal(ready.delta, 600); assert.equal(ready.percent, 10);
+  assert.equal(ready.days, 7);
   assert.equal(I.metric([], 7, '2026-09-28').status, 'missing');
-  assert.equal(I.metric([observation('2026-09-20', 6000), observation('2026-09-28', 6600)], 7, '2026-09-28').status, 'accumulating');
-  assert.equal(I.metric([observation('2026-09-18', 6000), observation('2026-09-25', 6600)], 7, '2026-09-28').status, 'stale');
+  // 8 days apart is within the 3-day tolerance and is scaled to exactly 7 days.
+  const late = I.metric([observation('2026-09-20', 6000), observation('2026-09-28', 6600)], 7, '2026-09-28');
+  assert.equal(late.status, 'ready'); assert.equal(late.days, 8); assert.equal(late.percent, 8.75);
+  assert.equal(I.metric([observation('2026-09-17', 6000), observation('2026-09-28', 6600)], 7, '2026-09-28').status, 'accumulating');
+  // The nearest point wins; a weekly series still ranks 6 days after its last point.
+  const weekly = I.metric([observation('2026-08-25', 5000), observation('2026-09-01', 5200),
+    observation('2026-09-22', 5600)], 30, '2026-09-28');
+  assert.equal(weekly.status, 'ready'); assert.equal(weekly.baseline.day, '2026-08-25');
+  assert.equal(weekly.days, 28); assert.equal(weekly.percent, 600 / 5000 * 100 * 30 / 28);
+  assert.equal(I.metric([observation('2026-09-12', 6000), observation('2026-09-19', 6600)], 7, '2026-09-28').status, 'stale');
+  assert.equal(I.metric([observation('2026-09-13', 6000), observation('2026-09-20', 6600)], 7, '2026-09-28').status, 'ready');
   const falling = I.metric([observation('2026-09-21', 6000), observation('2026-09-28', 5900)], 7, '2026-09-28');
   assert.equal(falling.delta, -100);
   assert.equal(I.metric([observation('2026-09-21', 0), observation('2026-09-28', 10)], 7, '2026-09-28').percent, null);
@@ -40,20 +50,24 @@ test('comparison URLs retain at most three unique valid app IDs', () => {
   assert.deepEqual(I.comparisonIds([1, '2', null, true, '3x']), [1, 2]);
 });
 
-test('comparison aligns different measurement dates to one exact shared window', () => {
+test('comparison aligns weekly measurements taken on different weekdays to one shared window', () => {
   const result = I.comparisonWindow([
     { appid: 1, date: '2026-10-01', history: [observation('2026-09-21', 100), observation('2026-09-28', 140)] },
     { appid: 2, date: '2026-10-01', history: [observation('2026-09-20', 200), observation('2026-09-27', 300)] },
+    { appid: 3, date: '2026-10-01', history: [observation('2026-09-14', 50), observation('2026-09-27', 80)] },
   ], 7, undefined, '2026-09-28');
   assert.equal(result.start, '2026-09-21'); assert.equal(result.end, '2026-09-28');
   assert.equal(result.days.length, 8);
   assert.deepEqual(result.series[0].values, [100, null, null, null, null, null, null, 140]);
   assert.equal(result.series[0].delta, 40); assert.equal(result.series[0].percent, 40);
   assert.equal(result.series[0].status, 'ready');
-  assert.equal(result.series[1].status, 'partial');
-  assert.equal(result.series[1].baseline, null); assert.equal(result.series[1].endPoint, null);
-  assert.equal(result.series[1].delta, null); assert.equal(result.series[1].percent, null);
+  // A day off at both ends is still the same week.
+  assert.equal(result.series[1].status, 'ready');
+  assert.equal(result.series[1].baseline.day, '2026-09-20'); assert.equal(result.series[1].endPoint.day, '2026-09-27');
+  assert.equal(result.series[1].delta, 100); assert.equal(result.series[1].percent, 50);
   assert.equal(result.series[1].observedDays, 1);
+  // A baseline a week too early is not reused.
+  assert.equal(result.series[2].status, 'partial'); assert.equal(result.series[2].baseline, null);
   assert.ok(result.series.every(series => series.daily.every(value => value === null)));
 });
 
@@ -82,9 +96,10 @@ test('comparison retains archived history through the release day inclusive', ()
   assert.equal(archived.series[0].trackUntil, '2026-08-24');
   assert.equal(archived.series[0].tracking, false);
   assert.equal(I.metric(games[0].history.slice(0, 2), 7, '2026-09-28').status, 'stale');
+  // The point after release is never shown; the release-day point still closes the window.
   const stopped = I.comparisonWindow(games, 7, '2026-08-25', '2026-09-28').series[0];
-  assert.equal(stopped.status, 'partial'); assert.equal(stopped.delta, null);
-  assert.equal(stopped.values.at(-1), null);
+  assert.equal(stopped.status, 'ready'); assert.equal(stopped.endPoint.day, '2026-08-24');
+  assert.equal(stopped.delta, 500); assert.equal(stopped.values.at(-1), null);
   assert.equal(I.comparisonWindow(games, 7, undefined, '2026-08-24').series[0].tracking, true);
 });
 

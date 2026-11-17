@@ -81,7 +81,7 @@ export function initInsightsPage(options = {}) {
     on($("growthMore"), "click", () => { state.limit += 25; renderGrowth(); });
     on(window, "popstate", () => {
       const next = new URLSearchParams(location.search);
-      state.span = [1, 7, 30].includes(Number(next.get("days"))) ? Number(next.get("days")) : 7;
+      state.span = [7, 30].includes(Number(next.get("days"))) ? Number(next.get("days")) : 7;
       state.scope = ["all", "future", "released"].includes(next.get("period")) ? next.get("period") : "all";
       $("growthSearch").value = next.get("q") || "";
       state.limit = 25; renderGrowth();
