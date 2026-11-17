@@ -1,0 +1,114 @@
+name: Deploy site to Pages
+run-name: "Deploy site to Pages | ${{ inputs.verify_live && 'verify live site' || 'deploy' }} | ${{ github.event_name }}"
+
+# Publishes the committed tree of main exactly as the branch deploy does
+# (git archive of one commit). Deploying through Actions lets a later step add
+# the high-churn Twitch views from the database instead of Git, so this
+# repository stops growing by tens of MB a day.
+#
+# Until the repository's Pages source is set to "GitHub Actions" the run only
+# builds and uploads the artifact; deploy-pages is skipped. verify_live builds
+# the commit the live site was built from and compares every file with what
+# Pages serves now.
+on:
+  workflow_dispatch:
+    inputs:
+      verify_live:
+        description: Compare the live site with the tree of the commit it was built from (no deploy)
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      deploy: ${{ steps.source.outputs.deploy }}
+    steps:
+      - name: Choose the commit to publish
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERIFY: ${{ inputs.verify_live && 'true' || 'false' }}
+        run: |
+          if [ "$VERIFY" = true ]; then
+            commit=$(gh api "repos/$GITHUB_REPOSITORY/pages/builds/latest" --jq .commit)
+          else
+            commit=$GITHUB_SHA
+          fi
+          [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::No commit to publish"; exit 1; }
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+          echo "Publishing $commit"
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.target.outputs.commit }}
+          persist-credentials: false
+      - name: Check the Pages source
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERIFY: ${{ inputs.verify_live && 'true' || 'false' }}
+        run: |
+          build_type=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type)
+          echo "Pages source: $build_type"
+          deploy=false
+          if [ "$build_type" = workflow ] && [ "$VERIFY" != true ]; then deploy=true; fi
+          echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
+      - name: Assemble the committed tree
+        env:
+          COMMIT: ${{ steps.target.outputs.commit }}
+        run: |
+          mkdir _site
+          git archive --format=tar "$COMMIT" | tar -x -C _site
+          expected=$(git ls-tree -r --name-only "$COMMIT" | wc -l)
+          actual=$(find _site -type f | wc -l)
+          bytes=$(du -sb _site | cut -f1)
+          echo "files=$actual (tree $expected) bytes=$bytes"
+          [ "$actual" -eq "$expected" ] || { echo "::error::Assembled tree differs from the commit"; exit 1; }
+          [ -f _site/index.html ] || { echo "::error::index.html missing"; exit 1; }
+          # Published Pages sites may be no larger than 1 GB.
+          [ "$bytes" -lt 1000000000 ] || { echo "::error::Site is larger than 1 GB"; exit 1; }
+      - name: Compare every file with the live site
+        if: inputs.verify_live
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMIT: ${{ steps.target.outputs.commit }}
+        run: |
+          python3 scripts/verify_pages_tree.py _site "https://danielet087.github.io/game-trend-radar" --report "$RUNNER_TEMP/report.json"
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/pages/builds/latest" --jq .commit)
+          : > "$RUNNER_TEMP/changed.txt"
+          if [ "$latest" != "$COMMIT" ]; then
+            echo "A newer deployment ($latest) went live during the comparison; its changed files are skipped."
+            git fetch --quiet --depth=1 origin "$latest"
+            git diff --name-only "$COMMIT" "$latest" > "$RUNNER_TEMP/changed.txt"
+          fi
+          python3 scripts/verify_pages_tree.py --evaluate "$RUNNER_TEMP/report.json" --skip-list "$RUNNER_TEMP/changed.txt" | tee "$RUNNER_TEMP/summary.json"
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
