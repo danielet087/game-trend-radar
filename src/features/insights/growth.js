@@ -27,7 +27,7 @@ export function createGrowthView(ctx, presentation) {
     row.dataset.appid = game.appid;
     row.append(node("span", "growth-rank", String(index + 1).padStart(2, "0")), cover(game));
     const copy = node("div", "growth-game-copy");
-    copy.append(gameLink(game), node("p", "", `${dateText(game.date)} 上市${game.date <= today ? " · 上市後追蹤中" : " · 未上市"}`));
+    copy.append(gameLink(game), node("p", "", `${dateText(game.date)} 上市${game.date <= today ? " · 今天上市，最終量測" : " · 未上市"}`));
     row.append(copy);
     const change = node("div", "growth-change" + (metric.delta < 0 ? " is-down" : ""));
     change.append(node("strong", "", percent(metric.percent)), node("small", "", `${state.span} 日成長率`));
