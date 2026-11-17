@@ -61,6 +61,7 @@ jobs:
     permissions:
       contents: read
       pages: read
+      deployments: read
     steps:
       - name: Choose the commit to publish
         id: target
@@ -68,9 +69,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERIFY: ${{ inputs.verify_live && 'true' || 'false' }}
         run: |
+          # The live site's commit: the newest github-pages deployment that finished.
+          served_commit() {
+            for id in $(gh api "repos/$GITHUB_REPOSITORY/deployments?environment=github-pages&per_page=10" --jq '.[].id'); do
+              state=$(gh api "repos/$GITHUB_REPOSITORY/deployments/$id/statuses?per_page=1" --jq '.[0].state')
+              if [ "$state" = success ]; then gh api "repos/$GITHUB_REPOSITORY/deployments/$id" --jq .sha; return; fi
+            done
+          }
           if [ "$VERIFY" = true ]; then
-            # The newest build may still be building; compare with the one being served.
-            commit=$(gh api "repos/$GITHUB_REPOSITORY/pages/builds?per_page=10" --jq '[.[] | select(.status == "built")][0].commit')
+            commit=$(served_commit)
           else
             commit=$GITHUB_SHA
           fi
@@ -103,7 +110,7 @@ jobs:
         run: |
           set -o pipefail
           python3 scripts/verify_pages_tree.py _site "https://danielet087.github.io/game-trend-radar" --report "$RUNNER_TEMP/report.json"
-          latest=$(gh api "repos/$GITHUB_REPOSITORY/pages/builds?per_page=10" --jq '[.[] | select(.status == "built")][0].commit')
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/deployments?environment=github-pages&per_page=1" --jq '.[0].sha')
           : > "$RUNNER_TEMP/changed.txt"
           if [ "$latest" != "$COMMIT" ]; then
             echo "A newer deployment ($latest) went live during the comparison; its changed files are skipped."
