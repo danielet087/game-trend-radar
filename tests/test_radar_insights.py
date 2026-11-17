@@ -293,6 +293,41 @@ class GrowthCoverageTests(unittest.TestCase):
         self.assertEqual(growth["collection"], collection)
         self.assertEqual(growth["games"][1]["history"], state["records"]["2"]["history"])
 
+    def scheduled_report(self, **row):
+        # 2026-10-11 Taipei; release 2026-11-01 is 21 days away, so weekly.
+        entry = {"appid": 2, "followers": 6400, "at": "2026-10-07T01:00:00Z", "release_date": "2026-11-01",
+                 "next_due_taipei": "2026-10-14", "source": "steam_community", **row}
+        return self.report(coverage_schema_version=3, unavailable=[], measurement_complete=True,
+                           published_resolvable_appids=[1, 2], scheduled=[entry])
+
+    def test_scheduled_games_count_as_covered_and_keep_their_real_point(self):
+        report = self.scheduled_report()
+        state = self.state(report)
+        collection = M.growth_collection(report, state, self.NOW)
+        self.assertTrue(collection["collection_complete"])
+        self.assertTrue(collection["measurement_complete"])
+        self.assertEqual(collection["coverage"], {"eligible": 2, "measured": 1, "scheduled": 1,
+                                                  "unavailable": 0, "pending": 0})
+        self.assertEqual(collection["scheduled_appids"], [2])
+        merged = M.update(None, catalog(game(1, release_start="2026-11-01"), game(2, release_start="2026-11-01")),
+                          observed_at=self.NOW.isoformat(),
+                          measurements=[*report["measurements"], *report["scheduled"]])
+        self.assertEqual(merged["records"]["2"]["history"][-1],
+                         {"at": "2026-10-07T01:00:00Z", "followers": 6400, "source": "steam_community"})
+
+    def test_a_due_or_tampered_scheduled_game_is_a_real_gap(self):
+        for row in [{"at": "2026-10-03T01:00:00Z", "next_due_taipei": "2026-10-10"},  # 8 days old: due
+                    {"next_due_taipei": "2026-10-20"}, {"release_date": "2026-10-11"},
+                    {"release_date": "2026-11-02"}, {"at": "2026-10-11T00:30:00Z"},
+                    {"followers": -1}, {"source": "third_party"}, {"appid": 1}]:
+            with self.subTest(row=row):
+                report = self.scheduled_report(**row)
+                result = M.growth_collection(report, self.state(report), self.NOW)
+                self.assertFalse(result["collection_complete"])
+                self.assertEqual(result["coverage"]["scheduled"], 0)
+        legacy = {**self.scheduled_report(), "coverage_schema_version": 2}
+        self.assertFalse(M.growth_collection(legacy, self.state(legacy), self.NOW)["collection_complete"])
+
     def test_retryable_or_expired_receipts_leave_a_real_pending_gap(self):
         bad_receipts = [self.receipt(status="api_forbidden", http=403),
                         self.receipt(attempted=False), self.receipt(api_result=1),

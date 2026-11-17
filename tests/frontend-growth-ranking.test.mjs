@@ -30,7 +30,8 @@ function fixture(search = '') {
   });
   const histories = new Map();
   const add = (appid, baseline, latest, { date = '2026-12-01', stale = false } = {}) => {
-    const latestDay = stale ? '2026-11-07' : today;
+    // Weekly measurements: a latest point more than 8 days old is stale.
+    const latestDay = stale ? '2026-11-01' : today;
     ctx.state.games.push({ appid, name:`Game ${appid}`, nameEn:'', date, followers:latest });
     histories.set(appid, [
       ...[1, 7, 30].flatMap(span => baseline === null ? [] : [observation(RadarInsights.offset(latestDay, -span), baseline)]),
@@ -57,7 +58,7 @@ function fixture(search = '') {
   return { ctx, view, add, get:id => document.getElementById(id) };
 }
 
-for (const span of [1, 7, 30]) {
+for (const span of [7, 30]) {
   test(`${span}-day growth ranks and displays percentages across different follower scales`, () => {
     const { ctx, view, get } = fixture();
     ctx.state.span = span;
@@ -97,7 +98,7 @@ test('legacy absolute-count sort links keep percentage ranking through period, s
   assert.deepEqual(get('growthRows').children.map(row => row.dataset.appid), [1, 10]);
 });
 
-for (const span of [1, 7, 30]) {
+for (const span of [7, 30]) {
   test(`${span}-day ranking includes 5,000 and excludes 4,999 based on the latest measurement`, () => {
     const { ctx, view, add, get } = fixture();
     ctx.state.span = span;

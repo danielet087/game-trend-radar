@@ -22,6 +22,27 @@ except ModuleNotFoundError:
 TAIPEI = timezone(timedelta(hours=8))
 # Followers are tracked through the release day; that measurement is final.
 POST_RELEASE_DAYS = 0
+# Accepted games are measured weekly, every 2 days in the last 14 days and on
+# the release day; the backend collector follows the same rule
+# (radar_backend/domain/follower_cadence.py) and reports the other games as
+# scheduled, each re-derived here before it counts as covered.
+FAR_INTERVAL_DAYS, NEAR_INTERVAL_DAYS, NEAR_WINDOW_DAYS = 7, 2, 14
+
+
+def cadence_due(release, last, today):
+    if last is None or last > today:
+        return True
+    if today >= release:
+        return last < release
+    interval = NEAR_INTERVAL_DAYS if (release - today).days <= NEAR_WINDOW_DAYS else FAR_INTERVAL_DAYS
+    return (today - last).days >= interval
+
+
+def cadence_next_due(release, last, today):
+    candidate = today + timedelta(days=1)
+    while not cadence_due(release, last, candidate):
+        candidate += timedelta(days=1)
+    return candidate
 NINTENDO_PLATFORMS = {"NS": 130, "NS2": 508}
 IGDB_PLATFORMS = {**NINTENDO_PLATFORMS, "PS5": 167}
 NINTENDO_GAME_TYPES = {"main_game", "standalone_expansion", "remake", "remaster", "expanded_game", "port"}
@@ -683,8 +704,9 @@ def growth_collection(run, state, now, *, publication_now=None):
         valid = valid and type(run["eligible"]) is int and original is not None and run["eligible"] == len(original)
     if resolvable is not None:
         valid = valid and resolvable <= current
+    version = run.get("coverage_schema_version")
     if versioned:
-        valid = (valid and type(run.get("coverage_schema_version")) is int and run["coverage_schema_version"] == 2
+        valid = (valid and type(version) is int and version in (2, 3)
                  and run.get("collection_date_taipei") == today.isoformat()
                  and generated is not None and generated <= coverage_at
                  and generated.astimezone(TAIPEI).date() == today)
@@ -702,6 +724,26 @@ def growth_collection(run, state, now, *, publication_now=None):
             continue
         if aid in current:
             measured.add(aid)
+    scheduled = set()
+    if "scheduled" in run and version != 3:
+        valid = False
+    for entry in (run.get("scheduled", []) if version == 3 else []):
+        aid = entry.get("appid") if isinstance(entry, dict) else None
+        at = stamp(entry.get("at")) if isinstance(entry, dict) else None
+        release = day(entry.get("release_date")) if isinstance(entry, dict) else None
+        record = state["records"].get(str(aid)) if type(aid) is int else None
+        last = at.astimezone(TAIPEI).date() if at else None
+        if (type(aid) is not int or aid <= 0 or aid in measured or aid in scheduled
+                or type(entry.get("followers")) is not int or entry["followers"] < 0
+                or entry.get("source", "steam_community") != "steam_community"
+                or at is None or at > now or release is None or release <= today
+                or record is None or day(record.get("release_date")) != release
+                or not last < today or cadence_due(release, last, today)
+                or entry.get("next_due_taipei") != cadence_next_due(release, last, today).isoformat()):
+            valid = False
+            continue
+        if aid in current:
+            scheduled.add(aid)
     unavailable = []
     unavailable_ids = set()
     invalid_unavailable = {}
@@ -722,7 +764,7 @@ def growth_collection(run, state, now, *, publication_now=None):
         evidenced = (entry.get("reason") == "official_group_not_found"
                      and "followers" not in entry and "at" not in entry
                      and unavailable_receipt(receipt))
-        if (not evidenced or aid in measured or aid in unavailable_ids
+        if (not evidenced or aid in measured or aid in scheduled or aid in unavailable_ids
                 or aid in (resolvable or set()) or aid in (checkpoint_resolvable or set())
                 or latest_changed):
             valid = False
@@ -730,10 +772,11 @@ def growth_collection(run, state, now, *, publication_now=None):
             continue
         unavailable.append(deepcopy(entry))
         unavailable_ids.add(aid)
-    missing = current - measured - unavailable_ids
+    covered = measured | scheduled
+    missing = current - covered - unavailable_ids
     if versioned:
         valid = (valid and type(run.get("measurement_complete")) is bool
-                 and run["measurement_complete"] == (measured == current))
+                 and run["measurement_complete"] == (covered == current))
     pending_by_id = {entry["appid"]: deepcopy(entry) for entry in run.get("pending", [])
                      if isinstance(entry, dict) and type(entry.get("appid")) is int
                      and entry["appid"] in missing}
@@ -748,15 +791,20 @@ def growth_collection(run, state, now, *, publication_now=None):
                 pending_by_id[aid]["group_resolution"] = rejected["group_resolution"]
     complete = (valid and not missing and run.get("errors", []) == [] and run.get("pending", []) == []
                 and run.get("collection_complete") is True and run.get("reason") == "completed")
-    measurement_complete = (valid and measured == current
-                            and run.get("measurement_complete", measured == current) is True)
+    measurement_complete = (valid and covered == current
+                            and run.get("measurement_complete", covered == current) is True)
+    coverage = {"eligible": len(current), "measured": len(measured)}
+    if version == 3:
+        coverage["scheduled"] = len(scheduled)
+    coverage.update(unavailable=len(unavailable_ids), pending=len(missing))
     collection = {"at": run.get("generated_at", now.isoformat()),
                   "status": run.get("reason", "interrupted"), "measurements": len(measured),
                   "measurement_complete": measurement_complete, "collection_complete": complete,
                   "measured_appids": sorted(measured), "unavailable": unavailable,
                   "pending": [pending_by_id[aid] for aid in sorted(pending_by_id)],
-                  "coverage": {"eligible": len(current), "measured": len(measured),
-                               "unavailable": len(unavailable_ids), "pending": len(missing)}}
+                  "coverage": coverage}
+    if version == 3:
+        collection["scheduled_appids"] = sorted(scheduled)
     for key in ("coverage_schema_version", "coverage_checked_at", "eligible", "eligible_appids", "collection_date_taipei",
                 "published_eligible_appids", "published_resolvable_appids", "requests", "reused",
                 "checkpoint_resolvable_appids", "checkpoint_group_resolutions",
@@ -793,8 +841,11 @@ def main():
     path = args.data_dir / "insights-state.json"
     run = load(args.measurements, {}) if args.measurements else {}
     measurements = run.get("measurements", [])
+    # Scheduled games carry their latest real official observation (possibly
+    # from the daily catchup); history keeps it like any other point.
+    observations = [*measurements, *(row for row in run.get("scheduled", []) if isinstance(row, dict))]
     state = update(load(path), load(args.data_dir / "catalog.json"),
-                   observed_at=observed, measurements=measurements,
+                   observed_at=observed, measurements=observations,
                    nintendo_catalog=load(args.data_dir / "nintendo_upcoming.json"),
                    nintendo_receipt=load(args.data_dir / "nintendo_refresh_status.json"),
                    origin_ledger=load(args.data_dir / "publication/activity_origins.json"))

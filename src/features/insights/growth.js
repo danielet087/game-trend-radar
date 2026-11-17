@@ -1,15 +1,18 @@
 export function growthCollectionNotice(run) {
   if (!run) return "";
   const coverage = run.coverage;
+  // Games not yet due under the weekly cadence are covered by their latest measurement.
+  const scheduled = coverage?.scheduled ?? 0;
   if (coverage && Number.isSafeInteger(coverage.eligible) && Number.isSafeInteger(coverage.measured)
       && Number.isSafeInteger(coverage.unavailable) && Number.isSafeInteger(coverage.pending)
-      && [coverage.eligible, coverage.measured, coverage.unavailable, coverage.pending].every(count => count >= 0)
-      && coverage.measured + coverage.unavailable + coverage.pending === coverage.eligible
+      && Number.isSafeInteger(scheduled)
+      && [coverage.eligible, coverage.measured, scheduled, coverage.unavailable, coverage.pending].every(count => count >= 0)
+      && coverage.measured + scheduled + coverage.unavailable + coverage.pending === coverage.eligible
       && (coverage.unavailable > 0 || coverage.pending > 0)) {
     const gaps = [];
     if (coverage.unavailable) gaps.push(`${coverage.unavailable} 款暫無官方 GroupID 可供量測`);
     if (coverage.pending) gaps.push(`${coverage.pending} 款等待後續重試`);
-    return `本輪已量測 ${coverage.measured}／${coverage.eligible} 款；${gaps.join("，")}。已保留有效歷史；缺漏不會計為零成長。`;
+    return `本輪已量測 ${coverage.measured + scheduled}／${coverage.eligible} 款；${gaps.join("，")}。已保留有效歷史；缺漏不會計為零成長。`;
   }
   if (run.status === "rate_limited") return "Steam 本次查詢受到限流，已保留前次量測，等待下一次排程更新。";
   if (["source_unavailable", "interrupted", "awaiting_group_resolution", "bounded_run", "incomplete_coverage"].includes(run.status)) {
