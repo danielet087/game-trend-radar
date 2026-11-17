@@ -360,3 +360,28 @@ test('a GitHub fallback cron run stands in for a missing Worker slot, and only f
   assert.equal(lane([insights], 'frontend_insights').slots[10].state, 'unknown');
   assert.match(eventHistory(queue(), [fallback], null, now).find(event => event.id === 'run-' + fallback.id).detail, /^GitHub 備援排程 → 11:13 開始 → 11:15 結束/);
 });
+
+test('a data-push insights run that was running at :17 covers that slot, and only for insights', () => {
+  const insights = (observed, at = now) => buildSlots('2026-10-03', observed, queue(), null, at).find(lane => lane.job.id === 'frontend_insights');
+  const push = maintenance('radar-insights.yml', 'game-trend-radar', null, { event: 'push', created_at: '2026-10-03T02:15:37Z', updated_at: '2026-10-03T02:18:40Z' });
+  assert.equal(push.slot, 'manual');
+  let lane = insights([push]);
+  assert.equal(lane.slots[10].state, 'success');
+  assert.equal(lane.slots[10].text, '流程完成（資料更新觸發的執行涵蓋此時段）');
+  assert.equal(lane.slots[10].run.id, push.id);
+  assert.equal(lane.slots[9].state, 'unknown');
+  assert.equal(lane.slots[11].state, 'unknown');
+  const early = maintenance('radar-insights.yml', 'game-trend-radar', null, { event: 'push', created_at: '2026-10-03T02:10:00Z', updated_at: '2026-10-03T02:16:59Z' });
+  assert.equal(insights([early]).slots[10].state, 'unknown', 'a run that ended before :17 did not cover it');
+  const dispatched = maintenance('radar-insights.yml', 'game-trend-radar', '2026-10-03T02:17:00Z');
+  lane = insights([push, dispatched]);
+  assert.equal(lane.slots[10].run.id, dispatched.id);
+  assert.equal(lane.slots[10].text, '流程完成');
+  const running = maintenance('radar-insights.yml', 'game-trend-radar', null, { event: 'push', created_at: '2026-10-03T02:15:37Z', status: 'in_progress', conclusion: null });
+  assert.equal(insights([running], Date.parse('2026-10-03T02:16:00Z')).slots[10].state, 'planned', 'a slot that has not come due is not covered');
+  assert.equal(insights([running], Date.parse('2026-10-03T02:20:00Z')).slots[10].text, '執行中（資料更新觸發的執行涵蓋此時段）');
+  const manualDaily = maintenance('steam-two-phase.yml', 'game-trend-radar-backend', null, { created_at: '2026-10-02T21:55:00Z', updated_at: '2026-10-02T22:20:00Z' });
+  assert.equal(buildSlots('2026-10-03', [manualDaily], queue(), null, now).find(lane => lane.job.id === 'steam_daily').slots[1].state, 'unknown',
+    'a manual daily discovery run does not prove the daily refresh');
+  assert.match(eventHistory(queue(), [push], null, now).find(event => event.id === 'run-' + push.id).detail, /^資料更新觸發 → 10:15 開始/);
+});

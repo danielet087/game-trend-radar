@@ -32,7 +32,7 @@ function renderSchedule() {
     const common = `class="schedule-slot is-${slot.state}" style="left:${(slot.at - start) / DAY * 100}%" title="${esc(label)}" aria-label="${esc(label)}"`;
     return slot.run?.url ? `<a ${common} href="${slot.run.url}" target="_blank" rel="noopener noreferrer"><span class="sr-only">${esc(label)}</span></a>` : `<button ${common} type="button" data-slot-note="${esc(label)}"><span class="sr-only">${esc(label)}</span></button>`;
   }).join("")}</div></div>`).join("");
-  $("scheduleCaption").textContent = `藍線為現在 ${clockLabel(now)}。圓點位置代表原定時段；點選可查看實際開始時間與 Actions。「Follower 回查盤點」顯示最近實際盤點回報的時間與今日筆數，盤點完成後由「官方 Followers」分批查詢。每日候選更新與 Steam 成長追蹤每 6 小時檢查，當日完整成功後略過後續時段。維護工作另保留 GitHub 原生排程作備援，備援執行會記在它涵蓋的原定時段；憑證到期檢查把四個儲存庫合成一點，點選可看各自結果。灰色過去時段代表尚未取得紀錄，不直接判定失敗。`;
+  $("scheduleCaption").textContent = `藍線為現在 ${clockLabel(now)}。圓點位置代表原定時段；點選可查看實際開始時間與 Actions。「Follower 回查盤點」顯示最近實際盤點回報的時間與今日筆數，盤點完成後由「官方 Followers」分批查詢。每日候選更新與 Steam 成長追蹤每 6 小時檢查，當日完整成功後略過後續時段。維護工作另保留 GitHub 原生排程作備援，備援執行會記在它涵蓋的原定時段；憑證到期檢查把四個儲存庫合成一點，點選可看各自結果。資料更新觸發的前端動態若在 :17 時還在跑，控制器不再另派，該時段記為那次執行。灰色過去時段代表尚未取得紀錄，不直接判定失敗。`;
 }
 function renderEvents() {
   const events = eventHistory(state.queue, state.runs, state.growth, Date.now(), freshRepos());
