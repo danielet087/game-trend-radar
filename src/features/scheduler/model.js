@@ -1,4 +1,4 @@
-import { HOUR, JOBS, ACTIVE, num, instant, day, dateLabel, clockLabel, runUrl } from "./primitives.js";
+import { HOUR, JOBS, LANES, ACTIVE, num, instant, day, dateLabel, clockLabel, runUrl } from "./primitives.js";
 import { queueGameState } from "./queue.js";
 import { recheckScheduleRow } from "./rechecks.js";
 function jobForRun(run, repo) {
@@ -62,21 +62,58 @@ function priorDailySuccess(job, runs, snapshot, growth, date, before, excludedId
 function skippedAfterSuccess(success) {
   return { state: "skipped", text: "今日已於 " + clockLabel(instant(success.updated_at)) + " 成功，略過後續檢查" };
 }
+// Maintenance workflows keep GitHub's own best-effort cron as a fallback. When the
+// Worker's run for a slot is missing, a fallback run stands in for the slot it
+// covers: the following hour for an hourly job, the Taiwan day for a daily one.
+function fallbackRun(job, runs, at, date) {
+  if (!job.fallbackCron) return null;
+  const hourly = job.hours.length === 24;
+  return runs.filter(r => {
+    const created = instant(r.created_at);
+    return r.job_id === job.id && r.event === "schedule" && created !== null &&
+      (hourly ? created >= at && created < at + HOUR : day(created) === date);
+  }).sort((a, b) => instant(a.created_at) - instant(b.created_at))[0] || null;
+}
+const COMBINED_ORDER = ["running", "interrupted", "unknown", "waiting", "planned", "success", "skipped"];
+// One dot for jobs sharing a lane: the most urgent member state, and every member's
+// result in the note. It links to a run only when exactly one member needs a look.
+function combinedSlot(parts) {
+  const states = parts.map(part => part.slot.state), texts = parts.map(part => part.slot.text);
+  const attention = parts.filter(part => part.slot.run && !["success", "skipped"].includes(part.slot.state));
+  return { at: parts[0].slot.at, hour: parts[0].slot.hour, minute: parts[0].slot.minute,
+    run: attention.length === 1 ? attention[0].slot.run : undefined,
+    state: COMBINED_ORDER.find(state => states.includes(state)),
+    text: new Set(texts).size === 1 ? `${parts.length} 個儲存庫皆為「${texts[0]}」` : parts.map(part => `${part.job.laneLabel}：${part.slot.text}`).join("；") };
+}
+function laneRows(rows) {
+  const lanes = [];
+  for (const row of rows) {
+    const lane = row.job.lane ? LANES[row.job.lane] : null;
+    if (!lane) { lanes.push(row); continue; }
+    let shared = lanes.find(entry => entry.job === lane);
+    if (!shared) lanes.push(shared = { job: lane, members: [] });
+    shared.members.push(row);
+  }
+  return lanes.map(row => !row.members ? row : { job: row.job, members: row.members.map(member => member.job),
+    slots: row.members[0].slots.map((slot, index) => combinedSlot(row.members.map(member => ({ job: member.job, slot: member.slots[index] })))) });
+}
 function buildSlots(date, runs = [], snapshot, growth, now = Date.now(), freshRepos = {}) {
   const midnight = Date.parse(date + "T00:00:00+08:00");
-  return JOBS.map(job => job.id === "steam_rechecks" ? recheckScheduleRow(job, date, snapshot, now) : ({ job, slots: job.hours.map(hour => {
+  return laneRows(JOBS.map(job => job.id === "steam_rechecks" ? recheckScheduleRow(job, date, snapshot, now) : ({ job, slots: job.hours.map(hour => {
     const at = midnight + hour * HOUR + job.minute * 60000;
     const runSlot = job.id === "twitch" ? at - 5 * 60000 : at;
     const matches = runs.filter(r => r.job_id === job.id && instant(r.slot) === runSlot).sort((a, b) => instant(b.created_at) - instant(a.created_at));
-    const run = matches[0];
+    const fallback = matches.length ? null : fallbackRun(job, runs, at, date);
+    const run = matches[0] || fallback || undefined;
     let status = run ? runState(run, snapshot, growth, freshRepos[job.repo] !== false) : at > now ? { state: "planned", text: "原定時段，尚未到期" } : { state: "unknown", text: "此時段尚未觀測到執行紀錄" };
+    if (fallback) status = { ...status, text: status.text + "（GitHub 備援排程）" };
     const priorSuccess = priorDailySuccess(job, runs, snapshot, growth, date, Math.min(now, run ? instant(run.created_at) : at), run?.id);
     if (priorSuccess && (!run || status.state === "success" || run.conclusion === "skipped")) status = skippedAfterSuccess(priorSuccess);
     if (!run && job.id === "twitch" && snapshot?.twitchReceipt?.collection_complete === true && instant(snapshot.twitchReceipt.target_slot) === midnight + hour * HOUR) {
       status = { state: "success", text: "完整量測已發布" };
     }
     return { at, hour, minute: job.minute, run, ...status };
-  }) }));
+  }) })));
 }
 function dashboardState(snapshot, runs, freshness, now = Date.now()) {
   if (!snapshot) return { headline: "佇列資料暫時無法讀取", detail: "保留已取得的執行紀錄；待查數量不填成 0。", state: "unknown" };
@@ -102,7 +139,7 @@ function eventHistory(snapshot, runs, growth, now = Date.now(), freshness = {}) 
     const active = ACTIVE.has(run.status);
     const batchSlot = instant(run.slot), scheduleAt = batchSlot === null ? null : batchSlot + (job.id === "twitch" ? 5 * 60000 : 0);
     events.push({ id: "run-" + run.id, at: start || instant(run.created_at), job_id: job.id, state: s.state,
-      title: job.name + " · " + s.text, detail: `${scheduleAt !== null ? "原定 " + clockLabel(scheduleAt) : "手動／其他入口"} → ${clockLabel(start || instant(run.created_at))} ${start ? "開始" : "建立／排隊"}${!active && end ? " → " + clockLabel(end) + " 結束" : ""}。${s.state === "success" ? "流程完成與實際資料成果分開核對。" : ""}`, url: run.url });
+      title: job.name + " · " + s.text, detail: `${scheduleAt !== null ? "原定 " + clockLabel(scheduleAt) : run.event === "schedule" ? "GitHub 備援排程" : "手動／其他入口"} → ${clockLabel(start || instant(run.created_at))} ${start ? "開始" : "建立／排隊"}${!active && end ? " → " + clockLabel(end) + " 結束" : ""}。${s.state === "success" ? "流程完成與實際資料成果分開核對。" : ""}`, url: run.url });
   }
   for (const [index, e] of (snapshot?.events || []).entries()) {
     const at = instant(e.at); if (at === null || day(at) !== date) continue;

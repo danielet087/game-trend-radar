@@ -100,7 +100,7 @@ node --test tests/*.test.cjs
 
 `radar-insights.yml` 每小時第 17 分由既有 [Cloudflare 排程控制器](https://github.com/danielet087/game-trend-radar-twitch-backend/tree/main/scheduler/cloudflare) 透過 `workflow_dispatch` 觸發；原 GitHub `schedule` 已移除。`target_slot` 與 `trigger_source=cloudflare` 會出現在執行名稱，供核對來源與原定時段。必要的資料更新 push、手動入口與 concurrency 保留。
 
-排程觀測只透過 [scheduler.html 的直接網址](https://danielet087.github.io/game-trend-radar/scheduler.html) 查看，首頁與導覽不提供入口。頁面以台灣時間顯示七項工作的時間軸、實際執行／429 中斷、下一批與完整待查遊戲、暫停原因，分別標示資料更新時間。`noindex,nofollow` 供搜尋引擎參考，頁面仍為公開網址。
+排程觀測只透過 [scheduler.html 的直接網址](https://danielet087.github.io/game-trend-radar/scheduler.html) 查看，首頁與導覽不提供入口。頁面以台灣時間顯示資料工作的九條軌道（含 Follower 回查盤點），以及「維護工作」區的整體健康檢查、Twitch 歷史封存、資料庫每日清理與合成一條的四個儲存庫憑證到期檢查（一點代表四次檢查，點選可看各自結果），Cloudflare 排程控制器派發的工作都在時間軸上；另列實際執行／429 中斷、下一批與完整待查遊戲、暫停原因，分別標示資料更新時間。維護工作保留 GitHub 原生排程作備援，控制器的執行缺席時，備援執行會記在它涵蓋的原定時段。執行紀錄只讀今日（台灣時間）建立的 Actions：每 5 分鐘讀最新 100 筆，當天超過一頁時，較早的部分沿用快取，最多每 30 分鐘或仍有執行中工作時再讀一次。`noindex,nofollow` 供搜尋引擎參考，頁面仍為公開網址。
 
 IGDB 主機工作在同一時間軸列出每日台灣 08:30 的既有 `collect-nintendo.yml` 執行，名稱顯示「IGDB 主機新作」。控制器仍使用原 `nintendo_daily` 工作 ID、原 Cron 與既有 Secrets；PS5 放入同一收集與發布流程，不增設另一套排程。頁面另讀取 `nintendo_refresh_status.json` 的實際候選、公開與待處理數，以及收集與發布時間；這些數量不計入 Steam Followers 待查佇列，缺少回條時保留未知。
 
