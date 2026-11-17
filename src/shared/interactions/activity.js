@@ -1,4 +1,5 @@
-export function createActivity({ insights: I, storage, motion, helpers }) {
+// `motion` below is the ticker's own update function; the shared preference is motionState.
+export function createActivity({ insights: I, storage, motion: motionState, helpers }) {
 const { make } = helpers;
   const ticker = document.getElementById("activityTicker");
   if (!ticker) return;
@@ -41,7 +42,7 @@ const { make } = helpers;
     track.lastElementChild?.remove();
   }
   function canFlip() {
-    return !!motion?.enabled && featured.length > 1 && typeof track.animate === "function" &&
+    return !!motionState?.enabled && featured.length > 1 && typeof track.animate === "function" &&
       !manualPause && !document.hidden && !dialog.open && !ticker.matches(":hover, :focus-within");
   }
   function schedule() {
@@ -66,7 +67,7 @@ const { make } = helpers;
     }, () => {});
   }
   function motion() {
-    const animated = !!motion?.enabled && featured.length > 1 && typeof track.animate === "function";
+    const animated = !!motionState?.enabled && featured.length > 1 && typeof track.animate === "function";
     ticker.classList.toggle("ticker-static", !animated);
     ticker.classList.toggle("ticker-paused", manualPause);
     pause.disabled = !animated;

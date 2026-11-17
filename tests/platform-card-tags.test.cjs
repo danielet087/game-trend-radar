@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const D = require('../assets/radar-data-v1.js');
+const D = require('../src/domain/index.mjs').RadarData;
 
 const platform = id => ({ id, ...(id === 130 ? { code: 'NS' } : id === 508 ? { code: 'NS2' } : {}), name: `Platform ${id}` });
 const raw = (changes = {}) => ({ id: 'igdb:1', igdb_id: 1, name_en: 'Game', hypes: 40, sexual_content_screened: true,

@@ -3,24 +3,14 @@ const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
 const vm = require('node:vm');
-const D = require('../assets/radar-data-v1.js');
-const R = require('../assets/radar-discovery-v1.js');
-const profile = readFileSync(join(__dirname, '..', 'assets/radar-game-detail-v1.js'), 'utf8');
+const D = require('../src/domain/index.mjs').RadarData;
+const R = require('../src/features/discovery/index.js').RadarDiscovery;
+const { FakeElement: Element, createDocument, vueGlobals } = require('./support/fake-dom.cjs');
+const { bundle } = require('./support/bundle.cjs');
 const html = readFileSync(join(__dirname, '..', 'game.html'), 'utf8');
+// The shipped detail page (src/features/detail), bundled once and run as a fresh page per display.
+const profile = bundle('src/features/detail/index.js', 'RadarDetail');
 
-class Element {
-  constructor(tag = 'div') { this.tagName = tag; this.dataset = {}; this.style = {}; this.attributes = {}; this.children = []; this.listeners = {}; this.hidden = false; this._text = ''; }
-  set textContent(value) { this._text = String(value ?? ''); this.children = []; }
-  get textContent() { return this._text + this.children.map(child => child.textContent || '').join(''); }
-  setAttribute(key, value) { this.attributes[key] = String(value); }
-  removeAttribute(key) { delete this.attributes[key]; }
-  addEventListener(key, listener) { this.listeners[key] = listener; }
-  append(...children) { this.children.push(...children); }
-  replaceChildren(...children) { this._text = ''; this.children = children; }
-  remove() {}
-  querySelector(selector) { return selector === '[data-save-label]' ? this.saveLabel : this.children.find(child => child.tagName === selector) || null; }
-  get classList() { return { add() {}, remove() {} }; }
-}
 function sample(overrides = {}) {
   return {
     schema_version: 1, generated_at: '2026-10-03T15:56:37Z',
@@ -36,43 +26,53 @@ function sample(overrides = {}) {
   };
 }
 async function display(search, nintendo = sample(), catalog = null, stored = [], options = {}) {
-  const elements = new Map([...html.matchAll(/id="([^"]+)"/g)].map(match => [match[1], new Element()]));
-  for (const id of ['gameSave', 'gameSaveMobile']) elements.get(id).saveLabel = new Element('span');
+  const elements = new Map([...html.matchAll(/id="([^"]+)"/g)].map(match => {
+    const element = new Element(); element.id = match[1]; return [match[1], element];
+  }));
+  for (const id of ['gameSave', 'gameSaveMobile']) {
+    const label = new Element('span'); label.setAttribute('data-save-label', ''); elements.get(id).append(label);
+  }
   elements.get('allRelatedTags').dataset.tag = '';
   const storage = new Map([['game-trend-radar:saved:v1', JSON.stringify(stored)]]);
   const savedCount = new Element('span');
   const calls = { steam: 0, nintendo: 0, sources: 0 };
-  const document = {
-    body: new Element('body'), documentElement: new Element('html'), referrer: '', title: '',
-    getElementById: id => elements.get(id), createElement: tag => new Element(tag),
+  const document = createDocument({
+    getElementById: id => elements.get(id) || null,
     querySelectorAll: selector => selector === '[data-game-save]' ? [elements.get('gameSave'), elements.get('gameSaveMobile')]
       : selector === '[data-game-steam]' ? [elements.get('gameSteam'), elements.get('gameSteamMobile')]
       : selector === '[data-saved-count]' ? [savedCount]
-      : selector === '.game-tag-panel .tag-option' ? [elements.get('allRelatedTags')] : [],
-  };
-  const window = {
-    RadarData: { ...D, todayInTaipei: () => '2026-10-04' }, RadarDiscovery: R,
-    RadarStorage: {
-      loadNintendo: async () => {
-        calls.nintendo++;
-        if (options.nintendoFailure) throw new Error('Nintendo data unavailable');
-        if (options.nintendoPending) return options.nintendoPending;
-        return nintendo;
-      },
-      loadSources: async () => { calls.sources++; return { catalog, preview: null }; },
-      loadGame: async () => { calls.steam++; return catalog?.games?.[0] || null; },
+      : selector === '.game-tag-panel .tag-option' ? [elements.get('allRelatedTags')]
+      : selector === '#gameTags button' ? elements.get('gameTags').querySelectorAll('button') : [],
+    dispatchEvent() { return true; },
+  });
+  const localStorage = { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) };
+  const sessionStorage = { getItem: () => null, setItem() {} };
+  const location = { search, origin: 'https://example.test', href: `https://example.test/game.html${search}` };
+  const window = { localStorage, sessionStorage, location, addEventListener() {}, removeEventListener() {} };
+  const radarStorage = {
+    loadNintendo: async () => {
+      calls.nintendo++;
+      if (options.nintendoFailure) throw new Error('Nintendo data unavailable');
+      if (options.nintendoPending) return options.nintendoPending;
+      return nintendo;
     },
-    RadarArtwork: { load: (_img, _game, callbacks = {}) => callbacks.onExhausted?.() },
-    addEventListener() {},
+    loadSources: async () => { calls.sources++; return { catalog, preview: null }; },
+    loadGame: async () => { calls.steam++; return catalog?.games?.[0] || null; },
+    readJSON: async () => null,
   };
   const context = vm.createContext({
-    document, window, location: { search, origin: 'https://example.test', href: `https://example.test/game.html${search}` },
-    localStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
-    sessionStorage: { getItem: () => null }, URL, URLSearchParams, Intl, Date, Number, Set, Map,
-    setTimeout: () => 0, clearTimeout() {}, console: { error() {} },
+    document, window, location, localStorage, sessionStorage, URL, URLSearchParams, Intl, Date, Number, Set, Map,
+    setTimeout: () => 0, clearTimeout() {}, queueMicrotask, console: { error() {}, warn() {} },
+    CustomEvent: class CustomEvent { constructor(type, init = {}) { this.type = type; this.detail = init.detail; } },
+    ...vueGlobals,
   });
-  vm.runInContext(profile, context);
-  await new Promise(resolve => setImmediate(resolve));
+  vm.runInContext(await profile, context);
+  context.RadarDetail.initGameDetail({
+    document, window, location, data: { ...D, todayInTaipei: () => '2026-10-04' }, today: '2026-10-04',
+    storage: radarStorage, discovery: R,
+    artwork: { load: (_img, _game, callbacks = {}) => callbacks.onExhausted?.() },
+  });
+  for (let turn = 0; turn < 10; turn++) await new Promise(resolve => setImmediate(resolve));
   return { elements, document, calls, storage, savedCount };
 }
 

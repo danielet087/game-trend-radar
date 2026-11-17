@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const I = require('../assets/radar-insights-v1.js');
+const I = require('../src/features/insights/metrics.js').RadarInsights;
 const observation = (date, followers, source = 'steam_community') => ({ at: date + 'T01:00:00Z', followers, source });
 
 test('daily observations use Taipei dates and the latest authentic measurement without filling gaps', () => {

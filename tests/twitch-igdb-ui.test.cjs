@@ -3,7 +3,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const read = name => fs.readFileSync(path.join(__dirname,'..',name),'utf8');
-const ui = read('assets/radar-twitch-v1.js');
+// The shipped Twitch page splits its interface across these modules.
+const ui = ['presentation.js','cards.js','state.js','render.js','index.js']
+  .map(file => read(path.join('src/features/twitch',file))).join('\n');
 const html = read('twitch.html');
 
 test('IGDB is the only rendered release-date signal and evidence source', () => {
@@ -26,5 +28,5 @@ test('history, median metrics and single-column IGDB styles are retained', () =>
   assert.match(ui,/body\.append\(evidence\(g\)\)/);
   assert.match(html,/<script type="module"[^>]*src="\/game-trend-radar\/assets\/app\/twitch-/);
   assert.match(read('src/pages/entries/twitch.ts'),/\.\.\/features\/twitch\/igdb\.css/);
-  assert.match(read('assets/radar-twitch-igdb-v1.css'),/grid-template-columns:minmax\(0,1fr\)/);
+  assert.match(read('src/features/twitch/igdb.css'),/grid-template-columns:minmax\(0,1fr\)/);
 });

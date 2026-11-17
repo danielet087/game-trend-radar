@@ -77,7 +77,7 @@ TAG 僅使用已公開的欄位，不從類型推測。詳細頁推薦依共同 
 
 ## 維護
 
-網站頁面由 Vite 從 `src/` 建置成根目錄的 HTML 與 `assets/app/`。`assets/` 裡剩下的 `radar-*-v1`／`v2` 舊檔（資料、儲存、封面、遊玩卡片、詳細頁、探索等）已經沒有頁面載入，只剩舊的單元測試在讀；舊版 UI/list/date 程式與沒人引用的舊檔已於 2026-11-17 移除。
+網站頁面由 Vite 從 `src/` 建置成根目錄的 HTML 與 `assets/app/`。Vite 之前的舊版程式與樣式已於 2026-11-17 全部移除，`assets/` 只留 `radar-mark.svg` 與 `radar-pattern.svg`；單元測試直接測 `src/` 的模組。
 
 ```sh
 python -m http.server 8000

@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const D = require('../assets/radar-data-v1.js');
+const D = require('../src/domain/index.mjs').RadarData;
 const steam = (changes = {}) => ({
   appid: 3161310, name_en: 'Hela', name_zh_tw: 'Hela：鼠鼠奇旅', followers: 39021,
   release_start: '2026-12-01', language_support: { tchinese: true, schinese: true },

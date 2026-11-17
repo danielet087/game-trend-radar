@@ -1,21 +1,23 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { readFileSync } = require("node:fs");
-const D = require("../assets/radar-data-v1.js");
-const from = (path) => readFileSync(
-  require("node:path").join(__dirname, "..", path), "utf8",
-);
-const browse = from("assets/radar-play-v2.js");
-const profile = from("assets/radar-game-detail-v1.js");
-const styles = from("assets/radar-play-v2.css");
-const profileStyles = from("assets/radar-game-detail-v1.css");
+const { readFileSync, readdirSync } = require("node:fs");
+const { join } = require("node:path");
+const D = require("../src/domain/index.mjs").RadarData;
+const from = (path) => readFileSync(join(__dirname, "..", path), "utf8");
+const folder = (path) => readdirSync(join(__dirname, "..", path))
+  .filter(name => /\.(?:js|ts)$/.test(name)).map(name => from(join(path, name))).join("\n");
+// The shipped catalog card and detail page modules.
+const card = from("src/features/catalog/GameCard.ts");
+const browse = folder("src/features/catalog");
+const profile = folder("src/features/detail");
+const styles = from("src/features/catalog/cards.css");
+const profileStyles = from("src/features/detail/styles.css");
 
 test("card surface opens detail; separate visible Steam link opens externally; save remains independent", () => {
-  assert.match(browse, /detailLink\(game, "card-detail-link"(?:,|\))/);
-  assert.match(browse, /steam = externalLink\(storeGame, "steam-store-link"(?:,|\))/);
-  assert.match(browse, /steam\.textContent = "Steam 商店"/);
-  assert.match(browse, /a\.target = "_blank"/);
-  assert.match(browse, /a\.rel = "noopener noreferrer"/);
+  assert.match(card, /detailAttributes = \{ href: D\.detailURL\(game\)/);
+  assert.match(card, /h\('a', \{ class: 'card-detail-link', tabindex: -1, \.\.\.detailAttributes \}\)/);
+  assert.match(card, /class: 'steam-store-link', href: storeGame\.link, target: '_blank', rel: 'noopener noreferrer'/);
+  assert.match(card, /'Steam 商店'/);
   assert.match(styles, /\.game-card \.card-detail-link \{[\s\S]*?z-index: 1;/);
   assert.match(styles, /\.game-card \.steam-store-link \{[\s\S]*?z-index: 5;/);
   assert.match(styles, /\.game-card \.save-button \{[\s\S]*?z-index: 4;/);
@@ -38,11 +40,13 @@ test("detail reads published game metadata; no invented genres or separate Follo
     assert.match(html, new RegExp('id="' + id + '"'));
   }
   assert.match(profile, /D\.datasets\(official, preview, nintendo\)/);
-  assert.match(from("assets/radar-storage-v2.js"), /raw\.githubusercontent\.com\/danielet087\/game-trend-radar\/main\/data\//);
+  assert.match(from("src/data/storage.ts"), /raw\.githubusercontent\.com\/danielet087\/game-trend-radar\/main\/data\//);
   assert.match(profile, /data\.games, \.\.\.data\.recent/);
   assert.match(profile, /\$\("gameSteam"\)\.href = game\.link/);
-  assert.match(from("assets/radar-artwork-v1.js"), /game\.artSources/);
-  assert.match(profile, /localStorage\.setItem\(storageKey/);
+  assert.match(from("src/shared/artwork.js"), /game\.artSources/);
+  // Saving goes through the shared favorites store, which persists to localStorage.
+  assert.match(profile, /from '\.\.\/\.\.\/shared\/state\/favorites\.ts'/);
+  assert.match(from("src/shared/state/favorites.ts"), /localStorage\.setItem\(SAVED_STORAGE_KEY/);
   assert.match(profileStyles, /@media \(max-width: 640px\)/);
   assert.doesNotMatch(profile, /group\/|members\?|followers\.xml|api\/appdetails/);
 });
@@ -57,6 +61,6 @@ test("detail URL uses only verified positive integer AppID", () => {
     assert.equal(game.link, "https://store.steampowered.com/app/" + id + "/");
     assert.equal(D.detailURL(game), "./game.html?appid=" + id);
   }
-  assert.match(browse, /link\.href = D\.detailURL\(game\)/);
-  assert.match(profile, /const appid = \/\^\[1-9\]\[0-9\]\{0,9\}\$\//);
+  assert.match(card, /href: D\.detailURL\(game\)/);
+  assert.match(profile, /\/\^\[1-9\]\[0-9\]\{0,9\}\$\/\.test\(value \|\| ''\)/);
 });

@@ -3,8 +3,7 @@ const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
 const vm = require('node:vm');
-const I = require('../assets/radar-insights-v1.js');
-const script = readFileSync(join(__dirname, '..', 'assets/radar-enhancements-v1.js'), 'utf8');
+const I = require('../src/features/insights/metrics.js').RadarInsights;
 const steam = (overrides = {}) => ({ appid: 42, type: 'added', name: 'Steam game', date: '2026-11-05', at: '2026-10-03T16:40:12Z', ...overrides });
 const nintendo = (overrides = {}) => ({ source: 'nintendo', igdb_id: 42, game_id: 'igdb:42', platforms: ['NS2'], type: 'added', name: 'Nintendo game', date: '2026-11-05', at: '2026-10-04T02:30:00Z', ...overrides });
 
@@ -56,11 +55,6 @@ test('missing or unknown activity reasons preserve valid history without guessin
       assert.equal(I.activityReason(event), '更新來源未記錄');
       assert.ok(I.activityURL(event));
     }
-  }
-  const { RadarInsights: insights } = await import('../src/features/insights/metrics.js');
-  for (const event of [steam(), steam({ update_reason: 'twitch_rankings' }), nintendo(), nintendo({ update_reason: 'unknown' })]) {
-    assert.equal(insights.activityReason(event), I.activityReason(event));
-    assert.deepEqual(insights.activityEvent(event), I.activityEvent(event));
   }
 });
 
@@ -148,7 +142,7 @@ class Element {
   showModal() { this.open = true; }
   close() { this.open = false; this.listeners.close?.(); }
 }
-async function display(events, animated = false, payloadOverrides = {}, modular = false) {
+async function display(events, animated = false, payloadOverrides = {}) {
   const elements = new Map(['activityTicker', 'activityViewport', 'activityTrack', 'activityPause', 'activityMore', 'activityDialog', 'activityList', 'activityClose'].map(id => [id, new Element()]));
   const frames = [], timeouts = [];
   if (animated) elements.get('activityTrack').animate = keyframes => { frames.push(keyframes); return { finished: Promise.resolve(), cancel() {} }; };
@@ -163,14 +157,13 @@ async function display(events, animated = false, payloadOverrides = {}, modular 
     localStorage: { getItem: () => null }, sessionStorage: { getItem: () => null },
     performance: { getEntriesByType: () => [] }, URL, setTimeout: callback => { timeouts.push(callback); return timeouts.length; },
     clearTimeout() {}, queueMicrotask, console });
-  if (modular) {
-    const source = readFileSync(join(__dirname, '..', 'src/shared/interactions/activity.js'), 'utf8')
-      .replace('export function createActivity', 'function createActivity');
-    vm.runInContext(source, context);
-    vm.runInContext(`createActivity({ insights: window.RadarInsights, storage: window.RadarStorage, motion: window.RadarMotion,
-      helpers: { make(tag, className, text) { const node = document.createElement(tag); if (className) node.className = className;
-        if (text !== undefined) node.textContent = text; return node; } } });`, context);
-  } else vm.runInContext(script, context);
+  // The shipped ticker module runs against the same minimal DOM.
+  const source = readFileSync(join(__dirname, '..', 'src/shared/interactions/activity.js'), 'utf8')
+    .replace('export function createActivity', 'function createActivity');
+  vm.runInContext(source, context);
+  vm.runInContext(`createActivity({ insights: window.RadarInsights, storage: window.RadarStorage, motion: window.RadarMotion,
+    helpers: { make(tag, className, text) { const node = document.createElement(tag); if (className) node.className = className;
+      if (text !== undefined) node.textContent = text; return node; } } });`, context);
   await new Promise(resolve => setImmediate(resolve));
   return { elements, frames, timeouts };
 }
@@ -220,27 +213,25 @@ test('daily Steam date changes retain the recorded cause rather than inferring i
   assert.equal(legacy.get('activityTrack').children[0].children[2].textContent, '更新來源未記錄');
 });
 
-for (const modular of [false, true]) {
-  test(`${modular ? 'modular' : 'legacy'} ticker and history visibly identify only the platforms of each date or launch`, async () => {
-    const input = [
-      nintendo({ type: 'release_date', previous_date: '2026-10-30', platforms: ['PS5', 'NS2', 'NS', 'NS2'], name: 'Shared date change', at: '2026-10-04T05:00:00Z' }),
-      steam({ type: 'release_date', previous_date: '2026-10-30', name: 'Steam date change', at: '2026-10-04T04:00:00Z' }),
-      nintendo({ platforms: ['NS'], name: 'NS launch', date: '2026-11-05', at: '2026-10-04T03:00:00Z' }),
-      nintendo({ platforms: ['NS2'], name: 'NS2 launch', date: '2026-12-01', at: '2026-10-04T02:00:00Z' }),
-      nintendo({ type: 'platform_added', platforms: ['PS5'], name: 'PS5 launch', at: '2026-10-04T01:00:00Z' }),
-    ];
-    const { elements: e } = await display(input, false, {}, modular);
-    const rows = e.get('activityList').children.map(item => item.children[0]);
-    const labels = rows.map(row => row.children.find(child => child.className === 'activity-kind activity-platform'));
-    assert.deepEqual(labels.map(label => label.textContent), ['NS／NS2／PS5', 'Steam', 'NS', 'NS2', 'PS5']);
-    assert.equal(e.get('activityTrack').children[0].children[3].textContent, 'NS／NS2／PS5');
-    assert.equal(rows[0].children[1].textContent, '日期更新');
-    assert.equal(rows[0].children[5].textContent, '2026/10/30 → 2026/11/05');
-    assert.equal(rows[2].children[5].textContent, '2026/11/05 上市');
-    assert.equal(rows[3].children[5].textContent, '2026/12/01 上市');
-    assert.match(rows[0].attributes['aria-label'], /NS／NS2／PS5/);
-  });
-}
+test('ticker and history visibly identify only the platforms of each date or launch', async () => {
+  const input = [
+    nintendo({ type: 'release_date', previous_date: '2026-10-30', platforms: ['PS5', 'NS2', 'NS', 'NS2'], name: 'Shared date change', at: '2026-10-04T05:00:00Z' }),
+    steam({ type: 'release_date', previous_date: '2026-10-30', name: 'Steam date change', at: '2026-10-04T04:00:00Z' }),
+    nintendo({ platforms: ['NS'], name: 'NS launch', date: '2026-11-05', at: '2026-10-04T03:00:00Z' }),
+    nintendo({ platforms: ['NS2'], name: 'NS2 launch', date: '2026-12-01', at: '2026-10-04T02:00:00Z' }),
+    nintendo({ type: 'platform_added', platforms: ['PS5'], name: 'PS5 launch', at: '2026-10-04T01:00:00Z' }),
+  ];
+  const { elements: e } = await display(input);
+  const rows = e.get('activityList').children.map(item => item.children[0]);
+  const labels = rows.map(row => row.children.find(child => child.className === 'activity-kind activity-platform'));
+  assert.deepEqual(labels.map(label => label.textContent), ['NS／NS2／PS5', 'Steam', 'NS', 'NS2', 'PS5']);
+  assert.equal(e.get('activityTrack').children[0].children[3].textContent, 'NS／NS2／PS5');
+  assert.equal(rows[0].children[1].textContent, '日期更新');
+  assert.equal(rows[0].children[5].textContent, '2026/10/30 → 2026/11/05');
+  assert.equal(rows[2].children[5].textContent, '2026/11/05 上市');
+  assert.equal(rows[3].children[5].textContent, '2026/12/01 上市');
+  assert.match(rows[0].attributes['aria-label'], /NS／NS2／PS5/);
+});
 
 test('vertical ticker still flips upward through only the latest eight valid mixed events', async () => {
   const events = Array.from({ length: 10 }, (_, index) => (index % 2 ? steam : nintendo)({
