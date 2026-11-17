@@ -54,6 +54,9 @@ test('failure streaks, Pages deployments and scheduled runs', () => {
   assert.equal(W.pagesProblems([run('failure', 1), run('cancelled', 1.5), run('failure', 2)]).length, 1);
   assert.deepEqual(W.pagesProblems([run('failure', 1), run('success', 2)]), []);
   assert.deepEqual(W.pagesProblems([run('failure', 1)]), []);
+  const actions = (conclusion, hours) => ({ ...run(conclusion, hours), name: 'Deploy site to Pages' });
+  assert.equal(W.pagesProblems([actions('failure', 1), actions('skipped', 1.2), run('failure', 2)]).length, 1);
+  assert.deepEqual(W.pagesProblems([actions('failure', 1), actions('success', 1.5), run('failure', 2)]), []);
   const [scheduled] = W.SCHEDULED;
   assert.equal(W.scheduledProblems([{ spec: scheduled, run: { conclusion: 'failure', created_at: hoursAgo(6) } }]).length, 1);
   assert.deepEqual(W.scheduledProblems([{ spec: scheduled, run: { conclusion: 'success', created_at: hoursAgo(6) } },

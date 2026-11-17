@@ -35,7 +35,10 @@ const RECEIPTS = [
 const SCHEDULED = [
   { repo: "game-trend-radar-backend", workflow: "storage-evidence-retention.yml", label: "資料庫每日清理" },
 ];
-const PAGES = "pages build and deployment";
+// The branch deploy's built-in workflow, and the Actions deploy that replaces
+// it once the Pages source is switched. A run of either that got as far as a
+// result counts; cancelled (superseded) and skipped runs do not.
+const PAGES = ["pages build and deployment", "Deploy site to Pages"];
 const MARKER = /<!-- radar-watchdog keys=(\[.*?\]) -->/;
 
 function taipei(ms) {
@@ -73,7 +76,8 @@ function streakProblems(counters) {
 }
 
 function pagesProblems(runs) {
-  const finished = runs.filter(run => run.name === PAGES && run.status === "completed" && run.conclusion !== "cancelled")
+  const finished = runs.filter(run => PAGES.includes(run.name) && run.status === "completed" &&
+      ["success", "failure"].includes(run.conclusion))
     .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
   if (finished.length < 2 || finished[0].conclusion !== "failure" || finished[1].conclusion !== "failure") return [];
   return [{ key: "pages", text: `GitHub Pages：最近兩次部署都失敗（${taipei(Date.parse(finished[0].created_at))}），網站停在舊版` }];
