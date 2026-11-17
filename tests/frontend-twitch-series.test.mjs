@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validIndex, validChunk, windowFor, monthsFor, seriesRows, detailHref, overviewQuery, csvRows } from '../src/features/twitch/series.js';
+import { validIndex, validChunk, validHeatChunk, heatPath, HEAT_PROJECTION, windowFor, monthsFor, seriesRows, detailHref, overviewQuery, csvRows } from '../src/features/twitch/series.js';
 import { valueOf } from '../src/features/twitch/chart.js';
 
 const hour = '2026-09-30T16:00:00Z', generated = '2026-09-30T16:12:00Z';
@@ -24,6 +24,18 @@ test('monthly history keeps observed zero, absent census and missing hour distin
   assert.equal(valueOf(rows[0], 'median'), 10);
   assert.match(csvRows(rows), /"已觀測","0","0","10"/);
   assert.match(csvRows(rows), /"未列入本次觀測","","",""/);
+});
+
+test('heat files are accepted only with the current projection and for the requested month', () => {
+  const heat = { ...chunk, projection: HEAT_PROJECTION, hours: { [hour]: { generated_at: generated, viewer_count: 0, streamer_count: 0 } } };
+  assert.equal(heatPath('42', '2026-10'), './data/twitch_series/42/2026-10-heat.json');
+  assert.equal(validHeatChunk(heat, '42', '2026-10'), true);
+  assert.equal(validHeatChunk(chunk, '42', '2026-10'), false);
+  assert.equal(validHeatChunk({ ...heat, projection: 'stream_heat_v0' }, '42', '2026-10'), false);
+  assert.equal(validHeatChunk(heat, '42', '2026-11'), false);
+  const start = Date.parse(hour);
+  assert.deepEqual(seriesRows(index, { '2026-10': heat }, '42', start, start + 3600000).map(row => [row.status, row.viewer_count]),
+    [['observed', 0], ['absent', null]]);
 });
 
 test('incomplete and unverifiable filtered medians never become valid measurements', () => {

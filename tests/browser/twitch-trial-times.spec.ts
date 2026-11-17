@@ -81,6 +81,22 @@ test(`shows an as-of-date trend and keeps the hourly comparison on the detail pa
   await page.route('**/data/twitch_series/1/2026-11.json', route => route.fulfill({ json:{
     schema_version:1, timezone:'Asia/Taipei', game_id:'1', month:'2026-11', hours,
   } }));
+  // The planning page reads the month's heat file and falls back to the full
+  // month when it is missing; each run covers one of the two paths.
+  const heatHours = Object.fromEntries(Object.entries(hours).map(([hour, row]: [string, any]) => [hour, {
+    generated_at:row.generated_at, viewer_count:row.viewer_count, streamer_count:row.streamer_count,
+    ...(row.audience_regions ? { audience_regions:{ zh:Object.fromEntries(Object.entries(row.audience_regions.zh)
+      .filter(([name]) => ['viewer_count', 'streamer_count', 'largest_stream_viewer_count', 'measurement_source'].includes(name))) } } : {}),
+  }]));
+  const servesHeat = historySource === 'closing view';
+  await page.route('**/data/twitch_series/1/2026-11-heat.json', route => servesHeat ? route.fulfill({ json:{
+    schema_version:1, timezone:'Asia/Taipei', game_id:'1', month:'2026-11', projection:'stream_heat_v1', hours:heatHours,
+  } }) : route.fulfill({ status:404, body:'{}' }));
+  const seriesRequests: string[] = [];
+  page.on('request', request => {
+    const match = /twitch_series\/1\/(2026-11(?:-heat)?\.json)/.exec(request.url());
+    if (match) seriesRequests.push(match[1]);
+  });
   const curve = { date:'2026-10-01', edition:'standard_store_date', genres:['Action'], daily:[3500,4000,300,200,100,90,80] };
   await page.route('**/data/twitch-launch-curves.json', route => route.fulfill({ json:{
     schema_version:1, generated_at:generated, genres:{ Action:'動作', Strategy:'策略' }, games:{
@@ -135,6 +151,9 @@ test(`shows an as-of-date trend and keeps the hourly comparison on the detail pa
   const storeOnly = page.locator('.tw-stream-game[data-game="2"]');
   await expect(storeOnly.locator('[data-region="global"] .tw-stream-reason')).toHaveText('尚無逐時紀錄');
   await expect(storeOnly.getByRole('link')).toHaveCount(0);
+  // Until the detail page opens, only the planning page has read the series.
+  expect(seriesRequests[0]).toBe('2026-11-heat.json');
+  expect(seriesRequests.includes('2026-11.json')).toBe(!servesHeat);
   const consoleProfile = page.locator('.tw-stream-game[data-game="3"]').getByRole('link', { name:'遊戲頁（遊戲 3）', exact:true });
   await expect(consoleProfile).toHaveAttribute('href', './game.html?igdb=303&date=2026-11-20');
   await expect(page.locator('.tw-stream-game[data-game="4"]').getByRole('link')).toHaveCount(0);
