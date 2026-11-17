@@ -43,7 +43,8 @@ jobs:
           VERIFY: ${{ inputs.verify_live && 'true' || 'false' }}
         run: |
           if [ "$VERIFY" = true ]; then
-            commit=$(gh api "repos/$GITHUB_REPOSITORY/pages/builds/latest" --jq .commit)
+            # The newest build may still be building; compare with the one being served.
+            commit=$(gh api "repos/$GITHUB_REPOSITORY/pages/builds?per_page=10" --jq '[.[] | select(.status == "built")][0].commit')
           else
             commit=$GITHUB_SHA
           fi
@@ -85,8 +86,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           COMMIT: ${{ steps.target.outputs.commit }}
         run: |
+          set -o pipefail
           python3 scripts/verify_pages_tree.py _site "https://danielet087.github.io/game-trend-radar" --report "$RUNNER_TEMP/report.json"
-          latest=$(gh api "repos/$GITHUB_REPOSITORY/pages/builds/latest" --jq .commit)
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/pages/builds?per_page=10" --jq '[.[] | select(.status == "built")][0].commit')
           : > "$RUNNER_TEMP/changed.txt"
           if [ "$latest" != "$COMMIT" ]; then
             echo "A newer deployment ($latest) went live during the comparison; its changed files are skipped."
