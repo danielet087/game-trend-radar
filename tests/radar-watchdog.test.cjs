@@ -10,12 +10,16 @@ function fakeGithub({ files = {}, dirs = {}, runs = [], scheduled = {}, issues =
   const calls = [];
   const notFound = () => Object.assign(new Error('Not Found'), { status: 404 });
   const github = { rest: {
-    repos: { async getContent({ repo, path, ref }) {
-      const id = `${repo}@${ref}:${path}`;
-      if (id in dirs) return { data: dirs[id] };
-      if (id in files) return { data: JSON.stringify(files[id]) };
-      throw notFound();
-    } },
+    repos: {
+      async getContent({ repo, path, ref, mediaType }) {
+        const id = `${repo}@${ref}:${path}`;
+        if (id in dirs) return { data: dirs[id] };
+        if (!(id in files)) throw notFound();
+        if (mediaType?.format === 'raw') return { data: JSON.stringify(files[id]) };
+        return { data: { type: 'file', sha: 'sha-1', content: Buffer.from(JSON.stringify(files[id])).toString('base64') } };
+      },
+      async createOrUpdateFileContents(args) { calls.push(['write', args]); },
+    },
     actions: {
       async listWorkflowRunsForRepo() { return { data: { workflow_runs: runs } }; },
       async listWorkflowRuns({ repo, workflow_id }) { return { data: { workflow_runs: scheduled[`${repo}/${workflow_id}`] || [] } }; },
@@ -88,8 +92,60 @@ test('opens one labelled issue, comments only on new problems and closes on reco
   assert.equal(fake.calls[1][1].state, 'closed');
 });
 
+const daysFromNow = days => new Date(NOW + days * 86400000).toISOString();
+const record = (credentials, checkedHoursAgo = 1) => ({ schema_version: 1, checked_at: hoursAgo(checkedHoursAgo), credentials });
+const healthyCredentials = () => Object.fromEntries(W.CREDENTIAL_REPOS.map(repo =>
+  [`${repo}@radar-notification-state:${W.CREDENTIAL_PATH}`, record([{ name: 'TURSO_AUTH_TOKEN', status: 'ok', expires_at: null }])]));
+
+test('credentials alert 14 days ahead, when expired or invalid, and when the check stops', () => {
+  const at = (credentials, hours) => W.credentialProblems([{ repo: 'r', value: record(credentials, hours) }], null, NOW);
+  assert.deepEqual(at([{ name: 'A', status: 'ok', expires_at: null }, { name: 'B', status: 'ok', expires_at: daysFromNow(15) },
+    { name: 'C', status: 'missing', expires_at: null }, { name: 'D', status: 'unknown', expires_at: null }]), []);
+  const [soon] = at([{ name: 'A', status: 'ok', expires_at: daysFromNow(13.5) }]);
+  assert.equal(soon.key, 'credential:r/A:expiring');
+  assert.match(soon.text, /r \/ `A`：將在 2026-11-30 06:50 到期（剩 14 天）/);
+  assert.equal(at([{ name: 'A', status: 'ok', expires_at: hoursAgo(1) }])[0].key, 'credential:r/A:expired');
+  assert.match(at([{ name: 'A', status: 'invalid', detail: 'http_401' }])[0].text, /已經失效（http_401）/);
+  assert.deepEqual(at([], 79), []);
+  assert.match(at([], 81)[0].text, /超過 3 天沒有更新/);
+  assert.match(W.credentialProblems([{ repo: 'r', value: null }], null, NOW)[0].text, /沒有有效結果/);
+  const scheduler = expires => W.credentialProblems([], { status: 'ok', expires_at: expires }, NOW);
+  assert.deepEqual(scheduler(null), []);
+  assert.deepEqual(scheduler(daysFromNow(30)), []);
+  assert.match(scheduler(daysFromNow(3))[0].text, /Cloudflare 排程器用的 GitHub token.*剩 3 天/);
+});
+
+test('only "none" or a full timestamp counts as a scheduler token report', () => {
+  assert.deepEqual(W.schedulerReport('none', NOW), { schema_version: 1, status: 'ok', expires_at: null, reported_at: '2026-11-16T10:50:00Z' });
+  assert.equal(W.schedulerReport('2026-12-01T00:00:00Z', NOW).expires_at, '2026-12-01T00:00:00Z');
+  for (const value of [undefined, '', 'unknown', '2026-12-01', 'none; rm -rf']) assert.equal(W.schedulerReport(value, NOW), null);
+});
+
+test('a scheduler report is stored only when it changes and later runs use the stored one', async () => {
+  const files = { ...healthyCredentials(), ...Object.fromEntries(W.RECEIPTS.map(item => [`game-trend-radar@main:${item.path}`, { [item.field]: hoursAgo(1) }])) };
+  const dispatched = soon => ({ ...context, payload: { inputs: { scheduler_token_expires_at: soon } } });
+  let fake = fakeGithub({ files });
+  await W.run({ ...fake, context: dispatched(daysFromNow(5)), core, now: NOW });
+  const write = fake.calls.find(([name]) => name === 'write')[1];
+  assert.equal(write.branch, 'radar-notification-state');
+  assert.equal(write.path, W.SCHEDULER_PATH);
+  assert.match(fake.calls.find(([name]) => name === 'create')[1].body, /Worker secret `GITHUB_ACTIONS_TOKEN`/);
+  files[`game-trend-radar@radar-notification-state:${W.SCHEDULER_PATH}`] = JSON.parse(Buffer.from(write.content, 'base64').toString('utf8'));
+  for (const run of [dispatched(daysFromNow(5)), context]) {
+    fake = fakeGithub({ files });
+    await W.run({ ...fake, context: run, core, now: NOW });
+    assert.deepEqual(fake.calls.filter(([name]) => name === 'write'), []);
+    assert.match(fake.calls.find(([name]) => name === 'create')[1].body, /剩 5 天/);
+  }
+  fake = fakeGithub({ files });
+  await W.run({ ...fake, context: dispatched('none'), core, now: NOW });
+  assert.equal(fake.calls.filter(([name]) => name === 'write').length, 1);
+  assert.equal(fake.calls.filter(([name]) => name === 'create').length, 0);
+});
+
 test('run reads receipts, counters and runs from GitHub', async () => {
   const files = Object.fromEntries(W.RECEIPTS.map(item => [`game-trend-radar@main:${item.path}`, { [item.field]: hoursAgo(1) }]));
+  Object.assign(files, healthyCredentials());
   files['game-trend-radar@main:data/twitch_collection_status.json'] = { completed_at: hoursAgo(5) };
   files['game-trend-radar-twitch-backend@radar-notification-state:workflows/collect.yml.json'] =
     { consecutive_failures: 4, updated_at: hoursAgo(1) };

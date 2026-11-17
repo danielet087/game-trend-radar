@@ -1,10 +1,12 @@
 "use strict";
 
-// Hourly health check for the whole radar pipeline. It only reads GitHub:
+// Hourly health check for the whole radar pipeline. It reads GitHub:
 // published receipts, the failure counters that scheduled-failure-notice keeps
-// in each repository, and recent workflow runs. Collector jobs use
-// continue-on-error, so their runs stay green; these signals do not.
-// Findings go to one labelled issue that is opened, updated and closed here.
+// in each repository, the daily credential expiry records, and recent workflow
+// runs. Collector jobs use continue-on-error, so their runs stay green; these
+// signals do not. Findings go to one labelled issue that is opened, updated and
+// closed here. Its only write besides the issue is the scheduler token's
+// reported expiry date on the notification-state branch.
 
 const LABEL = "radar-watchdog";
 const OWNER = "danielet087";
@@ -12,8 +14,16 @@ const FRONTEND = "game-trend-radar";
 const COUNTER_BRANCH = "radar-notification-state";
 const COUNTER_REPOS = ["game-trend-radar-backend", "game-trend-radar-twitch-backend",
   "game-trend-radar-content-backend", FRONTEND];
+// Each of these runs credential-expiry.yml daily and keeps the result here.
+const CREDENTIAL_REPOS = COUNTER_REPOS;
+const CREDENTIAL_PATH = "credentials/status.json";
+const SCHEDULER_PATH = "credentials/scheduler.json";
+const CREDENTIAL_WARN_DAYS = 14;
+// A daily check: two missed days stay quiet, the third alerts.
+const CREDENTIAL_STALE_HOURS = 80;
 const FAILURE_STREAK = 3;
 const HOUR = 3_600_000;
+const DAY = 24 * HOUR;
 // Each limit allows at least one missed run, so a single slow run stays quiet.
 const RECEIPTS = [
   { path: "data/twitch_collection_status.json", field: "completed_at", maxHours: 3, label: "Twitch 每小時收集" },
@@ -72,7 +82,64 @@ function pagesProblems(runs) {
 function scheduledProblems(latest) {
   return latest.filter(({ run }) => run && run.conclusion === "failure")
     .map(({ spec, run }) => ({ key: `scheduled:${spec.repo}/${spec.workflow}`,
-      text: `${spec.label}（${spec.repo} / \`${spec.workflow}\`）：最近一次排程執行失敗（${taipei(Date.parse(run.created_at))}）` }));
+      text: `${spec.label}（${spec.repo} / \`${spec.workflow}\`）：最近一次執行失敗（${taipei(Date.parse(run.created_at))}）` }));
+}
+
+function expiryProblem(expiresAt, now) {
+  const at = parseTime(expiresAt);
+  if (!Number.isFinite(at)) return null;
+  if (at <= now) return { kind: "expired", text: `已在 ${taipei(at)} 到期` };
+  if (at - now > CREDENTIAL_WARN_DAYS * DAY) return null;
+  return { kind: "expiring", text: `將在 ${taipei(at)} 到期（剩 ${Math.ceil((at - now) / DAY)} 天）` };
+}
+
+// Records come from credential-expiry.yml; they hold names and dates only.
+function credentialProblems(statuses, scheduler, now) {
+  const problems = [];
+  for (const { repo, value } of statuses) {
+    const checked = parseTime(value?.checked_at);
+    if (!value || value.schema_version !== 1 || !Number.isFinite(checked) || !Array.isArray(value.credentials)) {
+      problems.push({ key: `credentials:${repo}`, text: `${repo}：金鑰到期檢查（\`credential-expiry.yml\`）沒有有效結果` });
+      continue;
+    }
+    if (now - checked > CREDENTIAL_STALE_HOURS * HOUR) {
+      problems.push({ key: `credentials:${repo}`,
+        text: `${repo}：金鑰到期檢查最後一次在 ${taipei(checked)}，已超過 3 天沒有更新` });
+    }
+    for (const item of value.credentials) {
+      if (!item || typeof item.name !== "string") continue;
+      const name = `${repo} / \`${item.name}\``;
+      if (item.status === "invalid") {
+        problems.push({ key: `credential:${repo}/${item.name}:invalid`,
+          text: `${name}：已經失效${item.detail ? `（${item.detail}）` : ""}，要重新產生並更新這個 secret` });
+        continue;
+      }
+      const expiry = item.status === "ok" ? expiryProblem(item.expires_at, now) : null;
+      if (expiry) {
+        problems.push({ key: `credential:${repo}/${item.name}:${expiry.kind}`,
+          text: `${name}：${expiry.text}，要換新並更新這個 secret` });
+      }
+    }
+  }
+  const expiry = scheduler?.status === "ok" ? expiryProblem(scheduler.expires_at, now) : null;
+  if (expiry) {
+    problems.push({ key: `credential:scheduler/GITHUB_ACTIONS_TOKEN:${expiry.kind}`,
+      text: `Cloudflare 排程器用的 GitHub token（Worker secret \`GITHUB_ACTIONS_TOKEN\`）：${expiry.text}，` +
+        "到期後所有自動排程都會停，要換新並更新 Worker 的 secret" });
+  }
+  return problems;
+}
+
+// The Cloudflare scheduler reports its own token's expiry ("none" or a time)
+// with each hourly dispatch. GitHub-scheduled runs carry no report and use the
+// stored one, so the two kinds of run always agree.
+function schedulerReport(value, now) {
+  const text = typeof value === "string" ? value.trim() : "";
+  const at = parseTime(text);
+  if (text !== "none" && !Number.isFinite(at)) return null;
+  return { schema_version: 1, status: "ok",
+    expires_at: text === "none" ? null : new Date(at).toISOString().replace(".000Z", "Z"),
+    reported_at: new Date(now).toISOString().replace(/\.\d{3}Z$/, "Z") };
 }
 
 function issueBody(problems, now, owner = OWNER) {
@@ -92,8 +159,25 @@ async function readJSON(github, repo, path, ref) {
   return JSON.parse(typeof data === "string" ? data : Buffer.from(data).toString("utf8"));
 }
 
+async function readScheduler(github) {
+  try {
+    const { data } = await github.rest.repos.getContent({ owner: OWNER, repo: FRONTEND, path: SCHEDULER_PATH, ref: COUNTER_BRANCH });
+    if (!data || data.type !== "file" || typeof data.content !== "string" || !data.sha) throw new Error("invalid scheduler record");
+    return { value: JSON.parse(Buffer.from(data.content, "base64").toString("utf8")), sha: data.sha };
+  } catch (error) {
+    if (error.status === 404) return { value: null, sha: undefined };
+    throw error;
+  }
+}
+
+async function storeScheduler(github, report, sha) {
+  await github.rest.repos.createOrUpdateFileContents({ owner: OWNER, repo: FRONTEND, path: SCHEDULER_PATH,
+    branch: COUNTER_BRANCH, message: "Record the Cloudflare scheduler token's reported expiry",
+    content: Buffer.from(JSON.stringify(report, null, 2) + "\n").toString("base64"), ...(sha ? { sha } : {}) });
+}
+
 async function collect(github) {
-  const errors = [], receipts = [], counters = [], latest = [];
+  const errors = [], receipts = [], counters = [], latest = [], credentials = [];
   for (const spec of RECEIPTS) {
     try { receipts.push({ spec, value: await readJSON(github, FRONTEND, spec.path, "main") }); }
     catch (error) {
@@ -117,17 +201,29 @@ async function collect(github) {
   } catch (error) { errors.push(`Pages runs: ${error.message}`); }
   for (const spec of SCHEDULED) {
     try {
+      // Cloudflare dispatches these; GitHub's own schedule is only a fallback.
       const { data } = await github.rest.actions.listWorkflowRuns({ owner: OWNER, repo: spec.repo,
-        workflow_id: spec.workflow, event: "schedule", status: "completed", per_page: 1 });
+        workflow_id: spec.workflow, status: "completed", per_page: 1 });
       latest.push({ spec, run: data.workflow_runs[0] || null });
     } catch (error) { if (error.status !== 404) errors.push(`${spec.workflow}: ${error.message}`); }
   }
-  return { errors, receipts, counters, pages, latest };
+  for (const repo of CREDENTIAL_REPOS) {
+    try { credentials.push({ repo, value: await readJSON(github, repo, CREDENTIAL_PATH, COUNTER_BRANCH) }); }
+    catch (error) {
+      if (error.status === 404) credentials.push({ repo, value: null });
+      else errors.push(`${repo} credentials: ${error.message}`);
+    }
+  }
+  let scheduler = { value: null, sha: undefined };
+  try { scheduler = await readScheduler(github); }
+  catch (error) { errors.push(`scheduler token record: ${error.message}`); }
+  return { errors, receipts, counters, pages, latest, credentials, scheduler };
 }
 
 function findings(inputs, now) {
   return [...receiptProblems(inputs.receipts, now), ...streakProblems(inputs.counters),
-    ...pagesProblems(inputs.pages), ...scheduledProblems(inputs.latest)];
+    ...pagesProblems(inputs.pages), ...scheduledProblems(inputs.latest),
+    ...credentialProblems(inputs.credentials || [], inputs.scheduler?.value, now)];
 }
 
 async function report({ github, context, core, problems, errors, now }) {
@@ -166,10 +262,19 @@ async function report({ github, context, core, problems, errors, now }) {
 
 async function run({ github, context, core, now = Date.now() }) {
   const inputs = await collect(github);
+  const reported = schedulerReport(context.payload?.inputs?.scheduler_token_expires_at, now);
+  const stored = inputs.scheduler.value;
+  if (reported && (stored?.status !== reported.status || stored?.expires_at !== reported.expires_at)) {
+    // Store only changes; evaluate the fresh report even if storing fails.
+    try { await storeScheduler(github, reported, inputs.scheduler.sha); }
+    catch (error) { inputs.errors.push(`scheduler token record: ${error.message}`); }
+    inputs.scheduler = { value: reported, sha: undefined };
+  }
   const problems = findings(inputs, now);
   for (const problem of problems) core.info("Problem: " + problem.text);
   await report({ github, context, core, problems, errors: inputs.errors, now });
 }
 
-module.exports = { RECEIPTS, SCHEDULED, FAILURE_STREAK, LABEL, taipei, receiptProblems, streakProblems,
-  pagesProblems, scheduledProblems, issueBody, previousKeys, findings, report, run };
+module.exports = { RECEIPTS, SCHEDULED, FAILURE_STREAK, LABEL, CREDENTIAL_REPOS, CREDENTIAL_PATH, SCHEDULER_PATH,
+  CREDENTIAL_WARN_DAYS, taipei, receiptProblems, streakProblems, pagesProblems, scheduledProblems,
+  credentialProblems, schedulerReport, issueBody, previousKeys, findings, report, run };
