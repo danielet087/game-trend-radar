@@ -3,8 +3,9 @@ run-name: "Radar watchdog | slot=${{ inputs.target_slot || 'manual' }} | source=
 
 # Collector jobs use continue-on-error and only email after 100 failures, so a
 # green run can hide days of real failures. This hourly check reads published
-# receipts, the per-workflow failure counters and recent runs across all radar
-# repositories, then opens, updates or closes one labelled issue.
+# receipts, the per-workflow failure counters, the daily credential expiry
+# records and recent runs across all radar repositories, then opens, updates or
+# closes one labelled issue.
 # The Cloudflare scheduler dispatches it hourly; GitHub's own (best-effort)
 # schedule is kept so it can still notice when the Cloudflare scheduler stops.
 on:
@@ -22,11 +23,17 @@ on:
         required: false
         type: string
         default: manual
+      scheduler_token_expires_at:
+        description: Expiry the Cloudflare scheduler reports for its own GitHub token ("none" or a UTC time; never the token)
+        required: false
+        type: string
+        default: ''
   pull_request:
     paths: ['scripts/radar-watchdog.cjs', 'tests/radar-watchdog.test.cjs', '.github/workflows/radar-watchdog.yml']
 
 permissions:
-  contents: read
+  # Write only for the scheduler token's reported expiry on radar-notification-state.
+  contents: write
   actions: read
   issues: write
 
@@ -39,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           # Only the checker; published data is read through the API.
@@ -47,14 +54,14 @@ jobs:
             scripts/radar-watchdog.cjs
             tests/radar-watchdog.test.cjs
           sparse-checkout-cone-mode: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
       - name: Test watchdog rules
         run: node --test tests/radar-watchdog.test.cjs
       - name: Check the pipeline and update the alert issue
         if: github.event_name != 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { run } = require(`${process.env.GITHUB_WORKSPACE}/scripts/radar-watchdog.cjs`);
