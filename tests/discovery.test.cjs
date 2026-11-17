@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const R = require("../assets/radar-discovery-v1.js");
-const D = require("../assets/radar-data-v1.js");
+const R = require('../src/features/discovery/index.js').RadarDiscovery;
+const D = require('../src/domain/index.mjs').RadarData;
 
 test("multi-tag URLs preserve legacy links and combine exact ALL/ANY matching with exclusions", () => {
   const game = { tags: ['Action', 'Co-op', 'Indie'] };
@@ -223,12 +223,11 @@ test("missing tag metadata uses an explicit date basis; URL encoding preserves s
 test("catalog descriptions explain the verified Twitch admission without universal Followers claims", () => {
   const { readFileSync } = require("node:fs");
   const { join } = require("node:path");
-  for (const asset of ["radar-play-v2.js", "radar-ui-v1.js"]) {
-    const script = readFileSync(join(__dirname, "..", "assets", asset), "utf8");
-    assert.match(script, /(?:一般新作需至少 5,000 人關注；已驗證的 Twitch 新作可另行收錄|Steam 新作需至少 5,000 人關注，已驗證 Twitch 新作可另行收錄)/);
-    assert.doesNotMatch(script, /款具備明確日期、至少 5,000 人關注的遊戲|僅列出近 30 天內、已確認發售且關注人數嚴格超過 3,000/);
-    assert.doesNotMatch(script, /(?:upcoming|released|date|explore): "[^"\n]*(?:至少 5,000|關注人數超過 3,000)/);
-  }
+  // The shipped catalog writes its coverage text and page notes here.
+  const script = ["status.ts", "index.ts"].map(file => readFileSync(join(__dirname, "..", "src/features/catalog", file), "utf8")).join("\n");
+  assert.match(script, /Steam 新作需至少 5,000 人關注，已驗證 Twitch 新作可另行收錄/);
+  assert.doesNotMatch(script, /款具備明確日期、至少 5,000 人關注的遊戲|僅列出近 30 天內、已確認發售且關注人數嚴格超過 3,000/);
+  assert.doesNotMatch(script, /(?:upcoming|released|date|explore): ["'][^"'\n]*(?:至少 5,000|關注人數超過 3,000)/);
   for (const page of ["index", "date", "explore", "upcoming", "released", "games", "saved"]) {
     const html = readFileSync(join(__dirname, "..", page + ".html"), "utf8");
     assert.match(html, /清單包含 Steam、已驗證 Twitch 新作與 NS／NS2／PS5 遊戲/);

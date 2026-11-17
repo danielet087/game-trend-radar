@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { validateQueue, normalizeRun, runState, buildSlots, dashboardState, eventHistory, queueGameState, groupQueueCounts, igdbReceiptSummary } = require('../assets/radar-scheduler-v1.js');
+const { validateQueue, normalizeRun, runState, buildSlots, dashboardState, eventHistory, queueGameState, groupQueueCounts, igdbReceiptSummary } = require('../src/features/scheduler/data.js');
 
 const now = Date.parse('2026-10-03T07:30:00Z');
 function queue() {
@@ -43,7 +43,8 @@ test('queued workflow has no actual start and large run IDs retain canonical lin
 test('Twitch whole-hour batch maps to the :05 scheduled point, without inventing other successes', () => {
   const observed = run('collect.yml', 'game-trend-radar-twitch-backend', { run_started_at: '2026-10-03T07:06:00Z' });
   const lanes = buildSlots('2026-10-03', [observed], queue(), null, now);
-  assert.equal(lanes.flatMap(l => l.slots).length, 80);
+  // Nine lanes: the shipped page also shows the description refresh (4) and the recheck inventory (1).
+  assert.equal(lanes.flatMap(l => l.slots).length, 85);
   const twitch = lanes.find(l => l.job.id === 'twitch');
   assert.equal(twitch.slots[15].state, 'success');
   assert.equal(twitch.slots[15].at, Date.parse('2026-10-03T07:05:00Z'));

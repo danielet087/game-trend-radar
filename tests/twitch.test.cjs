@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const D = require('../assets/radar-twitch-data-v1.js');
+const D = require('../src/features/twitch/data.js').RadarTwitch;
 const at = '2026-09-29T12:20:00Z';
 const forecast = (result, overrides = {}) => ({ status:'evaluated', predicted_new:result, evaluated_at:at, release_at:'2026-09-25T00:00:00Z', metadata_observed_at:at, ...overrides });
 const candidate = (overrides = {}) => ({ game_id:'101', game_name:'Test Game', viewer_count:7000, streamer_count:21, median_viewer_count:0, verification:{status:'pending'}, ...overrides });

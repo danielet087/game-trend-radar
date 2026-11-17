@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const D = require('../assets/radar-data-v1.js');
+const D = require('../src/domain/index.mjs').RadarData;
 
 const edition = (changes = {}) => ({ type: 'base_plus_dlc', label: '本體＋Re Mind DLC',
   title: 'KINGDOM HEARTS III + Re Mind', product_id: '70010000117242', region: 'hong_kong',

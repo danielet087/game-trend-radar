@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const D = require('../assets/radar-twitch-data-v1.js');
+const D = require('../src/features/twitch/data.js').RadarTwitch;
 const row = (id, streamers, median, extra = {}) => ({
   game_id:String(id), game_name:`Game ${id}`, is_tracked:true,
   observation_status:'current', streamer_count:streamers, viewer_count:10000,
@@ -57,7 +57,9 @@ test('ties are deterministic; source filtering, search and input order are prese
 });
 
 test('UI defaults, URL fallback, reset and HTML selection use the new default', () => {
-  const ui = fs.readFileSync(path.join(__dirname,'../assets/radar-twitch-v1.js'),'utf8');
+  // The shipped page keeps its state, reset and rendering in these modules.
+  const ui = ['state.js','index.js','render.js'].map(file =>
+    fs.readFileSync(path.join(__dirname,'../src/features/twitch',file),'utf8')).join('\n');
   const html = fs.readFileSync(path.join(__dirname,'../twitch.html'),'utf8');
   assert.match(ui,/sort:D\.DEFAULT_SORT/);
   assert.match(ui,/p\.get\("sort"\) : D\.DEFAULT_SORT/);

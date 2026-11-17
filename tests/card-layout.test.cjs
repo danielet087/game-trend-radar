@@ -3,89 +3,86 @@ const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
 const vm = require('node:vm');
-const D = require('../assets/radar-data-v1.js');
-const R = require('../assets/radar-discovery-v1.js');
-const script = readFileSync(join(__dirname, '..', 'assets/radar-play-v2.js'), 'utf8');
+const D = require('../src/domain/index.mjs').RadarData;
+const R = require('../src/features/discovery/index.js').RadarDiscovery;
+const { FakeElement: Element, createDocument, vueGlobals } = require('./support/fake-dom.cjs');
+const { bundle } = require('./support/bundle.cjs');
 
-class Element {
-  constructor(tag = 'div') {
-    this.tagName = tag.toLowerCase();
-    this.dataset = new Proxy({}, { set(target, key, value) { target[key] = String(value); return true; } });
-    this.attributes = {};
-    this.children = []; this._text = ''; this.className = ''; this.parentElement = null;
+// The shipped catalog card, page controller, selectors and favorites, bundled once.
+let catalog;
+test.before(async () => { catalog = await bundle('tests/support/catalog-entry.mjs', 'RadarCatalog'); });
+const TODAY = '2026-10-04';
+const PAGES = { all: 'games.html', home: 'index.html', released: 'released.html', date: 'date.html' };
+const flush = async () => { for (let turn = 0; turn < 5; turn++) await new Promise(resolve => setImmediate(resolve)); };
+
+function pageElements(page) {
+  const html = readFileSync(join(__dirname, '..', PAGES[page]), 'utf8');
+  const elements = new Map([...html.matchAll(/id="([^"]+)"/g)].map(([, id]) => {
+    const element = new Element(); element.id = id; return [id, element];
+  }));
+  for (const [, id, body] of html.matchAll(/<select[^>]*\bid="([^"]+)"[^>]*>([\s\S]*?)<\/select>/g)) {
+    elements.get(id).options = [...body.matchAll(/<option value="([^"]*)"/g)].map(([, value]) => ({ value }));
   }
-  set textContent(value) { this._text = String(value ?? ''); this.children = []; }
-  get textContent() { return this._text + this.children.map(child => child.textContent || '').join(''); }
-  setAttribute(key, value) { this.attributes[key] = String(value); }
-  append(...children) { for (const child of children) { child.parentElement = this; this.children.push(child); } }
-  replaceChildren(...children) { this._text = ''; this.children = []; this.append(...children); }
-  matches(selector) {
-    if (selector === '.game-card[data-appid]') return this.className.split(/\s+/).includes('game-card') && this.dataset.appid !== undefined;
-    if (selector.startsWith('.')) return this.className.split(/\s+/).includes(selector.slice(1));
-    if (selector === 'button[data-save]') return this.tagName === 'button' && this.dataset.save !== undefined;
-    if (selector === '[data-saved-count]') return this.dataset.savedCount !== undefined;
-    return this.tagName === selector;
-  }
-  closest(selector) { return this.matches(selector) ? this : this.parentElement?.closest(selector) || null; }
-  querySelectorAll(selector) {
-    return this.children.flatMap(child => [...(child.matches(selector) ? [child] : []), ...child.querySelectorAll(selector)]);
-  }
-  querySelector(selector) { return this.querySelectorAll(selector)[0] || null; }
-  get classList() {
-    return {
-      add: (...values) => { this.className = [...new Set([...this.className.split(/\s+/).filter(Boolean), ...values])].join(' '); },
-      remove: (...values) => { this.className = this.className.split(/\s+/).filter(value => !values.includes(value)).join(' '); },
-    };
-  }
-  remove() {}
-  addEventListener() {}
+  return elements;
 }
 
 function renderer(stored = [], page = 'all', search = '') {
-  const root = new Element('body'); root.dataset.page = page;
-  const grid = new Element(); const toast = new Element();
-  const count = new Element('span'); count.dataset.savedCount = '';
-  root.append(grid, toast, count);
-  const listeners = {};
-  const controls = new Map(['searchInput', 'followersFilter', 'releaseFilter', 'languageFilter', 'sortSelect',
-    'savedFilter', 'resetFilters', 'resultCount', 'loadMoreWrap', 'calendarArea', 'calendarView', 'listView',
-    'sortWrap', 'monthPicker', 'monthLabel', 'calendarGrid'].map(id => {
-      const control = new Element(); control.value = ''; control.selectedIndex = 0;
-      return [id, control];
-    }));
-  controls.get('followersFilter').value = '0';
-  const document = {
-    body: root, activeElement: null,
-    getElementById: id => id === 'gamesGrid' ? grid : id === 'toast' ? toast : controls.get(id) || null,
-    createElement: tag => new Element(tag), createDocumentFragment: () => new Element('fragment'),
-    querySelectorAll: selector => root.querySelectorAll(selector),
-    addEventListener: (type, callback) => { listeners[type] = callback; },
-    dispatchEvent() {},
-  };
-  const storage = new Map([['game-trend-radar:saved:v1', JSON.stringify(stored)]]);
-  const window = {
-    RadarData: { ...D, todayInTaipei: () => '2026-10-04' }, RadarDiscovery: R,
-    RadarArtwork: { load() {} },
-    RadarEnhancements: { attachCompare() { throw new Error('Cards must not attach comparison controls'); }, pulseSaved() {} },
-    addEventListener() {},
-  };
-  const context = vm.createContext({
-    window, document, location: { search }, URLSearchParams, Intl, Date, Number, Set, Map, WeakMap,
-    CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options?.detail; } },
-    localStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
-    matchMedia: () => ({ matches: false }), setTimeout: () => 0, clearTimeout() {},
+  const elements = pageElements(page);
+  const body = new Element('body'); body.dataset.page = page;
+  for (const element of elements.values()) body.append(element);
+  const document = createDocument({
+    body, activeElement: null,
+    getElementById: id => elements.get(id) || null,
+    querySelector: selector => body.querySelector(selector),
+    querySelectorAll: selector => body.querySelectorAll(selector),
+    dispatchEvent() { return true; },
   });
-  // Execute the real card renderer without starting unrelated page/network setup.
-  const prefix = script.slice(0, script.indexOf('  function empty('));
-  const filters = script.slice(script.indexOf('  function activeFilters('), script.indexOf('  function resetFilters('));
-  vm.runInContext(prefix + filters + '\n const motionOn = false, revealObserver = null; function celebrateSave() {} function revealCards() {}\n window.renderCard = makeCard;\n window.filterCards = filteredGames;\n window.renderGrid = renderExplorer;\n window.setData = data => { model.data = data; model.loading = false; updateSavedControls(); };\n})();', context);
+  const storage = new Map([['game-trend-radar:saved:v1', JSON.stringify(stored)]]);
+  const localStorage = { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) };
+  const sessionStorage = { getItem: () => null, setItem() {} };
+  const location = { search, origin: 'https://example.test', pathname: '/' + PAGES[page], href: 'https://example.test/' + PAGES[page] + search };
+  const window = { localStorage, sessionStorage, location, RadarMotion: { enabled: false }, addEventListener() {}, removeEventListener() {} };
+  const context = vm.createContext({
+    window, document, location, localStorage, sessionStorage,
+    history: { state: null, replaceState() {} }, matchMedia: () => ({ matches: false, addEventListener() {} }),
+    URL, URLSearchParams, Intl, Date, Number, Set, Map, WeakMap, AbortController,
+    setTimeout: () => 0, clearTimeout() {}, queueMicrotask, console: { error() {}, warn() {} },
+    CustomEvent: class CustomEvent { constructor(type, init = {}) { this.type = type; this.detail = init.detail; } },
+    ...vueGlobals,
+  });
+  vm.runInContext(catalog, context);
+  const C = context.RadarCatalog, domain = { ...D, todayInTaipei: () => TODAY };
+  const filters = new C.FilterState(page, TODAY, domain, R, new URLSearchParams(search), false);
+  filters.configure(Object.fromEntries([['minimum', 'followersFilter'], ['sort', 'sortSelect'], ['period', 'releaseFilter'],
+    ['language', 'languageFilter']].filter(([, id]) => elements.get(id)?.options).map(([key, id]) => [key, elements.get(id).options.map(option => option.value)])));
+  filters.restore(new URLSearchParams(search));
+  let pageController = null, dataset = null;
+  const cards = C.createCardFactory({ domain, discovery: R, mode: page, today: TODAY,
+    model: () => pageController?.state.model || null, tags: () => filters.state.tags,
+    isSaved: (game, entity) => C.favorites.isSaved({ appid: game.appid, savedAliases: entity?.identity.savedAliases || game.savedAliases }),
+    subscribeSaved: listener => C.favorites.subscribeSaved(listener), artwork: { load() {} } });
+  // Real save-button handling, bound to these cards rather than a loaded page.
+  C.createCatalogFavorites(filters, () => {}, cards.gameFor, () => {}, () => {}, C.favorites);
+  const grid = elements.get('gamesGrid');
   return {
-    card(game, options) { const card = window.renderCard(game, options); grid.append(card); return card; },
-    click(button) { listeners.click({ target: button }); }, storage, count,
-    setData(data) { window.setData(data); },
-    filtered(order) { controls.get('sortSelect').value = order; return window.filterCards(); },
-    render() { window.renderGrid(); return grid.querySelectorAll('.game-card'); },
-    calendar: controls.get('calendarGrid'),
+    card(game, options) { const card = cards.create(game, options); grid.append(card); return card; },
+    async click(button) { document.listeners.click({ target: button }); await flush(); },
+    storage, savedCount: () => C.favorites.savedCount(),
+    // A ready dataset for the pure catalog selectors.
+    setData(data) { dataset = data; },
+    // The real page: it loads these public sources and renders its grid and calendar.
+    async load(official, preview, native) {
+      pageController = C.initCatalogPage({ data: domain, discovery: R, artwork: { load() {} },
+        storage: { loadSources: async () => ({ catalog: official, preview }), loadNintendo: async () => native } });
+      await pageController.ready; await flush();
+    },
+    filtered(order) {
+      const active = pageController?.filters || filters;
+      active.state.sort = order;
+      return C.selectCatalog(pageController?.state.viewModel || dataset, active, domain, R, C.favorites.readSaved());
+    },
+    render() { pageController.render(); return grid.querySelectorAll('.game-card'); },
+    calendar: elements.get('calendarGrid'),
   };
 }
 
@@ -239,24 +236,24 @@ test('unknown additional platform evidence does not falsely label a card as cons
   assert.match(tags[0].title, /Nintendo Switch 2|NS2/);
 });
 
-test('old Nintendo bookmarks remain selected on merged cards and toggle both identities together', () => {
+test('old Nintendo bookmarks remain selected on merged cards and toggle both identities together', async () => {
   const game = D.cardGames(D.datasets({ games: [steam()] }, null, nintendo()).games)[0];
   const app = renderer(['igdb:314449', 999]);
   const card = app.card(game), button = card.querySelector('button[data-save]');
   assert.equal(button.attributes['aria-pressed'], 'true');
-  app.click(button);
+  await app.click(button);
   assert.deepEqual(JSON.parse(app.storage.get('game-trend-radar:saved:v1')), [999]);
   assert.equal(button.attributes['aria-pressed'], 'false');
-  app.click(button);
+  await app.click(button);
   assert.deepEqual(JSON.parse(app.storage.get('game-trend-radar:saved:v1')), [999, 3167930]);
   assert.equal(button.attributes['aria-pressed'], 'true');
 });
 
-test('saved badge counts merged identities once while retaining unrelated browser bookmarks', () => {
-  const data = D.datasets({ games: [steam()] }, null, nintendo());
+test('saved badge counts merged identities once while retaining unrelated browser bookmarks', async () => {
   const app = renderer([3167930, 'igdb:314449', 999]);
-  app.setData(data);
-  assert.equal(app.count.textContent, '2');
+  await app.load({ games: [steam()] }, null, nintendo());
+  // The header badge shows this count.
+  assert.equal(app.savedCount(), 2);
   assert.deepEqual(JSON.parse(app.storage.get('game-trend-radar:saved:v1')), [3167930, 'igdb:314449', 999]);
 });
 
@@ -285,13 +282,13 @@ test('recently released list retains the latest event context and orders cards b
   assert.equal(card.querySelector('.countdown').textContent, '已上市');
 });
 
-test('October calendar list writes the Nintendo edition into its title while the Steam event retains the original name', () => {
-  const data = D.datasets({ games: [steam({ release_start: '2026-10-09' })] }, null, nintendo({
+test('October calendar list writes the Nintendo edition into its title while the Steam event retains the original name', async () => {
+  const official = { games: [steam({ release_start: '2026-10-09' })] }, native = nintendo({
     releases: [{ date: '2026-10-08', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }],
     platform_editions: { NS2: edition() },
-  }));
+  });
   const app = renderer([], 'home', '?month=2026-10&view=list');
-  app.setData(data);
+  await app.load(official, null, native);
   const cards = app.render();
   assert.deepEqual(cards.map(card => card.querySelector('time').dateTime), ['2026-10-08', '2026-10-09']);
   assert.deepEqual(cards.map(card => card.querySelector('.card-release-platform').textContent), ['NS2', 'Steam']);
@@ -326,20 +323,21 @@ test('October calendar list writes the Nintendo edition into its title while the
   assert.equal(calendarLinks[0].href, './game.html?appid=3167930&date=2026-10-08');
 });
 
-test('daily release card names its edition while the general physical card selected for the original Steam event keeps the base title', () => {
-  const data = D.datasets({ games: [steam({ release_start: '2027-02-18' })] }, null, nintendo({
+test('daily release card names its edition while the general physical card selected for the original Steam event keeps the base title', async () => {
+  const official = { games: [steam({ release_start: '2027-02-18' })] }, native = nintendo({
     releases: [{ date: '2027-05-20', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }],
     platform_editions: { NS2: edition({ type: 'base_plus_expansion', label: '本體＋Dark Arisen擴充版',
       title: 'Hela: Of Mice & Magic - Dark Arisen' }) },
-  }));
-  const day = renderer([], 'date', '?date=2027-05-20'); day.setData(data);
+  });
+  const data = D.datasets(official, null, native);
+  const day = renderer([], 'date', '?date=2027-05-20'); await day.load(official, null, native);
   const dailyCard = day.render()[0];
   assert.equal(dailyCard.querySelector('time').dateTime, '2027-05-20');
   assert.equal(dailyCard.querySelector('.card-release-platform').textContent, 'NS2');
   assert.equal(dailyCard.querySelector('.card-title').textContent, 'Hela：鼠鼠奇旅（本體＋Dark Arisen擴充版）');
   assert.equal(dailyCard.querySelector('.card-english').textContent, 'Hela: Of Mice & Magic - Dark Arisen');
   assert.equal(dailyCard.querySelector('.card-edition'), null);
-  const catalog = renderer(); catalog.setData(data);
+  const catalog = renderer(); await catalog.load(official, null, native);
   const generalCard = catalog.render()[0];
   assert.equal(catalog.render().length, 1);
   assert.equal(generalCard.querySelector('time').dateTime, '2027-02-18');
@@ -351,11 +349,11 @@ test('daily release card names its edition while the general physical card selec
   assert.equal(data.games[0].nameEn, 'Hela: Of Mice & Magic');
 });
 
-test('same-day Steam and Nintendo versions produce one monthly release card showing both event platforms', () => {
-  const data = D.datasets({ games: [steam({ release_start: '2026-10-08' })] }, null, nintendo({
+test('same-day Steam and Nintendo versions produce one monthly release card showing both event platforms', async () => {
+  const app = renderer([], 'home', '?month=2026-10&view=list');
+  await app.load({ games: [steam({ release_start: '2026-10-08' })] }, null, nintendo({
     releases: [{ date: '2026-10-08', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }],
   }));
-  const app = renderer([], 'home', '?month=2026-10&view=list'); app.setData(data);
   const cards = app.render();
   assert.equal(cards.length, 1);
   assert.equal(cards[0].querySelector('.card-release-platform').textContent, 'Steam／NS2');
@@ -363,7 +361,7 @@ test('same-day Steam and Nintendo versions produce one monthly release card show
   assert.equal(cards[0].querySelector('.card-editions'), null);
 });
 
-test('month calendar reserves named Nintendo tags for verified exclusivity and keeps actual native platforms on hover', () => {
+test('month calendar reserves named Nintendo tags for verified exclusivity and keeps actual native platforms on hover', async () => {
   const cases = [
     { expected: '主機', changes: { exclusivity: { status: 'listed_only' } } },
     { expected: '主機', changes: { platform_data_complete: false, exclusivity: { status: 'unknown' } } },
@@ -372,10 +370,9 @@ test('month calendar reserves named Nintendo tags for verified exclusivity and k
     { expected: '平台待確認', changes: { known_platforms: [{ id: 508, code: 'NS2' }, { id: 999999, name: 'Unclassified platform' }] } },
   ];
   for (const { expected, changes } of cases) {
-    const data = D.datasets({ games: [] }, null, nintendo({ websites: [],
-      known_platforms: [{ id: 508, code: 'NS2' }], ...changes }));
     const app = renderer([], 'home', '?month=2026-12&view=list');
-    app.setData(data);
+    await app.load({ games: [] }, null, nintendo({ websites: [],
+      known_platforms: [{ id: 508, code: 'NS2' }], ...changes }));
     const card = app.render()[0], links = app.calendar.querySelectorAll('.day-game');
     assert.equal(links.length, 1);
     const tags = links[0].querySelectorAll('.day-platform');

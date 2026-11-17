@@ -1,11 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
 import * as modular from '../src/data/steam.mjs';
 import { datasets } from '../src/data/datasets.mjs';
 import { detailCatalog } from '../src/data/publication.mjs';
-
-const legacy = createRequire(import.meta.url)('../assets/radar-data-v1.js');
 
 // Saved qualification from the affected public game, independent of changing
 // production files and the current date. Its Followers are below Steam's gate.
@@ -32,7 +29,7 @@ const legacyProof = () => {
   return { ...proof, source_frontend_commit: 'a'.repeat(40) };
 };
 
-for (const [name, adapter] of [['modular', modular], ['legacy', legacy]]) {
+for (const [name, adapter] of [['modular', modular]]) {
   test(`${name}: database admission keeps Haunted Heist public below 5,000 Followers`, () => {
     const raw = hauntedHeist();
     assert.equal(adapter.hasTwitchAdmission(raw), true);

@@ -30,11 +30,6 @@ jobs:
         run: python -m unittest discover -s tests -p "test_steam_game_languages.py" -v
       - name: Confirm frontend title priority and all existing data tests
         run: node --test tests/data.test.cjs
-      - name: Check browser JavaScript syntax
-        run: |
-          node --check assets/radar-data-v1.js
-          node --check assets/radar-play-v2.js
-          node --check assets/radar-game-detail-v1.js
       - name: Fetch Steam Store official supported languages and locale titles only
         run: python -m scripts.refresh_steam_game_languages_once --data-dir data
       - name: Validate every title/date/follower/image/eligibility invariant

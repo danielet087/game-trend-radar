@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const D = require('../assets/radar-data-v1.js');
+const D = require('../src/domain/index.mjs').RadarData;
 
 function support(fields = {}) {
   return { status: 'confirmed', region: 'taiwan', complete: true,

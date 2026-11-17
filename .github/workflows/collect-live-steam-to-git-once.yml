@@ -36,9 +36,6 @@ jobs:
       - name: Validate program syntax
         run: |
           python -m py_compile scripts/collect_live_steam_to_git_once.py
-          node --check assets/radar-data-v1.js
-          node --check assets/radar-play-v2.js
-          node --check assets/radar-game-detail-v1.js
       - name: Collect actual Steam Store metadata plus max two official Followers
         run: python -m scripts.collect_live_steam_to_git_once --data-dir data
       - name: Prove that only verified Steam metadata was changed

@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const D = require('../assets/radar-data-v1.js');
-const R = require('../assets/radar-discovery-v1.js');
+const D = require('../src/domain/index.mjs').RadarData;
+const R = require('../src/features/discovery/index.js').RadarDiscovery;
 const platform = (code) => ({ id: code === 'NS' ? 130 : 508, code, name: code === 'NS' ? 'Nintendo Switch' : 'Nintendo Switch 2' });
 const row = (changes = {}) => ({
   id: 'igdb:366896', igdb_id: 366896, name_en: 'Fire Emblem: Fortune’s Weave', hypes: 45,

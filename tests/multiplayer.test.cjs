@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const D = require('../assets/radar-data-v1.js');
+const D = require('../src/domain/index.mjs').RadarData;
 
 const officialSteam = (changes = {}) => ({ appid: 10, name: 'Game', followers: 6000,
   release_start: '2026-11-01', categories: [{ id: 2, description: 'Single-player' }],

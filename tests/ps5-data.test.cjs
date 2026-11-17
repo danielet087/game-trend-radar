@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const D = require('../assets/radar-data-v1.js');
+const D = require('../src/domain/index.mjs').RadarData;
 
 const PSID = 'JP0005-PPSA23593_00-APPLICATION00000';
 const psURL = `https://store.playstation.com/zh-hant-tw/product/${PSID}`;
