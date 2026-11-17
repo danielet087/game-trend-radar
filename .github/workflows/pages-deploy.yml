@@ -24,6 +24,11 @@ on:
 permissions:
   contents: read
 
+env:
+  # verify: deploy Git's copy of the Twitch views and compare the database copy
+  # with it; overlay: deploy the database copy (danielet087/game-trend-radar@twitch-views).
+  SITE_TWITCH_VIEWS: verify
+
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -101,6 +106,22 @@ jobs:
           [ "$actual" -eq "$expected" ] || { echo "::error::Assembled tree differs from the commit"; exit 1; }
           [ -f _site/index.html ] || { echo "::error::index.html missing"; exit 1; }
           # Published Pages sites may be no larger than 1 GB.
+          [ "$bytes" -lt 1000000000 ] || { echo "::error::Site is larger than 1 GB"; exit 1; }
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-core.txt
+      - name: Add the Twitch views from the database
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: |
+          # A commit published by verify_live may predate this step.
+          [ -f scripts/site_twitch_views.py ] || { echo "No Twitch views step in this commit."; exit 0; }
+          python -m pip install --disable-pip-version-check -q -r requirements-core.txt
+          python scripts/site_twitch_views.py _site --mode "$SITE_TWITCH_VIEWS"
+          bytes=$(du -sb _site | cut -f1)
           [ "$bytes" -lt 1000000000 ] || { echo "::error::Site is larger than 1 GB"; exit 1; }
       - name: Compare every file with the live site
         if: inputs.verify_live
