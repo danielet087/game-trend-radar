@@ -385,3 +385,27 @@ test('a data-push insights run that was running at :17 covers that slot, and onl
     'a manual daily discovery run does not prove the daily refresh');
   assert.match(eventHistory(queue(), [push], null, now).find(event => event.id === 'run-' + push.id).detail, /^資料更新觸發 → 10:15 開始/);
 });
+
+test('automatic successes are routine; failures, manual runs, Followers misses and growth reports are not', () => {
+  const twitch = slot => maintenance('collect.yml', 'game-trend-radar-twitch-backend', slot);
+  const ok = twitch('2026-10-03T05:00:00Z');
+  const failed = twitch('2026-10-03T06:00:00Z');
+  failed.conclusion = 'failure';
+  const manual = maintenance('collect.yml', 'game-trend-radar-twitch-backend', null, { created_at: '2026-10-03T06:30:00Z' });
+  const push = maintenance('radar-insights.yml', 'game-trend-radar', null, { event: 'push', created_at: '2026-10-03T06:40:00Z' });
+  const fallback = maintenance('radar-watchdog.yml', 'game-trend-radar', null, { event: 'schedule', created_at: '2026-10-03T06:50:00Z' });
+  const q = queue();
+  q.events = [{ at: '2026-10-03T07:01:00Z', appid: 10, name: 'Game A', status: 'ok', official_followers: 6200 },
+              { at: '2026-10-03T07:02:00Z', appid: 11, name: 'Game B', status: 'rate_limited', http: 429 }];
+  const growth = { collection: { at: '2026-10-03T07:05:00Z', status: 'completed', measurements: 3 } };
+  const events = eventHistory(q, [ok, failed, manual, push, fallback], growth, now);
+  const routine = id => events.find(event => event.id === id).routine;
+  assert.equal(routine('run-' + ok.id), true);
+  assert.equal(routine('run-' + push.id), true);
+  assert.equal(routine('run-' + fallback.id), true);
+  assert.equal(routine('run-' + failed.id), false);
+  assert.equal(routine('run-' + manual.id), false);
+  assert.equal(routine('growth-measurement'), false);
+  const attempts = events.filter(event => event.group === 'official_attempts');
+  assert.deepEqual(attempts.map(event => [event.routine, event.brief]), [[false, 'Game B'], [true, 'Game A（6,200）']]);
+});

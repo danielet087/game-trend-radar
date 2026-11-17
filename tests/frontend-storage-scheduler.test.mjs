@@ -562,3 +562,25 @@ test('a full page is completed by one earlier-range request that the cache reuse
   await loader.readRuns('game-trend-radar');
   assert.equal(requested.length, 2, 'it stays active, so it is read again');
 });
+
+test('the event list folds routine successes per job and keeps failures and manual runs one by one', context => {
+  context.mock.method(Date, 'now', () => now);
+  const state = createSchedulerState();
+  const twitch = hour => maintenance('collect.yml', 'game-trend-radar-twitch-backend', `2026-10-03T0${hour}:00:00Z`);
+  const failed = twitch(6); failed.conclusion = 'failure';
+  const manual = maintenance('collect.yml', 'game-trend-radar-twitch-backend', null, { created_at: '2026-10-03T06:30:00Z' });
+  state.runs = [twitch(3), twitch(4), twitch(5), failed, manual];
+  const nodes = new Map();
+  const $ = id => {
+    if (!nodes.has(id)) nodes.set(id, { innerHTML: '', textContent: '', value: '', closest: () => null });
+    return nodes.get(id);
+  };
+  createSchedulerRenderer(state, $).render();
+  const html = $('eventTimeline').innerHTML;
+  assert.equal(html.match(/class="timeline-event /g).length, 3, 'failure, manual run and one folded group');
+  assert.match(html, /id="run-[0-9]+"[^>]*>[^]*執行失敗/);
+  assert.match(html, /手動／其他入口/);
+  assert.match(html, /<summary>Twitch 新作觀測 · 今天 3 次例行執行完成<\/summary>/);
+  assert.equal(html.match(/href="https:\/\/github\.com\/danielet087\/game-trend-radar-twitch-backend\/actions\/runs\/[0-9]+"/g).length, 5, 'every run stays linked');
+  assert.ok(html.indexOf('id="routine-twitch"') > html.indexOf('timeline-group-label') && html.indexOf('timeline-group-label') > html.indexOf('手動／其他入口'), 'folded groups come after the listed events, under one label');
+});
