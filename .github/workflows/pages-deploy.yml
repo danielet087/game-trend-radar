@@ -6,11 +6,13 @@ run-name: "Deploy site to Pages | ${{ inputs.verify_live && 'verify live site' |
 # the high-churn Twitch views from the database instead of Git, so this
 # repository stops growing by tens of MB a day.
 #
-# Until the repository's Pages source is set to "GitHub Actions" the run only
-# builds and uploads the artifact; deploy-pages is skipped. verify_live builds
-# the commit the live site was built from and compares every file with what
-# Pages serves now.
+# Until the repository's Pages source is set to "GitHub Actions", pushes stop
+# after a few seconds and a manual run only builds the artifact; deploy-pages
+# runs only once Actions is the source. verify_live builds the commit the live
+# site was built from and compares every file with what Pages serves now.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       verify_live:
@@ -27,14 +29,38 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pages: read
+    outputs:
+      build: ${{ steps.source.outputs.build }}
+      deploy: ${{ steps.source.outputs.deploy }}
+    steps:
+      - name: Check the Pages source
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          VERIFY: ${{ inputs.verify_live && 'true' || 'false' }}
+        run: |
+          build_type=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type)
+          echo "Pages source: $build_type"
+          build=false; deploy=false
+          if [ "$build_type" = workflow ] || [ "$EVENT" = workflow_dispatch ]; then build=true; fi
+          if [ "$build_type" = workflow ] && [ "$VERIFY" != true ]; then deploy=true; fi
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: source
+    if: needs.source.outputs.build == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
       pages: read
-    outputs:
-      deploy: ${{ steps.source.outputs.deploy }}
     steps:
       - name: Choose the commit to publish
         id: target
@@ -55,17 +81,6 @@ jobs:
         with:
           ref: ${{ steps.target.outputs.commit }}
           persist-credentials: false
-      - name: Check the Pages source
-        id: source
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERIFY: ${{ inputs.verify_live && 'true' || 'false' }}
-        run: |
-          build_type=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type)
-          echo "Pages source: $build_type"
-          deploy=false
-          if [ "$build_type" = workflow ] && [ "$VERIFY" != true ]; then deploy=true; fi
-          echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
       - name: Assemble the committed tree
         env:
           COMMIT: ${{ steps.target.outputs.commit }}
@@ -101,8 +116,8 @@ jobs:
           path: _site
 
   deploy:
-    needs: build
-    if: needs.build.outputs.deploy == 'true'
+    needs: [source, build]
+    if: needs.source.outputs.deploy == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
