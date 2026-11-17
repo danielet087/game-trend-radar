@@ -11,7 +11,18 @@ const JOBS = Object.freeze([
   { id: "steam_content", name: "內容對帳與發布", repo: "game-trend-radar-content-backend", workflow: "steam-catalog-reconcile.yml", hours: [7, 19], minute: 30, note: "每日 07:30、19:30" },
   { id: "steam_descriptions", name: "遊戲簡介更新", repo: "game-trend-radar-content-backend", workflow: "steam-description-refresh.yml", hours: [1, 7, 13, 19], minute: 30, note: "01:30／07:30／13:30／19:30 · 官方中文與英文原文回查" },
   { id: "nintendo_daily", name: "IGDB 主機新作", repo: "game-trend-radar-twitch-backend", workflow: "collect-nintendo.yml", hours: [8], minute: 30, note: "每日 08:30 · NS／NS2／PS5" },
+  // Maintenance runs. The Worker dispatches them; each workflow also keeps GitHub's
+  // own best-effort cron as a fallback, so a fallback run can stand in for a slot.
+  { id: "frontend_watchdog", name: "整體健康檢查", repo: "game-trend-radar", workflow: "radar-watchdog.yml", hours: Array.from({ length: 24 }, (_, i) => i), minute: 17, maintenance: true, fallbackCron: true, note: "每小時 :17 · 發現異常時更新警示 issue" },
+  { id: "twitch_archive", name: "Twitch 歷史封存", repo: "game-trend-radar-twitch-backend", workflow: "archive-twitch-history.yml", hours: [3], minute: 30, maintenance: true, fallbackCron: true, note: "每日 03:30 · 3 天前的資料存入 Releases，核對後移出網站" },
+  { id: "storage_retention", name: "資料庫每日清理", repo: "game-trend-radar-backend", workflow: "storage-evidence-retention.yml", hours: [4], minute: 30, maintenance: true, fallbackCron: true, note: "每日 04:30 · 釋放 3 天前未引用的證據，一次最多 200 份" },
+  ...[["frontend", "game-trend-radar", "前端"], ["backend", "game-trend-radar-backend", "Steam 後端"], ["twitch", "game-trend-radar-twitch-backend", "Twitch／IGDB"], ["content", "game-trend-radar-content-backend", "內容"]]
+    .map(([key, repo, label]) => ({ id: "credentials_" + key, name: "憑證到期檢查 · " + label, repo, workflow: "credential-expiry.yml", hours: [5], minute: 30, maintenance: true, fallbackCron: true, lane: "credentials", laneLabel: label, note: "每日 05:30" })),
 ]);
+// Jobs sharing a lane are drawn as one row; each still keeps its own runs and events.
+const LANES = Object.freeze({
+  credentials: Object.freeze({ id: "credentials", name: "憑證到期檢查", maintenance: true, note: "每日 05:30 · 四個儲存庫各自記錄到期日" }),
+});
 const ACTIVE = new Set(["queued", "in_progress", "waiting", "pending", "requested"]);
 const num = v => typeof v === "number" && Number.isSafeInteger(v) && v >= 0 ? v : null;
 const appid = v => /^[1-9]\d{0,9}$/.test(String(v)) ? Number(v) : null;
@@ -24,4 +35,4 @@ const runUrl = (job, id) => appid(id) || /^[1-9]\d{0,19}$/.test(String(id)) ? `h
 const steamUrl = id => `https://store.steampowered.com/app/${appid(id)}/`;
 const UNRESOLVED_GROUP_STATUSES = new Set(["not_found", "missing_api_key", "api_rate_limited", "api_forbidden", "network_error", "api_error", "invalid_response"]);
 
-export { HOUR, DAY, ACTION_REFRESH, OWNER, RAW, JOBS, ACTIVE, num, appid, instant, day, dateLabel, clockLabel, esc, runUrl, steamUrl, UNRESOLVED_GROUP_STATUSES };
+export { HOUR, DAY, ACTION_REFRESH, OWNER, RAW, JOBS, LANES, ACTIVE, num, appid, instant, day, dateLabel, clockLabel, esc, runUrl, steamUrl, UNRESOLVED_GROUP_STATUSES };

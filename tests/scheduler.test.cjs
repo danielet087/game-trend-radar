@@ -23,6 +23,17 @@ function scheduled(workflow, hour, overrides = {}) {
     updated_at: new Date(at + 600000).toISOString(), ...overrides });
 }
 
+let nextMaintenanceId = 50000000000;
+function maintenance(workflow, repo, slot, overrides = {}) {
+  const created = overrides.created_at ? Date.parse(overrides.created_at) : Date.parse(slot) + 16000;
+  return normalizeRun({ id: String(nextMaintenanceId++), path: '.github/workflows/' + workflow,
+    display_title: `Observed | slot=${slot ?? 'manual'} | source=${overrides.event === 'schedule' ? 'schedule' : 'cloudflare'}`,
+    event: 'workflow_dispatch', created_at: new Date(created).toISOString(), run_started_at: new Date(created + 15000).toISOString(),
+    updated_at: new Date(created + 120000).toISOString(), status: 'completed', conclusion: 'success', ...overrides }, repo);
+}
+const CREDENTIAL_REPOS = [['game-trend-radar', 'credentials_frontend'], ['game-trend-radar-backend', 'credentials_backend'],
+  ['game-trend-radar-twitch-backend', 'credentials_twitch'], ['game-trend-radar-content-backend', 'credentials_content']];
+
 test('queue validation rejects unknown counts, missing items and duplicate AppIDs', () => {
   assert.equal(validateQueue(queue()).summary.total_pending, 3);
   const unknown = queue(); unknown.summary.normal_pending = null;
@@ -43,8 +54,9 @@ test('queued workflow has no actual start and large run IDs retain canonical lin
 test('Twitch whole-hour batch maps to the :05 scheduled point, without inventing other successes', () => {
   const observed = run('collect.yml', 'game-trend-radar-twitch-backend', { run_started_at: '2026-10-03T07:06:00Z' });
   const lanes = buildSlots('2026-10-03', [observed], queue(), null, now);
-  // Nine lanes: the shipped page also shows the description refresh (4) and the recheck inventory (1).
-  assert.equal(lanes.flatMap(l => l.slots).length, 85);
+  // Thirteen lanes: the nine data lanes (85, with the description refresh and the recheck inventory)
+  // plus the hourly watchdog (24), the archive, the retention and the shared credential lane (1 each).
+  assert.equal(lanes.flatMap(l => l.slots).length, 112);
   const twitch = lanes.find(l => l.job.id === 'twitch');
   assert.equal(twitch.slots[15].state, 'success');
   assert.equal(twitch.slots[15].at, Date.parse('2026-10-03T07:05:00Z'));
@@ -282,4 +294,69 @@ test('optional group-stage counts keep legacy or null values unknown instead of 
   assert.equal(groupQueueCounts(q), null);
   q.summary.ready_pending = 0;
   assert.deepEqual(groupQueueCounts(q), { followersReady: 0, awaitingGroup: 0 });
+});
+
+test('maintenance jobs get their own lanes and the four credential checks share one', () => {
+  const lanes = buildSlots('2026-10-03', [], queue(), null, now);
+  assert.deepEqual(lanes.slice(-4).map(lane => lane.job.id), ['frontend_watchdog', 'twitch_archive', 'storage_retention', 'credentials']);
+  assert.ok(lanes.slice(-4).every(lane => lane.job.maintenance) && !lanes.slice(0, -4).some(lane => lane.job.maintenance));
+  const times = id => lanes.find(lane => lane.job.id === id).slots.map(slot => new Date(slot.at).toISOString());
+  assert.equal(times('frontend_watchdog').length, 24);
+  assert.equal(times('frontend_watchdog')[10], '2026-10-03T02:17:00.000Z');
+  assert.deepEqual(times('twitch_archive'), ['2026-10-02T19:30:00.000Z']);
+  assert.deepEqual(times('storage_retention'), ['2026-10-02T20:30:00.000Z']);
+  assert.deepEqual(times('credentials'), ['2026-10-02T21:30:00.000Z']);
+  assert.deepEqual(lanes.find(lane => lane.job.id === 'credentials').members.map(job => job.id), CREDENTIAL_REPOS.map(([, id]) => id));
+  for (const [repo, id] of CREDENTIAL_REPOS) assert.equal(maintenance('credential-expiry.yml', repo, '2026-10-02T21:30:00Z').job_id, id);
+  assert.equal(maintenance('radar-watchdog.yml', 'game-trend-radar', '2026-10-03T02:17:00Z').job_id, 'frontend_watchdog');
+  assert.equal(maintenance('archive-twitch-history.yml', 'game-trend-radar-twitch-backend', '2026-10-02T19:30:00Z').job_id, 'twitch_archive');
+  assert.equal(maintenance('storage-evidence-retention.yml', 'game-trend-radar-backend', '2026-10-02T20:30:00Z').job_id, 'storage_retention');
+  assert.equal(maintenance('radar-watchdog.yml', 'game-trend-radar-backend', '2026-10-03T02:17:00Z'), null);
+});
+
+test('credential lane shows the most urgent of its four checks and every result in the note', () => {
+  const slot = '2026-10-02T21:30:00Z';
+  const runs = CREDENTIAL_REPOS.map(([repo]) => maintenance('credential-expiry.yml', repo, slot));
+  const credentials = (observed, at = now) => buildSlots('2026-10-03', observed, queue(), null, at).find(lane => lane.job.id === 'credentials').slots[0];
+  let point = credentials(runs);
+  assert.equal(point.state, 'success');
+  assert.equal(point.text, '4 個儲存庫皆為「流程完成」');
+  assert.equal(point.run, undefined);
+  const failed = maintenance('credential-expiry.yml', 'game-trend-radar-twitch-backend', slot, { conclusion: 'failure' });
+  point = credentials([runs[0], runs[1], failed, runs[3]]);
+  assert.equal(point.state, 'interrupted');
+  assert.equal(point.run.id, failed.id);
+  assert.equal(point.text, '前端：流程完成；Steam 後端：流程完成；Twitch／IGDB：執行失敗；內容：流程完成');
+  const active = maintenance('credential-expiry.yml', 'game-trend-radar', slot, { status: 'in_progress', conclusion: null });
+  point = credentials([active, runs[1], failed, runs[3]]);
+  assert.equal(point.state, 'running');
+  assert.equal(point.run, undefined);
+  point = credentials(runs.slice(0, 3));
+  assert.equal(point.state, 'unknown');
+  assert.match(point.text, /；內容：此時段尚未觀測到執行紀錄$/);
+  point = credentials([], Date.parse('2026-10-02T21:00:00Z'));
+  assert.equal(point.state, 'planned');
+  assert.equal(point.text, '4 個儲存庫皆為「原定時段，尚未到期」');
+});
+
+test('a GitHub fallback cron run stands in for a missing Worker slot, and only for maintenance jobs', () => {
+  const lane = (observed, id) => buildSlots('2026-10-03', observed, queue(), null, now).find(row => row.job.id === id);
+  const fallback = maintenance('radar-watchdog.yml', 'game-trend-radar', null, { event: 'schedule', created_at: '2026-10-03T03:13:44Z' });
+  assert.equal(fallback.slot, 'manual');
+  let watchdog = lane([fallback], 'frontend_watchdog');
+  assert.equal(watchdog.slots[10].state, 'success');
+  assert.equal(watchdog.slots[10].text, '流程完成（GitHub 備援排程）');
+  assert.equal(watchdog.slots[10].run.id, fallback.id);
+  assert.equal(watchdog.slots[11].state, 'unknown');
+  const dispatched = maintenance('radar-watchdog.yml', 'game-trend-radar', '2026-10-03T02:17:00Z');
+  watchdog = lane([fallback, dispatched], 'frontend_watchdog');
+  assert.equal(watchdog.slots[10].run.id, dispatched.id);
+  assert.equal(watchdog.slots[10].text, '流程完成');
+  const retention = maintenance('storage-evidence-retention.yml', 'game-trend-radar-backend', null, { event: 'schedule', created_at: '2026-10-03T03:06:11Z' });
+  assert.equal(lane([retention], 'storage_retention').slots[0].text, '流程完成（GitHub 備援排程）');
+  const yesterday = maintenance('storage-evidence-retention.yml', 'game-trend-radar-backend', null, { event: 'schedule', created_at: '2026-10-02T15:59:00Z' });
+  assert.equal(lane([yesterday], 'storage_retention').slots[0].state, 'unknown');
+  const insights = maintenance('radar-insights.yml', 'game-trend-radar', null, { event: 'schedule', created_at: '2026-10-03T02:20:00Z' });
+  assert.equal(lane([insights], 'frontend_insights').slots[10].state, 'unknown');
+  assert.match(eventHistory(queue(), [fallback], null, now).find(event => event.id === 'run-' + fallback.id).detail, /^GitHub 備援排程 → 11:13 開始 → 11:15 結束/);
 });

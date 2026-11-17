@@ -27,12 +27,12 @@ function renderSchedule() {
   $("scheduleDate").textContent = today.replaceAll("-", "/") + " · 台灣時間";
   const ticks = Array.from({ length: 13 }, (_, i) => `<span style="left:${i / 12 * 100}%">${String(i * 2).padStart(2, "0")}:00</span>`).join("");
   const nowPosition = (now - start) / DAY * 100;
-  $("scheduleTimeline").innerHTML = `<div class="schedule-hours"><span class="schedule-label">原定時段 → 實際執行</span><div class="schedule-track schedule-ticks">${ticks}</div></div>` + rows.map(({ job, slots, summary }) => `<div class="schedule-lane${summary ? " is-recheck" : ""}"><div class="schedule-label"><strong>${esc(job.name)}</strong><small>${esc(job.note)}</small>${summary ? `<span class="schedule-result${summary.confirmed ? " is-confirmed" : ""}" role="status">${esc(summary.text)}</span>${summary.confirmed && summary.total ? `<small>已完成 ${summary.completed.toLocaleString("zh-TW")} · 尚待 ${summary.remaining.toLocaleString("zh-TW")}</small>` : ""}` : ""}</div><div class="schedule-track"><span class="schedule-now" style="left:${nowPosition}%" aria-hidden="true"></span>${slots.map(slot => {
+  $("scheduleTimeline").innerHTML = `<div class="schedule-hours"><span class="schedule-label">原定時段 → 實際執行</span><div class="schedule-track schedule-ticks">${ticks}</div></div>` + rows.map(({ job, slots, summary }, index) => `${job.maintenance && !rows[index - 1]?.job.maintenance ? '<div class="schedule-group"><span class="schedule-label">維護工作</span></div>' : ""}<div class="schedule-lane${summary ? " is-recheck" : ""}"><div class="schedule-label"><strong>${esc(job.name)}</strong><small>${esc(job.note)}</small>${summary ? `<span class="schedule-result${summary.confirmed ? " is-confirmed" : ""}" role="status">${esc(summary.text)}</span>${summary.confirmed && summary.total ? `<small>已完成 ${summary.completed.toLocaleString("zh-TW")} · 尚待 ${summary.remaining.toLocaleString("zh-TW")}</small>` : ""}` : ""}</div><div class="schedule-track"><span class="schedule-now" style="left:${nowPosition}%" aria-hidden="true"></span>${slots.map(slot => {
     const label = `${clockLabel(slot.at)} · ${job.name} · ${slot.text}${slot.run ? "，實際 " + clockLabel(instant(slot.run.started_at) ?? instant(slot.run.created_at)) + (slot.run.started_at ? " 開始" : " 建立／排隊") : ""}`;
     const common = `class="schedule-slot is-${slot.state}" style="left:${(slot.at - start) / DAY * 100}%" title="${esc(label)}" aria-label="${esc(label)}"`;
     return slot.run?.url ? `<a ${common} href="${slot.run.url}" target="_blank" rel="noopener noreferrer"><span class="sr-only">${esc(label)}</span></a>` : `<button ${common} type="button" data-slot-note="${esc(label)}"><span class="sr-only">${esc(label)}</span></button>`;
   }).join("")}</div></div>`).join("");
-  $("scheduleCaption").textContent = `藍線為現在 ${clockLabel(now)}。圓點位置代表原定時段；點選可查看實際開始時間與 Actions。「Follower 回查盤點」顯示最近實際盤點回報的時間與今日筆數，盤點完成後由「官方 Followers」分批查詢。每日候選更新與 Steam 成長追蹤每 6 小時檢查，當日完整成功後略過後續時段。灰色過去時段代表尚未取得紀錄，不直接判定失敗。`;
+  $("scheduleCaption").textContent = `藍線為現在 ${clockLabel(now)}。圓點位置代表原定時段；點選可查看實際開始時間與 Actions。「Follower 回查盤點」顯示最近實際盤點回報的時間與今日筆數，盤點完成後由「官方 Followers」分批查詢。每日候選更新與 Steam 成長追蹤每 6 小時檢查，當日完整成功後略過後續時段。維護工作另保留 GitHub 原生排程作備援，備援執行會記在它涵蓋的原定時段；憑證到期檢查把四個儲存庫合成一點，點選可看各自結果。灰色過去時段代表尚未取得紀錄，不直接判定失敗。`;
 }
 function renderEvents() {
   const events = eventHistory(state.queue, state.runs, state.growth, Date.now(), freshRepos());
@@ -68,7 +68,7 @@ function render() {
     const observed = instant(apiCooldown.observed_at), retry = instant(apiCooldown.retry_at);
     sources.push(`<p><strong>群組 ID 解析 API</strong> ${observed !== null ? "觀測於 " + dateLabel(observed) : "觀測時間未確認"}${apiCooldown.status ? " · " + esc(apiCooldown.status) : ""}${Number.isInteger(apiCooldown.http) ? " · HTTP " + apiCooldown.http : ""}${retry !== null ? " · 解析 API 可重試時間 " + dateLabel(retry) : ""}。這是群組解析 API 的狀態，與 Steam Community Followers 冷卻分開記錄。</p>`);
   }
-  sources.push("<p>每個儲存庫讀取最近最多 50 筆 Actions；較早或未涵蓋的時段保留待確認。官方查詢事件保留最近 100 筆，本頁呈現其中今日事件。</p>");
+  sources.push("<p>每個儲存庫讀取今日（台灣時間）建立的 Actions；當天超過 100 筆時，較早的部分最多每 30 分鐘補讀一次，仍未涵蓋的時段保留待確認。官方查詢事件保留最近 100 筆，本頁呈現其中今日事件。</p>");
   $("sourcesDetails").innerHTML = sources.join("");
   renderQueue(); renderSchedule(); renderEvents();
 }
