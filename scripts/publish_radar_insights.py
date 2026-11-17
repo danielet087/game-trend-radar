@@ -23,17 +23,19 @@ PATHS = ("data/insights-state.json", "data/activity.json", "data/growth.json",
 # lease fails before any write, so the whole publication can simply run again.
 LEASE_RETRIES = 2
 LEASE_RETRY_SECONDS = 90
-# The per-game series also live in this database-only source; once they leave
-# the frontend's Git history the launch curves are built from that copy.
+# The per-game series also live in this database-only source; once the views
+# flag moves them out of the frontend's Git history the launch curves are built
+# from that copy (a stale Git copy is then ignored).
 VIEWS_REPOSITORY, VIEWS_BRANCH = "danielet087/game-trend-radar", "twitch-views"
 SERIES_PATH = "data/twitch_series/"
+VIEWS_FLAG = "data/publication/twitch_views.json"
 
 
 def _launch_curves(current):
     """Refresh the launch curves; preserve the existing projection on failure."""
     builder = [sys.executable, "-B", str(current / "scripts/build_twitch_launch_curves.py")]
     try:
-        if (current / SERIES_PATH / "index.json").is_file():
+        if not (current / VIEWS_FLAG).is_file() and (current / SERIES_PATH / "index.json").is_file():
             subprocess.run([*builder, "--data-dir", str(current / "data")],
                            check=True, timeout=120, capture_output=True, text=True)
             return

@@ -66,6 +66,38 @@ class SiteTwitchViewsTests(unittest.TestCase):
         self.assertEqual(views.site_views(stale), DATABASE)
         self.assertEqual((stale / "data/catalog.json").read_bytes(), b"{}")
 
+    def flagged(self, root, raw=None):
+        flag = root / views.FLAG
+        flag.parent.mkdir(parents=True, exist_ok=True)
+        flag.write_bytes(raw if raw is not None else json.dumps(
+            {"schema_version": 1, "home": "database", "source": SOURCE}).encode())
+        return root
+
+    def test_auto_verifies_until_the_flag_then_overlays_the_database_copy(self):
+        before = site(self.tmp / "before", DATABASE)
+        status, report = views.run(before, "auto")
+        self.assertEqual((status, report["mode"], report["status"], report["selected_by"]),
+                         (0, "verify", "verified", "no flag"))
+        # After the move Git has no views, or a stale copy a late writer put back.
+        moved = self.flagged(site(self.tmp / "moved", {"data/twitch_series/index.json": b'{"stale": 1}'}))
+        status, report = views.run(moved, "auto")
+        self.assertEqual((status, report["mode"], report["status"], report["selected_by"]),
+                         (0, "overlay", "overlaid", "flag"))
+        self.assertEqual(views.site_views(moved), DATABASE)
+
+    def test_auto_stops_on_a_bad_flag_or_a_database_copy_without_the_index(self):
+        bad = self.flagged(site(self.tmp / "bad", {}), b'{"home": "git"}')
+        self.assertEqual(views.run(bad, "auto"), (1, {"mode": "auto", "status": "error", "code": "INVALID_FLAG"}))
+        empty = SqliteClient(self.tmp / "empty.sqlite")
+        self.addCleanup(empty.close)
+        documents.initialize(empty)
+        primary_store.bootstrap_primary(empty, SOURCE, {"data/twitch_history/2026-11-17.json": b"{}"}, "seed")
+        moved = self.flagged(site(self.tmp / "moved", {}))
+        with patch.object(primary, "client", lambda: empty):
+            status, report = views.run(moved, "auto")
+        self.assertEqual((status, report["code"]), (1, "NO_DATABASE_VIEWS"))
+        self.assertEqual(views.site_views(moved), {})
+
     def test_an_unreachable_database_only_warns_in_verify_and_stops_an_overlay(self):
         def unreachable(*args, **kwargs):
             raise type("StorageError", (Exception,), {"code": "SQL_UNAVAILABLE"})("down")
