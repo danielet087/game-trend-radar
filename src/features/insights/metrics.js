@@ -87,7 +87,9 @@ function metric(history, span, today) {
   return { status: "ready", latest, baseline, delta,
     percent: baseline.followers > 0 ? delta / baseline.followers * 100 : null, series };
 }
-const tracking = (release, today) => !!day(release) && !!day(today) && today <= offset(release, 30);
+// Followers are tracked through the release day; that measurement is final.
+const POST_RELEASE_DAYS = 0;
+const tracking = (release, today) => !!day(release) && !!day(today) && today <= offset(release, POST_RELEASE_DAYS);
 function comparisonIds(value) {
   return [...new Set((Array.isArray(value) ? value : String(value || "").split(","))
     .map(String).filter(id => /^[1-9]\d{0,9}$/.test(id)).map(Number))].slice(0, 3);
@@ -104,7 +106,7 @@ function comparisonWindow(games, span = 30, end, today) {
     if (!appid || seen.has(appid)) continue;
     seen.add(appid);
     const release = day(game.date);
-    const trackUntil = release ? offset(release, 30) : null;
+    const trackUntil = release ? offset(release, POST_RELEASE_DAYS) : null;
     const history = release ? points((Array.isArray(game.history) ? game.history : [])
       .filter(point => day(typeof point?.at === "string" ? point.at.slice(0, 10) : null)), today)
       .filter(point => point.day <= trackUntil) : [];

@@ -225,19 +225,21 @@ class InsightTests(unittest.TestCase):
         self.assertEqual([g["appid"] for g in growth["games"]], [2])
 
     def test_taipei_daily_latest_measurement_and_no_filled_days(self):
-        first = M.update(None, catalog(game()), observed_at="2026-09-28T00:00:00Z", measurements=[
+        first = M.update(None, catalog(game(release_start="2026-09-05")), observed_at="2026-09-03T00:00:00Z", measurements=[
             {"appid": 1, "at": "2026-09-02T01:00:00Z", "followers": 6200, "source": "steam_community"},
             {"appid": 1, "at": "2026-09-01T18:00:00Z", "followers": 6100, "source": "steam_community"}])
         self.assertEqual([p["followers"] for p in first["records"]["1"]["history"]], [6000, 6200])
 
-    def test_day_30_included_day_31_rejected_and_never_invent_measurement_time(self):
-        first = M.update(None, catalog(game()), observed_at="2026-10-03T00:00:00Z", measurements=[
-            {"appid": 1, "at": "2026-10-01T01:00:00Z", "followers": 6500, "source": "steam_community"},
-            {"appid": 1, "at": "2026-10-02T01:00:00Z", "followers": 6800, "source": "steam_community"},
-            {"appid": 1, "at": "2026-10-01T02:00:00Z", "followers": 9000, "source": "third_party"}])
-        self.assertEqual(first["records"]["1"]["history"][-1]["followers"], 6500)
-        self.assertTrue(M.projections(first, date(2026, 10, 1))[1]["games"][0]["tracking"])
-        self.assertFalse(M.projections(first, date(2026, 10, 2))[1]["games"][0]["tracking"])
+    def test_release_day_is_final_next_day_rejected_and_never_invent_measurement_time(self):
+        # Release day 2026-09-01 (Taipei): its latest official count is the final one.
+        first = M.update(None, catalog(game(follower_checked_at="2026-09-01T01:00:00Z")),
+                         observed_at="2026-09-03T00:00:00Z", measurements=[
+            {"appid": 1, "at": "2026-09-01T10:00:00Z", "followers": 6500, "source": "steam_community"},
+            {"appid": 1, "at": "2026-09-01T16:30:00Z", "followers": 6800, "source": "steam_community"},
+            {"appid": 1, "at": "2026-09-01T11:00:00Z", "followers": 9000, "source": "third_party"}])
+        self.assertEqual([p["followers"] for p in first["records"]["1"]["history"]], [6500])
+        self.assertTrue(M.projections(first, date(2026, 9, 1))[1]["games"][0]["tracking"])
+        self.assertFalse(M.projections(first, date(2026, 9, 2))[1]["games"][0]["tracking"])
 
     def test_missing_or_invalid_observations_are_not_zero_growth(self):
         first = M.update(None, catalog(game(follower_checked_at=None)), observed_at="2026-09-28T00:00:00Z")

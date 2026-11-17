@@ -20,7 +20,8 @@ except ModuleNotFoundError:
     from twitch_steam_admission import is_twitch_qualified
 
 TAIPEI = timezone(timedelta(hours=8))
-POST_RELEASE_DAYS = 30
+# Followers are tracked through the release day; that measurement is final.
+POST_RELEASE_DAYS = 0
 NINTENDO_PLATFORMS = {"NS": 130, "NS2": 508}
 IGDB_PLATFORMS = {**NINTENDO_PLATFORMS, "PS5": 167}
 NINTENDO_GAME_TYPES = {"main_game", "standalone_expansion", "remake", "remaster", "expanded_game", "port"}

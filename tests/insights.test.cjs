@@ -27,9 +27,9 @@ test('growth requires an exact baseline and a fresh latest measurement; missing 
   assert.equal(I.metric([observation('2026-09-21', 0), observation('2026-09-28', 10)], 7, '2026-09-28').percent, null);
 });
 
-test('tracking includes release plus 30 days, excludes the next day and validates dates', () => {
-  assert.equal(I.tracking('2026-08-29', '2026-09-28'), true);
-  assert.equal(I.tracking('2026-08-28', '2026-09-28'), false);
+test('tracking includes the release day, excludes the next day and validates dates', () => {
+  assert.equal(I.tracking('2026-09-28', '2026-09-28'), true);
+  assert.equal(I.tracking('2026-09-27', '2026-09-28'), false);
   assert.equal(I.tracking('2026-10-01', '2026-09-28'), true);
   assert.equal(I.tracking('bad', '2026-09-28'), false);
   assert.equal(I.offset('2026-12-15', 30), '2027-01-14');
@@ -71,21 +71,21 @@ test('comparison deduplicates Taipei daily observations and never bridges gaps',
   assert.equal(result.points[1].at, '2026-09-22T07:00:00Z');
 });
 
-test('comparison retains archived history through release plus thirty days inclusive', () => {
-  const games = [{ appid: 1, date: '2026-08-01', history: [
-    observation('2026-08-24', 5000), observation('2026-08-31', 5500),
-    observation('2026-09-01', 9999),
+test('comparison retains archived history through the release day inclusive', () => {
+  const games = [{ appid: 1, date: '2026-08-24', history: [
+    observation('2026-08-17', 5000), observation('2026-08-24', 5500),
+    observation('2026-08-25', 9999),
   ] }];
   const archived = I.comparisonWindow(games, 7, undefined, '2026-09-28');
-  assert.equal(archived.end, '2026-08-31'); assert.equal(archived.start, '2026-08-24');
+  assert.equal(archived.end, '2026-08-24'); assert.equal(archived.start, '2026-08-17');
   assert.equal(archived.series[0].status, 'ready'); assert.equal(archived.series[0].delta, 500);
-  assert.equal(archived.series[0].trackUntil, '2026-08-31');
+  assert.equal(archived.series[0].trackUntil, '2026-08-24');
   assert.equal(archived.series[0].tracking, false);
   assert.equal(I.metric(games[0].history.slice(0, 2), 7, '2026-09-28').status, 'stale');
-  const stopped = I.comparisonWindow(games, 7, '2026-09-01', '2026-09-28').series[0];
+  const stopped = I.comparisonWindow(games, 7, '2026-08-25', '2026-09-28').series[0];
   assert.equal(stopped.status, 'partial'); assert.equal(stopped.delta, null);
   assert.equal(stopped.values.at(-1), null);
-  assert.equal(I.comparisonWindow(games, 7, undefined, '2026-08-31').series[0].tracking, true);
+  assert.equal(I.comparisonWindow(games, 7, undefined, '2026-08-24').series[0].tracking, true);
 });
 
 test('comparison accepts actual zero and negative growth while keeping absent values null', () => {
