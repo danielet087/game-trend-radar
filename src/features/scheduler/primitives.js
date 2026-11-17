@@ -7,7 +7,8 @@ const JOBS = Object.freeze([
   { id: "steam_growth", name: "Steam 成長追蹤", repo: "game-trend-radar-backend", workflow: "steam-public-growth.yml", hours: [1, 7, 13, 19], minute: 15, oncePerDay: true, note: "01:15／07:15／13:15／19:15 · 今日成功後略過" },
   { id: "steam_catchup", name: "官方 Followers", repo: "game-trend-radar-backend", workflow: "steam-official-daily-catchup-250.yml", hours: Array.from({ length: 21 }, (_, i) => i + 3), minute: 0, note: "03:00–23:00，每小時" },
   { id: "twitch", name: "Twitch 新作觀測", repo: "game-trend-radar-twitch-backend", workflow: "collect.yml", hours: Array.from({ length: 24 }, (_, i) => i), minute: 5, note: "每小時 :05" },
-  { id: "frontend_insights", name: "前端動態與成長榜", repo: "game-trend-radar", workflow: "radar-insights.yml", hours: Array.from({ length: 24 }, (_, i) => i), minute: 17, note: "每小時 :17" },
+  // A data push starts the same derivation; the Worker skips :17 while that run is active.
+  { id: "frontend_insights", name: "前端動態與成長榜", repo: "game-trend-radar", workflow: "radar-insights.yml", hours: Array.from({ length: 24 }, (_, i) => i), minute: 17, coveredByUnscheduledRuns: true, note: "每小時 :17" },
   { id: "steam_content", name: "內容對帳與發布", repo: "game-trend-radar-content-backend", workflow: "steam-catalog-reconcile.yml", hours: [7, 19], minute: 30, note: "每日 07:30、19:30" },
   { id: "steam_descriptions", name: "遊戲簡介更新", repo: "game-trend-radar-content-backend", workflow: "steam-description-refresh.yml", hours: [1, 7, 13, 19], minute: 30, note: "01:30／07:30／13:30／19:30 · 官方中文與英文原文回查" },
   { id: "nintendo_daily", name: "IGDB 主機新作", repo: "game-trend-radar-twitch-backend", workflow: "collect-nintendo.yml", hours: [8], minute: 30, note: "每日 08:30 · NS／NS2／PS5" },

@@ -1,0 +1,1 @@
+import{t as e}from"./bootstrap-CLkq0Oiz.js";/* empty css             *//* empty css               *//* empty css                */e(`stream-planning`).catch(e=>{console.error(`Unable to initialize stream planning:`,e);let t=document.getElementById(`streamPlanStatus`);t&&(t.textContent=`選題頁暫時無法載入，請重新整理。`)});
