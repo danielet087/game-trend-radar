@@ -15,6 +15,15 @@ export function validChunk(value, id, month) {
   return object(value) && value.schema_version === 1 && value.timezone === 'Asia/Taipei' &&
     value.game_id === id && value.month === month && object(value.hours);
 }
+// The Twitch backend writes a heat file beside each month with only the hour
+// fields that seriesRows needs for analyzeStreamHeat (generated_at, both
+// totals and the Chinese counts, largest stream and measurement source).
+// Change the projection name with the backend whenever that list changes.
+export const HEAT_PROJECTION = 'stream_heat_v1';
+export const heatPath = (id, month) => `./data/twitch_series/${id}/${month}-heat.json`;
+export function validHeatChunk(value, id, month) {
+  return validChunk(value, id, month) && value.projection === HEAT_PROJECTION;
+}
 export function dateStart(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return NaN;
   const at = Date.parse(`${value}T00:00:00+08:00`);

@@ -6,7 +6,7 @@ import { steamStoreLinks } from './identity.js';
 import { canonicalID, HOUR } from './metrics.js';
 import { filterNames, fmt, node, time } from './presentation.js';
 import { projectRows, regionsFor } from './region-views.js';
-import { dateStart, dayOf, detailHref, fullSeriesRows, validChunk, validIndex } from './series.js';
+import { dateStart, dayOf, detailHref, fullSeriesRows, heatPath, validChunk, validHeatChunk, validIndex } from './series.js';
 import { analyzeStreamHeat, streamHeatDate, streamHeatThrough, STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS, STREAM_HEAT_WEEK, MIN_PAIRED_HEAT_HOURS } from './stream-heat-model.js';
 import { CHINESE_DAILY_HEAT_HITS, cooldownThreshold } from './cooldown-model.js';
 import { selectObservation } from './selection.js';
@@ -248,7 +248,10 @@ export function initStreamPlanningPage() {
         if (!Object.hasOwn(archive.index.months, month)) throw new Error('觀測月份無法確認');
         const key = `${id}/${month}`;
         if (!archive.chunks.has(key)) {
-          const pending = read(`./data/twitch_series/${key}.json`, value => validChunk(value, id, month), archive.force);
+          // The heat file is about a fifth of the month; the full month stays
+          // the fallback while a heat file is missing or from another version.
+          const pending = read(heatPath(id, month), value => validHeatChunk(value, id, month), archive.force)
+            .catch(() => read(`./data/twitch_series/${key}.json`, value => validChunk(value, id, month), archive.force));
           archive.chunks.set(key, pending);
           pending.catch(() => { if (archive.chunks.get(key) === pending) archive.chunks.delete(key); });
         }

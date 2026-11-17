@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dateStart, dayOf, detailHref, streamPlanningHref } from '../src/features/twitch/series.js';
+import { dateStart, dayOf, detailHref, fullSeriesRows, HEAT_PROJECTION, streamPlanningHref, validHeatChunk } from '../src/features/twitch/series.js';
+import { projectRows } from '../src/features/twitch/region-views.js';
+import { CHINESE_MEASUREMENT_CHANGE_AT } from '../src/features/twitch/audience-region.js';
 import { latestHistorySnapshot } from '../src/features/twitch/history.js';
 import { compareTrialTimes, compareViewerTier, trialWindow } from '../src/features/twitch/stream-planning-model.js';
 import { launchComparison } from '../src/features/twitch/launch-curves.js';
@@ -337,4 +339,80 @@ test('confirmed cooldown can suggest a wrap-up while stale and archived data pro
   assert.equal(streamerAdvice(snapshot, now)[0], '考慮收尾或換題');
   assert.equal(streamerAdvice(snapshot, now + 13*3600000)[0], '先等有效資料');
   assert.equal(streamerAdvice({ ...snapshot, historical:true }, now)[0], '先核對近期表現');
+});
+
+// The Twitch backend's heat projection (twitch_series.heat_projection).
+const HEAT_FIELDS = ['generated_at', 'viewer_count', 'streamer_count'];
+const HEAT_REGION_FIELDS = ['viewer_count', 'streamer_count', 'largest_stream_viewer_count', 'measurement_source'];
+const pick = (value, names) => Object.fromEntries(names.filter(name => Object.hasOwn(value, name)).map(name => [name, value[name]]));
+function heatFile(chunk, regionFields = HEAT_REGION_FIELDS) {
+  return { ...chunk, projection:HEAT_PROJECTION, hours:Object.fromEntries(Object.entries(chunk.hours).map(([hour, row]) => {
+    const chinese = row.audience_regions?.zh;
+    return [hour, { ...pick(row, HEAT_FIELDS),
+      ...(chinese && typeof chinese === 'object' && !Array.isArray(chinese) ? { audience_regions:{ zh:pick(chinese, regionFields) } } : {}) }];
+  })) };
+}
+
+test('heat files give the planning page the same results as full months', () => {
+  // Seeded hours cross the Chinese measurement change and include uncollected
+  // hours, absent censuses, invalid concentration values and every extra field.
+  let seed = 20261117;
+  const random = () => (seed = seed * 48271 % 2147483647) / 2147483647;
+  const start = dateStart('2026-11-01'), end = dateStart('2026-11-20') + 8 * 3600000;
+  const changeAt = Date.parse(CHINESE_MEASUREMENT_CHANGE_AT);
+  const months = {}, full = {};
+  const audience = (viewers, streamers) => ({ rule:'followers_gt_1000_viewers_gte_10_v1', min_followers_exclusive:1000,
+    min_viewers_inclusive:10, followers_max_age_hours:24, status:random() < .8 ? 'complete' : 'partial',
+    eligible_streamer_count:Math.min(streamers, 2), eligible_viewer_count:viewers, median_viewer_count:Math.max(10, viewers >> 1),
+    excluded_low_viewer_count:Math.max(0, streamers - 2), excluded_low_follower_count:0, unknown_follower_count:random() < .2 ? 1 : 0 });
+  for (let at = start; at <= end; at += 3600000) {
+    if (random() < .04) continue;
+    const hour = iso(at), month = dayOf(at).slice(0, 7), generated_at = iso(at + 600000);
+    (months[month] ||= {})[hour] = generated_at;
+    full[month] ||= { schema_version:1, timezone:'Asia/Taipei', game_id:'7', month, hours:{} };
+    if (random() < .04) continue;
+    const day = Math.floor((at - start) / 86400000);
+    const viewers = Math.round((day < 7 ? 6000 : day < 13 ? 1800 : 900) * (.4 + random()));
+    const streamers = 1 + Math.floor(random() * 30);
+    const independent = at >= changeAt;
+    const chineseViewers = Math.round((independent ? 260 : 120) * random() * (day < 7 ? 2 : 1));
+    const chineseStreamers = chineseViewers ? 1 + Math.floor(random() * Math.min(streamers, 5)) : 0;
+    const chinese = { viewer_count:chineseViewers, streamer_count:independent && random() < .2 ? streamers + 2 : chineseStreamers,
+      median_viewer_count:chineseViewers ? Math.ceil(chineseViewers / 2) : null,
+      streamer_counts_above_viewers:[chineseStreamers, 0, 0], filtered_audience:audience(chineseViewers, chineseStreamers) };
+    const largest = random();
+    if (largest < .5) chinese.largest_stream_viewer_count = Math.ceil(chineseViewers * (.5 + random() / 2));
+    else if (largest < .6) chinese.largest_stream_viewer_count = chineseViewers + 5;
+    if (independent) Object.assign(chinese, { measurement_source:'helix_language_filter',
+      measurement_started_at:iso(at + 60000), measurement_finished_at:iso(at + 300000) });
+    full[month].hours[hour] = { generated_at, viewer_count:viewers, streamer_count:streamers,
+      streamer_counts_above_viewers:[Math.min(streamers, 9), 3, 1], filtered_audience:audience(viewers, streamers),
+      ...(random() < .1 ? {} : { audience_regions:{ zh:random() < .05 ? null : chinese, en:{ viewer_count:viewers } } }) };
+  }
+  const hours = Object.values(months).flatMap(Object.keys).sort();
+  const index = { months, games:{ '7':{ months:Object.keys(full), first_hour:hours[0], last_hour:hours.at(-1),
+    release_reference:{ date:'2026-11-02', precision:'day' } } } };
+  const heat = Object.fromEntries(Object.entries(full).map(([month, chunk]) => [month, heatFile(chunk)]));
+  for (const [month, chunk] of Object.entries(heat)) assert.equal(validHeatChunk(chunk, '7', month), true);
+  assert.ok(JSON.stringify(heat).length < JSON.stringify(full).length / 3);
+  const cases = [];
+  for (let at = dateStart('2026-11-01'); at <= end; at += 86400000) {
+    cases.push({ date:dayOf(at), now:end + 1800000 }, { date:dayOf(at), now:at + 14 * 3600000 });
+  }
+  const results = chunks => {
+    const rows = fullSeriesRows(index, chunks, '7');
+    return ['global', 'zh'].map(region => cases.map(({ date, now }) =>
+      analyzeStreamHeat(region === 'global' ? rows : projectRows(rows, region), { game:index.games['7'], region, date, now })));
+  };
+  const expected = results(full);
+  assert.deepEqual(results(heat), expected);
+  const exercised = expected.flat();
+  assert.ok(exercised.some(day => day.concentration) && exercised.some(day => day.todayChange) &&
+    exercised.some(day => day.outlook.comparison) && exercised.some(day => day.signal === 'cooled'));
+  // Each Chinese field in the projection changes some result when it is left out.
+  for (const field of ['largest_stream_viewer_count', 'measurement_source', 'streamer_count']) {
+    const without = Object.fromEntries(Object.entries(full).map(([month, chunk]) =>
+      [month, heatFile(chunk, HEAT_REGION_FIELDS.filter(name => name !== field))]));
+    assert.notDeepEqual(results(without), expected, field);
+  }
 });
