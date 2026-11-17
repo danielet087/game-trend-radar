@@ -6,8 +6,10 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
 
 from radar_core.publication import SubprocessGitRepository, publish_with_retry, snapshot_revision
@@ -21,6 +23,37 @@ PATHS = ("data/insights-state.json", "data/activity.json", "data/growth.json",
 # lease fails before any write, so the whole publication can simply run again.
 LEASE_RETRIES = 2
 LEASE_RETRY_SECONDS = 90
+# The per-game series also live in this database-only source; once they leave
+# the frontend's Git history the launch curves are built from that copy.
+VIEWS_REPOSITORY, VIEWS_BRANCH = "danielet087/game-trend-radar", "twitch-views"
+SERIES_PATH = "data/twitch_series/"
+
+
+def _launch_curves(current):
+    """Refresh the launch curves; preserve the existing projection on failure."""
+    builder = [sys.executable, "-B", str(current / "scripts/build_twitch_launch_curves.py")]
+    try:
+        if (current / SERIES_PATH / "index.json").is_file():
+            subprocess.run([*builder, "--data-dir", str(current / "data")],
+                           check=True, timeout=120, capture_output=True, text=True)
+            return
+        if not primary.enabled():
+            return
+        _, files = primary.read_files(VIEWS_REPOSITORY, paths=(SERIES_PATH,), branch=VIEWS_BRANCH)
+        if SERIES_PATH + "index.json" not in files:
+            return
+        with tempfile.TemporaryDirectory(prefix="radar-launch-curves.") as scratch:
+            data = Path(scratch) / "data"
+            for path, raw in files.items():
+                target = Path(scratch) / path
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(raw)
+            shutil.copyfile(current / "data/catalog.json", data / "catalog.json")
+            subprocess.run([*builder, "--data-dir", str(data)],
+                           check=True, timeout=120, capture_output=True, text=True)
+            shutil.copyfile(data / "twitch-launch-curves.json", current / "data/twitch-launch-curves.json")
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, StorageError, OSError):
+        print("Launch curves could not be refreshed; preserving the existing projection.", file=sys.stderr)
 
 
 def frozen_queue():
@@ -50,13 +83,7 @@ def publish(root, *, observed_at=None, repository=None, queue_snapshot=None):
         subprocess.run([sys.executable, "-B", str(current / "scripts/build_radar_insights.py"),
                         "--data-dir", str(current / "data"), "--observed-at", observation],
                        check=True, timeout=120, capture_output=True, text=True)
-        if (current / "data/twitch_series/index.json").is_file():
-            try:
-                subprocess.run([sys.executable, "-B", str(current / "scripts/build_twitch_launch_curves.py"),
-                                "--data-dir", str(current / "data")],
-                               check=True, timeout=120, capture_output=True, text=True)
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-                print("Launch curves could not be refreshed; preserving the existing projection.", file=sys.stderr)
+        _launch_curves(current)
         if frozen is not None:
             queue.sync_snapshot(current / "data/scheduler_queue_status.json",
                                 fetcher=lambda: deepcopy(frozen))
