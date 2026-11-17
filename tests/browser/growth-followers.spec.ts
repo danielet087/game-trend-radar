@@ -7,7 +7,8 @@ const archive = catalog.games.find((row: any) => row.appid === 5356470);
 const high = catalog.games.find((row: any) => {
   const game = RadarData.normalize(row);
   return game && game.source === 'steam' && game.followers >= 5000 &&
-    game.date >= '2026-10-11' && game.date <= '2027-11-10';
+    // Tracked through the release day: still upcoming on the 2026-11-10 page clock.
+    game.date >= '2026-11-10' && game.date <= '2027-11-10';
 });
 const at = (date: string, followers: number) => ({ at:date, followers, source:'steam_community' });
 
