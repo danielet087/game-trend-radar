@@ -64,6 +64,23 @@ class LaunchCurvesSourceTests(unittest.TestCase):
         self.assertEqual(json.loads((self.checkout / "data/twitch-launch-curves.json").read_text())["built_from"], "data")
         self.assertFalse((self.checkout / "data/twitch_series").exists())
 
+    def test_after_the_move_a_stale_git_copy_is_ignored(self):
+        (self.checkout / "data/twitch_series").mkdir(parents=True)
+        (self.checkout / "data/twitch_series/index.json").write_bytes(b'{"stale": true}')
+        (self.checkout / insights.VIEWS_FLAG).parent.mkdir(parents=True)
+        (self.checkout / insights.VIEWS_FLAG).write_text('{"schema_version": 1, "home": "database"}')
+        database = SqliteClient(self.tmp / "radar.sqlite")
+        self.addCleanup(database.close)
+        documents.initialize(database)
+        primary_store.bootstrap_primary(database, f"{insights.VIEWS_REPOSITORY}@{insights.VIEWS_BRANCH}", SERIES, "seed")
+        calls = []
+        with patch.object(primary, "client", lambda: database), \
+                patch.dict(os.environ, {"RADAR_DATABASE_PRIMARY": "1"}), \
+                patch.object(insights.subprocess, "run", fake_builder(calls)):
+            insights._launch_curves(self.checkout)
+        self.assertNotEqual(calls[0]["data"], self.checkout / "data")
+        self.assertEqual(calls[0]["series"], ["twitch_series/42/2026-11.json", "twitch_series/index.json"])
+
     def test_an_unavailable_database_preserves_the_existing_projection(self):
         (self.checkout / "data/twitch-launch-curves.json").write_text('{"previous": true}')
 

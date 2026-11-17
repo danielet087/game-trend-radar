@@ -25,9 +25,11 @@ permissions:
   contents: read
 
 env:
-  # verify: deploy Git's copy of the Twitch views and compare the database copy
-  # with it; overlay: deploy the database copy (danielet087/game-trend-radar@twitch-views).
-  SITE_TWITCH_VIEWS: verify
+  # auto: until data/publication/twitch_views.json moves the Twitch views to the
+  # database, deploy Git's copy and compare the database copy with it; after the
+  # move, deploy the database copy (danielet087/game-trend-radar@twitch-views).
+  # verify or overlay force one behaviour.
+  SITE_TWITCH_VIEWS: auto
 
 concurrency:
   group: pages
@@ -137,6 +139,12 @@ jobs:
             echo "A newer deployment ($latest) went live during the comparison; its changed files are skipped."
             git fetch --quiet --depth=1 origin "$latest"
             git diff --name-only "$COMMIT" "$latest" > "$RUNNER_TEMP/changed.txt"
+          fi
+          if [ -f _site/data/publication/twitch_views.json ]; then
+            # The moved Twitch views were read from the database at deploy time
+            # and change every hour, so they are not compared.
+            (cd _site && find data/twitch_history data/twitch_history_compact data/twitch_history_close \
+              data/twitch_series -type f 2>/dev/null || true) >> "$RUNNER_TEMP/changed.txt"
           fi
           python3 scripts/verify_pages_tree.py --evaluate "$RUNNER_TEMP/report.json" --skip-list "$RUNNER_TEMP/changed.txt" | tee "$RUNNER_TEMP/summary.json"
       - uses: actions/upload-pages-artifact@v5

@@ -1,15 +1,19 @@
 """Add the database-only Twitch views to an assembled Pages site.
 
-usage: python scripts/site_twitch_views.py SITE_DIR --mode verify|overlay
+usage: python scripts/site_twitch_views.py SITE_DIR --mode auto|verify|overlay
 
 The raw day files, 24-hour compact views, closing views and per-game series
 live in the storage source danielet087/game-trend-radar@twitch-views, which is
 never projected to Git.
 
+auto     overlay once data/publication/twitch_views.json in SITE_DIR says the
+         views moved to the database ("home": "database"), else verify; an
+         invalid flag stops the deploy.
 verify   compare the database copy with the files Git put in SITE_DIR and report
          every difference; SITE_DIR is unchanged and a failure only warns.
-overlay  replace SITE_DIR's view files with the database copy; any failure
-         stops the deploy, so the live site keeps its previous version.
+overlay  replace SITE_DIR's view files with the database copy; any failure, or a
+         copy without the series index, stops the deploy, so the live site keeps
+         its previous version.
 
 Files already in SITE_DIR are passed as hash-verified cache candidates, so only
 changed documents are downloaded. Only names, counts and digests are printed.
@@ -27,6 +31,23 @@ REPOSITORY = "danielet087/game-trend-radar"
 BRANCH = "twitch-views"
 PREFIXES = ("data/twitch_history/", "data/twitch_history_compact/", "data/twitch_history_close/",
             "data/twitch_series/")
+FLAG = "data/publication/twitch_views.json"
+INDEX = "data/twitch_series/index.json"
+
+
+def flag_mode(site: Path) -> str:
+    """overlay once the views flag moved them to the database, else verify."""
+    path = site / FLAG
+    if not path.is_file():
+        return "verify"
+    try:
+        value = json.loads(path.read_bytes())
+    except ValueError:
+        value = None
+    if not (isinstance(value, dict) and value.get("schema_version") == 1 and value.get("home") == "database"
+            and value.get("source") == f"{REPOSITORY}@{BRANCH}"):
+        raise ValueError(f"{FLAG} is not a valid Twitch views flag")
+    return "overlay"
 
 
 def site_views(site: Path) -> dict[str, bytes]:
@@ -77,6 +98,13 @@ def summarize(mode: str, head: dict, git_files: dict, database_files: dict, diff
 
 
 def run(site: Path, mode: str) -> tuple[int, dict]:
+    if mode == "auto":
+        try:
+            mode = flag_mode(site)
+        except ValueError:
+            return 1, {"mode": "auto", "status": "error", "code": "INVALID_FLAG"}
+        status, report = run(site, mode)
+        return status, {**report, "selected_by": "flag" if mode == "overlay" else "no flag"}
     git_files = site_views(site)
     try:
         head, database_files = database_views(git_files)
@@ -89,7 +117,7 @@ def run(site: Path, mode: str) -> tuple[int, dict]:
     differences = compare(git_files, database_files)
     report = summarize(mode, head, git_files, database_files, differences)
     if mode == "overlay":
-        if not database_files:
+        if INDEX not in database_files:
             return 1, {**report, "status": "error", "code": "NO_DATABASE_VIEWS"}
         overlay(site, database_files)
         return 0, {**report, "status": "overlaid"}
@@ -102,7 +130,7 @@ def run(site: Path, mode: str) -> tuple[int, dict]:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("site", type=Path)
-    parser.add_argument("--mode", choices=("verify", "overlay"), required=True)
+    parser.add_argument("--mode", choices=("auto", "verify", "overlay"), required=True)
     args = parser.parse_args(argv)
     status, report = run(args.site.resolve(), args.mode)
     text = json.dumps(report, ensure_ascii=False, indent=2)
@@ -110,7 +138,7 @@ def main(argv=None) -> int:
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
         with open(summary, "a", encoding="utf-8") as stream:
-            stream.write(f"### Twitch views ({args.mode})\n\n```json\n{text}\n```\n")
+            stream.write(f"### Twitch views ({report.get('mode', args.mode)})\n\n```json\n{text}\n```\n")
     return status
 
 
