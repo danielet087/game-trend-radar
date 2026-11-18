@@ -6,7 +6,9 @@ const NOW = Date.parse('2026-11-16T10:50:00Z');
 const hoursAgo = hours => new Date(NOW - hours * 3600000).toISOString();
 const spec = W.RECEIPTS[0];
 
-function fakeGithub({ files = {}, dirs = {}, runs = [], scheduled = {}, issues = [] } = {}) {
+const LIVE = [{ id: 11, sha: 'live', statuses: [{ state: 'success', created_at: '2026-11-16T10:33:00Z' }] }];
+
+function fakeGithub({ files = {}, dirs = {}, runs = [], scheduled = {}, issues = [], deployments = LIVE } = {}) {
   const calls = [];
   const notFound = () => Object.assign(new Error('Not Found'), { status: 404 });
   const github = { rest: {
@@ -19,6 +21,13 @@ function fakeGithub({ files = {}, dirs = {}, runs = [], scheduled = {}, issues =
         return { data: { type: 'file', sha: 'sha-1', content: Buffer.from(JSON.stringify(files[id])).toString('base64') } };
       },
       async createOrUpdateFileContents(args) { calls.push(['write', args]); },
+      async listDeployments({ environment }) {
+        assert.equal(environment, 'github-pages');
+        return { data: deployments.map(({ id, sha }) => ({ id, sha })) };
+      },
+      async listDeploymentStatuses({ deployment_id }) {
+        return { data: deployments.find(item => item.id === deployment_id).statuses };
+      },
     },
     actions: {
       async listWorkflowRunsForRepo() { return { data: { workflow_runs: runs } }; },
@@ -61,6 +70,30 @@ test('failure streaks, Pages deployments and scheduled runs', () => {
   assert.equal(W.scheduledProblems([{ spec: scheduled, run: { conclusion: 'failure', created_at: hoursAgo(6) } }]).length, 1);
   assert.deepEqual(W.scheduledProblems([{ spec: scheduled, run: { conclusion: 'success', created_at: hoursAgo(6) } },
     { spec: scheduled, run: null }]), []);
+});
+
+test('a site whose last live deploy is over three hours old alerts', () => {
+  assert.deepEqual(W.deployProblems({ sha: 'a', live_at: hoursAgo(W.DEPLOY_STALE_HOURS - 0.1) }, NOW), []);
+  const [stale] = W.deployProblems({ sha: 'a', live_at: hoursAgo(3.5) }, NOW);
+  assert.equal(stale.key, 'pages-stale');
+  assert.match(stale.text, /最後一次部署上線在 3\.5 小時前（2026-11-16 15:20）/);
+  assert.match(W.deployProblems(null, NOW)[0].text, /最近 10 次部署都沒有成功上線/);
+  // An unavailable deployment check is reported as unavailable, not as a problem.
+  assert.deepEqual(W.findings({ receipts: [], counters: [], pages: [], latest: [] }, NOW), []);
+});
+
+test('the live deployment is the newest one whose latest status is success', async () => {
+  const deployments = [
+    { id: 3, sha: 'failed', statuses: [{ state: 'failure', created_at: hoursAgo(0.2) }] },
+    { id: 2, sha: 'live', statuses: [{ state: 'success', created_at: hoursAgo(4) }] },
+    { id: 1, sha: 'old', statuses: [{ state: 'inactive', created_at: hoursAgo(4) }] },
+  ];
+  const files = { ...healthyCredentials(), ...Object.fromEntries(W.RECEIPTS.map(item => [`game-trend-radar@main:${item.path}`, { [item.field]: hoursAgo(1) }])) };
+  const fake = fakeGithub({ files, deployments });
+  await W.run({ ...fake, context, core, now: NOW });
+  const created = fake.calls.find(([name]) => name === 'create')[1];
+  assert.equal(created.title, '雷達網站監控：1 項異常');
+  assert.match(created.body, /最後一次部署上線在 4\.0 小時前/);
 });
 
 test('the issue body records its problem keys and mentions the owner', () => {

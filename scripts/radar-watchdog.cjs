@@ -2,8 +2,8 @@
 
 // Hourly health check for the whole radar pipeline. It reads GitHub:
 // published receipts, the failure counters that scheduled-failure-notice keeps
-// in each repository, the daily credential expiry records, and recent workflow
-// runs. Collector jobs use continue-on-error, so their runs stay green; these
+// in each repository, the daily credential expiry records, recent workflow
+// runs and the live Pages deployment. Collector jobs use continue-on-error, so their runs stay green; these
 // signals do not. Findings go to one labelled issue that is opened, updated and
 // closed here. Its only write besides the issue is the scheduler token's
 // reported expiry date on the notification-state branch.
@@ -39,6 +39,10 @@ const SCHEDULED = [
 // it once the Pages source is switched. A run of either that got as far as a
 // result counts; cancelled (superseded) and skipped runs do not.
 const PAGES = ["pages build and deployment", "Deploy site to Pages"];
+// Data reaches the site only through a Pages deploy (hourly at :30), so a
+// deploy that stops leaves the site on old data while every receipt in Git
+// stays fresh. Two missed hours stay quiet; the third alerts.
+const DEPLOY_STALE_HOURS = 3;
 const MARKER = /<!-- radar-watchdog keys=(\[.*?\]) -->/;
 
 function taipei(ms) {
@@ -81,6 +85,15 @@ function pagesProblems(runs) {
     .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
   if (finished.length < 2 || finished[0].conclusion !== "failure" || finished[1].conclusion !== "failure") return [];
   return [{ key: "pages", text: `GitHub Pages：最近兩次部署都失敗（${taipei(Date.parse(finished[0].created_at))}），網站停在舊版` }];
+}
+
+// deployment: the newest github-pages deployment that went live, or null.
+function deployProblems(deployment, now) {
+  const at = parseTime(deployment?.live_at);
+  if (!Number.isFinite(at)) return [{ key: "pages-stale", text: "GitHub Pages：最近 10 次部署都沒有成功上線，網站停在舊版" }];
+  if (now - at <= DEPLOY_STALE_HOURS * HOUR) return [];
+  const hours = ((now - at) / HOUR).toFixed(1);
+  return [{ key: "pages-stale", text: `GitHub Pages：最後一次部署上線在 ${hours} 小時前（${taipei(at)}），網站資料停在那時` }];
 }
 
 function scheduledProblems(latest) {
@@ -203,6 +216,10 @@ async function collect(github) {
   try {
     pages = (await github.rest.actions.listWorkflowRunsForRepo({ owner: OWNER, repo: FRONTEND, per_page: 50 })).data.workflow_runs;
   } catch (error) { errors.push(`Pages runs: ${error.message}`); }
+  // Left undefined when the check itself fails, so it is reported as unavailable.
+  let deployment;
+  try { deployment = await liveDeployment(github); }
+  catch (error) { errors.push(`Pages deployments: ${error.message}`); }
   for (const spec of SCHEDULED) {
     try {
       // Cloudflare dispatches these; GitHub's own schedule is only a fallback.
@@ -221,12 +238,26 @@ async function collect(github) {
   let scheduler = { value: null, sha: undefined };
   try { scheduler = await readScheduler(github); }
   catch (error) { errors.push(`scheduler token record: ${error.message}`); }
-  return { errors, receipts, counters, pages, latest, credentials, scheduler };
+  return { errors, receipts, counters, pages, deployment, latest, credentials, scheduler };
+}
+
+// The newest github-pages deployment whose latest status is success: the one
+// being served. A superseded deployment's status turns inactive.
+async function liveDeployment(github) {
+  const { data } = await github.rest.repos.listDeployments({ owner: OWNER, repo: FRONTEND, environment: "github-pages", per_page: 10 });
+  for (const deployment of data) {
+    const { data: statuses } = await github.rest.repos.listDeploymentStatuses({ owner: OWNER, repo: FRONTEND,
+      deployment_id: deployment.id, per_page: 1 });
+    if (statuses[0]?.state === "success") return { sha: deployment.sha, live_at: statuses[0].created_at };
+  }
+  return null;
 }
 
 function findings(inputs, now) {
   return [...receiptProblems(inputs.receipts, now), ...streakProblems(inputs.counters),
-    ...pagesProblems(inputs.pages), ...scheduledProblems(inputs.latest),
+    ...pagesProblems(inputs.pages),
+    ...(inputs.deployment === undefined ? [] : deployProblems(inputs.deployment, now)),
+    ...scheduledProblems(inputs.latest),
     ...credentialProblems(inputs.credentials || [], inputs.scheduler?.value, now)];
 }
 
@@ -280,5 +311,5 @@ async function run({ github, context, core, now = Date.now() }) {
 }
 
 module.exports = { RECEIPTS, SCHEDULED, FAILURE_STREAK, LABEL, CREDENTIAL_REPOS, CREDENTIAL_PATH, SCHEDULER_PATH,
-  CREDENTIAL_WARN_DAYS, taipei, receiptProblems, streakProblems, pagesProblems, scheduledProblems,
+  CREDENTIAL_WARN_DAYS, DEPLOY_STALE_HOURS, taipei, receiptProblems, streakProblems, pagesProblems, deployProblems, scheduledProblems,
   credentialProblems, schedulerReport, issueBody, previousKeys, findings, report, run };

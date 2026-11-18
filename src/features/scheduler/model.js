@@ -87,7 +87,8 @@ function coveringRun(job, runs, at, now) {
       (ACTIVE.has(r.status) || updated !== null && updated >= at);
   }).sort((a, b) => instant(b.created_at) - instant(a.created_at))[0] || null;
 }
-const standInLabel = run => run.event === "schedule" ? "（GitHub 備援排程）" : run.event === "push" ? "（資料更新觸發的執行涵蓋此時段）" : "（手動執行涵蓋此時段）";
+const pushLabel = job => job.pushLabel || "資料更新觸發";
+const standInLabel = (run, job) => run.event === "schedule" ? "（GitHub 備援排程）" : run.event === "push" ? `（${pushLabel(job)}的執行涵蓋此時段）` : "（手動執行涵蓋此時段）";
 const COMBINED_ORDER = ["running", "interrupted", "unknown", "waiting", "planned", "success", "skipped"];
 // One dot for jobs sharing a lane: the most urgent member state, and every member's
 // result in the note. It links to a run only when exactly one member needs a look.
@@ -120,7 +121,7 @@ function buildSlots(date, runs = [], snapshot, growth, now = Date.now(), freshRe
     const fallback = matches.length ? null : fallbackRun(job, runs, at, date) || coveringRun(job, runs, at, now);
     const run = matches[0] || fallback || undefined;
     let status = run ? runState(run, snapshot, growth, freshRepos[job.repo] !== false) : at > now ? { state: "planned", text: "原定時段，尚未到期" } : { state: "unknown", text: "此時段尚未觀測到執行紀錄" };
-    if (fallback) status = { ...status, text: status.text + standInLabel(fallback) };
+    if (fallback) status = { ...status, text: status.text + standInLabel(fallback, job) };
     const priorSuccess = priorDailySuccess(job, runs, snapshot, growth, date, Math.min(now, run ? instant(run.created_at) : at), run?.id);
     if (priorSuccess && (!run || status.state === "success" || run.conclusion === "skipped")) status = skippedAfterSuccess(priorSuccess);
     if (!run && job.id === "twitch" && snapshot?.twitchReceipt?.collection_complete === true && instant(snapshot.twitchReceipt.target_slot) === midnight + hour * HOUR) {
@@ -156,7 +157,7 @@ function eventHistory(snapshot, runs, growth, now = Date.now(), freshness = {}) 
     // cron) are routine; the page folds them per job and lists the rest.
     const routine = (scheduleAt !== null || run.event === "push" || run.event === "schedule") && ["success", "skipped"].includes(s.state);
     events.push({ id: "run-" + run.id, at: start || instant(run.created_at), job_id: job.id, state: s.state, routine, group: job.id, group_title: job.name,
-      title: job.name + " · " + s.text, detail: `${scheduleAt !== null ? "原定 " + clockLabel(scheduleAt) : run.event === "schedule" ? "GitHub 備援排程" : run.event === "push" ? "資料更新觸發" : "手動／其他入口"} → ${clockLabel(start || instant(run.created_at))} ${start ? "開始" : "建立／排隊"}${!active && end ? " → " + clockLabel(end) + " 結束" : ""}。${s.state === "success" ? "流程完成與實際資料成果分開核對。" : ""}`, url: run.url });
+      title: job.name + " · " + s.text, detail: `${scheduleAt !== null ? "原定 " + clockLabel(scheduleAt) : run.event === "schedule" ? "GitHub 備援排程" : run.event === "push" ? pushLabel(job) : "手動／其他入口"} → ${clockLabel(start || instant(run.created_at))} ${start ? "開始" : "建立／排隊"}${!active && end ? " → " + clockLabel(end) + " 結束" : ""}。${s.state === "success" ? "流程完成與實際資料成果分開核對。" : ""}`, url: run.url });
   }
   for (const [index, e] of (snapshot?.events || []).entries()) {
     const at = instant(e.at); if (at === null || day(at) !== date) continue;

@@ -1,5 +1,5 @@
 name: Deploy site to Pages
-run-name: "Deploy site to Pages | ${{ inputs.verify_live && 'verify live site' || 'deploy' }} | ${{ github.event_name }}"
+run-name: "Deploy site to Pages | ${{ inputs.verify_live && 'verify live site' || 'deploy' }} | slot=${{ inputs.target_slot || 'manual' }} | source=${{ inputs.trigger_source || github.event_name }}"
 
 # Publishes the committed tree of main exactly as the branch deploy does
 # (git archive of one commit). Deploying through Actions lets a later step add
@@ -10,9 +10,18 @@ run-name: "Deploy site to Pages | ${{ inputs.verify_live && 'verify live site' |
 # after a few seconds and a manual run only builds the artifact; deploy-pages
 # runs only once Actions is the source. verify_live builds the commit the live
 # site was built from and compares every file with what Pages serves now.
+#
+# Data commits (only data/**) do not deploy one by one: every deploy changes
+# every file's ETag, so browsers download all data again. The Cloudflare
+# scheduler dispatches one deploy each hour at :30 that publishes everything
+# committed since, so data reaches the site within about an hour. Any push
+# that changes something outside data/** (code, pages, workflows) still
+# deploys at once; frontend-build.yml dispatches a deploy after it commits a
+# new static build.
 on:
   push:
     branches: [main]
+    paths-ignore: ['data/**']
   workflow_dispatch:
     inputs:
       verify_live:
@@ -20,6 +29,16 @@ on:
         required: false
         type: boolean
         default: false
+      target_slot:
+        description: External scheduler slot identifier (leave empty for a manual run)
+        required: false
+        type: string
+        default: ''
+      trigger_source:
+        description: Trigger source for run identification
+        required: false
+        type: string
+        default: manual
 
 permissions:
   contents: read
