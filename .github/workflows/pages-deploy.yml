@@ -49,6 +49,11 @@ env:
   # move, deploy the database copy (danielet087/game-trend-radar@twitch-views).
   # verify or overlay force one behaviour.
   SITE_TWITCH_VIEWS: auto
+  # verify: compare the data Git publishes with the database version its commit
+  # was projected from and only report differences (the Git copy is deployed).
+  # overlay: deploy the database's newest data instead (the plan's phase 1
+  # switch, made only with the owner's approval).
+  SITE_DATA: verify
 
 concurrency:
   group: pages
@@ -133,6 +138,23 @@ jobs:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: requirements-core.txt
+      - name: Compare or replace the site data with the database copy
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          COMMIT: ${{ steps.target.outputs.commit }}
+        run: |
+          # A commit published by verify_live may predate this step.
+          [ -f scripts/site_data.py ] || { echo "No site data step in this commit."; exit 0; }
+          python -m pip install --disable-pip-version-check -q -r requirements-core.txt
+          if [ "$SITE_DATA" = overlay ]; then
+            python scripts/site_data.py _site --mode overlay
+          else
+            # The newest commit that changed data/ is the one projected from a database version.
+            data_commit=$(gh api "repos/$GITHUB_REPOSITORY/commits?sha=$COMMIT&path=data&per_page=1" --jq '.[0].sha' || true)
+            python scripts/site_data.py _site --mode verify --data-commit "$data_commit"
+          fi
       - name: Add the Twitch views from the database
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
