@@ -4,7 +4,6 @@
   "display_name": "Func Key",
   "display_name_source": "english",
   "name_en": "Func Key",
-  "name_en_traditional": "Func Key",
   "language_support": {
     "tchinese": false,
     "schinese": false,
@@ -122,26 +121,27 @@
     "reason": "no_primary_erotic_evidence"
   },
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 4268590,
-    "twitch_game_id": "1297859887",
-    "igdb_id": "383673",
     "checked_at": "2026-11-16T19:22:40Z",
-    "source_database_revision": "0e13778ec2d3f63c42e6b9cc61f60698e29d1a88d45139c01992c51d0abf0ceb",
+    "igdb_id": "383673",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 1952,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "0e13778ec2d3f63c42e6b9cc61f60698e29d1a88d45139c01992c51d0abf0ceb",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-11-16T19:22:40Z",
       "source": "igdb_first_release_date",
       "viewer_count": 12076
-    }
+    },
+    "twitch_game_id": "1297859887"
   },
   "content_enrichment_signature": "4268590:None:2026-11-17",
   "storage_version": 2,
   "followers": null,
   "follower_checked_at": null,
   "follower_source": null,
-  "description_next_check_at": "2026-11-18T23:30:40Z"
+  "description_next_check_at": "2026-11-18T23:30:40Z",
+  "community_url": "https://steamcommunity.com/app/4268590/"
 }

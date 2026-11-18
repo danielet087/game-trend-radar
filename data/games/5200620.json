@@ -4,7 +4,6 @@
   "display_name": "Dungeonbound",
   "display_name_source": "english",
   "name_en": "Dungeonbound",
-  "name_en_traditional": "Dungeonbound",
   "language_support": {
     "tchinese": true,
     "schinese": true,
@@ -169,22 +168,23 @@
     "reason": "no_primary_erotic_evidence"
   },
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 5200620,
-    "twitch_game_id": "1888798935",
-    "igdb_id": "422022",
     "checked_at": "2026-11-16T20:23:27Z",
-    "source_database_revision": "a5e5aa9788d91bff361a10a36db3f71d3e4bed20331ec74900791025258c26b3",
+    "igdb_id": "422022",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 1955,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "a5e5aa9788d91bff361a10a36db3f71d3e4bed20331ec74900791025258c26b3",
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-11-16T20:23:27Z",
       "source": "igdb_first_release_date",
       "viewer_count": 12757
-    }
+    },
+    "twitch_game_id": "1888798935"
   },
   "content_enrichment_signature": "5200620:312:2026-11-16",
-  "storage_version": 2
+  "storage_version": 2,
+  "community_url": "https://steamcommunity.com/app/5200620/"
 }

@@ -141,21 +141,21 @@
     "reason": "no_primary_erotic_evidence"
   },
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 4045480,
-    "twitch_game_id": "592133136",
-    "igdb_id": "374055",
     "checked_at": "2026-11-15T18:19:15Z",
-    "source_database_revision": "8a588fa4caab73f5a034f9812c0d6d01e0d1ab6d965daba5b18679943f162bb2",
+    "igdb_id": "374055",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_database_generation": 1883,
     "source_database_namespace": "danielet087/game-trend-radar@main",
+    "source_database_revision": "8a588fa4caab73f5a034f9812c0d6d01e0d1ab6d965daba5b18679943f162bb2",
     "source_enrollment": {
-      "source": "igdb_first_release_date",
+      "min_viewers": 7000,
       "observed_at": "2026-11-15T18:19:15Z",
-      "viewer_count": 16205,
-      "min_viewers": 7000
-    }
+      "source": "igdb_first_release_date",
+      "viewer_count": 16205
+    },
+    "twitch_game_id": "592133136"
   },
   "content_enrichment_signature": "4045480:None:2026-11-13",
   "storage_version": 2,
