@@ -42,27 +42,16 @@
     3749580
   ],
   "description_english_fallback_count": 40,
-  "generated_at": "2026-11-17T23:31:22Z",
+  "generated_at": "2026-11-18T11:31:25Z",
   "qualified_master": 265,
   "attempted": 1,
   "enriched": 1,
   "repaired_indexes": 0,
-  "pending_count": 1,
-  "pending_enrichment": {
-    "2712590": [
-      "release_date_diagnostics"
-    ]
-  },
-  "failures": {
-    "2712590": {
-      "signature": "2712590:8968:2026-09-25",
-      "reason": "release_date_diagnostics",
-      "attempted_at": "2026-11-17T23:30:52Z",
-      "retry_after": "2026-11-18T05:30:52Z"
-    }
-  },
-  "complete": false,
+  "pending_count": 0,
+  "pending_enrichment": {},
+  "failures": {},
+  "complete": true,
   "public_count": 265,
-  "actual_catalog_complete": false,
+  "actual_catalog_complete": true,
   "superseded_appids": []
 }
