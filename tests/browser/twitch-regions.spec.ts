@@ -48,7 +48,8 @@ test('overview defaults to global, switches sorting and metrics, and carries sco
   await expect(page.locator('.tw-game').first()).toHaveAttribute('data-game-id', '2');
   await expect(page.locator('.tw-game[data-game-id="1"] [data-kind="viewers"] strong')).toHaveText('300');
   await expect(page.locator('.tw-game[data-game-id="3"]')).toContainText('未收集中文區');
-  await page.route('**/data/twitch_live.json', route => route.fulfill({ status: 503, body: 'Unavailable' }));
+  // The loader asks again past the CDN (?r=…); an outage fails both requests.
+  await page.route(/\/data\/twitch_live\.json(\?.*)?$/, route => route.fulfill({ status: 503, body: 'Unavailable' }));
   await page.locator('#snapshotRefresh').click();
   await expect(page.locator('#noticeTitle')).toHaveText('暫時無法更新，保留上次讀取的快照');
   await page.locator('#audienceRegion').selectOption('global');

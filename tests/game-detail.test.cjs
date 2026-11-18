@@ -40,7 +40,8 @@ test("detail reads published game metadata; no invented genres or separate Follo
     assert.match(html, new RegExp('id="' + id + '"'));
   }
   assert.match(profile, /D\.datasets\(official, preview, nintendo\)/);
-  assert.match(from("src/data/storage.ts"), /raw\.githubusercontent\.com\/danielet087\/game-trend-radar\/main\/data\//);
+  assert.doesNotMatch(from("src/data/storage.ts"), /githubusercontent/);
+  assert.match(from("src/data/storage.ts"), /"\.\/data\/" \+ filename \+ "\?r="/);
   assert.match(profile, /data\.games, \.\.\.data\.recent/);
   assert.match(profile, /\$\("gameSteam"\)\.href = game\.link/);
   assert.match(from("src/shared/artwork.js"), /game\.artSources/);

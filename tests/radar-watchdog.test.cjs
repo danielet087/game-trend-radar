@@ -41,7 +41,15 @@ function fakeGithub({ files = {}, dirs = {}, runs = [], scheduled = {}, issues =
       async createComment(args) { calls.push(['comment', args]); },
     },
   } };
-  return { github, calls };
+  // Receipts come from the published site, which serves the frontend's data.
+  const fetchImpl = async url => {
+    const match = /^https:\/\/danielet087\.github\.io\/game-trend-radar\/(.+)\?watchdog=\d+$/.exec(url);
+    if (!match) throw new Error('unexpected URL ' + url);
+    const id = `game-trend-radar@main:${match[1]}`;
+    calls.push(['site', match[1]]);
+    return id in files ? { ok: true, status: 200, json: async () => files[id] } : { ok: false, status: 404 };
+  };
+  return { github, calls, fetchImpl };
 }
 const context = { repo: { owner: 'danielet087', repo: 'game-trend-radar' } };
 const core = { info() {}, warning() {} };
@@ -94,6 +102,25 @@ test('the live deployment is the newest one whose latest status is success', asy
   const created = fake.calls.find(([name]) => name === 'create')[1];
   assert.equal(created.title, '雷達網站監控：1 項異常');
   assert.match(created.body, /最後一次部署上線在 4\.0 小時前/);
+});
+
+test('receipts are read from the published site, not from Git', async () => {
+  const files = { ...healthyCredentials(), ...Object.fromEntries(W.RECEIPTS.map(item => [`game-trend-radar@main:${item.path}`, { [item.field]: hoursAgo(1) }])) };
+  delete files['game-trend-radar@main:data/content_refresh_status.json'];
+  const fake = fakeGithub({ files });
+  const asked = [];
+  const fetchImpl = async (url, options) => { asked.push([url, options]); return fake.fetchImpl(url); };
+  await W.run({ ...fake, fetchImpl, context, core, now: NOW });
+  assert.deepEqual(asked.map(([url]) => url), W.RECEIPTS.map(item =>
+    `https://danielet087.github.io/game-trend-radar/${item.path}?watchdog=${NOW}`));
+  assert.equal(asked[0][1].headers['Cache-Control'], 'no-cache');
+  // A receipt the site does not serve is a problem; an unreachable site is an unavailable check.
+  assert.match(fake.calls.find(([name]) => name === 'create')[1].body, /Steam 內容更新：`data\/content_refresh_status\.json` 沒有有效的/);
+  const offline = fakeGithub({ files, issues: [] });
+  const failing = async () => { throw new Error('network down'); };
+  const warnings = [];
+  await W.run({ ...offline, fetchImpl: failing, context, core: { info() {}, warning: text => warnings.push(text) }, now: NOW });
+  assert.equal(warnings.filter(text => /Watchdog check unavailable: data\//.test(text)).length, W.RECEIPTS.length);
 });
 
 test('the issue body records its problem keys and mentions the owner', () => {

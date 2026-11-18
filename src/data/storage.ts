@@ -3,7 +3,6 @@ import {
   type Catalog, type DataResult, type JsonRecord, type LoadOptions, type Validator,
 } from "./contracts.ts";
 
-const LIVE = "https://raw.githubusercontent.com/danielet087/game-trend-radar/main/data/";
 const TTL = 60_000;
 const CACHE = "game-trend-radar:data:v4:";
 interface StoredJSON { at: number; data: unknown; source: string }
@@ -62,7 +61,11 @@ export function createRadarStorage(environment: StorageEnvironment = {}) {
     const old = cached(filename);
     if (!options.force && old && now() >= old.at && now() - old.at < TTL && accepts(old.data)) return result(old.data, "cached", old.source, old.at);
     let error = "unavailable", invalid = false;
-    for (const source of ["./data/" + filename, LIVE + filename]) {
+    // The published copy, then the same file asked past the CDN: an edge copy
+    // cached before the newest deploy can lag the catalog that declares the
+    // revision, and a different query string is a different cache entry.
+    const retry = "./data/" + filename + "?r=" + encodeURIComponent(options.expectedRevision || String(now()));
+    for (const source of ["./data/" + filename, retry]) {
       try {
         const data = await transport(source);
         if (!accepts(data)) { invalid = true; error = revisionMatches(data, options.expectedRevision) ? "invalid_json_contract" : "revision_mismatch"; continue; }

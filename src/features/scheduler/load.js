@@ -19,10 +19,10 @@ async function snapshotLoad() {
   }
   throw last;
 }
+// Receipts come from the published site: the data is built from the database at
+// each deploy and is not kept in Git. The minute query skips stale CDN copies.
 async function readReceipt(file) {
-  for (const url of [RAW + "game-trend-radar/main/data/" + file, "./data/" + file]) {
-    try { const data = await fetchJson(url); if (isRecord(data)) return data; } catch {}
-  }
+  try { const data = await fetchJson("./data/" + file + "?v=" + Math.floor(Date.now() / 60000)); if (isRecord(data)) return data; } catch {}
   return null;
 }
 const PAGE = 100, OLDER_REFRESH = 30 * 60000;
