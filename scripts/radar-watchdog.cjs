@@ -1,12 +1,13 @@
 "use strict";
 
-// Hourly health check for the whole radar pipeline. It reads GitHub:
-// published receipts, the failure counters that scheduled-failure-notice keeps
-// in each repository, the daily credential expiry records, recent workflow
-// runs and the live Pages deployment. Collector jobs use continue-on-error, so their runs stay green; these
-// signals do not. Findings go to one labelled issue that is opened, updated and
-// closed here. Its only write besides the issue is the scheduler token's
-// reported expiry date on the notification-state branch.
+// Hourly health check for the whole radar pipeline. It reads the receipts the
+// published site serves and, from GitHub, the failure counters that
+// scheduled-failure-notice keeps in each repository, the daily credential
+// expiry records, recent workflow runs and the live Pages deployment. Collector
+// jobs use continue-on-error, so their runs stay green; these signals do not.
+// Findings go to one labelled issue that is opened, updated and closed here.
+// Its only write besides the issue is the scheduler token's reported expiry
+// date on the notification-state branch.
 
 const LABEL = "radar-watchdog";
 const OWNER = "danielet087";
@@ -24,6 +25,10 @@ const CREDENTIAL_STALE_HOURS = 80;
 const FAILURE_STREAK = 3;
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
+// Receipts are read from the published site: its data is built from the
+// database at each hourly deploy and is not kept in Git. A receipt's age is
+// therefore what visitors see, including a deploy that stopped.
+const SITE = "https://danielet087.github.io/game-trend-radar/";
 // Each limit allows at least one missed run, so a single slow run stays quiet.
 const RECEIPTS = [
   { path: "data/twitch_collection_status.json", field: "completed_at", maxHours: 3, label: "Twitch 每小時收集" },
@@ -176,6 +181,13 @@ async function readJSON(github, repo, path, ref) {
   return JSON.parse(typeof data === "string" ? data : Buffer.from(data).toString("utf8"));
 }
 
+async function readSite(fetchImpl, path, now) {
+  // A new query each run skips a CDN copy cached before the newest deploy.
+  const response = await fetchImpl(`${SITE}${path}?watchdog=${now}`, { headers: { "Cache-Control": "no-cache" } });
+  if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status}`), { status: response.status });
+  return await response.json();
+}
+
 async function readScheduler(github) {
   try {
     const { data } = await github.rest.repos.getContent({ owner: OWNER, repo: FRONTEND, path: SCHEDULER_PATH, ref: COUNTER_BRANCH });
@@ -193,10 +205,10 @@ async function storeScheduler(github, report, sha) {
     content: Buffer.from(JSON.stringify(report, null, 2) + "\n").toString("base64"), ...(sha ? { sha } : {}) });
 }
 
-async function collect(github) {
+async function collect(github, fetchImpl = globalThis.fetch, now = Date.now()) {
   const errors = [], receipts = [], counters = [], latest = [], credentials = [];
   for (const spec of RECEIPTS) {
-    try { receipts.push({ spec, value: await readJSON(github, FRONTEND, spec.path, "main") }); }
+    try { receipts.push({ spec, value: await readSite(fetchImpl, spec.path, now) }); }
     catch (error) {
       if (error.status === 404) receipts.push({ spec, value: null });
       else errors.push(`${spec.path}: ${error.message}`);
@@ -295,8 +307,8 @@ async function report({ github, context, core, problems, errors, now }) {
   core.warning(`Updated #${issue.number}: ${problems.length} problem(s), ${added.length} new.`);
 }
 
-async function run({ github, context, core, now = Date.now() }) {
-  const inputs = await collect(github);
+async function run({ github, context, core, now = Date.now(), fetchImpl = globalThis.fetch }) {
+  const inputs = await collect(github, fetchImpl, now);
   const reported = schedulerReport(context.payload?.inputs?.scheduler_token_expires_at, now);
   const stored = inputs.scheduler.value;
   if (reported && (stored?.status !== reported.status || stored?.expires_at !== reported.expires_at)) {

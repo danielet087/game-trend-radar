@@ -11,7 +11,7 @@ function boot(routes = {}, shared = new Map(), clock = { at:1_000 }) {
     sessionStorage: { getItem:key => shared.get(key) ?? null, setItem:(key,value) => shared.set(key,value) },
     fetch: async (url, options) => {
       calls.push({url,options});
-      const filename = url.split('/data/')[1];
+      const filename = url.split('/data/')[1].split('?')[0];
       const value = typeof routes[filename] === 'function' ? routes[filename](url) : routes[filename];
       return { ok:value !== undefined, status:value !== undefined ? 200 : 404, json:async () => value };
     },
@@ -49,19 +49,21 @@ test('unavailable updates retain validated stale snapshots and retain their sour
   assert.equal(calls.length,3);
   assert.equal((await api.readJSONResult('catalog.json',validCatalog,{allowStale:false})).data,null);
 });
-test('declared catalog revision rejects an old cached game and tries the second published copy', async () => {
+test('declared catalog revision rejects an old cached game and asks for it past the CDN cache', async () => {
   const routes = {'catalog.json':catalog,'games/123.json':{appid:123,revision:'old'}};
   const {api,clock,calls} = boot(routes);
   await api.loadGame(123); await api.loadCatalog();
-  routes['games/123.json'] = url => ({appid:123, revision:url.startsWith('./') ? 'old' : 'current'});
+  // An edge copy cached before the newest deploy is older than the catalog.
+  routes['games/123.json'] = url => ({appid:123, revision:url.includes('?r=') ? 'current' : 'old'});
   const game = await api.loadGameResult(123);
   assert.equal(game.revision,'current'); assert.equal(game.status,'fresh');
-  assert.match(game.source,/raw\.githubusercontent/);
+  assert.equal(game.source,'./data/games/123.json?r=current');
   routes['games/123.json'] = {appid:123,revision:'old'};
   clock.at += 60_000;
   const rejected = await api.loadGameResult(123,{allowStale:false});
   assert.equal(rejected.data,null); assert.equal(rejected.error,'revision_mismatch');
-  assert.ok(calls.some(call => call.url.startsWith('https://')));
+  // Data is no longer read from Git.
+  assert.ok(calls.every(call => call.url.startsWith('./data/')));
 });
 test('existing game records without revision remain valid against revisioned catalogs', async () => {
   const {api} = boot({'catalog.json':catalog,'games/123.json':{appid:123,description_checked_at:'2026-10-08T08:00:00Z'}});
