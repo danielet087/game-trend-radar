@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
-from radar_core.storage import documents, primary, primary_store
+from radar_core.storage import data_home, documents, primary, primary_store
 from radar_core.storage.sql import SqliteClient, StorageError
 from scripts import site_data
 
@@ -127,6 +127,58 @@ class SiteDataTests(unittest.TestCase):
                          (1, "NO_DATABASE_DATA", ["data/twitch_collection_status.json"]))
         self.assertEqual(site_data.site_documents(root), self.projected)
         self.assertFalse((root / site_data.BUILD_RECORD).exists())
+
+    def flag(self, site_home, git_projection=True, operation="flag"):
+        return self.write({data_home.FLAG: data_home.document(site=site_home, git_projection=git_projection)},
+                          operation)
+
+    def test_auto_verifies_until_the_database_flag_moves_the_site(self):
+        root = site(self.tmp / "site", self.projected)
+        (status, report), _ = self.quiet(root, "auto", PUBLISHED)
+        self.assertEqual((status, report["mode"], report["status"]), (0, "verify", "verified"))
+        self.assertEqual(report["selected_by"]["flag"], "absent")
+        self.assertEqual(site_data.site_documents(root), self.projected)
+        self.flag("git")
+        (status, report), _ = self.quiet(root, "auto", PUBLISHED)
+        self.assertEqual((status, report["mode"], report["selected_by"]["site"]), (0, "verify", "git"))
+        self.assertFalse((root / site_data.BUILD_RECORD).exists())
+
+    def test_auto_overlays_once_the_flag_says_database(self):
+        root = site(self.tmp / "site", self.projected)
+        self.flag("database", git_projection=False)
+        (status, report), _ = self.quiet(root, "auto", PUBLISHED)
+        self.assertEqual((status, report["mode"], report["status"]), (0, "overlay", "overlaid"))
+        self.assertEqual(report["selected_by"], {"site": "database", "git_projection": False,
+                                                 "flag": "present", "flag_generation": 4})
+        head, expected = primary_store.read_files(self.database, SOURCE)
+        self.assertEqual(site_data.site_documents(root), expected)
+        self.assertIn(data_home.FLAG, expected)
+        self.assertEqual(json.loads((root / site_data.BUILD_RECORD).read_text())["generation"], 4)
+
+    def test_auto_stops_the_deploy_without_a_valid_answer(self):
+        root = site(self.tmp / "site", self.projected)
+        def offline():
+            raise StorageError("DATABASE_UNAVAILABLE", "offline")
+        with patch.object(primary, "client", offline):
+            (status, report), _ = self.quiet(root, "auto", PUBLISHED)
+        self.assertEqual((status, report["mode"], report["code"]), (1, "auto", "DATABASE_UNAVAILABLE"))
+        self.write({data_home.FLAG: b'{"schema_version": 1, "site": "git", "git_projection": false}'}, "bad-flag")
+        (status, report), _ = self.quiet(root, "auto", PUBLISHED)
+        self.assertEqual((status, report["code"]), (1, "INVALID_DATA_HOME"))
+        self.assertEqual(site_data.site_documents(root), self.projected)
+
+    def test_overlay_can_rebuild_the_version_the_live_site_records(self):
+        live = site(self.tmp / "live", self.projected)
+        (status, _), _ = self.quiet(live, "overlay")
+        recorded = json.loads((live / site_data.BUILD_RECORD).read_text())["manifest_digest"]
+        self.write({"data/games/3.json": b'{"appid": 3}'}, "after-deploy")
+        rebuilt = site(self.tmp / "rebuilt", self.projected)
+        (status, report), _ = self.quiet(rebuilt, "overlay", None, recorded)
+        self.assertEqual((status, report["manifest_digest"]), (0, recorded))
+        self.assertEqual(site_data.site_documents(rebuilt), site_data.site_documents(live))
+        self.assertNotIn("data/games/3.json", site_data.site_documents(rebuilt))
+        (status, report), _ = self.quiet(rebuilt, "overlay", None, "not-a-digest")
+        self.assertEqual((status, report["code"]), (1, "INVALID_REVISION"))
 
     def test_site_documents_skip_views_other_files_and_reject_symlinks(self):
         root = site(self.tmp / "site", {"data/games/1.json": b"{}", "data/twitch_series/1/2026-11.json": b"{}",

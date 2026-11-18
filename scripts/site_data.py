@@ -1,18 +1,27 @@
 """Compare or replace the data documents of an assembled Pages site with the database copy.
 
-usage: python scripts/site_data.py SITE_DIR --mode verify --data-commit SHA
-       python scripts/site_data.py SITE_DIR --mode overlay
+usage: python scripts/site_data.py SITE_DIR --mode auto --data-commit SHA
+       python scripts/site_data.py SITE_DIR --mode verify --data-commit SHA
+       python scripts/site_data.py SITE_DIR --mode overlay [--revision DIGEST]
 
 The storage source danielet087/game-trend-radar@main holds every data document
 the site serves, except the Twitch views (scripts/site_twitch_views.py adds them).
 
+auto     read data/publication/data_home.json from the database: "site":
+         "database" selects overlay, anything else (or no flag) verify. The
+         flag is set only with the owner's approval. A database that cannot
+         answer, or an invalid flag, stops the deploy: the Twitch views need
+         the database at the same point anyway, and the live site keeps its
+         previous version.
 verify   read the database version that --data-commit (the newest commit that
          changed data/) was projected from, compare it with SITE_DIR's data
          documents and report every difference. SITE_DIR is unchanged and any
          failure only warns, so the deploy still serves the Git copy.
-overlay  replace SITE_DIR's data documents with the database's newest version
-         and record that version in site-build.json. Any failure stops the
-         deploy, so the live site keeps its previous version.
+overlay  replace SITE_DIR's data documents with the database's newest version,
+         or with the version --revision names (the manifest digest the live
+         site's site-build.json records, to rebuild it for comparison), and
+         record that version in site-build.json. Any failure stops the deploy,
+         so the live site keeps its previous version.
 
 Files already in SITE_DIR are passed as hash-verified cache candidates, so only
 changed documents are downloaded. Only names, counts and digests are printed.
@@ -104,10 +113,12 @@ def verify(site: Path, data_commit: str | None) -> tuple[int, dict]:
     return 0, {**report, "status": "verified"}
 
 
-def overlay(site: Path) -> tuple[int, dict]:
+def overlay(site: Path, revision: str | None = None) -> tuple[int, dict]:
+    if revision is not None and not re.fullmatch(r"[0-9a-f]{64}", revision):
+        return 1, {"mode": "overlay", "status": "error", "code": "INVALID_REVISION"}
     site_files = site_documents(site)
     try:
-        head, database_files = database_documents(site_files)
+        head, database_files = database_documents(site_files, revision=revision)
     except Exception as error:
         return 1, {"mode": "overlay", "status": "error", "code": _code(error)}
     missing = [path for path in REQUIRED if path not in database_files]
@@ -129,19 +140,37 @@ def overlay(site: Path) -> tuple[int, dict]:
     return 0, {**report, "status": "overlaid"}
 
 
-def run(site: Path, mode: str, data_commit: str | None = None) -> tuple[int, dict]:
+def selected_mode() -> tuple[str, dict]:
+    """overlay when the database's data home flag moves the site to the database."""
+    from radar_core.storage import data_home
+    head, home, present = data_home.current(REPOSITORY, branch=BRANCH)
+    flag = {"site": home["site"], "git_projection": home["git_projection"],
+            "flag": "present" if present else "absent", "flag_generation": head.get("generation")}
+    return ("overlay" if home["site"] == "database" else "verify"), flag
+
+
+def run(site: Path, mode: str, data_commit: str | None = None, revision: str | None = None) -> tuple[int, dict]:
+    if mode == "auto":
+        try:
+            mode, flag = selected_mode()
+        except Exception as error:
+            return 1, {"mode": "auto", "status": "error", "code": _code(error)}
+        status, report = run(site, mode, data_commit)
+        return status, {**report, "selected_by": flag}
     if mode == "overlay":
-        return overlay(site)
+        return overlay(site, revision)
     return verify(site, data_commit)
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("site", type=Path)
-    parser.add_argument("--mode", choices=("verify", "overlay"), required=True)
+    parser.add_argument("--mode", choices=("auto", "verify", "overlay"), required=True)
     parser.add_argument("--data-commit", default="")
+    parser.add_argument("--revision", default="")
     args = parser.parse_args(argv)
-    status, report = run(args.site.resolve(), args.mode, args.data_commit.strip() or None)
+    status, report = run(args.site.resolve(), args.mode, args.data_commit.strip() or None,
+                         args.revision.strip() or None)
     text = json.dumps(report, ensure_ascii=False, indent=2)
     print(text)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")

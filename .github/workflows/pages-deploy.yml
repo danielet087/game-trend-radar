@@ -49,11 +49,13 @@ env:
   # move, deploy the database copy (danielet087/game-trend-radar@twitch-views).
   # verify or overlay force one behaviour.
   SITE_TWITCH_VIEWS: auto
-  # verify: compare the data Git publishes with the database version its commit
-  # was projected from and only report differences (the Git copy is deployed).
-  # overlay: deploy the database's newest data instead (the plan's phase 1
-  # switch, made only with the owner's approval).
-  SITE_DATA: verify
+  # auto: data/publication/data_home.json in the database decides. "site":
+  # "database" deploys the database's newest data (the plan's phase 1 switch,
+  # set only with the owner's approval); otherwise, or without the flag, compare
+  # as verify does. verify: compare the data Git publishes with the database
+  # version its commit was projected from and only report differences (the Git
+  # copy is deployed). overlay: always deploy the database's newest data.
+  SITE_DATA: auto
 
 concurrency:
   group: pages
@@ -144,16 +146,33 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           GH_TOKEN: ${{ github.token }}
           COMMIT: ${{ steps.target.outputs.commit }}
+          VERIFY: ${{ inputs.verify_live && 'true' || 'false' }}
         run: |
           # A commit published by verify_live may predate this step.
           [ -f scripts/site_data.py ] || { echo "No site data step in this commit."; exit 0; }
           python -m pip install --disable-pip-version-check -q -r requirements-core.txt
-          if [ "$SITE_DATA" = overlay ]; then
+          mode=$SITE_DATA
+          if [ "$VERIFY" = true ]; then
+            # Rebuild what is live: the database version its site-build.json
+            # records, or the Git copy when the live site was built from Git.
+            record=$(curl -fsS "https://danielet087.github.io/game-trend-radar/site-build.json?verify=$GITHUB_RUN_ID" || true)
+            digest=$(printf '%s' "$record" | python3 -c 'import json, sys
+          try:
+              print(json.loads(sys.stdin.read()).get("manifest_digest", ""))
+          except (ValueError, AttributeError):
+              pass')
+            if [ -n "$digest" ]; then
+              python scripts/site_data.py _site --mode overlay --revision "$digest"
+              exit 0
+            fi
+            mode=verify
+          fi
+          if [ "$mode" = overlay ]; then
             python scripts/site_data.py _site --mode overlay
           else
             # The newest commit that changed data/ is the one projected from a database version.
             data_commit=$(gh api "repos/$GITHUB_REPOSITORY/commits?sha=$COMMIT&path=data&per_page=1" --jq '.[0].sha' || true)
-            python scripts/site_data.py _site --mode verify --data-commit "$data_commit"
+            python scripts/site_data.py _site --mode "$mode" --data-commit "$data_commit"
           fi
       - name: Add the Twitch views from the database
         env:
@@ -180,6 +199,11 @@ jobs:
             echo "A newer deployment ($latest) went live during the comparison; its changed files are skipped."
             git fetch --quiet --depth=1 origin "$latest"
             git diff --name-only "$COMMIT" "$latest" > "$RUNNER_TEMP/changed.txt"
+          fi
+          if [ -f _site/site-build.json ]; then
+            # The data was rebuilt from the database version this record names;
+            # the record itself is derived and not compared.
+            echo site-build.json >> "$RUNNER_TEMP/changed.txt"
           fi
           if [ -f _site/data/publication/twitch_views.json ]; then
             # The moved Twitch views were read from the database at deploy time
