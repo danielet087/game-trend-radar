@@ -206,6 +206,23 @@ test('growth completion, bounded work and source failure use actual measurement 
   assert.equal(eventHistory(queue(), [], { generated_at: '2026-10-03T07:25:00Z', collection: { at: '2026-10-01T07:03:00Z', status: 'completed' } }, now).length, 0);
 });
 
+test('growth run that only waited out the Community cooldown waits instead of reporting a 429', () => {
+  const r = run('steam-public-growth.yml');
+  const growth = { generated_at: '2026-10-03T07:25:00Z', collection: { at: '2026-10-03T07:03:00Z', status: 'rate_limited', requests: 0, measurements: 0, next_request_after_taipei: '2026-10-03T19:03:03.010752+08:00' } };
+  assert.deepEqual(runState(r, queue(), growth), { state: 'waiting', text: '冷卻中，未量測' });
+  const measurement = eventHistory(queue(), [r], growth, now).find(e => e.id === 'growth-measurement');
+  assert.equal(measurement.state, 'waiting');
+  assert.equal(measurement.title, 'Steam 成長 · 冷卻中，未量測');
+  assert.match(measurement.detail, /沒有送出請求；19:03 後才會再查/);
+  const noDeadline = { ...growth, collection: { ...growth.collection, next_request_after_taipei: null } };
+  assert.doesNotMatch(eventHistory(queue(), [r], noDeadline, now).find(e => e.id === 'growth-measurement').detail, /後才會再查/);
+  const sent = { ...growth, collection: { ...growth.collection, requests: 3, measurements: 2 } };
+  assert.deepEqual(runState(r, queue(), sent), { state: 'interrupted', text: '429 中斷量測' });
+  const sentEvent = eventHistory(queue(), [r], sent, now).find(e => e.id === 'growth-measurement');
+  assert.equal(sentEvent.state, 'interrupted');
+  assert.equal(sentEvent.title, 'Steam 成長 · 部分量測後遇到 429');
+});
+
 test('stale zero-count snapshot cannot claim current completion', () => {
   const q = queue(); q.generated_at = '2026-10-02T07:20:00Z'; q.today_taipei = '2026-10-02';
   q.summary.ready_pending = 0;
