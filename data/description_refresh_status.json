@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-18T05:30:43Z",
+  "generated_at": "2026-11-18T11:31:05Z",
   "checkpoints": {
     "1167820": {
       "attempted_at": "2026-11-13T17:32:27Z",
@@ -973,9 +973,9 @@
       "next_check_at": "2026-11-19T05:30:43Z"
     },
     "3188660": {
-      "attempted_at": "2026-11-17T11:30:41Z",
+      "attempted_at": "2026-11-18T11:31:05Z",
       "outcome": "success",
-      "next_check_at": "2026-11-18T11:30:41Z"
+      "next_check_at": "2026-11-19T11:31:05Z"
     },
     "3339970": {
       "attempted_at": "2026-11-18T05:30:43Z",
@@ -983,9 +983,9 @@
       "next_check_at": "2026-11-19T05:30:43Z"
     },
     "5378110": {
-      "attempted_at": "2026-11-17T05:30:46Z",
+      "attempted_at": "2026-11-18T11:31:05Z",
       "outcome": "success",
-      "next_check_at": "2026-11-18T05:30:46Z"
+      "next_check_at": "2026-11-19T11:31:05Z"
     },
     "4435490": {
       "attempted_at": "2026-11-13T17:32:27Z",
@@ -1043,9 +1043,9 @@
       "next_check_at": "2026-11-22T23:32:45Z"
     },
     "3218350": {
-      "attempted_at": "2026-11-17T05:30:46Z",
+      "attempted_at": "2026-11-18T11:31:05Z",
       "outcome": "success",
-      "next_check_at": "2026-11-18T05:30:46Z"
+      "next_check_at": "2026-11-19T11:31:05Z"
     },
     "4715160": {
       "attempted_at": "2026-11-18T05:30:43Z",
@@ -1073,9 +1073,9 @@
       "next_check_at": "2026-11-18T11:32:11Z"
     },
     "2523740": {
-      "attempted_at": "2026-11-17T11:30:41Z",
+      "attempted_at": "2026-11-18T11:31:05Z",
       "outcome": "success",
-      "next_check_at": "2026-11-18T11:30:41Z"
+      "next_check_at": "2026-11-19T11:31:05Z"
     },
     "3473210": {
       "attempted_at": "2026-11-18T05:30:43Z",
@@ -1108,9 +1108,9 @@
       "next_check_at": "2026-11-22T23:32:45Z"
     },
     "5173660": {
-      "attempted_at": "2026-11-17T11:30:41Z",
+      "attempted_at": "2026-11-18T11:31:05Z",
       "outcome": "success",
-      "next_check_at": "2026-11-18T11:30:41Z"
+      "next_check_at": "2026-11-19T11:31:05Z"
     },
     "2638080": {
       "attempted_at": "2026-11-16T05:32:43Z",
@@ -1251,49 +1251,40 @@
       "attempted_at": "2026-11-18T05:30:43Z",
       "outcome": "success",
       "next_check_at": "2026-11-25T05:30:43Z"
+    },
+    "5217440": {
+      "attempted_at": "2026-11-18T11:31:05Z",
+      "outcome": "success",
+      "next_check_at": "2026-11-25T11:31:05Z"
+    },
+    "2153760": {
+      "attempted_at": "2026-11-18T11:31:05Z",
+      "outcome": "success",
+      "next_check_at": "2026-11-25T11:31:05Z"
     }
   },
-  "due_count": 26,
-  "attempted": 26,
-  "refreshed": 26,
+  "due_count": 7,
+  "attempted": 7,
+  "refreshed": 7,
   "updated_appids": [
-    1622130,
-    2083660,
-    2411200,
-    2443590,
-    3339970,
-    3370490,
-    3473210,
-    3927170,
-    4262460,
-    5037200,
-    5037510,
-    5073990,
-    5189160,
-    5246700,
-    5279620,
-    5327150,
-    5341070,
-    5356470,
-    2320980,
-    4613790,
-    4715160,
-    1752080,
-    1426870,
-    1505940,
-    4416300,
-    3255110
+    3218350,
+    5378110,
+    5217440,
+    2153760,
+    2523740,
+    3188660,
+    5173660
   ],
   "failed_appids": [],
   "sources": {
-    "steam_english": 19,
-    "steam_tchinese": 6,
-    "steam_schinese_converted": 1
+    "steam_english": 5,
+    "steam_schinese_converted": 1,
+    "steam_tchinese": 1
   },
-  "pending_count": 2,
+  "pending_count": 0,
   "retry_pending_appids": [],
-  "complete": false,
+  "complete": true,
   "stop_reason": "",
-  "next_due_at": "2026-11-18T05:30:46Z",
+  "next_due_at": "2026-11-18T11:31:12Z",
   "superseded_appids": []
 }
