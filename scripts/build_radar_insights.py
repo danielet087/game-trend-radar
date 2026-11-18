@@ -548,11 +548,15 @@ def annotate_activity_origins(state, current, origin_ledger=None, nintendo_catal
             if identity not in consumed:
                 matches.append((stamp(receipt["at"]), identity, receipt))
         if matches:
-            _, identity, receipt = max(matches, key=lambda item: item[0])
+            published, identity, receipt = max(matches, key=lambda item: item[0])
             event["update_reason"] = receipt["update_reason"]
             event["update_context"] = {"basis": "publication_receipt", "receipt_id": identity,
                                        "at": receipt["at"]}
             consumed.add(identity)
+            if published < at:
+                # The receipt is the catalog publication itself; this run may come
+                # much later (hourly once data commits no longer trigger it).
+                event["at"] = published.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
             continue
         row = current.get(str(event.get("appid")), {})
         admission = row.get("twitch_admission")
@@ -613,6 +617,7 @@ def update(previous, catalog, *, observed_at, measurements=None, nintendo_catalo
                               if stamp(event.get("at"))}.values(),
                              key=lambda event: stamp(event["at"]))[-250:]
     annotate_activity_origins(state, current, origin_ledger, nintendo_catalog)
+    state["events"].sort(key=lambda event: stamp(event["at"]))
     # Do not rewrite files merely because an identical catalog was polled again.
     if state != previous:
         state["updated_at"] = observed_at

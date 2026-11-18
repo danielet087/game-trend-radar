@@ -1075,10 +1075,46 @@ class ActivityOriginTests(unittest.TestCase):
         event = state["events"][0]
         self.assertEqual(event["update_reason"], "steam_daily_search")
         self.assertEqual(event["update_context"]["basis"], "publication_receipt")
+        # The publication time, not this later run, is when the game was added.
+        self.assertEqual(event["at"], "2026-09-28T00:00:00Z")
         again = M.update(state, catalog(game(), row), observed_at="2026-09-28T02:00:00Z",
                          origin_ledger={"schema_version": 1, "events": [{**ledger["events"][0],
                              "update_reason": "steam_catalog_sync", "at": "2026-09-28T01:30:00Z"}]})
         self.assertEqual(again, state)
+
+    def test_receipt_time_dates_events_from_an_hourly_run_and_keeps_their_order(self):
+        early, late = game(3), game(4)
+        changed = {**early, "release_start": "2026-10-20", "release_end": "2026-10-20",
+                   "release_time_utc": "2026-10-19T16:00:00Z", "release_timestamp_taipei_date": "2026-10-20"}
+        ledger = {"schema_version": 1, "events": [
+            {"appid": 4, "type": "added", "date": late["release_start"],
+             "update_reason": "twitch_rankings", "at": "2026-09-28T00:40:00+00:00"},
+            {"appid": 3, "type": "added", "date": early["release_start"],
+             "update_reason": "steam_daily_search", "at": "2026-09-28T00:05:00+00:00"},
+            {"appid": 3, "type": "release_date", "date": "2026-10-20", "previous_date": early["release_start"],
+             "update_reason": "steam_metadata_refresh", "at": "2026-09-28T01:10:00+00:00"},
+            # A receipt from after this run (clock skew beyond five minutes) is not evidence.
+            {"appid": 5, "type": "added", "date": game(5)["release_start"],
+             "update_reason": "twitch_rankings", "at": "2026-09-28T01:30:00+00:00"}]}
+        state = M.update(self.baseline(), catalog(game(), early, late, game(5)), observed_at="2026-09-28T01:00:00Z",
+                         origin_ledger=ledger)
+        self.assertEqual([(event["appid"], event["at"]) for event in state["events"]],
+                         [(3, "2026-09-28T00:05:00Z"), (4, "2026-09-28T00:40:00Z"), (5, "2026-09-28T01:00:00Z")])
+        self.assertEqual(state["events"][2]["update_reason"], "legacy_unrecorded")
+        later = M.update(state, catalog(game(), changed, late, game(5)), observed_at="2026-09-28T02:00:00Z",
+                         origin_ledger=ledger)
+        self.assertEqual((later["events"][-1]["type"], later["events"][-1]["at"]),
+                         ("release_date", "2026-09-28T01:10:00Z"))
+        self.assertEqual(later["events"][:3], state["events"])
+
+    def test_receipt_after_the_run_never_moves_an_event_later(self):
+        row = game(3)
+        ledger = {"schema_version": 1, "events": [{"appid": 3, "type": "added", "date": row["release_start"],
+                  "update_reason": "steam_daily_search", "at": "2026-09-28T01:03:00Z"}]}
+        state = M.update(self.baseline(), catalog(game(), row), observed_at="2026-09-28T01:00:00Z",
+                         origin_ledger=ledger)
+        self.assertEqual((state["events"][0]["update_reason"], state["events"][0]["at"]),
+                         ("steam_daily_search", "2026-09-28T01:00:00Z"))
 
     def test_twitch_added_event_remains_twitch_after_a_later_steam_date_update(self):
         row = twitch_game()
