@@ -14,6 +14,8 @@ function normalizeRun(run, repo) {
     created_at: run.created_at, started_at: ACTIVE.has(run.status) && run.status !== "in_progress" ? null : instant(run.run_started_at) ? run.run_started_at : null, updated_at: run.updated_at || run.created_at,
     slot: planned ? slot : slot === "manual" ? "manual" : null, event: run.event || "unknown", url: runUrl(job, run.id) };
 }
+// A growth run that only waited out the Community cooldown sent no request.
+const growthCooling = collection => collection?.status === "rate_limited" && collection.requests === 0;
 function interruptionForRun(run, snapshot, growth) {
   const start = instant(run.started_at), finish = instant(run.updated_at);
   if (run.job_id === "steam_catchup") {
@@ -31,7 +33,7 @@ function interruptionForRun(run, snapshot, growth) {
   if (run.job_id === "steam_growth" && start !== null && finish !== null) {
     const at = instant(growth?.collection?.at);
     if (at !== null && at >= start && at <= finish + 60000) {
-      if (growth.collection.status === "rate_limited") return "429 中斷量測";
+      if (growth.collection.status === "rate_limited") return growthCooling(growth.collection) ? "冷卻中，未量測" : "429 中斷量測";
       if (growth.collection.status === "bounded_run") return "本輪時間範圍已到，部分完成";
       if (growth.collection.status === "source_unavailable") return "來源無法讀取，量測中斷";
     }
@@ -170,7 +172,11 @@ function eventHistory(snapshot, runs, growth, now = Date.now(), freshness = {}) 
   const collection = growth?.collection, growthAt = instant(collection?.at);
   if (growthAt !== null && day(growthAt) === date) {
     const done = ["completed", "complete"].includes(collection.status), limited = collection.status === "rate_limited", partial = collection.status === "bounded_run";
-    events.push({ id: "growth-measurement", at: growthAt, job_id: "steam_growth", routine: false, state: done ? "success" : partial ? "waiting" : "interrupted", title: "Steam 成長 · " + (limited ? "部分量測後遇到 429" : done ? "本輪量測完成" : partial ? "本輪時間範圍已到，部分完成" : "本輪量測未完成"), detail: `實際取得／重用 ${num(collection.measurements) ?? "未知"} 筆量測；這是量測時間，與前端檔案更新時間分開顯示。` });
+    const cooling = growthCooling(collection), until = instant(collection.next_request_after_taipei);
+    events.push({ id: "growth-measurement", at: growthAt, job_id: "steam_growth", routine: false, state: done ? "success" : partial || cooling ? "waiting" : "interrupted",
+      title: "Steam 成長 · " + (cooling ? "冷卻中，未量測" : limited ? "部分量測後遇到 429" : done ? "本輪量測完成" : partial ? "本輪時間範圍已到，部分完成" : "本輪量測未完成"),
+      detail: cooling ? `官方 Followers 冷卻中，這輪沒有送出請求${until !== null ? `；${clockLabel(until)} 後才會再查` : ""}。`
+        : `實際取得／重用 ${num(collection.measurements) ?? "未知"} 筆量測；這是量測時間，與前端檔案更新時間分開顯示。` });
   }
   return events.sort((a, b) => b.at - a.at);
 }
