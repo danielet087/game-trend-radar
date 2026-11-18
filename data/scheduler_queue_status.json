@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-18T17:05:11.536091Z",
+  "generated_at": "2026-11-18T19:04:12.626918Z",
   "today_taipei": "2026-11-19",
   "source": {
     "repository": "danielet087/game-trend-radar-backend",
     "checkpoint_path": "experiments/steam_official_daily_catchup/checkpoint.json",
-    "checkpoint_updated_at": "2026-11-18T15:03:11.657056Z",
+    "checkpoint_updated_at": "2026-11-18T19:03:06.687510Z",
     "group_resolution_updated_at": "2026-11-16T23:40:12.254489Z",
     "candidate_state_updated_at": "2026-11-18T17:05:09.316744Z",
     "prefilter_updated_at": "2026-11-18T17:05:09.298112Z",
     "eligible_screened_at": "2026-11-18T17:05:10.184122Z",
-    "twitch_import_updated_at": "2026-11-18T15:04:08.172774Z",
+    "twitch_import_updated_at": "2026-11-18T19:01:59.694310Z",
     "last_official_success_at": "2026-11-17T01:04:06.530869Z",
     "queue_projection": "official_collector_make_queue"
   },
@@ -18,7 +18,7 @@
     "status": "current_day_prefilter_complete",
     "daily_prefilter_updated_at": "2026-11-18T17:05:09.298112+00:00",
     "eligible_screened_at": "2026-11-18T17:05:10.184122+00:00",
-    "added_from_daily": 58,
+    "added_from_daily": 0,
     "eligible_count": 3691,
     "official_rechecks_pending": 15,
     "parked_group_xml_appids": [],
@@ -43,7 +43,7 @@
     "schema_version": 1,
     "date_taipei": "2026-11-19",
     "status": "completed",
-    "checked_at": "2026-11-18T17:05:11.536091+00:00",
+    "checked_at": "2026-11-18T19:04:12.626918+00:00",
     "needed": true,
     "planned_count": 15,
     "completed_count": 0,
@@ -67,17 +67,17 @@
   "batch": {
     "active": false,
     "status": "finished",
-    "started_at": "2026-11-18T23:03:10.846960+08:00",
-    "last_updated_at": "2026-11-18T23:03:11.657056+08:00",
-    "finished_at": "2026-11-18T23:03:11.657056+08:00",
+    "started_at": "2026-11-19T03:03:05.727070+08:00",
+    "last_updated_at": "2026-11-19T03:03:06.687510+08:00",
+    "finished_at": "2026-11-19T03:03:06.687510+08:00",
     "stop_reason": "official_429_cooldown_no_request",
     "requests_this_run": 0,
     "official_new_this_run": 0,
     "http_429_this_run": 0,
     "manual_cooldown_override": false,
     "request_limit": 15,
-    "run_id": "44330547080",
-    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/44330547080"
+    "run_id": "44375787796",
+    "run_url": "https://github.com/danielet087/game-trend-radar-backend/actions/runs/44375787796"
   },
   "queue": [
     {
