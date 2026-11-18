@@ -1,5 +1,5 @@
 name: Deploy site to Pages
-run-name: "Deploy site to Pages | ${{ inputs.verify_live && 'verify live site' || 'deploy' }} | slot=${{ inputs.target_slot || 'manual' }} | source=${{ inputs.trigger_source || github.event_name }}"
+run-name: "Deploy site to Pages | ${{ inputs.verify_live && 'verify live site' || 'deploy' }}${{ inputs.live_data && ' | live data drill' || '' }} | slot=${{ inputs.target_slot || 'manual' }} | source=${{ inputs.trigger_source || github.event_name }}"
 
 # Publishes the committed tree of main exactly as the branch deploy does
 # (git archive of one commit). Deploying through Actions lets a later step add
@@ -18,6 +18,12 @@ run-name: "Deploy site to Pages | ${{ inputs.verify_live && 'verify live site' |
 # that changes something outside data/** (code, pages, workflows) still
 # deploys at once; frontend-build.yml dispatches a deploy after it commits a
 # new static build.
+#
+# Each deploy records the sha256 of every data file it publishes in
+# site-data.json. When a deploy cannot read the database, the data steps put
+# back exactly the live site's data, verified against that record, and the new
+# code still deploys (scripts/live_site_data.py). live_data runs that path on
+# purpose as a drill.
 on:
   push:
     branches: [main]
@@ -26,6 +32,11 @@ on:
     inputs:
       verify_live:
         description: Compare the live site with the tree of the commit it was built from (no deploy)
+        required: false
+        type: boolean
+        default: false
+      live_data:
+        description: Drill - use the live site's data instead of reading the database
         required: false
         type: boolean
         default: false
@@ -147,6 +158,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           COMMIT: ${{ steps.target.outputs.commit }}
           VERIFY: ${{ inputs.verify_live && 'true' || 'false' }}
+          RADAR_DEPLOY_LIVE_DATA: ${{ inputs.live_data && '1' || '0' }}
         run: |
           # A commit published by verify_live may predate this step.
           [ -f scripts/site_data.py ] || { echo "No site data step in this commit."; exit 0; }
@@ -178,6 +190,7 @@ jobs:
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          RADAR_DEPLOY_LIVE_DATA: ${{ inputs.live_data && '1' || '0' }}
         run: |
           # A commit published by verify_live may predate this step.
           [ -f scripts/site_twitch_views.py ] || { echo "No Twitch views step in this commit."; exit 0; }
@@ -185,6 +198,13 @@ jobs:
           python scripts/site_twitch_views.py _site --mode "$SITE_TWITCH_VIEWS"
           bytes=$(du -sb _site | cut -f1)
           [ "$bytes" -lt 1000000000 ] || { echo "::error::Site is larger than 1 GB"; exit 1; }
+      - name: Record the data files this deploy publishes
+        env:
+          COMMIT: ${{ steps.target.outputs.commit }}
+        run: |
+          # A commit published by verify_live may predate this step.
+          [ -f scripts/live_site_data.py ] || { echo "No data record step in this commit."; exit 0; }
+          python scripts/live_site_data.py record _site --commit "$COMMIT"
       - name: Compare every file with the live site
         if: inputs.verify_live
         env:
@@ -204,6 +224,10 @@ jobs:
             # The data was rebuilt from the database version this record names;
             # the record itself is derived and not compared.
             echo site-build.json >> "$RUNNER_TEMP/changed.txt"
+          fi
+          if [ -f _site/site-data.json ]; then
+            # Written at build time from the files above, including the views.
+            echo site-data.json >> "$RUNNER_TEMP/changed.txt"
           fi
           if [ -f _site/data/publication/twitch_views.json ]; then
             # The moved Twitch views were read from the database at deploy time

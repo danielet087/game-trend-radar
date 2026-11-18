@@ -9,10 +9,9 @@ the site serves, except the Twitch views (scripts/site_twitch_views.py adds them
 
 auto     read data/publication/data_home.json from the database: "site":
          "database" selects overlay, anything else (or no flag) verify. The
-         flag is set only with the owner's approval. A database that cannot
-         answer, or an invalid flag, stops the deploy: the Twitch views need
-         the database at the same point anyway, and the live site keeps its
-         previous version.
+         flag is set only with the owner's approval. An invalid flag stops the
+         deploy; a database that cannot answer restores the live site's data
+         (see below).
 verify   read the database version that --data-commit (the newest commit that
          changed data/) was projected from, compare it with SITE_DIR's data
          documents and report every difference. SITE_DIR is unchanged and any
@@ -20,8 +19,13 @@ verify   read the database version that --data-commit (the newest commit that
 overlay  replace SITE_DIR's data documents with the database's newest version,
          or with the version --revision names (the manifest digest the live
          site's site-build.json records, to rebuild it for comparison), and
-         record that version in site-build.json. Any failure stops the deploy,
-         so the live site keeps its previous version.
+         record that version in site-build.json.
+
+When auto or overlay cannot get a complete database copy, the data documents
+are restored from the live site instead (scripts/live_site_data.py): exactly
+the files and bytes the live site serves, verified against its site-data.json,
+while the new code still deploys. If that fails too, the deploy stops and the
+live site keeps its previous version. A --revision rebuild never falls back.
 
 Files already in SITE_DIR are passed as hash-verified cache candidates, so only
 changed documents are downloaded. Only names, counts and digests are printed.
@@ -35,6 +39,11 @@ import os
 from pathlib import Path
 import re
 import sys
+
+try:
+    from scripts import live_site_data
+except ModuleNotFoundError:
+    import live_site_data
 
 REPOSITORY = "danielet087/game-trend-radar"
 BRANCH = "main"
@@ -113,18 +122,49 @@ def verify(site: Path, data_commit: str | None) -> tuple[int, dict]:
     return 0, {**report, "status": "verified"}
 
 
+def restore_live(site: Path, mode: str, code: str) -> tuple[int, dict]:
+    """Deploy the live site's data documents when the database gave no usable copy."""
+    try:
+        report = live_site_data.restore(site, managed, required=REQUIRED)
+        record = live_site_data.fetch_live(BUILD_RECORD)
+    except live_site_data.LiveDataError as error:
+        return 1, {"mode": mode, "status": "error", "code": code, "live_site": error.code}
+    target = site / BUILD_RECORD
+    if record is None:
+        target.unlink(missing_ok=True)
+    else:
+        try:
+            value = json.loads(record)
+            if not isinstance(value, dict):
+                raise ValueError
+        except ValueError:
+            return 1, {"mode": mode, "status": "error", "code": code, "live_site": "INVALID_LIVE_BUILD_RECORD"}
+        # The data is the live version this record names, restored from the site.
+        target.write_text(json.dumps({**value, "data_source": "live_site"}, sort_keys=True) + "\n",
+                          encoding="utf-8")
+    print(f"::warning::The site data could not be read from the database ({code}); "
+          "deploying the live site's data with the new code.")
+    return 0, {**report, "mode": mode, "code": code}
+
+
 def overlay(site: Path, revision: str | None = None) -> tuple[int, dict]:
     if revision is not None and not re.fullmatch(r"[0-9a-f]{64}", revision):
         return 1, {"mode": "overlay", "status": "error", "code": "INVALID_REVISION"}
+    if live_site_data.drill() and revision is None:
+        return restore_live(site, "overlay", "DRILL_LIVE_DATA")
     site_files = site_documents(site)
     try:
         head, database_files = database_documents(site_files, revision=revision)
     except Exception as error:
-        return 1, {"mode": "overlay", "status": "error", "code": _code(error)}
+        if revision is not None:
+            return 1, {"mode": "overlay", "status": "error", "code": _code(error)}
+        return restore_live(site, "overlay", _code(error))
     missing = [path for path in REQUIRED if path not in database_files]
     differences = compare(site_files, database_files)
     report = summarize("overlay", head, site_files, database_files, differences)
     if missing:
+        if revision is None:
+            return restore_live(site, "overlay", "NO_DATABASE_DATA")
         return 1, {**report, "status": "error", "code": "NO_DATABASE_DATA", "missing": missing}
     for path in site_files:
         if path not in database_files:
@@ -151,10 +191,15 @@ def selected_mode() -> tuple[str, dict]:
 
 def run(site: Path, mode: str, data_commit: str | None = None, revision: str | None = None) -> tuple[int, dict]:
     if mode == "auto":
+        if live_site_data.drill():
+            return restore_live(site, "auto", "DRILL_LIVE_DATA")
         try:
             mode, flag = selected_mode()
         except Exception as error:
-            return 1, {"mode": "auto", "status": "error", "code": _code(error)}
+            if _code(error) == "INVALID_DATA_HOME":
+                return 1, {"mode": "auto", "status": "error", "code": "INVALID_DATA_HOME"}
+            # Without the flag the site's home is unknown; the live data is right either way.
+            return restore_live(site, "auto", _code(error))
         status, report = run(site, mode, data_commit)
         return status, {**report, "selected_by": flag}
     if mode == "overlay":
