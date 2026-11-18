@@ -11,9 +11,12 @@ auto     overlay once data/publication/twitch_views.json in SITE_DIR says the
          invalid flag stops the deploy.
 verify   compare the database copy with the files Git put in SITE_DIR and report
          every difference; SITE_DIR is unchanged and a failure only warns.
-overlay  replace SITE_DIR's view files with the database copy; any failure, or a
-         copy without the series index, stops the deploy, so the live site keeps
-         its previous version.
+overlay  replace SITE_DIR's view files with the database copy. When the database
+         cannot answer, or its copy lacks the series index, the views are
+         restored from the live site instead (scripts/live_site_data.py: the
+         exact files the live site serves, verified against its site-data.json),
+         and the new code still deploys. If that fails too, the deploy stops and
+         the live site keeps its previous version.
 
 Files already in SITE_DIR are passed as hash-verified cache candidates, so only
 changed documents are downloaded. Only names, counts and digests are printed.
@@ -26,6 +29,11 @@ import json
 import os
 from pathlib import Path
 import sys
+
+try:
+    from scripts import live_site_data
+except ModuleNotFoundError:
+    import live_site_data
 
 REPOSITORY = "danielet087/game-trend-radar"
 BRANCH = "twitch-views"
@@ -89,6 +97,21 @@ def overlay(site: Path, database_files: dict[str, bytes]) -> None:
         target.write_bytes(raw)
 
 
+def view(path: str) -> bool:
+    return path.startswith(PREFIXES) and path.endswith(".json")
+
+
+def restore_live(site: Path, code: str) -> tuple[int, dict]:
+    """Deploy the live site's views when the database gave no usable copy."""
+    try:
+        report = live_site_data.restore(site, view, required=(INDEX,))
+    except live_site_data.LiveDataError as error:
+        return 1, {"mode": "overlay", "status": "error", "code": code, "live_site": error.code}
+    print(f"::warning::Twitch views could not be read from the database ({code}); "
+          "deploying the live site's views with the new code.")
+    return 0, {**report, "mode": "overlay", "code": code}
+
+
 def summarize(mode: str, head: dict, git_files: dict, database_files: dict, differences: dict) -> dict:
     return {"mode": mode, "generation": head["generation"], "git_files": len(git_files),
             "database_files": len(database_files),
@@ -105,20 +128,22 @@ def run(site: Path, mode: str) -> tuple[int, dict]:
             return 1, {"mode": "auto", "status": "error", "code": "INVALID_FLAG"}
         status, report = run(site, mode)
         return status, {**report, "selected_by": "flag" if mode == "overlay" else "no flag"}
+    if mode == "overlay" and live_site_data.drill():
+        return restore_live(site, "DRILL_LIVE_DATA")
     git_files = site_views(site)
     try:
         head, database_files = database_views(git_files)
     except Exception as error:
         code = getattr(error, "code", type(error).__name__)
         if mode == "overlay":
-            return 1, {"mode": mode, "status": "error", "code": code}
+            return restore_live(site, code)
         print(f"::warning::Twitch views could not be read from the database ({code}); deploying the Git copy.")
         return 0, {"mode": mode, "status": "unavailable", "code": code}
     differences = compare(git_files, database_files)
     report = summarize(mode, head, git_files, database_files, differences)
     if mode == "overlay":
         if INDEX not in database_files:
-            return 1, {**report, "status": "error", "code": "NO_DATABASE_VIEWS"}
+            return restore_live(site, "NO_DATABASE_VIEWS")
         overlay(site, database_files)
         return 0, {**report, "status": "overlaid"}
     if any(differences.values()):

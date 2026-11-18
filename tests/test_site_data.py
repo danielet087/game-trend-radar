@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from radar_core.storage import data_home, documents, primary, primary_store
 from radar_core.storage.sql import SqliteClient, StorageError
-from scripts import site_data
+from scripts import live_site_data, site_data
 
 SOURCE = site_data.REPOSITORY + "@" + site_data.BRANCH
 SEED = {
@@ -43,6 +43,22 @@ class SiteDataTests(unittest.TestCase):
         patcher = patch.object(primary, "client", lambda: self.database)
         patcher.start()
         self.addCleanup(patcher.stop)
+        # No test reaches the real live site; by default it has no data record.
+        self.served = {}
+        fetcher = patch.object(live_site_data, "_fetch", lambda url: self.served.get(
+            url[len(live_site_data.LIVE_SITE):].split("?")[0]))
+        fetcher.start()
+        self.addCleanup(fetcher.stop)
+
+    def live_site(self, files, build_record=None):
+        """Serve a live site whose deploy published these data files."""
+        root = site(self.tmp / "live", files)
+        if build_record is not None:
+            (root / site_data.BUILD_RECORD).write_text(json.dumps(build_record))
+        live_site_data.record(root, "c" * 40)
+        self.served = {path.relative_to(root).as_posix(): path.read_bytes()
+                       for path in root.rglob("*") if path.is_file()}
+        return root
 
     def tearDown(self):
         self.database.close()
@@ -114,19 +130,77 @@ class SiteDataTests(unittest.TestCase):
         self.assertEqual((record["source"], record["generation"], record["manifest_digest"], record["documents"]),
                          (SOURCE, 3, head["manifest_digest"], 4))
 
-    def test_overlay_keeps_the_previous_site_on_any_failure(self):
+    def test_overlay_keeps_the_previous_site_when_neither_copy_is_usable(self):
         root = site(self.tmp / "site", self.projected)
         def offline():
             raise StorageError("DATABASE_UNAVAILABLE", "offline")
         with patch.object(primary, "client", offline):
             (status, report), _ = self.quiet(root, "overlay")
-        self.assertEqual((status, report["code"]), (1, "DATABASE_UNAVAILABLE"))
+        self.assertEqual((status, report["code"], report["live_site"]), (1, "DATABASE_UNAVAILABLE", "NO_LIVE_RECORD"))
         self.write({}, "drop-receipt", deleted=("data/twitch_collection_status.json",))
+        self.live_site({"data/catalog.json": b'{"games": [1]}'})  # lacks the receipt as well
         (status, report), _ = self.quiet(root, "overlay")
-        self.assertEqual((status, report["code"], report["missing"]),
-                         (1, "NO_DATABASE_DATA", ["data/twitch_collection_status.json"]))
+        self.assertEqual((status, report["code"], report["live_site"]),
+                         (1, "NO_DATABASE_DATA", "INCOMPLETE_LIVE_DATA"))
         self.assertEqual(site_data.site_documents(root), self.projected)
         self.assertFalse((root / site_data.BUILD_RECORD).exists())
+
+    def test_overlay_without_the_database_deploys_the_live_data(self):
+        live = {**SEED, "data/catalog.json": b'{"games": [1, 2, 3]}', "data/games/3.json": b'{"appid": 3}'}
+        self.live_site({**live, "data/twitch_series/index.json": b"{}"},
+                       build_record={"schema_version": 1, "generation": 7, "manifest_digest": "d" * 64})
+        root = site(self.tmp / "site", {**self.projected, "data/twitch_series/index.json": b'{"git": 1}'})
+        def offline():
+            raise StorageError("DATABASE_UNAVAILABLE", "offline")
+        with patch.object(primary, "client", offline):
+            (status, report), output = self.quiet(root, "overlay")
+        self.assertEqual((status, report["status"], report["code"]), (0, "restored", "DATABASE_UNAVAILABLE"))
+        self.assertEqual((report["files"], report["removed"], report["live_commit"]), (4, 1, "c" * 40))
+        self.assertEqual(site_data.site_documents(root), live)
+        # The views and the new code are not the site data step's business.
+        self.assertEqual((root / "data/twitch_series/index.json").read_bytes(), b'{"git": 1}')
+        self.assertEqual((root / "index.html").read_bytes(), b"<html>")
+        record = json.loads((root / site_data.BUILD_RECORD).read_text())
+        self.assertEqual((record["generation"], record["data_source"]), (7, "live_site"))
+        self.assertIn("deploying the live site's data", output)
+        # A database without the required documents is no usable copy either.
+        self.write({}, "drop-receipt", deleted=("data/twitch_collection_status.json",))
+        rebuilt = site(self.tmp / "again", self.projected)
+        (status, report), _ = self.quiet(rebuilt, "overlay")
+        self.assertEqual((status, report["code"], site_data.site_documents(rebuilt)), (0, "NO_DATABASE_DATA", live))
+
+    def test_a_live_site_built_from_git_leaves_no_build_record(self):
+        self.live_site(self.projected)
+        root = site(self.tmp / "site", self.projected)
+        (root / site_data.BUILD_RECORD).write_text("{}")
+        def offline():
+            raise StorageError("DATABASE_UNAVAILABLE", "offline")
+        with patch.object(primary, "client", offline):
+            (status, report), _ = self.quiet(root, "overlay")
+        self.assertEqual((status, report["status"]), (0, "restored"))
+        self.assertFalse((root / site_data.BUILD_RECORD).exists())
+
+    def test_a_revision_rebuild_never_falls_back(self):
+        self.live_site(self.projected)
+        root = site(self.tmp / "site", self.projected)
+        def offline():
+            raise StorageError("DATABASE_UNAVAILABLE", "offline")
+        with patch.object(primary, "client", offline):
+            (status, report), _ = self.quiet(root, "overlay", None, "e" * 64)
+        self.assertEqual((status, report["code"]), (1, "DATABASE_UNAVAILABLE"))
+        self.assertNotIn("live_site", report)
+
+    def test_the_drill_deploys_the_live_data_without_reading_the_database(self):
+        live = {**SEED, "data/games/5.json": b'{"appid": 5}'}
+        self.live_site(live)
+        root = site(self.tmp / "site", self.projected)
+        def untouched():
+            raise AssertionError("the drill must not read the database")
+        with patch.dict("os.environ", {live_site_data.DRILL: "1"}), patch.object(primary, "client", untouched):
+            for mode in ("auto", "overlay"):
+                (status, report), _ = self.quiet(root, mode, PUBLISHED)
+                self.assertEqual((status, report["mode"], report["code"]), (0, mode, "DRILL_LIVE_DATA"))
+                self.assertEqual(site_data.site_documents(root), live)
 
     def flag(self, site_home, git_projection=True, operation="flag"):
         return self.write({data_home.FLAG: data_home.document(site=site_home, git_projection=git_projection)},
@@ -155,13 +229,20 @@ class SiteDataTests(unittest.TestCase):
         self.assertIn(data_home.FLAG, expected)
         self.assertEqual(json.loads((root / site_data.BUILD_RECORD).read_text())["generation"], 4)
 
-    def test_auto_stops_the_deploy_without_a_valid_answer(self):
+    def test_auto_without_the_database_uses_the_live_data_but_a_bad_flag_stops(self):
         root = site(self.tmp / "site", self.projected)
         def offline():
             raise StorageError("DATABASE_UNAVAILABLE", "offline")
         with patch.object(primary, "client", offline):
             (status, report), _ = self.quiet(root, "auto", PUBLISHED)
-        self.assertEqual((status, report["mode"], report["code"]), (1, "auto", "DATABASE_UNAVAILABLE"))
+            self.assertEqual((status, report["mode"], report["code"], report["live_site"]),
+                             (1, "auto", "DATABASE_UNAVAILABLE", "NO_LIVE_RECORD"))
+            live = {**SEED, "data/games/4.json": b'{"appid": 4}'}
+            self.live_site(live)
+            (status, report), _ = self.quiet(root, "auto", PUBLISHED)
+            self.assertEqual((status, report["mode"], report["status"]), (0, "auto", "restored"))
+            self.assertEqual(site_data.site_documents(root), live)
+        root = site(self.tmp / "flagged", self.projected)
         self.write({data_home.FLAG: b'{"schema_version": 1, "site": "git", "git_projection": false}'}, "bad-flag")
         (status, report), _ = self.quiet(root, "auto", PUBLISHED)
         self.assertEqual((status, report["code"]), (1, "INVALID_DATA_HOME"))
