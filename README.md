@@ -90,11 +90,13 @@ node --test tests/*.test.cjs
 
 ## GitHub Pages
 
-既有網站維持 main 分支根目錄，包含建置後的 HTML 與 `assets/app`。前端程式更新由 `frontend-build.yml` 建置、驗證及同步靜態檔；一般 `data/**` 更新沿用原 Pages 發布，無需前端重建。
+網站由 `pages-deploy.yml`（GitHub Actions）部署 main 分支的 commit（`git archive`），再從資料庫加上 Twitch 逐時資料。前端程式更新由 `frontend-build.yml` 建置、驗證及同步 main 根目錄的 HTML 與 `assets/app`，完成後立即部署。
+
+只改 `data/**` 的資料 commit 不會各自觸發部署（每次部署都會讓瀏覽器重新下載全部資料）：Cloudflare 排程每小時 :30 派發一次部署，把這一小時的資料更新一起上線，所以資料最晚約一小時後出現在網站。其他 push（程式、頁面、workflow）仍立即部署。最近一次成功上線超過 3 小時，健康檢查（`radar-watchdog.yml`）會開警示 issue。
 
 網站：<https://danielet087.github.io/game-trend-radar/>。
 
-若從新 repository 啟用，於 Settings → Pages 選 Deploy from a branch，指定 main 與 /(root)。
+若從新 repository 啟用，於 Settings → Pages 的 Source 選 GitHub Actions。
 
 ## 資料分析排程
 

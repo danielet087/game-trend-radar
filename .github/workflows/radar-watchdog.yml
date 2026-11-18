@@ -35,6 +35,7 @@ permissions:
   # Write only for the scheduler token's reported expiry on radar-notification-state.
   contents: write
   actions: read
+  deployments: read
   issues: write
 
 concurrency:

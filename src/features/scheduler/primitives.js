@@ -15,6 +15,9 @@ const JOBS = Object.freeze([
   // Maintenance runs. The Worker dispatches them; each workflow also keeps GitHub's
   // own best-effort cron as a fallback, so a fallback run can stand in for a slot.
   { id: "frontend_watchdog", name: "整體健康檢查", repo: "game-trend-radar", workflow: "radar-watchdog.yml", hours: Array.from({ length: 24 }, (_, i) => i), minute: 17, maintenance: true, fallbackCron: true, note: "每小時 :17 · 發現異常時更新警示 issue" },
+  // Data commits reach the site with this hourly deploy; a push outside data/**
+  // deploys at once, and one running when :30 comes due covers that slot.
+  { id: "frontend_pages", name: "網站部署", repo: "game-trend-radar", workflow: "pages-deploy.yml", hours: Array.from({ length: 24 }, (_, i) => i), minute: 30, maintenance: true, coveredByUnscheduledRuns: true, pushLabel: "程式更新觸發", note: "每小時 :30 · 這一小時的資料更新上線；程式更新時立即部署" },
   { id: "twitch_archive", name: "Twitch 歷史封存", repo: "game-trend-radar-twitch-backend", workflow: "archive-twitch-history.yml", hours: [3], minute: 30, maintenance: true, fallbackCron: true, note: "每日 03:30 · 3 天前的資料存入 Releases，核對後移出網站" },
   { id: "storage_retention", name: "資料庫每日清理", repo: "game-trend-radar-backend", workflow: "storage-evidence-retention.yml", hours: [4], minute: 30, maintenance: true, fallbackCron: true, note: "每日 04:30 · 釋放 3 天前未引用的證據，一次最多 200 份" },
   ...[["frontend", "game-trend-radar", "前端"], ["backend", "game-trend-radar-backend", "Steam 後端"], ["twitch", "game-trend-radar-twitch-backend", "Twitch／IGDB"], ["content", "game-trend-radar-content-backend", "內容"]]

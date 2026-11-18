@@ -31,7 +31,6 @@ on:
 
 permissions:
   contents: write
-  actions: write
 
 concurrency:
   group: radar-insights-publication
@@ -65,13 +64,8 @@ jobs:
         run: |
           set -euo pipefail
           python -m scripts.publish_radar_insights
-      # Pages deploys through pages-deploy.yml, and a push made with this token
-      # starts no workflow, so the data commit asks for its deploy explicitly.
-      - name: Request Pages deploy for the data commit
-        if: steps.publish.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run pages-deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
+      # The data commit reaches the site with the hourly Pages deploy
+      # (pages-deploy.yml, dispatched by the Cloudflare scheduler at :30).
 
   notification:
     needs: [snapshot]
