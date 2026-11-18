@@ -16,6 +16,8 @@ export default defineConfig({
   },
   webServer: {
     command: 'npm run preview -- --port 4180 --strictPort',
+    // The tests read the same frozen data the preview serves.
+    env: { RADAR_SITE_DATA: 'tests/fixtures/site-data' },
     url: 'http://127.0.0.1:4180/game-trend-radar/',
     reuseExistingServer: !process.env.CI,
   },

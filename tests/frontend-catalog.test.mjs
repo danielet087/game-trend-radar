@@ -122,7 +122,7 @@ test('Vue card reserves the blank English row and omits missing metrics while re
 });
 
 test('current public JSON uses canonical indexes while catalog view models and Vue card output stay identical', async () => {
-  const read = name => JSON.parse(readFileSync(new URL(`../data/${name}`, import.meta.url),'utf8'));
+  const read = name => JSON.parse(readFileSync(new URL(`./fixtures/site-data/${name}`, import.meta.url),'utf8'));
   const input = {official:read('steam_upcoming.json'),preview:read('steam_preview.json'),native:read('nintendo_upcoming.json')};
   const normalized=normalizeCatalog(input,'all');
   const baseline=R.enrich(D.datasets(input.official,input.preview,input.native),input.official,input.preview);

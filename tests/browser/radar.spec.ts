@@ -3,9 +3,13 @@ import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { RadarData } from '../../src/domain/index.mjs';
 
-const readData = (file: string) => JSON.parse(readFileSync(resolve('data', file), 'utf8'));
+// The frozen data the preview serves (playwright.config.ts, scripts/make_test_site_data.py).
+const DATA = 'tests/fixtures/site-data';
+const readData = (file: string) => JSON.parse(readFileSync(resolve(DATA, file), 'utf8'));
 const dataset = RadarData.datasets(readData('catalog.json'), readData('steam_preview.json'), readData('nintendo_upcoming.json'));
-const steam = dataset.games.find((game: any) => game.source !== 'nintendo' && existsSync(resolve('data/games', `${game.appid}.json`)));
+// Pages that depend on "today" see the day the data was frozen.
+const frozenAt = new Date(readData('catalog.json').generated_at);
+const steam = dataset.games.find((game: any) => game.source !== 'nintendo' && existsSync(resolve(DATA, 'games', `${game.appid}.json`)));
 const native = dataset.games.find((game: any) => game.source === 'nintendo');
 const steamRoute = `game.html?appid=${steam.appid}`;
 const nativeRoute = `game.html?igdb=${native.igdbId}&date=${native.date}`;
@@ -105,6 +109,7 @@ const routes = [
 
 for (const route of routes) {
   test(`built entry initializes: ${route}`, async ({ page }) => {
+    await page.clock.install({ time: frozenAt });
     const failures: string[] = [];
     page.on('pageerror', error => failures.push(error.message));
     page.on('console', message => {
@@ -148,6 +153,7 @@ for (const route of routes) {
 }
 
 test('ticker shows collector reasons for Twitch-discovered Steam, daily Steam changes and IGDB native updates', async ({ page }) => {
+  await page.clock.install({ time: frozenAt });
   const payload = { version: 1, events: [
     { source: 'steam', appid: steam.appid, name: 'Twitch-discovered Steam game', type: 'added',
       date: '2026-11-05', at: '2026-10-13T07:30:00Z', update_reason: 'twitch_rankings' },
@@ -176,6 +182,7 @@ test('ticker shows collector reasons for Twitch-discovered Steam, daily Steam ch
 });
 
 test('search, card reuse, collection and filtered return remain usable', async ({ page }) => {
+  await page.clock.install({ time: frozenAt });
   await page.goto('games.html');
   await expect(page.locator('#gamesGrid .game-card')).toHaveCount(36);
   const first = page.locator('#gamesGrid .game-card').first();
@@ -204,6 +211,7 @@ test('search, card reuse, collection and filtered return remain usable', async (
 
 for (const route of [`index.html?month=${month}`, 'games.html', steamRoute, 'twitch.html', 'scheduler.html']) {
   test(`mobile layout stays within the viewport: ${route}`, async ({ page }) => {
+    await page.clock.install({ time: frozenAt });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(route);
     if (route.startsWith('game.html')) await expect(page.locator('#detailPage')).toBeVisible();
