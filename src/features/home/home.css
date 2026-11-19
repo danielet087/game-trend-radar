@@ -349,21 +349,28 @@
 }
 .release-card-platform {
   display: flex;
+  height: 24px;
+  overflow: hidden;
+}
+.release-card-platform > span {
+  display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
-  height: 24px;
-  box-sizing: border-box;
-  border: 1px solid var(--ink);
-  background: white;
-  color: var(--ink);
-  font-size: var(--text-xs);
-  font-weight: 700;
-}
-.release-card-platform.is-steam {
-  border-color: var(--blue);
-  background: var(--blue);
+  min-width: 0;
+  overflow: hidden;
+  background: var(--platform-other);
   color: white;
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
+.release-card-platform > span + span { border-left: 2px solid white; }
+.release-card-platform > .is-steam { background: var(--platform-steam); }
+.release-card-platform > .is-nintendo { background: var(--platform-nintendo); }
+.release-card-platform > .is-playstation { background: var(--platform-playstation); }
+.release-card-platform > .is-xbox { background: var(--platform-xbox); }
 .release-card-title {
   display: -webkit-box;
   min-height: 48px;
@@ -596,6 +603,10 @@ body[data-page="home"] .games-grid.schedule-list {
 body[data-page="home"] .schedule-list .game-card {
   display: grid;
   grid-template-columns: 208px minmax(0, 1fr);
+  /* Title, badges (taking any height the art needs), then chips and interest;
+     dense placement puts the chips back under the art beside the interest. */
+  grid-template-rows: auto 1fr auto;
+  grid-auto-flow: row dense;
   align-items: start;
   gap: 0 20px;
   margin: 0 0 0 5px;
@@ -616,6 +627,8 @@ body[data-page="home"] .schedule-list .game-card::before {
   border-bottom: 1px dotted #cfc9bb;
 }
 body[data-page="home"] .schedule-list .cover-link {
+  grid-column: 1;
+  grid-row: 1 / span 2;
   aspect-ratio: 16 / 9;
   border-radius: 8px;
 }
@@ -633,6 +646,7 @@ body[data-page="home"] .schedule-list .card-body {
   padding: 0;
 }
 body[data-page="home"] .schedule-list .card-body > .card-languages {
+  align-self: start;
   justify-content: flex-start;
   margin-top: 6px;
 }
@@ -648,8 +662,25 @@ body[data-page="home"] .schedule-list .card-body > .card-languages + .card-meta 
   padding-top: 0;
   border-top: 0;
 }
-body[data-page="home"] .schedule-list .card-footer {
+/* Platform chips sit under the art, as on Nintendo's schedule, level with the
+   interest on the right. The body's parts join the card's grid; the store
+   links are on the game page. */
+body[data-page="home"] .schedule-list .card-body {
+  display: contents;
+}
+body[data-page="home"] .schedule-list .card-body > * {
+  grid-column: 2;
+}
+body[data-page="home"] .schedule-list .card-body > .card-footer {
+  grid-column: 1;
   margin-top: 8px;
+  padding-top: 0;
+}
+body[data-page="home"] .schedule-list .card-body > .card-meta {
+  align-self: end;
+}
+body[data-page="home"] .schedule-list .card-footer-right {
+  display: none;
 }
 body[data-page="home"] .schedule-list .save-button {
   top: 12px;
@@ -935,14 +966,19 @@ body[data-page="home"] .schedule-list .game-card:focus-within {
   body[data-page="home"] .schedule-list .game-card::before {
     left: 18px;
   }
-  /* The meta row already names this release's platform; the store link is on the game page. */
   body[data-page="home"] .schedule-list .card-english,
-  body[data-page="home"] .schedule-list .explorer-card-tags,
-  body[data-page="home"] .schedule-list .card-footer {
+  body[data-page="home"] .schedule-list .explorer-card-tags {
     display: none;
   }
   body[data-page="home"] .schedule-list .card-followers {
     font-size: var(--text-sm);
+  }
+  body[data-page="home"] .schedule-list .card-platforms {
+    gap: 3px;
+  }
+  body[data-page="home"] .schedule-list .platform-chip {
+    padding: 1px 5px;
+    letter-spacing: 0;
   }
   body[data-page="home"] .schedule-list .card-title {
     white-space: normal;

@@ -19,7 +19,8 @@ export function createHomeFeatures({ D, storage, artwork, favorites, signal }: {
   const heroRoot = document.getElementById('homeHero'), stripRoot = document.getElementById('homeReleases');
   const hero = heroRoot && storage.loadMedia
     ? createHomeHero(heroRoot, { D, loadMedia: appid => storage.loadMedia!(appid), artwork, favorites }, signal) : null;
-  const strip = stripRoot ? createReleaseStrip(stripRoot, { D, artwork }, signal) : null;
+  // A page without the strip's markup (an older cached page, a test page) just skips it.
+  const strip = stripRoot?.querySelector('.releases-scroller') ? createReleaseStrip(stripRoot, { D, artwork }, signal) : null;
   return {
     hero, strip,
     render(data: CatalogDataset, today: string) {

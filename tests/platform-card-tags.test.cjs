@@ -120,3 +120,45 @@ test('later native platform additions update the whole-game badge without shifti
   assert.equal(D.gameKey(before), D.gameKey(after));
   assert.deepEqual(after.releasePlatforms, ['NS']);
 });
+
+const labels = result => result.chips.map(chip => chip.label);
+const released = result => result.chips.filter(chip => chip.released).map(chip => chip.label);
+
+test('platform chips name each known platform in a fixed order and gain a chip when a new version is announced', () => {
+  const before = native({ known_platforms: [platform(508)] });
+  assert.deepEqual(labels(D.cardPlatformChips(before)), ['NS2']);
+  assert.match(D.cardPlatformChips(before).title, /之後可能增加/);
+  assert.doesNotMatch(labels(D.cardPlatformChips(before)).join(), /獨佔/);
+  // IGDB later lists PS5, Xbox Series and Xbox One: the same game, more chips, one Xbox chip.
+  const after = native({ known_platforms: [platform(508), platform(167), platform(169), platform(49)] });
+  assert.deepEqual(labels(D.cardPlatformChips(after)), ['NS2', 'PS5', 'Xbox']);
+  assert.equal(D.gameKey(before), D.gameKey(after));
+  const everywhere = native({ known_platforms: [platform(39), platform(130), platform(508), platform(48), platform(6), platform(14)] });
+  assert.deepEqual(labels(D.cardPlatformChips(everywhere)), ['PC', 'NS2', 'NS', 'PS4', '手機']);
+  assert.deepEqual(D.cardPlatformChips(everywhere).chips.map(chip => chip.family), ['other', 'nintendo', 'nintendo', 'playstation', 'other']);
+});
+
+test('a release event marks only the platforms releasing that day and a verified Steam product replaces PC', () => {
+  const nintendo = raw({ websites: [{ url: store }], known_platforms: [platform(508), platform(6), platform(167)],
+    platforms: [platform(508), { id: 167, code: 'PS5' }],
+    releases: [{ platform: 'NS2', date: '2026-11-01', precision: 'day', source: 'IGDB' },
+      { platform: 'PS5', date: '2027-02-01', precision: 'day', source: 'IGDB' }] });
+  const result = D.datasets({ games: [{ appid: 10, name: 'Game', followers: 4999, release_start: '2026-10-10' }] }, null, payload(nintendo));
+  const ns2 = result.games.find(game => game.date === '2026-11-01');
+  const chips = D.cardPlatformChips(ns2, ns2.releasePlatforms);
+  assert.deepEqual(labels(chips), ['Steam', 'NS2', 'PS5']);
+  assert.deepEqual(released(chips), ['NS2']);
+  assert.match(chips.title, /^本次發售：NS2。已確認平台：PC（Steam）／PS5／NS2。/);
+  assert.doesNotMatch(chips.scope, /本次發售/);
+  assert.deepEqual(released(D.cardPlatformChips(ns2)), []);
+});
+
+test('only official sole-platform proof turns a chip into 獨佔, and nothing known reads 平台待確認', () => {
+  const proof = { status: 'confirmed', platform: 'NS2', url: 'https://www.nintendo.com/us/store/products/game-switch-2/' };
+  const confirmed = D.cardPlatformChips(native({ exclusivity: proof }), ['NS2']);
+  assert.deepEqual(labels(confirmed), ['NS2 獨佔']);
+  assert.deepEqual(confirmed.chips.map(chip => [chip.exclusive, chip.released]), [[true, true]]);
+  assert.deepEqual(labels(D.cardPlatformChips({})), ['平台待確認']);
+  assert.equal(D.platformFamily('PS5'), 'playstation');
+  assert.equal(D.platformFullNames.NS2, 'Nintendo Switch 2');
+});

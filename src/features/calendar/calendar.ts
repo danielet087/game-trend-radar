@@ -45,10 +45,15 @@ export function createCalendarFeature(D: CatalogAPI, filters: FilterState, state
         const releasePlatforms = game.releasePlatforms || [game.source === "nintendo" ? game.platformShort : "Steam"];
         const display = D.releaseDisplayNames?.(game, releasePlatforms) || { name: game.name, nameEn: game.nameEn };
         const tag = detailLink(game, D, "day-game" + (rank ? " second" : ""), display.name);
-        const badge = D.cardPlatformBadge(game);
-        tag.classList.add("day-game-platform", "day-game-" + badge.status);
-        const platform = node("span", "day-platform", badge.label);
-        platform.title = `${badge.title} 本日發售：${releasePlatforms.join("／")}。`;
+        // The chip names what releases on this day: one platform, or the first and a count.
+        const platforms = D.cardPlatformChips(game, releasePlatforms);
+        const released = platforms.chips.filter((chip: any) => chip.released);
+        const lead = released[0] || platforms.chips[0];
+        tag.classList.add("day-game-platform", "day-game-" + lead.family);
+        if (lead.exclusive) tag.classList.add("is-exclusive");
+        const platform = node("span", "day-platform is-" + lead.family,
+          released.length > 1 ? `${lead.label} +${released.length - 1}` : lead.label);
+        platform.title = `本日發售：${(released.length ? released.map((chip: any) => chip.label) : releasePlatforms).join("／")}。${platforms.scope}`;
         tag.append(platform,
           node("span", "day-game-name", display.name));
         tag.title = `${display.name}${display.nameEn && display.nameEn !== display.name ? ` · ${display.nameEn}` : ""} · ${platform.title}${Number.isFinite(game.hypes) ? ` · ${number.format(game.hypes)} IGDB hypes` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;

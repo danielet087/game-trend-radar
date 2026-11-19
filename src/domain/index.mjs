@@ -1,7 +1,7 @@
 import { validDate, todayInTaipei, offsetDate } from './dates.mjs';
 import { savedID, saveID, isSaved, gameKey, nintendoSteamIdentity } from './identity.mjs';
 import { nativePlatformIDs, nativePlatformOrder } from './constants.mjs';
-import { cardPlatformBadge } from './platforms.mjs';
+import { cardPlatformBadge, cardPlatformChips, platformFamily, platformFullNames } from './platforms.mjs';
 import { cardMultiplayerBadge } from './multiplayer.mjs';
 import { nintendoURL, platformURL, nintendoLanguageURL, nintendoHongKongDateURL } from './storefronts.mjs';
 import { platformLanguageSupport, nintendoLanguageSupport, nintendoCardLanguages } from './languages.mjs';
@@ -18,7 +18,8 @@ export const RadarData = {
   validDate, todayInTaipei, offsetDate, imageURL, exactReleaseDate,
   hasTwitchAdmission, hasTaiwanStoreDateAuthority, isTwitchQualified, normalize,
   savedID, saveID, isSaved, gameKey, nativePlatformIDs, nativePlatformOrder,
-  cardPlatformBadge, cardMultiplayerBadge, nintendoSteamIdentity, nintendoURL,
+  cardPlatformBadge, cardPlatformChips, platformFamily, platformFullNames,
+  cardMultiplayerBadge, nintendoSteamIdentity, nintendoURL,
   platformURL, platformLanguageSupport, platformEdition,
   nativeCardLanguages: nintendoCardLanguages,
   nativeReleaseAudited: nintendoReleaseAudited,
@@ -32,7 +33,8 @@ export {
   validDate, todayInTaipei, offsetDate, imageURL, exactReleaseDate,
   hasTwitchAdmission, hasTaiwanStoreDateAuthority, isTwitchQualified, normalize,
   savedID, saveID, isSaved, gameKey, nativePlatformIDs, nativePlatformOrder,
-  cardPlatformBadge, cardMultiplayerBadge, nintendoSteamIdentity, nintendoURL,
+  cardPlatformBadge, cardPlatformChips, platformFamily, platformFullNames,
+  cardMultiplayerBadge, nintendoSteamIdentity, nintendoURL,
   platformURL, platformLanguageSupport, platformEdition,
   nintendoHongKongDateURL, officialTaiwanReleaseTime, nintendoLanguageURL,
   nintendoLanguageSupport, nintendoCardLanguages, nintendoEdition,
