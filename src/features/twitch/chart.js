@@ -198,13 +198,13 @@ function mount(container, options) {
     svg.append(svgElement("desc", {}, `X 軸為台灣${daily ? '日期' : '時間'}，Y 軸從零起算。資料點為有效紀錄，${continuity}下方時間軸可用鍵盤切換${daily ? '日期' : '時段'}。`));
     for (let tick = 0; tick <= top; tick += gridStep) {
       svg.append(svgElement("line", { class: "tw-chart-grid", x1: left, x2: width - right, y1: y(tick), y2: y(tick), stroke: "var(--tw-chart-grid, #dbe3eb)", "stroke-width": 1 }));
-      svg.append(svgElement("text", { class: "tw-chart-axis", x: left - 9, y: y(tick) + 4, "text-anchor": "end", "font-size": 11, fill: "var(--tw-chart-ink, #59677d)" }, number(tick)));
+      svg.append(svgElement("text", { class: "tw-chart-axis", x: left - 9, y: y(tick) + 4, "text-anchor": "end", "font-size": 12, fill: "var(--tw-chart-ink, #59677d)" }, number(tick)));
     }
     const labelCount = width < 420 ? 3 : width < 640 ? 5 : 7;
     const tickCount = Math.min(labelCount, visible.length);
     const ticks = new Set(Array.from({ length: tickCount }, (_, index) => Math.round(index * (visible.length - 1) / Math.max(1, tickCount - 1))));
     for (const index of ticks) {
-      svg.append(svgElement("text", { class: "tw-chart-axis", x: x(index), y: height - 12, "text-anchor": index === 0 ? "start" : index === visible.length - 1 ? "end" : "middle", "font-size": 11, fill: "var(--tw-chart-ink, #59677d)" }, daily ? visible[index]?.date.slice(5).replace('-', '/') : tickTime(visible[index]?.hour, range > 24)));
+      svg.append(svgElement("text", { class: "tw-chart-axis", x: x(index), y: height - 12, "text-anchor": index === 0 ? "start" : index === visible.length - 1 ? "end" : "middle", "font-size": 12, fill: "var(--tw-chart-ink, #59677d)" }, daily ? visible[index]?.date.slice(5).replace('-', '/') : tickTime(visible[index]?.hour, range > 24)));
     }
     if (numeric(settings.referenceValue)) {
       svg.append(svgElement('line', { class: 'tw-chart-threshold', x1: left, x2: width - right, y1: y(settings.referenceValue), y2: y(settings.referenceValue) }));

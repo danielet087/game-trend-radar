@@ -26,11 +26,11 @@
   color: #a17b46;
 }
 .bottom-note strong {
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: 750;
 }
 .bottom-note p {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: #856f52;
   line-height: 1.8;
   margin-top: 5px;
@@ -55,23 +55,23 @@
   align-items: center;
   gap: 8px;
   font:
-    800 11px Arial,
+    800 var(--text-xs) Arial,
     "Noto Sans TC",
     sans-serif;
   letter-spacing: 0.08em;
 }
 .footer-brand span {
   color: var(--blue);
-  font-size: 20px;
+  font-size: var(--text-lg);
 }
 .site-footer p {
-  font-size: 10px;
+  font-size: var(--text-xs);
   line-height: 1.9;
   color: #8390a2;
   margin-top: 10px;
 }
 .back-top {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--muted);
   white-space: nowrap;
   padding: 10px;

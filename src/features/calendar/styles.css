@@ -8,7 +8,7 @@
   border-bottom: 1px solid var(--line);
   background: #f7f8fc;
   padding: 12px 0;
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--muted);
   text-align: center;
   font-weight: 700;
@@ -48,12 +48,14 @@
 .date-link {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   width: fit-content;
+  min-width: 24px;
   min-height: 30px;
   padding: 3px 5px;
   font:
-    700 13px/1.5 Arial,
+    700 var(--text-sm)/1.5 Arial,
     "Noto Sans TC",
     sans-serif;
   color: #637089;
@@ -65,7 +67,7 @@
 }
 .date-link b {
   font:
-    700 9px/1.5 "Noto Sans TC",
+    700 var(--text-xs)/1.5 "Noto Sans TC",
     sans-serif;
   padding: 2px 6px;
   background: var(--blue);
@@ -84,7 +86,7 @@
   border-radius: 7px;
   background: #edf0fd;
   color: #334db8;
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 650;
   line-height: 1.65;
   overflow-wrap: normal;
@@ -101,11 +103,13 @@
   transform: translateX(2px);
 }
 .day-more {
-  display: block;
+  display: flex;
+  align-items: center;
+  min-height: 24px;
   margin-top: 6px;
   padding: 2px 5px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .day-more:hover {
   color: var(--blue);
@@ -118,7 +122,7 @@
   gap: 10px;
   padding: 16px 25px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .calendar-help span {
   display: inline-flex;
