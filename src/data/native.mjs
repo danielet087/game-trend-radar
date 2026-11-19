@@ -10,6 +10,7 @@ import { nativeMultiplayer } from '../domain/multiplayer.mjs';
 import { nintendoReleaseAudited } from '../domain/release-audit.mjs';
 import { unique } from '../domain/collections.mjs';
 import { descriptionRecord } from '../domain/descriptions.mjs';
+import { popscoreTop } from '../domain/interest.mjs';
 
 export function nintendoGames(payload) {
   if (!payload || payload.schema_version !== 1 || !Array.isArray(payload.games)) return [];
@@ -17,11 +18,17 @@ export function nintendoGames(payload) {
   for (const raw of payload.games) {
     const id = decimalID(raw?.igdb_id);
     if (!id || !Number.isSafeInteger(Number(id)) || raw.id !== `igdb:${id}` || raw.sexual_content_screened !== true ||
-      !Number.isSafeInteger(raw.hypes) || raw.hypes < 30 || !Array.isArray(raw.platforms) ||
-      !Array.isArray(raw.releases)) continue;
+      !Array.isArray(raw.platforms) || !Array.isArray(raw.releases)) continue;
     const platforms = nativePlatformOrder.filter(code => raw.platforms.some(platform =>
       platform?.code === code && Number(platform.id) === nativePlatformIDs[code]));
     if (!platforms.length) continue;
+    // IGDB hypes ≥ 30 admits any console game; NS/NS2 games may instead rank
+    // in the top 20% of IGDB PopScore (page visits or Want to Play).
+    const byHypes = Number.isSafeInteger(raw.hypes) && raw.hypes >= 30;
+    const byPopscore = !byHypes && raw.popularity_basis === 'igdb_popscore' &&
+      platforms.some(code => code === 'NS' || code === 'NS2') &&
+      (raw.hypes === null || (Number.isSafeInteger(raw.hypes) && raw.hypes >= 0));
+    if (!byHypes && !byPopscore) continue;
     const platformLanguages = Object.fromEntries(platforms.map(code =>
       [code, platformLanguageSupport(raw.platform_language_support?.[code], code)]));
     const platformEditions = Object.fromEntries(platforms.flatMap(code => {
@@ -96,7 +103,8 @@ export function nintendoGames(payload) {
               : code === "PS5" ? "playstation" : "nintendo", title: platformTitle })),
           ...(multiPlatform ? [{ label: "多平台", status: "multi", title: platformTitle }] : []),
         ],
-        hypes: raw.hypes, followers: null, platformLanguages, platformEditions,
+        hypes: raw.hypes, popularityBasis: byHypes ? 'hypes' : 'igdb_popscore',
+        popscoreTop: popscoreTop(raw.popscore?.top_percent), followers: null, platformLanguages, platformEditions,
         platformMultiplayer: nativeMultiplayer(raw, platforms),
         ...nintendoCardLanguages(platformLanguages, releasePlatforms),
         art, artSources: art ? [art] : [], art2x: "", artVariants: {}, hasVerifiedHeader: !!art,

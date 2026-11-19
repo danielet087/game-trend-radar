@@ -27,6 +27,32 @@ test('Nintendo uses hypes ≥ 30 and requires confirmed native platforms, exact 
   assert.deepEqual(D.nintendoGames({ games: [row()] }), []);
 });
 
+test('NS/NS2 games in the IGDB PopScore top 20% are listed without hypes and rank after hypes games', () => {
+  const popscore = { popularity_basis: 'igdb_popscore', popscore: { visits: 0.001, want_to_play: 0.002, top_percent: 8 } };
+  const quiet = D.nintendoGames(payload([row({ hypes: null, ...popscore })]))[0];
+  assert.equal(quiet.popularityBasis, 'igdb_popscore');
+  assert.equal(quiet.popscoreTop, 8);
+  assert.equal(quiet.hypes, null);
+  assert.deepEqual(D.consoleInterest(quiet), { basis: 'igdb_popscore', value: '前 8%', unit: 'IGDB 熱度',
+    text: 'IGDB 熱度前 8%', title: 'IGDB 頁面瀏覽或「想玩」在 NS／NS2 遊戲中排名前 8%' });
+  assert.equal(D.nintendoGames(payload([row({ hypes: 12, ...popscore })]))[0].popscoreTop, 8);
+  const kept = D.nintendoGames(payload([row({ hypes: 3, ...popscore, popscore: { ...popscore.popscore, top_percent: null } })]))[0];
+  assert.equal(D.consoleInterest(kept).text, 'IGDB 熱度上榜');
+  const ps5 = { id: 167, code: 'PS5', name: 'PlayStation 5' };
+  for (const changes of [{ hypes: 12, popularity_basis: null }, { hypes: 12, popularity_basis: 'hypes' },
+    { hypes: '12', ...popscore }, { hypes: -1, ...popscore },
+    { hypes: 12, ...popscore, platforms: [ps5], known_platforms: [ps5],
+      releases: [{ date: '2027-03-20', platform: 'PS5', precision: 'day', region: 'worldwide', source: 'IGDB' }] }])
+    assert.deepEqual(D.nintendoGames(payload([row(changes)])), [], JSON.stringify(changes));
+  const hyped = D.nintendoGames(payload([row({ hypes: 31, ...popscore })]))[0];
+  assert.equal(hyped.popularityBasis, 'hypes');
+  assert.equal(D.consoleInterest(hyped).text, 'IGDB 31 hypes');
+  const second = { ...quiet, appid: 'igdb:2', key: 'igdb:2@2027-03-20', popscoreTop: 15 };
+  const ranked = [second, quiet, kept, hyped].sort(D.popularityCompare);
+  assert.deepEqual(ranked.map(game => [game.popularityBasis, game.popscoreTop]),
+    [['hypes', 8], ['igdb_popscore', 8], ['igdb_popscore', 15], ['igdb_popscore', null]]);
+});
+
 test('same-day NS and NS2 releases merge; later native platform ports retain their own calendar date', () => {
   const game = row({ platforms: [platform('NS'), platform('NS2')], known_platforms: [platform('NS'), platform('NS2')],
     exclusivity: { status: 'multi_platform' }, releases: [

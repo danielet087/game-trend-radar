@@ -1,6 +1,7 @@
 // Event selection and identity-scoped list representatives.
 import { gameKey } from './identity.mjs';
 import { offsetDate } from './dates.mjs';
+import { consoleInterestCompare } from './interest.mjs';
 
 export function detailURL(game) {
   return game.source === "nintendo"
@@ -11,7 +12,7 @@ export function detailURL(game) {
 export function popularityCompare(a, b) {
   // Counts belong to different communities; only compare within their source.
   if ((a.source === "nintendo") !== (b.source === "nintendo")) return a.source === "nintendo" ? 1 : -1;
-  return (a.source === "nintendo" ? b.hypes - a.hypes : b.followers - a.followers) ||
+  return (a.source === "nintendo" ? consoleInterestCompare(a, b) : b.followers - a.followers) ||
     a.date.localeCompare(b.date) || a.name.localeCompare(b.name, "zh-TW");
 }
 

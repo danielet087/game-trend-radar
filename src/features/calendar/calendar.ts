@@ -56,7 +56,8 @@ export function createCalendarFeature(D: CatalogAPI, filters: FilterState, state
         platform.title = `本日發售：${(released.length ? released.map((chip: any) => chip.label) : releasePlatforms).join("／")}。${platforms.scope}`;
         tag.append(platform,
           node("span", "day-game-name", display.name));
-        tag.title = `${display.name}${display.nameEn && display.nameEn !== display.name ? ` · ${display.nameEn}` : ""} · ${platform.title}${Number.isFinite(game.hypes) ? ` · ${number.format(game.hypes)} IGDB hypes` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;
+        const interest = D.consoleInterest(game);
+        tag.title = `${display.name}${display.nameEn && display.nameEn !== display.name ? ` · ${display.nameEn}` : ""} · ${platform.title}${interest ? ` · ${interest.text}` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;
         cell.append(tag);
       });
       if (dayGames.length > 2) {

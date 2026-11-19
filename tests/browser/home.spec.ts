@@ -245,3 +245,29 @@ test('platforms are named in the calendar, on the strip band and under the art i
   await expect(entry).toHaveClass(/day-game-playstation/);
   await expect(entry.locator('.day-platform')).toHaveAttribute('title', /^本日發售：PS5。/);
 });
+
+test('an NS2 game listed by IGDB PopScore shows its rank on the strip, the card and the calendar', async ({ page }) => {
+  const consoles = JSON.parse(readFileSync(resolve(DATA, 'nintendo_upcoming.json'), 'utf8'));
+  const base = consoles.games.find((game: any) => game.id === 'igdb:408719');
+  const release = { date: '2026-11-21', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB',
+    date_basis: 'igdb_calendar_day', source_date: '2026-11-21', source_region: 'worldwide', time_zone: 'Asia/Taipei',
+    timezone_status: 'date_only', taiwan_release_confirmed: false, official_source_url: null, official_source_name: null,
+    official_verified_at: null, official_product_id: null, official_concept_id: null, official_release_time_utc: null };
+  const listed = { ...base, id: 'igdb:999001', igdb_id: 999001, display_name: '熱度範例', name_zh_tw: '熱度範例',
+    name_en: 'PopScore Example', hypes: 4, popularity_status: 'below_threshold', popularity_basis: 'igdb_popscore',
+    popscore: { visits: 0.0001, want_to_play: 0.0002, top_percent: 8 }, releases: [release], websites: [],
+    url: 'https://www.igdb.com/games/popscore-example', nintendo_url: null, platform_urls: {} };
+  await page.clock.install({ time: fixtureTime });
+  await page.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
+  await page.route('**/data/nintendo_upcoming.json', route => route.fulfill({ json: { ...consoles, games: [...consoles.games, listed] } }));
+  await page.goto('index.html?view=list');
+  const strip = page.locator('#homeReleases .release-day[data-date="2026-11-21"] .release-card');
+  await expect(strip.locator('.release-card-title')).toHaveText('熱度範例');
+  await expect(strip.locator('.release-card-interest')).toHaveText('IGDB 熱度前 8%');
+  const card = page.locator('#gamesGrid .game-card').filter({ hasText: '熱度範例' });
+  await expect(card.locator('.card-followers')).toHaveText('前 8%IGDB 熱度');
+  await expect(card).not.toContainText('hypes');
+  await page.locator('#calendarView').click();
+  const entry = page.locator('.calendar-day .day-game').filter({ hasText: '熱度範例' });
+  await expect(entry).toHaveAttribute('title', /IGDB 熱度前 8%/);
+});

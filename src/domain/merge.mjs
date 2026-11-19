@@ -67,7 +67,8 @@ export function mergePlatformGames(steamRows, nintendoRows, steamReference = ste
         const links = rows.map(row => row.platformLinks?.[code]).filter(Boolean);
         return links.length && links.every(link => link.url === links[0].url) ? [[code, links[0]]] : [];
       })),
-      hypes: nintendo.hypes, platforms, releases,
+      hypes: nintendo.hypes, popularityBasis: nintendo.popularityBasis, popscoreTop: nintendo.popscoreTop,
+      platforms, releases,
       platformMultiplayer: Object.fromEntries(platforms.map(code => [code,
         code === "Steam" ? steam.platformMultiplayer?.Steam || unknownMultiplayer("Steam")
           : mergeMultiplayerEvidence(rows.filter(row => row.platforms.includes(code)), code)])),

@@ -35,7 +35,8 @@ export function createDetailContext(options = {}) {
     motion: options.motion || window.RadarMotion,
     ...parseDetailRoute((options.location || window.location).search),
     interestText: game => isNativeConsole(game)
-      ? Number.isSafeInteger(game.hypes) ? `IGDB hypes ${number.format(game.hypes)}` : 'IGDB hypes 未知'
+      ? game.popularityBasis === 'igdb_popscore' ? D.consoleInterest(game).text
+        : Number.isSafeInteger(game.hypes) ? `IGDB hypes ${number.format(game.hypes)}` : 'IGDB hypes 未知'
       : Number.isFinite(game.followers) ? `${number.format(game.followers)} 人關注` : 'Followers 未取得 · 收錄依據 Twitch',
     detailURL: game => D.detailURL(game),
     state: { currentGame: null, candidates: [], knownGames: [], tagsExpanded: false,

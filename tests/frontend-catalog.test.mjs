@@ -117,6 +117,15 @@ test('Vue event card honors the selected platform date and multiplayer language 
   assert.doesNotMatch(ps5,/支援繁中/);
 });
 
+test('Vue card shows the IGDB PopScore rank instead of a low hypes count for NS/NS2 games admitted by it', async () => {
+  const ns2=[{id:508,code:'NS2'}], release={...native().games[0].releases[0],platform:'NS2'};
+  const data=D.datasets(null,null,native({websites:[],hypes:7,popularity_basis:'igdb_popscore',
+    popscore:{visits:0.001,want_to_play:0.002,top_percent:8},platforms:ns2,known_platforms:ns2,releases:[release]}));
+  const html=await renderCard(data.games[0]);
+  assert.match(html,/<span class="card-followers" title="IGDB 頁面瀏覽或「想玩」在 NS／NS2 遊戲中排名前 8%">前 8%<small>IGDB 熱度<\/small><\/span>/);
+  assert.doesNotMatch(html,/IGDB hypes/);
+});
+
 test('Vue card reserves the blank English row and omits missing metrics while retaining measured zero', async () => {
   const game=D.normalize(raw()); game.nameEn=game.name; game.followers=0; game.hypes=null;
   const html=await renderCard(game);
