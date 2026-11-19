@@ -48,7 +48,8 @@ async function display(search, nintendo = sample(), catalog = null, stored = [],
   const localStorage = { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) };
   const sessionStorage = { getItem: () => null, setItem() {} };
   const location = { search, origin: 'https://example.test', href: `https://example.test/game.html${search}` };
-  const window = { localStorage, sessionStorage, location, addEventListener() {}, removeEventListener() {} };
+  const window = { localStorage, sessionStorage, location, addEventListener() {}, removeEventListener() {},
+    ...(options.window || {}) };
   const radarStorage = {
     loadNintendo: async () => {
       calls.nintendo++;
@@ -883,4 +884,78 @@ test('a version without a verified shop leaves its store cell empty and the buy 
   assert.equal(e.get('gameSteam').href, 'https://www.igdb.com/games/fire-emblem-fortunes-weave');
   assert.equal(e.get('gameSteam').textContent, '前往 IGDB 遊戲頁↗');
   assert.equal(e.get('gameSteamMobile').textContent, 'IGDB 遊戲頁 ↗');
+});
+
+
+// An English description is translated only when the reader asks.
+const englishDescription = () => sample({ short_description: 'A tactics game.\nSecond paragraph.',
+  short_description_language: 'en', short_description_source: 'igdb_original' });
+const settle = async () => { for (let turn = 0; turn < 6; turn++) await new Promise(resolve => setImmediate(resolve)); };
+const translateControl = e => e.get('descriptionSource').children.find(child => child.classList.contains('description-translate'));
+
+test('without a built-in translator an English description links to Google Translate', async () => {
+  const { elements: e } = await display('?igdb=366896', englishDescription());
+  assert.equal(e.get('gameDescription').textContent, 'A tactics game.\nSecond paragraph.');
+  assert.equal(e.get('gameDescription').lang, 'en');
+  const link = translateControl(e);
+  assert.equal(link.tagName, 'a');
+  assert.equal(link.textContent, 'Google 翻譯 ↗');
+  assert.equal(link.href, 'https://translate.google.com/?sl=en&tl=zh-TW&text=A+tactics+game.%0ASecond+paragraph.&op=translate');
+  assert.equal(link.target, '_blank');
+  assert.equal(link.rel, 'noopener noreferrer');
+  assert.equal(e.get('gameDescriptionNote').hidden, true);
+});
+
+test('a built-in translator works only on request, labels the result and switches back to the original', async () => {
+  const created = [];
+  const Translator = { create: async options => { created.push(options);
+    return { translate: async text => `譯：${text}` }; } };
+  const { elements: e } = await display('?igdb=366896', englishDescription(), null, [], { window: { Translator } });
+  const button = translateControl(e);
+  assert.equal(button.tagName, 'button');
+  assert.equal(button.textContent, '翻譯成中文');
+  assert.equal(created.length, 0);
+  button.click();
+  await settle();
+  assert.deepEqual(created.map(row => [row.sourceLanguage, row.targetLanguage]), [['en', 'zh-Hant']]);
+  assert.equal(e.get('gameDescription').textContent, '譯：A tactics game.\n譯：Second paragraph.');
+  assert.equal(e.get('gameDescription').lang, 'zh-Hant');
+  assert.equal(e.get('gameDescriptionNote').hidden, false);
+  assert.equal(e.get('gameDescriptionNote').textContent, '瀏覽器機器翻譯，僅供參考；原文是英文。');
+  assert.equal(button.textContent, '顯示英文');
+  assert.equal(button.attributes['aria-pressed'], 'true');
+  button.click();
+  await settle();
+  assert.equal(e.get('gameDescription').textContent, 'A tactics game.\nSecond paragraph.');
+  assert.equal(e.get('gameDescription').lang, 'en');
+  assert.equal(e.get('gameDescriptionNote').hidden, true);
+  assert.equal(button.textContent, '翻譯成中文');
+  button.click();
+  await settle();
+  // The translation is reused, not requested again.
+  assert.equal(created.length, 1);
+  assert.equal(e.get('gameDescription').textContent, '譯：A tactics game.\n譯：Second paragraph.');
+});
+
+test('a built-in translator that cannot run offers Google Translate instead', async () => {
+  const Translator = { create: async () => { throw new Error('NotSupportedError'); } };
+  const { elements: e } = await display('?igdb=366896', englishDescription(), null, [], { window: { Translator } });
+  translateControl(e).click();
+  await settle();
+  const fallback = e.get('descriptionSource').children.find(child => child.className === 'description-translate-fallback');
+  assert.equal(fallback.hidden, false);
+  assert.equal(fallback.children[0].textContent, '這個瀏覽器無法直接翻譯。');
+  assert.equal(fallback.children[1].textContent, '改用 Google 翻譯 ↗');
+  assert.match(fallback.children[1].href, /^https:\/\/translate\.google\.com\/\?sl=en&tl=zh-TW&text=A\+tactics/);
+  assert.equal(translateControl(e).hidden, true);
+  assert.equal(e.get('gameDescription').textContent, 'A tactics game.\nSecond paragraph.');
+  assert.equal(e.get('gameDescriptionNote').hidden, true);
+});
+
+test('Chinese descriptions get no translate control', async () => {
+  const Translator = { create: async () => ({ translate: async text => text }) };
+  const { elements: e } = await display('?igdb=366896', sample({ short_description: '在森林中冒險。',
+    short_description_language: 'zh-TW', short_description_source: 'official_zh_tw' }), null, [], { window: { Translator } });
+  assert.equal(e.get('gameDescription').textContent, '在森林中冒險。');
+  assert.equal(translateControl(e), undefined);
 });

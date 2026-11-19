@@ -9,6 +9,7 @@ import { createDetailMedia } from './media.js';
 import { createDetailRadar } from './radar.js';
 import { createDetailOverview } from './overview.js';
 import { createDetailVersions } from './versions.js';
+import { createDescriptionTranslation } from './translate.js';
 import { createDetailSections } from './sections.js';
 import { createDetailRenderer } from './render.js';
 import { createDetailLoader } from './load.js';
@@ -28,7 +29,7 @@ export function initGameDetail(options = {}) {
   const related = createRelatedGames(ctx);
   const sections = { media: createDetailMedia(ctx), radar: createDetailRadar(ctx),
     overview: createDetailOverview(ctx), versions: createDetailVersions(ctx, policy),
-    navigation: createDetailSections(ctx) };
+    translation: createDescriptionTranslation(ctx), navigation: createDetailSections(ctx) };
   const render = createDetailRenderer(ctx, policy, release, metadata, artwork, favorites, related, sections);
   const loader = createDetailLoader(ctx, render, favorites, related);
   ctx.on(ctx.$('detailRetry'), 'click', async () => {

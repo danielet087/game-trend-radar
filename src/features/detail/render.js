@@ -12,7 +12,7 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
   const { showArtwork } = artwork;
   const { updateSaveControls } = favorites;
   const { setupTags } = related;
-  const { media, radar, overview, versions, navigation } = sections;
+  const { media, radar, overview, versions, translation, navigation } = sections;
   on?.($("gameDescriptionMore"), "click", () => {
     const open = $("gameDescriptionMore").getAttribute("aria-expanded") !== "true";
     $("gameDescription").classList.toggle("is-clamped", !open);
@@ -31,6 +31,7 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     $("gameDescriptionMore").setAttribute("aria-expanded", "false");
     $("gameDescriptionMore").textContent = "展開全文";
     renderDescriptionSource($("descriptionSource"), game, node);
+    translation?.render(game);
   }
 
   // One buy button: a single store opens directly; several stores scroll to 平台版本.
