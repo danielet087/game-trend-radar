@@ -27,6 +27,7 @@ class MakeTests(unittest.TestCase):
                 "activity.json": {"version": 1, "events": [{"appid": 2}, {"appid": 9}, {"igdb_id": 7}]},
                 "growth.json": {"version": 1, "games": [{"appid": 1}, {"appid": 9}]},
                 "games/1.json": game(1), "games/5356470.json": game(5356470), "games/9.json": game(9),
+                "media/2.json": {"schema_version": 1, "appid": 2}, "media/9.json": {"schema_version": 1, "appid": 9},
             }
             for name, value in files.items():
                 (source / name).parent.mkdir(parents=True, exist_ok=True)
@@ -41,6 +42,9 @@ class MakeTests(unittest.TestCase):
             self.assertEqual(read("activity.json")["events"], [{"appid": 2}, {"igdb_id": 7}])
             self.assertEqual(read("growth.json")["games"], [{"appid": 1}])
             self.assertEqual(sorted(path.name for path in (target / "games").iterdir()), ["1.json", "5356470.json"])
+            # game.html's Steam media follows the chosen games too.
+            self.assertEqual(sorted(path.name for path in (target / "media").iterdir()), ["2.json"])
+            self.assertEqual(report["media_files"], 1)
 
     def test_the_committed_fixture_is_consistent(self):
         read = lambda name: json.loads((FIXTURE / name).read_text())
@@ -52,6 +56,8 @@ class MakeTests(unittest.TestCase):
         self.assertTrue(any(make.followers_window(row) for row in catalog["games"]))
         self.assertTrue({row["appid"] for row in read("steam_upcoming.json")["games"]} <= appids)
         self.assertTrue({int(path.stem) for path in (FIXTURE / "games").glob("*.json")} <= appids)
+        media = {int(path.stem) for path in (FIXTURE / "media").glob("*.json")}
+        self.assertTrue(media and media <= appids)
         self.assertLess(sum(path.stat().st_size for path in FIXTURE.rglob("*") if path.is_file()), 4_000_000)
 
 

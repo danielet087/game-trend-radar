@@ -5,6 +5,10 @@ import { createDetailFavorites } from './favorites.js';
 import { createDetailArtwork } from './artwork.js';
 import { createDetailMetadata } from './metadata.js';
 import { createRelatedGames } from './related.js';
+import { createDetailMedia } from './media.js';
+import { createDetailRadar } from './radar.js';
+import { createDetailOverview } from './overview.js';
+import { createDetailSections } from './sections.js';
 import { createDetailRenderer } from './render.js';
 import { createDetailLoader } from './load.js';
 
@@ -21,7 +25,9 @@ export function initGameDetail(options = {}) {
   const artwork = createDetailArtwork(ctx);
   const metadata = createDetailMetadata(ctx, policy);
   const related = createRelatedGames(ctx);
-  const render = createDetailRenderer(ctx, policy, release, metadata, artwork, favorites, related);
+  const sections = { media: createDetailMedia(ctx), radar: createDetailRadar(ctx),
+    overview: createDetailOverview(ctx), navigation: createDetailSections(ctx) };
+  const render = createDetailRenderer(ctx, policy, release, metadata, artwork, favorites, related, sections);
   const loader = createDetailLoader(ctx, render, favorites, related);
   ctx.on(ctx.$('detailRetry'), 'click', async () => {
     ctx.$('detailRetry').disabled = true;
@@ -34,7 +40,9 @@ export function initGameDetail(options = {}) {
     reload: () => loader.load(true),
     destroy() {
       ctx.disposed = true;
-      related.destroy(); artwork.destroy(); favorites.destroy(); ctx.dispose();
+      related.destroy(); artwork.destroy(); favorites.destroy();
+      sections.media.destroy(); sections.radar.destroy(); sections.navigation.destroy();
+      ctx.dispose();
       controllers.delete(host);
     },
   };

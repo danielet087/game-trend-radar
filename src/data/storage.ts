@@ -111,7 +111,14 @@ export function createRadarStorage(environment: StorageEnvironment = {}) {
       { ...options, expectedRevision: options.expectedRevision === undefined ? acceptedRevision : options.expectedRevision });
   }
   async function loadGame(appid: number | string, options: LoadOptions = {}) { return (await loadGameResult(appid, options)).data; }
-  return { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadNintendo, loadNintendoResult, loadGame, loadGameResult };
+  // Steam hero art, screenshots and trailers are a separate publication (content
+  // backend), so they carry no catalog revision.
+  async function loadMedia(appid: number | string, options: LoadOptions = {}) {
+    const id = Number(appid);
+    if (!Number.isSafeInteger(id) || id <= 0) return null;
+    return readJSON<JsonRecord>(`./data/media/${id}.json`, value => isRecord(value) && Number(value.appid) === id, options);
+  }
+  return { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia };
 }
 export const RadarStorage = createRadarStorage();
-export const { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadNintendo, loadNintendoResult, loadGame, loadGameResult } = RadarStorage;
+export const { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia } = RadarStorage;
