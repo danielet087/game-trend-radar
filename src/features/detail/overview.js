@@ -1,4 +1,6 @@
 // "What this game is" at a glance, and the fixed-format facts of the info card.
+import { deckText, discountText, priceText, ratingText, taipeiTime } from './store.js';
+
 const PLAY_MODE_TAGS = new Set(['singleplayer', 'multiplayer']);
 const LANGUAGES = [['tchinese', '繁體中文'], ['schinese', '簡體中文'], ['english', '英文']];
 
@@ -78,11 +80,25 @@ export function createDetailOverview(ctx) {
     const term = node('dt', '', label);
     const detail = node('dd', '', value);
     if (options.lang) detail.lang = options.lang;
+    for (const note of options.notes || []) if (note) detail.append(node('span', 'game-fact-note', note));
     row.append(term, detail);
     return row;
   }
 
-  function renderFacts(game, media) {
+  function storeRows(store) {
+    if (!store) return [];
+    const rows = [];
+    if (store.price) {
+      rows.push(fact('售價', priceText(store.price), {
+        notes: [discountText(store.price), `Steam 台灣商店 ${taipeiTime(store.checkedAt)} 確認`],
+      }));
+    }
+    if (store.rating) rows.push(fact('分級', ratingText(store.rating)));
+    if (store.steamDeck) rows.push(fact('Steam Deck', deckText(store.steamDeck)));
+    return rows;
+  }
+
+  function renderFacts(game, media, store = null) {
     const names = D.releaseDisplayNames(game);
     const latin = value => /^[\x20-\x7e]+$/.test(value) ? 'en' : undefined;
     const rows = [fact('中文名稱', names.name)];
@@ -93,6 +109,7 @@ export function createDetailOverview(ctx) {
     const modes = playModes(game);
     if (modes.length) rows.push(fact('遊玩方式', [...new Set(modes.map(mode => modes.length > 1 ? `${mode.platform}：${mode.text}` : mode.text))].join('；')));
     rows.push(fact('平台', game.platformLabel || (game.platforms || []).join('、') || '待確認'));
+    rows.push(...storeRows(store));
     $('gameFacts').replaceChildren(...rows);
   }
 

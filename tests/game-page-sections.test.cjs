@@ -41,6 +41,7 @@ async function display(search, files, options = {}) {
     loadSources: async () => ({ catalog: files.catalog || null, preview: null }),
     loadGame: async () => files.catalog?.games?.[0] || null,
     loadMedia: async appid => { requests.push(`media/${appid}`); return files.media || null; },
+    loadStoreFacts: async () => { requests.push('store_facts'); return files.store || null; },
     readJSON: async path => {
       requests.push(path.replace('./data/', ''));
       return { './data/growth.json': files.growth, './data/activity.json': files.activity,
@@ -69,6 +70,10 @@ const steamFiles = () => {
     growth: { version: 1, games: [{ appid: 3926930, history: [point('2026-11-01T03:00:00Z', 5800),
       point('2026-11-08T03:00:00Z', 5900), point('2026-11-15T03:00:00Z', 6000)] }] },
     activity: { version: 1, events: [] },
+    store: { schema_version: 1, checked_at: '2026-11-18T11:30:00Z', games: { 3926930: {
+      price: { free: false, final_cents: 44800, original_cents: 56100, discount_pct: 20, discount_ends_at: '2026-11-30T18:00:00Z' },
+      rating: { code: 'C15', label: '輔15級', descriptors: ['暴力', '不當言語'] }, steam_deck: 'verified',
+      checked_at: '2026-11-18T11:30:00Z' } } },
     twitch: { schema_version: 1, games: { 123456: { name: 'Poopy', aliases: [], steam_appids: ['3926930'],
       peak_viewer_count: 12345, sample_count: 40, first_hour: '2026-11-10T00:00:00Z', last_hour: '2026-11-15T00:00:00Z',
       tracking_status: 'active' } } },
@@ -129,12 +134,21 @@ test('a Steam game shows its hero art, media gallery, radar news, heat and the f
   const facts = Object.fromEntries(e.get('gameFacts').children.map(row => [row.children[0].textContent, row.children[1].textContent]));
   assert.equal(facts['開發商'], 'EmilJoes Games');
   assert.ok(facts['平台']);
+  // Price, rating and Steam Deck from the store facts, with when Steam confirmed them.
+  assert.ok(requests.includes('store_facts'));
+  const price = e.get('gameFacts').children.find(row => row.children[0].textContent === '售價').children[1];
+  assert.deepEqual(price.children.map(note => note.textContent), ['-20%，原價 NT$ 561，特價到 12/1 02:00', 'Steam 台灣商店 11/18 19:30 確認']);
+  assert.match(facts['售價'], /^NT\$ 448/);
+  assert.equal(facts['分級'], '輔15級（暴力、不當言語）');
+  assert.equal(facts['Steam Deck'], '已驗證');
   assert.equal(e.get('gameSteamInfo').textContent, '前往 Steam 商店↗');
 });
 
 test('without Steam media the hero keeps the theme color and the media section stays hidden', async () => {
-  const files = { ...steamFiles(), media: null, twitch: { games: {} } };
+  const files = { ...steamFiles(), media: null, store: null, twitch: { games: {} } };
   const { e } = await display('?appid=3926930', files, { today: '2026-11-18' });
+  const labels = e.get('gameFacts').children.map(row => row.children[0].textContent);
+  assert.ok(!labels.includes('售價') && !labels.includes('分級') && !labels.includes('Steam Deck'));
   assert.equal(e.get('detailPage').hidden, false);
   assert.equal(e.get('gameHeroArt').dataset.state, 'empty');
   assert.equal(e.get('gameHeroImage').hidden, true);
@@ -155,7 +169,7 @@ test('a console game never requests Steam media and matches Twitch only by an ex
     sample_count: 3, first_hour: '2026-11-01T00:00:00Z', last_hour: '2026-11-02T00:00:00Z', tracking_status: 'active' } } };
   const { e, requests } = await display('?igdb=366896&date=2027-01-15', { nintendo, twitch, activity: { events: [] } }, { today: '2026-11-18' });
   assert.equal(e.get('detailPage').hidden, false);
-  assert.ok(!requests.some(request => request.startsWith('media/')));
+  assert.ok(!requests.some(request => request.startsWith('media/') || request === 'store_facts'));
   assert.equal(e.get('gameMedia').hidden, true);
   assert.equal(e.get('gameHeroArt').dataset.state, 'empty');
   assert.equal(e.get('gameHeatChart').hidden, true);

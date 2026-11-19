@@ -99,7 +99,7 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     if (!unchangedArt) showArtwork(game);
     media?.render(game, extras.media);
     overview?.render(game);
-    overview?.renderFacts(game, extras.media);
+    overview?.renderFacts(game, extras.media, extras.store);
     radar?.render(game, extras);
     updateSaveControls();
     setupTags(game);

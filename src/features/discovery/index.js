@@ -335,9 +335,13 @@ function recommendations(game, games, selected = "", limit = 3) {
     basis: selected ? "tag" : hasShared ? "shared" : "date",
   };
 }
+// Steam lists tags by votes; only the leading ones describe the game's mood.
+const THEME_TAGS = 6;
 function theme(game) {
   const all = new Set(
-    [...(game.tags || []), ...(game.genres || [])].map(key),
+    [...(game.tags || []).slice(0, THEME_TAGS), ...(game.genres || [])].map(
+      key,
+    ),
   );
   const any = (...tags) => tags.some((tag) => all.has(key(tag)));
   if (

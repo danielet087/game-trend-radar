@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { steamMedia } from '../src/features/detail/media.js';
 import { newsItems, chartModel, followerChanges, weekday } from '../src/features/detail/radar.js';
 import { highlightTags, playModes } from '../src/features/detail/overview.js';
+import { deckText, discountText, money, priceText, ratingText, storeFacts, taipeiTime } from '../src/features/detail/store.js';
 import { RadarDiscovery as R } from '../src/features/discovery/index.js';
 
 const fixture = name => JSON.parse(readFileSync(new URL(`./fixtures/site-data/${name}`, import.meta.url), 'utf8'));
@@ -92,4 +93,27 @@ test('overview highlights TAGs beyond genres and reports verified play modes', (
     NS2: { status: 'multiplayer', source: 'IGDB', scope: 'game', modes: ['多人', '合作'] },
     PS5: { status: 'unknown', source: 'IGDB', scope: 'game', modes: [] } } }),
   [{ platform: 'NS2', text: '多人、合作', source: 'IGDB' }]);
+});
+
+test('store facts keep only valid price, CSRR rating and Steam Deck values for the requested game', () => {
+  const doc = fixture('store_facts.json');
+  const onimusha = storeFacts(doc, 2638890);
+  assert.deepEqual(onimusha.price, { free: false, final: 199000 });
+  assert.equal(priceText(onimusha.price), 'NT$ 1,990');
+  assert.equal(ratingText(onimusha.rating), '限制級（暴力）');
+  assert.equal(deckText(onimusha.steamDeck), '可遊玩');
+  assert.equal(taipeiTime(onimusha.checkedAt), '11/18 19:30');
+  const sale = storeFacts(doc, 499170);
+  assert.equal(discountText(sale.price), '-20%，原價 NT$ 561，特價到 12/1 02:00');
+  assert.equal(priceText(storeFacts(doc, 1732430).price), '免費');
+  assert.equal(storeFacts(doc, 42), null);
+  assert.equal(storeFacts({ ...doc, schema_version: 2 }, 2638890), null);
+  const entry = doc.games['2638890'];
+  const hostile = storeFacts({ ...doc, games: { 2638890: { ...entry,
+    price: { free: false, final_cents: -5 }, rating: { code: 'R', label: '普遍級', descriptors: [] }, steam_deck: 'great' } } }, 2638890);
+  assert.equal(hostile, null);
+  const noTime = storeFacts({ ...doc, games: { 2638890: { ...entry, checked_at: 'soon' } } }, 2638890);
+  assert.equal(noTime, null);
+  assert.equal(money(12345), 'NT$ 123.45');
+  assert.equal(taipeiTime(Date.parse('2026-11-18T16:05:00Z')), '11/19 00:05');
 });
