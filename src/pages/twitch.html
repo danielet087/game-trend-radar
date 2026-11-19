@@ -38,11 +38,11 @@
     <section class="tw-workspace" aria-labelledby="candidatesTitle">
       <div class="tw-workspace-head tw-list-scope-toolbar">
         <div><span class="tw-section-no" aria-hidden="true">01</span><h2 id="candidatesTitle">新作觀測</h2></div>
-        <div class="tw-scope-actions"><label class="tw-local-region">新作觀測範圍 <select id="audienceRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label><p id="scopeLabel">全球觀測 · Twitch 熱門新作 + Steam 近期上市</p></div>
+        <div class="tw-scope-actions"><label class="tw-local-region" data-phone-before="#currentObservation .tw-tools .tw-search"><span class="tw-region-label">新作觀測範圍</span> <select id="audienceRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label><p id="scopeLabel">全球觀測 · Twitch 熱門新作 + Steam 近期上市</p></div>
       </div>
       <div class="tw-tools">
         <label class="tw-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="sr-only">搜尋遊戲名稱、Steam AppID 或 Twitch 類別 ID</span><input id="gameSearch" type="search" placeholder="搜尋遊戲名稱或 ID…" autocomplete="off" maxlength="160"><kbd aria-hidden="true">/</kbd></label>
-        <label class="tw-sort">排序<select id="gameSort" title="中位數排序：總觀眾依 ≥ 10,000、1,000～9,999、＜ 1,000 人分組；每組再以總開台 ≥ 40 台優先，最後依篩選後中位數由高到低。"><option value="median" selected>篩選後中位數（萬人／千人分組）</option><option value="viewers">觀眾人數最多</option><option value="streamers">開台數最多</option></select></label>
+        <label class="tw-sort" data-phone-after="#resultsStatus"><span class="tw-sort-label">排序</span><select id="gameSort" title="中位數排序：總觀眾依 ≥ 10,000、1,000～9,999、＜ 1,000 人分組；每組再以總開台 ≥ 40 台優先，最後依篩選後中位數由高到低。"><option value="median" selected>篩選後中位數（萬人／千人分組）</option><option value="viewers">觀眾人數最多</option><option value="streamers">開台數最多</option></select></label>
       </div>
       <div class="tw-filters tw-source-filters" role="group" aria-label="觀測來源篩選">
         <button type="button" data-filter="signals" aria-pressed="true">全部追蹤 <span>—</span></button>
@@ -57,7 +57,7 @@
         </div>
       </details>
       <p id="viewNotice" class="tw-view-notice" hidden></p>
-      <div class="tw-results-bar"><p id="resultsStatus" role="status" aria-live="polite">正在讀取 Twitch 資料…</p><button id="resetFilters" class="tw-text-button" type="button" hidden>清除篩選 ×</button><a href="#readingGuide">怎麼看這些結果？ ↓</a></div>
+      <div class="tw-results-bar"><p id="resultsStatus" role="status" aria-live="polite">正在讀取 Twitch 資料…</p><button id="resetFilters" class="tw-text-button" type="button" hidden>清除篩選 ×</button><a class="tw-guide-link" href="#readingGuide" data-phone-before="#tableNote">怎麼看這些結果？ ↓</a></div>
       <a id="archiveSearchHint" class="tw-archive-hint" href="./twitch.html?view=archive" hidden></a>
       <div class="tw-column-head" aria-hidden="true"><span>遊戲 / Twitch 類別</span><span data-metric-label="viewers">總觀眾人數</span><span data-metric-label="streamers">總開台數</span><span>篩選後中位數</span><span>IGDB 日期推算</span><span></span></div>
       <div id="gameResults" class="tw-results" aria-busy="true"><div class="tw-loading"><span aria-hidden="true">◎</span><p>正在打開觀測筆記…</p></div></div>

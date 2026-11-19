@@ -24,7 +24,7 @@
         <span class="activity-label"><span aria-hidden="true">✳</span> 雷達動態</span>
         <div class="activity-viewport" id="activityViewport"><div class="activity-track" id="activityTrack"><span class="activity-empty">正在整理最新動態…</span></div></div>
         <button class="activity-pause" id="activityPause" type="button" aria-label="暫停雷達動態" aria-pressed="false">Ⅱ</button>
-        <button class="activity-more" id="activityMore" type="button" aria-haspopup="dialog">全部動態 ↗</button>
+        <button class="activity-more" id="activityMore" type="button" aria-haspopup="dialog"><span class="activity-more-text">全部動態</span> ↗</button>
       </section>
       <dialog class="activity-dialog" id="activityDialog" aria-labelledby="activityDialogTitle"><div class="activity-dialog-head"><div><p class="eyebrow">RADAR UPDATES</p><h2 id="activityDialogTitle">最近的雷達動態</h2></div><button id="activityClose" type="button" aria-label="關閉更新動態">×</button></div><p class="activity-dialog-note">近 14 天的新收錄與公開發售日期更新；日期修正不一定代表遊戲延期。</p><ol id="activityList" class="activity-list"></ol></dialog>
 
@@ -32,7 +32,7 @@
         <div>
           <p class="eyebrow">RELEASE CALENDAR</p>
           <h1 id="pageTitle">發售月曆</h1>
-          <p>追蹤遊戲熱度，收藏發售日。你的下一場冒險，從這裡開始。</p>
+          <p>追蹤遊戲熱度，收藏發售日。<span class="heading-extra">你的下一場冒險，從這裡開始。</span></p>
         </div>
         <a class="workspace-shortcut" href="./saved.html"
           >打開我的收藏 <span aria-hidden="true">↗</span></a
@@ -70,8 +70,8 @@
                 →</button
               ><button class="quiet-button" id="todayButton">本月</button>
             </div>
-            <label class="month-jump"
-              ><span>跳至</span
+            <label class="month-jump" data-sheet="setting"
+              ><span>跳至月份</span
               ><input
                 type="month"
                 id="monthPicker"
@@ -79,7 +79,7 @@
                 min="1900-01"
                 max="2199-12"
             /></label>
-            <div class="view-switch" role="group" aria-label="顯示方式">
+            <div class="view-switch" role="group" aria-label="顯示方式" data-phone-after="#resetFilters">
               <button id="calendarView" aria-pressed="true">▦ 月曆</button
               ><button id="listView" aria-pressed="false">☷ 清單</button>
             </div>
@@ -96,7 +96,10 @@
                 placeholder="搜尋遊戲名稱或 ID…"
                 autocomplete="off"
               /><kbd aria-hidden="true">/</kbd></label
-            ><label class="select-wrap"
+            ><button class="filter-toggle" type="button" aria-expanded="false" aria-controls="filterSheet"
+              ><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></svg
+              >篩選<span class="filter-toggle-count" hidden></span></button
+            ><label class="select-wrap" data-sheet="filter"
               ><span class="sr-only">Steam 最低關注人數</span
               ><select id="followersFilter">
                 <option value="0">全部關注度</option>
@@ -104,15 +107,16 @@
                 <option value="10000">1 萬人以上</option>
                 <option value="50000">5 萬人以上</option>
               </select></label
-            ><button class="filter-chip" id="savedFilter" aria-pressed="false">
+            ><button class="filter-chip" id="savedFilter" aria-pressed="false" data-sheet="filter">
               ♡ 只看收藏
             </button>
           </div>
+          <div class="applied-filters" role="group" aria-label="已套用的篩選" hidden></div>
           <div class="results-bar">
             <p id="resultCount" role="status">正在讀取遊戲資料…</p>
             <button class="reset-button" id="resetFilters" hidden>
               清除篩選</button
-            ><label class="sort-wrap" id="sortWrap"
+            ><label class="sort-wrap" id="sortWrap" data-sheet="setting"
               ><span>排序</span
               ><select id="sortSelect" aria-label="排序方式">
                 <option value="date">上市日期最近</option>
