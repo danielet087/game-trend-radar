@@ -964,6 +964,21 @@ class NintendoInsightTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.update(document=document)
 
+    def test_released_console_games_stay_accepted_without_new_events(self):
+        # The IGDB publisher keeps releases from its first public calendar after release.
+        first = self.update(document=nintendo_catalog(nintendo_game()))
+        later_at, observed = "2026-11-19T00:31:24Z", "2026-11-19T04:00:00Z"
+        later = M.update(first, catalog(game()), observed_at=observed,
+                         nintendo_catalog=nintendo_catalog(nintendo_game(), at=later_at))
+        self.assertEqual(later["nintendo_records"]["igdb:1"]["current_releases"], {"NS2": "2026-11-05"})
+        self.assertTrue(later["nintendo_records"]["igdb:1"]["active"])
+        self.assertEqual([event for event in later["events"]
+                          if event.get("source") == "nintendo" and event["at"] >= later_at], [])
+        for release in ("2026-10-03", "2027-11-19"):
+            with self.subTest(release=release), self.assertRaises(ValueError):
+                M.update(first, catalog(game()), observed_at=observed, nintendo_catalog=nintendo_catalog(
+                    nintendo_game(releases={"NS2": release}), at=later_at))
+
     def test_bounded_history_and_projection_age_use_real_instants_not_string_sorting(self):
         state = self.update(document=nintendo_catalog(nintendo_game()))
         steam = {"id": "steam-later", "appid": 1, "type": "added", "name": "Test", "date": "2026-11-05", "at": "2026-10-04T02:00:00Z"}

@@ -46,6 +46,9 @@ def cadence_next_due(release, last, today):
 NINTENDO_PLATFORMS = {"NS": 130, "NS2": 508}
 IGDB_PLATFORMS = {**NINTENDO_PLATFORMS, "PS5": 167}
 NINTENDO_GAME_TYPES = {"main_game", "standalone_expansion", "remake", "remaster", "expanded_game", "port"}
+# The IGDB publisher keeps console releases from its first public calendar on the
+# site after release, as Steam games are kept; the window adds the future dates.
+NINTENDO_PUBLIC_HISTORY_START = date(2026, 10, 4)
 NINTENDO_OFFICIAL_DATE_DOMAINS = {"nintendo.com", "nintendo.com.hk", "nintendo.co.jp",
                                   "sega.com", "konami.com", "playtombraider.com"}
 PS5_PRODUCT_ID = r"[A-Z]{2}[0-9]{4}-[A-Z0-9]{9}_[A-Z0-9]{2}-[A-Z0-9]{16}"
@@ -337,6 +340,7 @@ def accepted_nintendo(catalog, now):
         raise ValueError("Complete IGDB catalog with a valid source timestamp required")
     unavailable = nintendo_unavailable_ids(source, catalog.get("generated_at"))
     start, end = day(window["start"]), day(window["end"])
+    first_day = min(start, NINTENDO_PUBLIC_HISTORY_START)
     result = {}
     for row in rows:
         if not isinstance(row, dict):
@@ -366,7 +370,7 @@ def accepted_nintendo(catalog, now):
             if (not isinstance(release, dict) or release.get("platform") not in platforms
                     or release.get("platform") in releases or release.get("precision") != "day"
                     or not day(release.get("date")) or not accepted_nintendo_release_source(release)
-                    or not start <= day(release["date"]) < end):
+                    or not first_day <= day(release["date"]) < end):
                 raise ValueError("Exact, unique IGDB platform release dates in the source window required")
             releases[release["platform"]] = release["date"]
         name = row.get("display_name") or row.get("name_zh_tw") or row.get("name_en")
