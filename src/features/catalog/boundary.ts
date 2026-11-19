@@ -14,7 +14,7 @@ export function normalizeCatalog(input: BoundaryInput, mode: CatalogMode, discov
     releaseEvents: new Map(projection.releaseEvents.map(event => [event.id, event])),
   };
   const viewModel = ['all', 'explore'].includes(mode)
-    ? discovery.enrich(projection.dataset, input.official, input.preview) : projection.dataset;
+    ? discovery.enrich(projection.dataset, input.official, input.preview, input.references) : projection.dataset;
   return { model, viewModel };
 }
 
@@ -29,7 +29,8 @@ export function catalogCardDate(game: CatalogGame, domain: CatalogAPI, event: bo
   if (!entity || !model) return cardDate(game, domain, event);
   const dates = entity.releaseEventIds.flatMap(id => {
     const release = model.releaseEvents.get(id);
-    if (!release || !['Steam', ...NATIVE_PLATFORMS].includes(release.platform) ||
+    // A console game's Steam version day is not a radar release.
+    if (!release || release.reference || !['Steam', ...NATIVE_PLATFORMS].includes(release.platform) ||
       !model.versions.has(release.versionId)) return [];
     if (event && (release.date !== game.date || !game.releasePlatforms.includes(release.platform))) return [];
     return [release.date];

@@ -243,13 +243,14 @@ function labels(values) {
   }
   return [...unique.values()];
 }
-function enrich(data, official, preview) {
+function enrich(data, official, preview, references = null) {
   if (!data) return data;
   const index = (rows) =>
     new Map(
       (rows || []).filter(Boolean).map((row) => [Number(row.appid), row]),
     );
-  const primary = index(official?.games);
+  // Later rows win: a catalog record over a console game's Steam reference.
+  const primary = index([...(Array.isArray(references?.games) ? references.games : []), ...(official?.games || [])]);
   const fallback = index(preview?.games);
   const recent = index(preview?.recent_games);
   const attach = (game) => {

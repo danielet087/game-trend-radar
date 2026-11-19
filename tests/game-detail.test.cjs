@@ -39,7 +39,7 @@ test("detail reads published game metadata; no invented genres or separate Follo
                     "gameFollowers", "gameAppId", "gameSteam", "gameSave"]) {
     assert.match(html, new RegExp('id="' + id + '"'));
   }
-  assert.match(profile, /D\.datasets\(official, preview, nintendo\)/);
+  assert.match(profile, /D\.datasets\(official, preview, nintendo, references\)/);
   assert.doesNotMatch(from("src/data/storage.ts"), /githubusercontent/);
   assert.match(from("src/data/storage.ts"), /"\.\/data\/" \+ filename \+ "\?r="/);
   assert.match(profile, /data\.games, \.\.\.data\.recent/);

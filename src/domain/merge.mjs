@@ -24,7 +24,9 @@ export function mergePlatformGames(steamRows, nintendoRows, steamReference = ste
   const groups = new Map();
   const unmatched = [];
   for (const game of nintendoRows) {
-    if (!game.steamAppid || !steamByID.has(game.steamAppid)) {
+    const steam = game.steamAppid ? steamByID.get(game.steamAppid) : null;
+    // A Steam reference names the console games it was checked against.
+    if (!steam || (steam.steamReference && !steam.referenceIgdbIds?.includes(game.igdbId))) {
       unmatched.push(game);
       continue;
     }

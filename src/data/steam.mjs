@@ -128,6 +128,33 @@ export function normalize(raw, recent = false, translated = null) {
       : followers < 5000
   ))
     return null;
+  return steamRow(raw, { appid, date, followers, recent, translated, twitchQualified });
+}
+
+export const REFERENCE_METHOD = "igdb_console_steam_link_v1";
+
+/**
+ * The Steam version of a public console game (data/steam_references.json).
+ * It is only a merge target for the console games it names: it has no
+ * Followers, no Steam calendar event and no Steam admission of its own.
+ */
+export function normalizeReference(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const reference = raw.reference;
+  const appid = Number(raw.appid);
+  const igdbIds = Array.isArray(reference?.igdb_ids)
+    ? reference.igdb_ids.filter(id => Number.isSafeInteger(id) && id > 0) : [];
+  if (reference?.method !== REFERENCE_METHOD || !igdbIds.length || !Number.isSafeInteger(appid) || appid <= 0 ||
+    raw.followers !== null || raw.sexual_content_screened !== true || raw.steam_type !== "game") return null;
+  const date = raw.release_precision === "day" && validDate(raw.release_start) ? raw.release_start : null;
+  const row = steamRow(raw, { appid, date, followers: null, recent: false, translated: null, twitchQualified: false });
+  // The Steam version's own day, shown on the game page but never a radar event.
+  const releases = date ? [{ platform: "Steam", date, precision: "day", source: "Steam", reference: true }] : [];
+  return { ...row, steamReference: true, referenceIgdbIds: igdbIds, releaseComingSoon: raw.release_coming_soon === true,
+    releases, dateReleases: releases, releasePlatforms: date ? ["Steam"] : [] };
+}
+
+function steamRow(raw, { appid, date, followers, recent, translated, twitchQualified }) {
   const nameEn = String(
     raw.name_en || raw.name || translated?.name_en || translated?.name || "",
   ).trim();

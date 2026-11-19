@@ -9,17 +9,21 @@ export function detailURL(game) {
     : `./game.html?appid=${game.appid}${game.hasNintendo ? `&date=${game.date}` : ""}`;
 }
 
+// A console game shown on its Steam version (a Steam reference) has no Steam
+// Followers; it keeps its console interest for ranking.
+export const consoleRanked = game => game.source === "nintendo" || game.steamReference === true;
+
 export function popularityCompare(a, b) {
   // Counts belong to different communities; only compare within their source.
-  if ((a.source === "nintendo") !== (b.source === "nintendo")) return a.source === "nintendo" ? 1 : -1;
-  return (a.source === "nintendo" ? consoleInterestCompare(a, b) : b.followers - a.followers) ||
+  if (consoleRanked(a) !== consoleRanked(b)) return consoleRanked(a) ? 1 : -1;
+  return (consoleRanked(a) ? consoleInterestCompare(a, b) : b.followers - a.followers) ||
     a.date.localeCompare(b.date) || a.name.localeCompare(b.name, "zh-TW");
 }
 
 export function calendarFeatured(games) {
   const ranked = [...games].sort(popularityCompare);
-  const steam = ranked.filter(game => game.source !== "nintendo");
-  const nintendo = ranked.filter(game => game.source === "nintendo");
+  const steam = ranked.filter(game => !consoleRanked(game));
+  const nintendo = ranked.filter(consoleRanked);
   return steam.length && nintendo.length ? [steam[0], nintendo[0]] : ranked.slice(0, 2);
 }
 
