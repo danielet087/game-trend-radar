@@ -119,7 +119,9 @@ test('merged PC and console card names each known platform, with the evidence on
   assert.match(card.querySelector('.card-platforms').title, /之後可能增加/);
   assert.deepEqual(card.querySelectorAll('.card-followers').map(metric => metric.textContent), ['39,021人關注', '46IGDB hypes']);
   assert.equal(card.querySelectorAll('time').length, 1);
-  assert.equal(card.querySelector('.card-release-date').textContent, '2026/12/01');
+  assert.equal(card.querySelector('time').textContent, '2026/12/01');
+  // Phones show a short countdown beside the date instead of over the art.
+  assert.equal(card.querySelector('.card-countdown').textContent, '58 天後');
   assert.equal(card.querySelector('.card-release-platform'), null);
   assert.equal(card.querySelector('.card-title').title, 'Hela：鼠鼠奇旅');
   assert.equal(card.querySelector('.card-english').title, 'Hela: Of Mice & Magic');
@@ -148,7 +150,8 @@ test('a later native-port event shows only the earliest verified date and uses i
   const data = D.datasets({ games: [steam({ release_start: '2026-11-01' })] }, null, nintendo());
   const event = D.selectGames(data, 'date', '2026-10-04', '2026-12-01')[0];
   const card = renderer().card(event);
-  assert.deepEqual(card.querySelectorAll('.card-release-date').map(line => line.textContent), ['2026/11/01']);
+  assert.deepEqual(card.querySelectorAll('time').map(line => line.textContent), ['2026/11/01']);
+  assert.equal(card.querySelector('.card-countdown').textContent, '28 天後');
   assert.equal(card.querySelector('time').dateTime, '2026-11-01');
   assert.equal(card.querySelector('.countdown').textContent, '28 天後登場');
   assert.equal(card.querySelector('.card-release-platform'), null);

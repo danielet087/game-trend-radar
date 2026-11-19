@@ -1,4 +1,5 @@
 import { node } from '../catalog/dom';
+import { artShape } from '../../shared/artwork.js';
 import { releaseEventGames } from '../catalog/selectors';
 import type { CatalogAPI, CatalogGame } from '../catalog/types';
 import { addDays, dotDate, longDate, weekStart } from './dates';
@@ -66,7 +67,16 @@ export function createReleaseStrip(root: HTMLElement, context: {
       image.decoding = 'async';
       image.width = 616;
       image.height = 353;
-      artwork.load(image, game, { onExhausted: () => image.remove() });
+      artwork.load(image, game, {
+        // Art of another shape than Steam's capsule is shown whole over a blurred copy.
+        onLoad: () => {
+          const shape = artShape(image);
+          art.classList.toggle('art-whole', shape.whole);
+          if (shape.backdrop) art.style.setProperty('--art-backdrop', shape.backdrop);
+          else art.style.removeProperty('--art-backdrop');
+        },
+        onExhausted: () => image.remove(),
+      });
       art.append(image);
     }
     // A band under the art in each platform's color, as on Nintendo's schedule: one
