@@ -10,8 +10,11 @@ const INITIAL_SHOTS = 6;
 const safe = (value, base) => typeof value === 'string' && value.startsWith(base) && !/[\s"'<>\\]/.test(value) ? value : null;
 const image = value => safe(value, IMAGE_BASE);
 const video = value => safe(value, VIDEO_BASE);
+// Steam sometimes sends invisible format characters (U+2060 and similar) as a
+// whole entry; strip them first so they never render as an empty list item.
 const names = value => (Array.isArray(value) ? value : [])
-  .filter(name => typeof name === 'string' && name.trim()).map(name => name.trim().slice(0, 120)).slice(0, 5);
+  .map(name => typeof name === 'string' ? name.replace(/\p{Cf}/gu, '').trim() : '')
+  .filter(Boolean).map(name => name.slice(0, 120)).slice(0, 5);
 
 export function steamMedia(value, appid) {
   if (!value || typeof value !== 'object' || Array.isArray(value) || value.schema_version !== 1 ||
@@ -52,9 +55,13 @@ export function createDetailMedia(ctx) {
     return reduced || !wide || motion?.enabled === false || window?.navigator?.connection?.saveData === true;
   };
 
+  // Steam games show their wide key art. Console games have only a portrait
+  // cover, so it becomes a blurred backdrop and the title card shows it whole.
   function renderHero(game, media) {
     const art = $('gameHeroArt'), img = $('gameHeroImage');
-    const source = !isNativeConsole(game) ? media?.hero : null;
+    const cover = isNativeConsole(game);
+    const source = cover ? game.art || null : media?.hero;
+    art.dataset.kind = cover ? 'cover' : 'banner';
     art.dataset.state = source ? 'loading' : 'empty';
     if (!source) { img.hidden = true; img.removeAttribute('src'); img.removeAttribute('srcset'); return; }
     if (img.getAttribute('src') === source) { art.dataset.state = img.hidden ? 'loading' : 'ready'; return; }
@@ -64,9 +71,10 @@ export function createDetailMedia(ctx) {
     img.fetchPriority = 'high';
     img.onload = () => { img.hidden = false; art.dataset.state = 'ready'; };
     img.onerror = () => { img.hidden = true; art.dataset.state = 'empty'; };
-    if (media.hero2x) img.setAttribute('srcset', `${source} 1920w, ${media.hero2x} 3840w`);
+    if (!cover && media.hero2x) img.setAttribute('srcset', `${source} 1920w, ${media.hero2x} 3840w`);
     else img.removeAttribute('srcset');
-    img.setAttribute('sizes', '100vw');
+    if (cover) img.removeAttribute('sizes');
+    else img.setAttribute('sizes', '100vw');
     img.src = source;
   }
 

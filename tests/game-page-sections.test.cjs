@@ -92,7 +92,7 @@ test('a Steam game shows its hero art, media gallery, radar news, heat and the f
   assert.equal(e.get('gameHeroDate').textContent, '2026.12.10');
   assert.equal(e.get('gameHeroWeekday').textContent, '（四）');
   assert.equal(e.get('gameHeroCountdown').textContent, '還有 21 天');
-  assert.equal(e.get('gameState').textContent, 'UPCOMING · STEAM');
+  assert.deepEqual(e.get('gamePlatforms').children.map(chip => chip.textContent), ['即將上市', 'Steam']);
   // Media: the trailer and two screenshots side by side, four more below, the rest behind a button.
   assert.equal(e.get('gameMedia').hidden, false);
   assert.equal(e.get('gameMediaStage').dataset.layout, 'trailer-shots');
@@ -133,15 +133,33 @@ test('a Steam game shows its hero art, media gallery, radar news, heat and the f
   // The fixed info card names the developer and publisher from the media file.
   const facts = Object.fromEntries(e.get('gameFacts').children.map(row => [row.children[0].textContent, row.children[1].textContent]));
   assert.equal(facts['開發商'], 'EmilJoes Games');
-  assert.ok(facts['平台']);
-  // Price, rating and Steam Deck from the store facts, with when Steam confirmed them.
+  // Platforms and the price belong to 平台版本, not the info card.
+  assert.ok(!('平台' in facts) && !('售價' in facts));
+  // The Steam row carries the Taiwan price, with when Steam confirmed it.
   assert.ok(requests.includes('store_facts'));
-  const price = e.get('gameFacts').children.find(row => row.children[0].textContent === '售價').children[1];
-  assert.deepEqual(price.children.map(note => note.textContent), ['-20%，原價 NT$ 561，特價到 12/1 02:00', 'Steam 台灣商店 11/18 19:30 確認']);
-  assert.match(facts['售價'], /^NT\$ 448/);
+  const steam = e.get('gameVersionRows').children.find(row => row.dataset.platform === 'Steam');
+  const store = steam.children.find(cell => cell.classList.contains('game-version-store'));
+  assert.equal(store.children[0].textContent, 'Steam 商店 ↗');
+  assert.equal(store.children[0].href, 'https://store.steampowered.com/app/3926930/');
+  const price = store.children.find(child => child.className === 'game-version-price');
+  assert.match(price.textContent, /^NT\$ 448/);
+  assert.deepEqual(price.children.map(note => note.textContent), ['-20%，原價 NT$ 561，特價到 12/1 02:00']);
+  assert.equal(store.children.at(-1).textContent, 'Steam 台灣商店 11/18 19:30 確認');
+  // Rating and Steam Deck stay game facts.
   assert.equal(facts['分級'], '輔15級（暴力、不當言語）');
   assert.equal(facts['Steam Deck'], '已驗證');
-  assert.equal(e.get('gameSteamInfo').textContent, '前往 Steam 商店↗');
+  // One store: the buy button opens it directly.
+  assert.equal(e.get('gameSteam').textContent, '前往 Steam 商店↗');
+  assert.equal(e.get('gameSteam').href, 'https://store.steampowered.com/app/3926930/');
+});
+
+test('the info card drops invisible format characters Steam sends as whole name entries', async () => {
+  const files = steamFiles();
+  files.media = { ...files.media, franchises: ['\u2060', 'Kinda Brave'], developers: ['\u2060', ...files.media.developers] };
+  const { e } = await display('?appid=3926930', files, { today: '2026-11-19' });
+  const facts = Object.fromEntries(e.get('gameFacts').children.map(row => [row.children[0].textContent, row.children[1].textContent]));
+  assert.equal(facts['系列'], 'Kinda Brave');
+  assert.equal(facts['開發商'], 'EmilJoes Games');
 });
 
 test('without Steam media the hero keeps the theme color and the media section stays hidden', async () => {
@@ -175,6 +193,6 @@ test('a console game never requests Steam media and matches Twitch only by an ex
   assert.equal(e.get('gameHeatChart').hidden, true);
   assert.equal(e.get('gameGrowthLink').hidden, true);
   assert.equal(e.get('gameTwitchLink').href, './twitch-game.html?game=77');
-  assert.equal(e.get('gameState').textContent, 'UPCOMING · NINTENDO SWITCH 2');
+  assert.deepEqual(e.get('gamePlatforms').children.map(chip => chip.textContent), ['即將上市', 'NS2 獨佔']);
   assert.equal(e.get('gameHeroDate').textContent, '2027.01.15');
 });

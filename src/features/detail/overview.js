@@ -1,8 +1,7 @@
-// "What this game is" at a glance, and the fixed-format facts of the info card.
-import { deckText, discountText, priceText, ratingText, taipeiTime } from './store.js';
+// Play modes and highlight TAGs shared by 平台版本 and the fixed-format facts of the info card.
+import { deckText, ratingText } from './store.js';
 
 const PLAY_MODE_TAGS = new Set(['singleplayer', 'multiplayer']);
-const LANGUAGES = [['tchinese', '繁體中文'], ['schinese', '簡體中文'], ['english', '英文']];
 
 export function playModes(game) {
   return (game.platforms || []).flatMap(platform => {
@@ -19,66 +18,18 @@ export function highlightTags(game, R, limit = 6) {
   return (game.tags || []).filter(tag => !genres.has(R.key(tag)) && !PLAY_MODE_TAGS.has(R.key(tag))).slice(0, limit);
 }
 
+// A name counts as Chinese only when it carries Han characters; an English
+// store name is never labelled 中文名稱.
+export const hasChineseName = name => /[\u3400-\u9fff\uf900-\ufaff]/.test(String(name || ''));
+
 export function createDetailOverview(ctx) {
-  const { $, node, R, D, isNativeConsole } = ctx;
-
-  function card(title, symbol, ...content) {
-    const item = node('article', 'game-overview-card');
-    const head = node('h3', 'game-overview-title');
-    const mark = node('span', 'game-overview-icon', symbol);
-    mark.setAttribute('aria-hidden', 'true');
-    head.append(mark, node('span', '', title));
-    item.append(head, ...content);
-    return item;
-  }
-
-  function render(game) {
-    const cards = [];
-    const genres = (game.genres || []).slice(0, 4).map(genre => R.genreLabel(genre));
-    if (genres.length) cards.push(card('類型', '◆', node('p', 'game-overview-value', genres.join('、'))));
-    const tags = highlightTags(game, R);
-    if (tags.length) {
-      const list = node('div', 'game-overview-tags');
-      list.append(...tags.map(tag => {
-        const link = node('a', 'game-overview-tag', R.label(tag));
-        link.href = R.url(tag);
-        return link;
-      }));
-      const all = node('a', 'game-overview-more', `看全部 ${game.tags.length} 個 TAG ↓`);
-      all.href = '#gameDiscovery';
-      const item = card('特色 TAG', '#', list, all);
-      item.classList.add('is-wide');
-      cards.push(item);
-    }
-    const modes = playModes(game);
-    if (modes.length) {
-      const single = modes.length === 1 || modes.every(mode => mode.text === modes[0].text);
-      const value = single ? node('p', 'game-overview-value', modes[0].text)
-        : node('ul', 'game-overview-list');
-      if (!single) value.append(...modes.map(mode => node('li', '', `${mode.platform}：${mode.text}`)));
-      const source = [...new Set(modes.map(mode => mode.source === 'Steam' ? 'Steam 遊玩類別' : 'IGDB 遊戲模式'))].join('、');
-      cards.push(card('遊玩方式', '◎', value, node('p', 'game-overview-note', source)));
-    }
-    if (!isNativeConsole(game) && game.languages && typeof game.languages === 'object') {
-      const list = node('ul', 'game-overview-languages');
-      list.append(...LANGUAGES.map(([field, label]) => {
-        const value = game.languages[field];
-        const row = node('li', `game-overview-language is-${value === true ? 'yes' : value === false ? 'no' : 'unknown'}`);
-        row.append(node('span', '', label), node('span', '', value === true ? '支援' : value === false ? '不支援' : '未確認'));
-        return row;
-      }));
-      const item = card('語言（Steam）', '文', list);
-      item.classList.add('is-languages');
-      cards.push(item);
-    }
-    $('gameOverviewCards').replaceChildren(...cards);
-    $('gameOverview').hidden = !cards.length;
-  }
+  const { $, node, R } = ctx;
 
   function fact(label, value, options = {}) {
     const row = node('div', `game-fact${options.wide ? ' is-wide' : ''}`);
     const term = node('dt', '', label);
-    const detail = node('dd', '', value);
+    const detail = node('dd', '', typeof value === 'string' ? value : null);
+    if (typeof value !== 'string') detail.append(value);
     if (options.lang) detail.lang = options.lang;
     for (const note of options.notes || []) if (note) detail.append(node('span', 'game-fact-note', note));
     row.append(term, detail);
@@ -88,30 +39,46 @@ export function createDetailOverview(ctx) {
   function storeRows(store) {
     if (!store) return [];
     const rows = [];
-    if (store.price) {
-      rows.push(fact('售價', priceText(store.price), {
-        notes: [discountText(store.price), `Steam 台灣商店 ${taipeiTime(store.checkedAt)} 確認`],
-      }));
-    }
+    // The Taiwan price belongs to the Steam version (平台版本); the rest are game facts.
     if (store.rating) rows.push(fact('分級', ratingText(store.rating)));
     if (store.steamDeck) rows.push(fact('Steam Deck', deckText(store.steamDeck)));
     return rows;
   }
 
+  function tagList(game) {
+    const tags = highlightTags(game, R, 8);
+    if (!tags.length) return null;
+    const list = node('div', 'game-fact-tags');
+    list.append(...tags.map(tag => {
+      const link = node('a', 'game-fact-tag', R.label(tag));
+      link.href = R.url(tag);
+      return link;
+    }));
+    if (game.tags.length > tags.length) {
+      const all = node('a', 'game-fact-more', `看全部 ${game.tags.length} 個 ↓`);
+      all.href = '#gameDiscovery';
+      list.append(all);
+    }
+    return list;
+  }
+
   function renderFacts(game, media, store = null) {
-    const names = D.releaseDisplayNames(game);
     const latin = value => /^[\x20-\x7e]+$/.test(value) ? 'en' : undefined;
-    const rows = [fact('中文名稱', names.name)];
-    if (names.nameEn && names.nameEn !== names.name) rows.push(fact('原名', names.nameEn, { lang: latin(names.nameEn) }));
+    const name = String(game.name || ''), original = String(game.nameEn || '');
+    const rows = [];
+    if (hasChineseName(name)) rows.push(fact('中文名稱', name));
+    const originalName = original && original !== name ? original : !hasChineseName(name) ? name : '';
+    if (originalName) rows.push(fact('原名', originalName, { lang: latin(originalName) }));
+    const genres = (game.genres || []).slice(0, 4).map(genre => R.genreLabel(genre));
+    if (genres.length) rows.push(fact('類型', genres.join('、')));
     if (media?.developers.length) rows.push(fact('開發商', media.developers.join('、'), { lang: latin(media.developers.join('')) }));
     if (media?.publishers.length) rows.push(fact('發行商', media.publishers.join('、'), { lang: latin(media.publishers.join('')) }));
     if (media?.franchises.length) rows.push(fact('系列', media.franchises.join('、'), { lang: latin(media.franchises.join('')) }));
-    const modes = playModes(game);
-    if (modes.length) rows.push(fact('遊玩方式', [...new Set(modes.map(mode => modes.length > 1 ? `${mode.platform}：${mode.text}` : mode.text))].join('；')));
-    rows.push(fact('平台', game.platformLabel || (game.platforms || []).join('、') || '待確認'));
+    const tags = tagList(game);
+    if (tags) rows.push(fact('特色 TAG', tags, { wide: true }));
     rows.push(...storeRows(store));
     $('gameFacts').replaceChildren(...rows);
   }
 
-  return { render, renderFacts };
+  return { renderFacts };
 }

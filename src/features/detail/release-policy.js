@@ -8,6 +8,8 @@ export function createReleasePolicy({ D, isNativeConsole }) {
     brazil: "巴西", south_korea: "韓國", china: "中國", united_kingdom: "英國", hong_kong: "香港",
   };
   const regionLabel = (region) => regionNames[region] || "來源地區未確認";
+  // "日本日期", or "地區未確認" when the source names no region.
+  const regionDateLabel = (region) => regionNames[region] ? `${regionNames[region]}日期` : "地區未確認";
   function publicSourceURL(value) {
     try {
       const consoleURL = D.platformURL?.(value, "PS5");
@@ -70,7 +72,8 @@ export function createReleasePolicy({ D, isNativeConsole }) {
       if (clock) return `已確認台灣上市日（Asia/Taipei）；台灣時間 ${row.date.replaceAll("-", "/")} ${clock.time}（UTC+8），依官方發售時間換算。官方原始時間：${clock.utc.slice(0, 16).replace("T", " ")} UTC。${original}`;
       return `已確認台灣上市日（Asia/Taipei）；日期依台灣官方公告。${original}`;
     }
-    return `依 ${regionLabel(row?.region)}發售資料顯示；來源僅提供日期，尚未另行確認台灣上市日，無法推算台灣解鎖時間。實際上市時間請以台灣官方公告為準。`;
+    const basis = regionNames[row?.region] ? `依${regionNames[row.region]}發售資料顯示` : "來源未標示發售地區";
+    return `${basis}；來源僅提供日期，尚未另行確認台灣上市日，無法推算台灣解鎖時間。實際上市時間請以台灣官方公告為準。`;
   }
   function detailReleaseRows(game) {
     const records = new Map();
@@ -95,7 +98,7 @@ export function createReleasePolicy({ D, isNativeConsole }) {
     return platform ? [{ platform, date: game.date, precision: "day", region: game.dateRegion,
       source: game.dateSource || (platform === "Steam" ? "Steam" : "IGDB") }] : [];
   }
-  return { nativePlatforms, releasePlatformOrder, regionLabel, publicSourceURL,
+  return { nativePlatforms, releasePlatformOrder, regionLabel, regionDateLabel, publicSourceURL,
     taiwanOfficialRelease, hongKongOfficialRelease, nativeOfficialRelease,
     unifiedIGDBRelease, officialReleasePriority, officialReleaseClock,
     releaseSourceName, releaseDateNote, detailReleaseRows };

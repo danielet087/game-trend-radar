@@ -35,7 +35,7 @@ test("quick view dialog and its triggers are removed on all old pages", () => {
 
 test("detail reads published game metadata; no invented genres or separate Followers call", () => {
   const html = from("game.html");
-  for (const id of ["gameTitle", "gameEnglish", "gameArt", "gameDate",
+  for (const id of ["gameTitle", "gameEnglish", "gameCover", "gameHeroDate", "gameVersionRows",
                     "gameFollowers", "gameAppId", "gameSteam", "gameSave"]) {
     assert.match(html, new RegExp('id="' + id + '"'));
   }
@@ -43,7 +43,9 @@ test("detail reads published game metadata; no invented genres or separate Follo
   assert.doesNotMatch(from("src/data/storage.ts"), /githubusercontent/);
   assert.match(from("src/data/storage.ts"), /"\.\/data\/" \+ filename \+ "\?r="/);
   assert.match(profile, /data\.games, \.\.\.data\.recent/);
-  assert.match(profile, /\$\("gameSteam"\)\.href = game\.link/);
+  // Store links are the game's own published links, never a constructed search.
+  assert.match(profile, /const url = game\.steamLink \|\| \(game\.source !== 'nintendo' \? game\.link : ''\)/);
+  assert.match(profile, /href = nintendo \? publicSourceURL\(game\.link\)/);
   assert.match(from("src/shared/artwork.js"), /game\.artSources/);
   // Saving goes through the shared favorites store, which persists to localStorage.
   assert.match(profile, /from '\.\.\/\.\.\/shared\/state\/favorites\.ts'/);
