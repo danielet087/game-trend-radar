@@ -215,7 +215,7 @@ export function createDetailVersions(ctx, policy) {
       const region = info.region === 'worldwide' ? '全球公告' : `${regionLabel(info.region)}版本`;
       const listed = `已公布語言：${info.supported_languages.map(row => row.name).join('、')}。`;
       add(`lang:${info.source}|${info.source_url}|${region}|${listed}|${facts.join('')}`, [code], platforms => [
-        prefix(platforms, '中文'), '來源 ', link(info.source, info.source_url), `（${region}）。${listed}${facts.join('')}`]);
+        prefix(platforms, '中文'), `${region}，來源 `, link(info.source, info.source_url), `。${listed}${facts.join('')}`]);
     }
     for (const code of rowsByPlatform.keys()) {
       const version = code !== 'Steam' && edition(game, code);
@@ -224,9 +224,10 @@ export function createDetailVersions(ctx, policy) {
       const content = version.type === 'deluxe' ? '此平台發售的是上述 Deluxe 版本。' : '此平台發售的是包含本體與追加內容的版本。';
       const scope = version.region === 'taiwan' ? '版本內容依台灣官方商品頁確認。'
         : '版本內容依此地區商品頁確認；台灣販售版本是否相同仍待確認。';
-      add(`edition:${code}`, [code], platforms => [prefix(platforms, '販售版本'), `官方商品名稱「${version.title}」，來源 `,
+      add(`edition:${code}`, [code], platforms => [prefix(platforms, '販售版本'),
+        `官方商品名稱「${version.title}」，${regionLabel(version.region)}版本，來源 `,
         link(`${code === 'PS5' ? 'PlayStation' : 'Nintendo'} 官方商品頁`, publicSourceURL(version.source_url)),
-        `（${regionLabel(version.region)}版本）。${content}${unified ? '發售日期採 IGDB 平台資料。' : '發售日期對應上述版本與內容組合。'}${scope}`]);
+        `。${content}${unified ? '發售日期採 IGDB 平台資料。' : '發售日期對應上述版本與內容組合。'}${scope}`]);
     }
     const modes = playModes(game);
     if (modes.length) {

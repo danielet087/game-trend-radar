@@ -502,7 +502,7 @@ test('merged language detail shows Steam and NS2 support separately, including c
   assert.equal(ns2.children[1].textContent, '共 2 種語言');
   assert.doesNotMatch(ns2.textContent, /繁中/);
   assert.match(sourceText(e), /Steam 版中文：Steam 商店標示同時支援繁中與簡中/);
-  assert.match(sourceText(e), /Nintendo Switch 2 版中文：來源 Nintendo 台灣（台灣版本）。已公布語言：簡體中文、英文。官方完整語言列表未列繁體中文。/);
+  assert.match(sourceText(e), /Nintendo Switch 2 版中文：台灣版本，來源 Nintendo 台灣。已公布語言：簡體中文、英文。官方完整語言列表未列繁體中文。/);
   assert.equal(sourceLinks(e).find(link => link.textContent === 'Nintendo 台灣').href, 'https://www.nintendo.com/tw/games/switch2/example/');
   assert.match(sourceText(e), /各平台、地區版本的語言分開確認；中文名稱不代表遊戲支援中文。/);
 });
@@ -514,7 +514,7 @@ test('partial generic Chinese never invents a script or unsupported language cla
   const { elements: e } = await display('?igdb=366896', sample({ platform_language_support: { NS2: row } }));
   assert.deepEqual(versionDates(e), [['NS2', '2027-01-15']]);
   assert.deepEqual(languageChips(versionRow(e, 'NS2')), ['中文（字體待確認）']);
-  assert.match(sourceText(e), /Nintendo Switch 2 版中文：來源 Nintendo 台灣（台灣版本）。已公布語言：中文。官方僅標示中文，尚未區分繁體／簡體字體。/);
+  assert.match(sourceText(e), /Nintendo Switch 2 版中文：台灣版本，來源 Nintendo 台灣。已公布語言：中文。官方僅標示中文，尚未區分繁體／簡體字體。/);
   assert.doesNotMatch(versionCell(versionRow(e, 'NS2'), 'languages').textContent, /繁中|簡中|無中文/);
   assert.doesNotMatch(sourceText(e), /未列繁體|未列簡體|繁中|簡中/);
 });
@@ -527,8 +527,8 @@ test('separate NS and NS2 versions retain platform-specific official language so
       source_url: 'https://www.nintendo.com/us/store/products/example/' }), NS2: languageSupport() } });
   const { elements: e } = await display('?igdb=366896', payload);
   assert.deepEqual(versionDates(e), [['NS', '2027-01-15'], ['NS2', '2027-01-15']]);
-  assert.match(sourceNote(e, 'Nintendo Switch 版中文：').textContent, /來源 Nintendo 北美（北美版本）。.*台灣販售版本的語言是否相同仍待確認/);
-  assert.match(sourceNote(e, 'Nintendo Switch 2 版中文：').textContent, /來源 Nintendo 台灣（台灣版本）/);
+  assert.match(sourceNote(e, 'Nintendo Switch 版中文：').textContent, /北美版本，來源 Nintendo 北美。.*台灣販售版本的語言是否相同仍待確認/);
+  assert.match(sourceNote(e, 'Nintendo Switch 2 版中文：').textContent, /台灣版本，來源 Nintendo 台灣/);
   assert.doesNotMatch(sourceNote(e, 'Nintendo Switch 2 版中文：').textContent, /台灣販售版本.*待確認/);
   assert.equal(sourceLinks(e).find(link => link.textContent === 'Nintendo 北美').href, 'https://www.nintendo.com/us/store/products/example/');
   // IGDB rows that name no region say so instead of inventing one.
@@ -577,7 +577,7 @@ test('every merged game entry point keeps the game title and shows the edition, 
     assert.equal(versionCell(versionRow(e, 'NS2'), 'platform').textContent,
       'NS2Nintendo Switch 2 版本體＋Re Mind DLC商店名稱：KINGDOM HEARTS III + Re Mind');
     const note = sourceNote(e, 'Nintendo Switch 2 版販售版本：');
-    assert.match(note.textContent, /官方商品名稱「KINGDOM HEARTS III \+ Re Mind」，來源 Nintendo 官方商品頁（香港版本）。此平台發售的是包含本體與追加內容的版本。.*台灣販售版本是否相同仍待確認/);
+    assert.match(note.textContent, /官方商品名稱「KINGDOM HEARTS III \+ Re Mind」，香港版本，來源 Nintendo 官方商品頁。此平台發售的是包含本體與追加內容的版本。.*台灣販售版本是否相同仍待確認/);
     const link = note.children[0];
     assert.equal(link.href, 'https://ec.nintendo.com/HK/zh/titles/70010000117242');
     assert.equal(link.rel, 'noopener noreferrer');
@@ -604,7 +604,7 @@ test('Nintendo-only expansion and Deluxe releases keep their own confirmed editi
       `NS2 獨佔Nintendo Switch 2 版${version.label}商店名稱：${version.title}`);
     assert.equal(versionCell(versionRow(e, 'NS2'), 'dates').textContent, '2027/01/15（五）全球日期・台灣待確認');
     const note = sourceNote(e, 'Nintendo Switch 2 版販售版本：').textContent;
-    assert.ok(note.includes(`官方商品名稱「${version.title}」，來源 Nintendo 官方商品頁（澳洲版本）。`));
+    assert.ok(note.includes(`官方商品名稱「${version.title}」，澳洲版本，來源 Nintendo 官方商品頁。`));
     assert.ok(note.includes(version.type === 'deluxe' ? '此平台發售的是上述 Deluxe 版本。' : '此平台發售的是包含本體與追加內容的版本。'));
     assert.match(note, /發售日期對應上述版本與內容組合。版本內容依此地區商品頁確認；台灣販售版本是否相同仍待確認。/);
     assert.doesNotMatch(e.get('gameVersionRows').textContent + sourceText(e), /Steam|重製|高畫質|原版/);
@@ -735,7 +735,7 @@ test('merged Steam and PS5 detail keeps both versions and official shops with in
     assert.equal(e.get('gameVersionsAlso').hidden, true);
     assert.deepEqual(languageChips(versionRow(e, 'Steam')), ['繁中', '簡中']);
     assert.deepEqual(languageChips(versionRow(e, 'PS5')), ['簡中']);
-    assert.match(sourceText(e), /PlayStation 5 版中文：來源 PlayStation 台灣（台灣版本）。已公布語言：簡體中文、英文。官方完整語言列表未列繁體中文。/);
+    assert.match(sourceText(e), /PlayStation 5 版中文：台灣版本，來源 PlayStation 台灣。已公布語言：簡體中文、英文。官方完整語言列表未列繁體中文。/);
     assert.doesNotMatch(sourceText(e), /Nintendo/);
   }
 });
@@ -789,7 +789,7 @@ test('PS5 Deluxe edition title and product evidence stay distinct from the Steam
       'PS5PlayStation 5 版Deluxe 版商店名稱：PS5 Future Game Deluxe Edition');
     assert.doesNotMatch(versionRow(e, 'Steam').textContent, /Deluxe/);
     const note = sourceNote(e, 'PlayStation 5 版販售版本：');
-    assert.match(note.textContent, /官方商品名稱「PS5 Future Game Deluxe Edition」，來源 PlayStation 官方商品頁（台灣版本）。此平台發售的是上述 Deluxe 版本。.*版本內容依台灣官方商品頁確認。/);
+    assert.match(note.textContent, /官方商品名稱「PS5 Future Game Deluxe Edition」，台灣版本，來源 PlayStation 官方商品頁。此平台發售的是上述 Deluxe 版本。.*版本內容依台灣官方商品頁確認。/);
     assert.equal(note.children[0].href, source_url);
     for (const item of sourceItems(e).filter(item => item.textContent.includes('中文：')))
       assert.doesNotMatch(item.textContent, /Deluxe|DLC/);
@@ -819,7 +819,7 @@ test('one source note covers every version it applies to, so the same sentence n
   const notes = sourceItems(e).map(item => item.textContent);
   assert.deepEqual(notes.filter(text => text.includes('發售日：')).map(text => text.split('：')[0]),
     ['Nintendo Switch 版、Nintendo Switch 2 版發售日']);
-  assert.match(notes.find(text => text.includes('中文：')), /^Nintendo Switch 版、Nintendo Switch 2 版中文：來源 Nintendo 台灣（台灣版本）。/);
+  assert.match(notes.find(text => text.includes('中文：')), /^Nintendo Switch 版、Nintendo Switch 2 版中文：台灣版本，來源 Nintendo 台灣。/);
   assert.equal(notes.filter(text => text.includes('中文：')).length, 1);
   assert.equal(sourceLinks(e).filter(link => link.textContent === 'Nintendo 台灣').length, 1);
   assert.equal(notes.filter(text => text.startsWith('各平台、地區版本的語言分開確認')).length, 1);

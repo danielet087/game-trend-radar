@@ -151,9 +151,10 @@ body[data-game-hero]::after {
 }
 .game-hero-art {
   position: relative;
-  aspect-ratio: 1920 / 620;
-  min-height: 300px;
-  max-height: 560px;
+  /* The 1920×620 key art's shape, held between 300 and 560px. A height from
+     the viewport (not aspect-ratio + min-height, which widens the page on
+     narrow screens) keeps the band exactly as wide as the page. */
+  height: clamp(300px, 32.3vw, 560px);
   overflow: hidden;
   background: var(--game-ink);
 }
@@ -174,8 +175,7 @@ body[data-game-hero]::after {
   opacity: 0;
 }
 .game-hero-art[data-kind="cover"] {
-  aspect-ratio: 1920 / 440;
-  min-height: 220px;
+  height: clamp(220px, 22.9vw, 560px);
 }
 .game-hero-art[data-kind="cover"] .game-hero-image {
   filter: blur(26px) saturate(1.2);
@@ -1906,10 +1906,9 @@ body.motion-on .art-dialog[open] {
     min-height: 36px;
     font-size: var(--text-xs);
   }
-  .game-hero-art {
-    aspect-ratio: auto;
+  .game-hero-art,
+  .game-hero-art[data-kind="cover"] {
     height: 220px;
-    min-height: 0;
   }
   
   
@@ -2176,7 +2175,8 @@ body.motion-on .art-dialog[open] {
   .game-version > th,
   .game-version > td {
     display: grid;
-    grid-template-columns: 56px minmax(0, 1fr);
+    /* Wide enough for 「發售日（台灣）」 on one line. */
+    grid-template-columns: 86px minmax(0, 1fr);
     gap: 8px;
     width: auto;
     padding: 6px 0;
@@ -2196,6 +2196,10 @@ body.motion-on .art-dialog[open] {
   .game-version-edition {
     flex-basis: 100%;
     margin-top: 2px;
+  }
+  /* The label stays in the first column; everything in the cell stacks in the second. */
+  .game-version > td[data-label] > * {
+    grid-column: 2;
   }
   .game-version > td[data-label]::before {
     content: attr(data-label);

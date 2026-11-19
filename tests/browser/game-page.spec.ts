@@ -81,6 +81,11 @@ test('平台版本 is a table on wide screens and labelled cards on phones, with
   const row = page.locator('#gameVersionRows tr').first();
   expect(await row.evaluate(element => getComputedStyle(element).display)).toBe('block');
   await expect(row.locator('td.game-version-dates')).toHaveAttribute('data-label', '發售日（台灣）');
+  // Each card line is label | content (the store button spans the card): nothing drops into the label column.
+  const misplaced = await page.evaluate(() => [...document.querySelectorAll('#gameVersionRows td[data-label]:not(.game-version-store) > *')]
+    .map(child => [child.getBoundingClientRect(), child.parentElement!.getBoundingClientRect()])
+    .filter(([box, cell]) => box.width && box.left < cell.left + 80).length);
+  expect(misplaced).toBe(0);
 });
 
 test('the desktop dock appears once the title card scrolls away; phones always show it', async ({ page }) => {
@@ -94,6 +99,18 @@ test('the desktop dock appears once the title card scrolls away; phones always s
   await page.evaluate(() => window.scrollTo(0, 0));
   await expect(page.locator('#gameDock')).toBeVisible();
   await expect(page.locator('.game-hero-actions')).toBeHidden();
+});
+
+test('the game page never scrolls sideways, with Steam key art or a console cover', async ({ page }) => {
+  const consoleGame = dataset.games.find((row: any) => row.source === 'nintendo');
+  for (const route of [`game.html?appid=${game.appid}`, `game.html?igdb=${consoleGame.igdbId}&date=${consoleGame.date}`]) {
+    for (const width of [390, 800, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(route);
+      await expect(page.locator('#detailPage')).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth), `${route} at ${width}px`).toBe(width);
+    }
+  }
 });
 
 test('text on the game page is at least 12px at desktop and phone widths', async ({ page }) => {
