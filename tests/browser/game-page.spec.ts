@@ -101,6 +101,36 @@ test('the desktop dock appears once the title card scrolls away; phones always s
   await expect(page.locator('.game-hero-actions')).toBeHidden();
 });
 
+test('an English description is translated in the page only when asked', async ({ page }) => {
+  // A stand-in for the on-device Translator of desktop Chrome and Edge.
+  await page.addInitScript(() => {
+    (window as any).Translator = { create: async () => ({ translate: async (text: string) => `譯：${text}` }) };
+  });
+  await page.goto('game.html?appid=4182430');
+  await expect(page.locator('#detailPage')).toBeVisible();
+  const original = await page.locator('#gameDescription').textContent();
+  const button = page.locator('#descriptionSource button.description-translate');
+  await expect(button).toHaveText('翻譯成中文');
+  await expect(page.locator('#gameDescriptionNote')).toBeHidden();
+  await button.click();
+  await expect(page.locator('#gameDescription')).toHaveAttribute('lang', 'zh-Hant');
+  await expect(page.locator('#gameDescription')).toContainText('譯：');
+  await expect(page.locator('#gameDescriptionNote')).toHaveText('瀏覽器機器翻譯，僅供參考；原文是英文。');
+  await button.click();
+  await expect(page.locator('#gameDescription')).toHaveText(original!);
+  await expect(page.locator('#gameDescriptionNote')).toBeHidden();
+});
+
+test('without a built-in translator an English description opens Google Translate in a new tab', async ({ page }) => {
+  await page.addInitScript(() => { delete (window as any).Translator; });
+  await page.goto('game.html?appid=4182430');
+  await expect(page.locator('#detailPage')).toBeVisible();
+  const link = page.locator('#descriptionSource a.description-translate');
+  await expect(link).toHaveText('Google 翻譯 ↗');
+  await expect(link).toHaveAttribute('href', /^https:\/\/translate\.google\.com\/\?sl=en&tl=zh-TW&text=/);
+  await expect(link).toHaveAttribute('target', '_blank');
+});
+
 test('the game page never scrolls sideways, with Steam key art or a console cover', async ({ page }) => {
   const consoleGame = dataset.games.find((row: any) => row.source === 'nintendo');
   for (const route of [`game.html?appid=${game.appid}`, `game.html?igdb=${consoleGame.igdbId}&date=${consoleGame.date}`]) {

@@ -661,6 +661,42 @@ body[data-page="game"] .button.primary:hover {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* Translation on request: a small button (or Google link) after the source. */
+.description-source .description-translate {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--game-edge);
+  border-radius: 999px;
+  background: #fffdf5;
+  color: var(--game-accent);
+  font: inherit;
+  font-weight: 750;
+  text-decoration: none;
+  cursor: pointer;
+}
+.description-source .description-translate:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+.description-translate-fallback {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  color: var(--muted);
+}
+.game-description-note {
+  display: inline-block;
+  margin: 12px 0 0;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #fff3d6;
+  color: #7a4a00;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
 
 /* Platform versions: one row per platform, one place for provenance */
 .game-versions-card {
