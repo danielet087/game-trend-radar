@@ -2044,7 +2044,11 @@ body.motion-on .art-dialog[open] {
   .game-story,
   .game-media,
   .game-discovery {
-    scroll-margin-top: 140px;
+    scroll-margin-top: 72px;
+  }
+  /* Between 761 and 800px the dock is still the pill: keep it above the bottom bar. */
+  .game-mobile-actions {
+    bottom: calc(var(--bottom-nav, 0px) + 16px);
   }
 }
 @media (max-width: 760px) {
@@ -2291,11 +2295,11 @@ body.motion-on .art-dialog[open] {
   .game-mobile-actions {
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: var(--bottom-nav, 0px);
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px;
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    padding: 12px 16px;
     border: 0;
     border-top: 1px solid var(--game-edge);
     border-radius: 0;
@@ -2313,10 +2317,10 @@ body.motion-on .art-dialog[open] {
     border-radius: 12px;
   }
   body[data-page="game"] .site-footer {
-    padding-bottom: calc(105px + env(safe-area-inset-bottom));
+    padding-bottom: 80px;
   }
   .game-save-feedback {
-    bottom: calc(89px + env(safe-area-inset-bottom));
+    bottom: calc(var(--bottom-nav, 0px) + 89px);
     font-size: var(--text-sm);
   }
   .art-dialog {

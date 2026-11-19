@@ -1,5 +1,15 @@
 <script setup lang="ts">
+import { computed, onBeforeUnmount, ref } from 'vue';
+import { readMotion, subscribeMotion, toggleMotion } from '../state/motion';
+
 withDefaults(defineProps<{ page?: string }>(), { page: 'home' });
+// Phones move the motion switch out of the compact header into the footer.
+const motion = ref(readMotion());
+const unsubscribe = subscribeMotion(value => { motion.value = value; });
+const motionLabel = computed(() => motion.value.reduced
+  ? '裝置已設定減少動態效果'
+  : motion.value.enabled ? '關閉動態效果' : '開啟動態效果');
+onBeforeUnmount(unsubscribe);
 </script>
 
 <template>
@@ -19,6 +29,12 @@ withDefaults(defineProps<{ page?: string }>(), { page: 'home' });
         Valve / Steam 無官方隸屬關係。
       </p>
     </div>
-    <a href="#mainContent" class="back-top">回到頂端 ↑</a>
+    <div class="footer-actions">
+      <button class="footer-motion" type="button" :disabled="motion.reduced" :aria-pressed="motion.enabled" :aria-label="motionLabel" @click="toggleMotion">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="motion.enabled ? 'M9 5v14M15 5v14' : 'm8 5 11 7-11 7Z'" /></svg>
+        <span>{{ motion.enabled ? '動態 ON' : '動態 OFF' }}</span>
+      </button>
+      <a href="#mainContent" class="back-top">回到頂端 ↑</a>
+    </div>
   </footer>
 </template>

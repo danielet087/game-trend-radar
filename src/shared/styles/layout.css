@@ -59,6 +59,13 @@
 .brand-dot {
   color: var(--blue);
 }
+/* Phone-only pieces of the navigation (see responsive.css, max-width 800px). */
+.nav-icon,
+.nav-short,
+.nav-scrim,
+.explore-menu-head {
+  display: none;
+}
 .main-nav {
   display: flex;
   gap: 5px;
