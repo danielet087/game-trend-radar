@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-19T05:30:58Z",
+  "generated_at": "2026-11-19T11:30:50Z",
   "checkpoints": {
     "1167820": {
       "attempted_at": "2026-11-13T17:32:27Z",
@@ -938,9 +938,9 @@
       "next_check_at": "2026-11-20T05:30:58Z"
     },
     "5133900": {
-      "attempted_at": "2026-11-12T05:33:40Z",
+      "attempted_at": "2026-11-19T11:30:50Z",
       "outcome": "success",
-      "next_check_at": "2026-11-19T05:33:40Z"
+      "next_check_at": "2026-11-26T11:30:50Z"
     },
     "5335510": {
       "attempted_at": "2026-11-15T23:32:45Z",
@@ -1276,45 +1276,29 @@
       "attempted_at": "2026-11-19T05:30:58Z",
       "outcome": "success",
       "next_check_at": "2026-11-26T05:30:58Z"
+    },
+    "5041530": {
+      "attempted_at": "2026-11-19T11:30:50Z",
+      "outcome": "success",
+      "next_check_at": "2026-11-26T11:30:50Z"
     }
   },
-  "due_count": 22,
-  "attempted": 22,
-  "refreshed": 22,
+  "due_count": 2,
+  "attempted": 2,
+  "refreshed": 2,
   "updated_appids": [
-    4739500,
-    4554250,
-    5033060,
-    1426870,
-    1622130,
-    2083660,
-    2411200,
-    2443590,
-    3339970,
-    3370490,
-    3473210,
-    3927170,
-    4262460,
-    5037200,
-    5037510,
-    5073990,
-    5189160,
-    5246700,
-    5279620,
-    5327150,
-    5341070,
-    5356470
+    5133900,
+    5041530
   ],
   "failed_appids": [],
   "sources": {
     "steam_schinese_converted": 1,
-    "steam_tchinese": 2,
-    "steam_english": 19
+    "steam_tchinese": 1
   },
   "pending_count": 0,
   "retry_pending_appids": [],
   "complete": true,
   "stop_reason": "",
-  "next_due_at": "2026-11-19T05:33:40Z",
+  "next_due_at": "2026-11-19T11:31:05Z",
   "superseded_appids": []
 }
