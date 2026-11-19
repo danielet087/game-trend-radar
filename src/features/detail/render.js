@@ -1,22 +1,81 @@
 import { renderDescriptionSource } from '../../domain/descriptions.mjs';
+import { hasChineseName } from './overview.js';
+
+// Long descriptions (console summaries) open as four lines with a toggle.
+const CLAMP_CHARS = 180;
 
 export function createDetailRenderer(ctx, policy, release, metadata, artwork, favorites, related, sections = {}) {
-  const { $, node, D, R, state, today, number, isNativeConsole, document } = ctx;
+  const { $, node, D, R, state, today, number, isNativeConsole, document, on } = ctx;
   const { publicSourceURL } = policy;
-  const { renderReleaseDates } = release;
-  const { renderLanguages, renderPlatforms } = metadata;
+  const { renderHeroRelease } = release;
+  const { renderHeroChips } = metadata;
   const { showArtwork } = artwork;
   const { updateSaveControls } = favorites;
   const { setupTags } = related;
-  const { media, radar, overview, navigation } = sections;
+  const { media, radar, overview, versions, navigation } = sections;
+  on?.($("gameDescriptionMore"), "click", () => {
+    const open = $("gameDescriptionMore").getAttribute("aria-expanded") !== "true";
+    $("gameDescription").classList.toggle("is-clamped", !open);
+    $("gameDescriptionMore").setAttribute("aria-expanded", String(open));
+    $("gameDescriptionMore").textContent = open ? "收合" : "展開全文";
+  });
+
+  function renderDescription(game) {
+    const text = game.description || "簡介尚未公開，後續將持續更新。";
+    const long = text.length > CLAMP_CHARS;
+    $("gameDescription").textContent = text;
+    $("gameDescription").hidden = false;
+    $("gameDescription").lang = game.descriptionLanguage === 'en' ? 'en' : 'zh-Hant';
+    $("gameDescription").classList.toggle("is-clamped", long);
+    $("gameDescriptionMore").hidden = !long;
+    $("gameDescriptionMore").setAttribute("aria-expanded", "false");
+    $("gameDescriptionMore").textContent = "展開全文";
+    renderDescriptionSource($("descriptionSource"), game, node);
+  }
+
+  // One buy button: a single store opens directly; several stores scroll to 平台版本.
+  // Versions sold on one store page (NS and NS2 on one Nintendo page) are one store.
+  function renderBuyButtons(game, versionTargets) {
+    const targets = [...new Map(versionTargets.map(target => [target.url, target])).values()];
+    let href, label, short, external = true;
+    if (targets.length > 1) {
+      href = "#gameVersions"; label = "選擇平台購買"; short = "選擇平台購買 ↓"; external = false;
+    } else if (targets.length === 1) {
+      href = targets[0].url; label = `前往 ${targets[0].label}`; short = `${targets[0].label} ↗`;
+    } else {
+      const nintendo = isNativeConsole(game);
+      href = nintendo ? publicSourceURL(game.link) || `https://www.igdb.com/search?type=1&q=${encodeURIComponent(game.nameEn || game.name)}` : game.link;
+      const host = new URL(href).hostname;
+      const name = !nintendo ? "Steam 商店" : host === "store.playstation.com" ? "PlayStation 商店"
+        : /(?:^|\.)playstation\.com$/.test(host) ? "PlayStation 官網" : /(?:^|\.)nintendo\./.test(host)
+          ? "Nintendo 官網" : new URL(href).pathname === "/search" ? "IGDB 搜尋" : "IGDB 遊戲頁";
+      label = `前往 ${name}`; short = `${name} ↗`;
+    }
+    $("gameSteam").replaceChildren(node("span", "", label), node("span", "", external ? "↗" : "↓"));
+    $("gameSteamMobile").textContent = short;
+    document.querySelectorAll("[data-game-steam]").forEach((link) => {
+      link.href = href;
+      if (external) {
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.setAttribute("aria-label", `${label}開啟 ${game.name}（另開分頁）`);
+      } else {
+        link.removeAttribute("target");
+        link.removeAttribute("rel");
+        link.setAttribute("aria-label", "選擇平台購買：跳到平台版本");
+      }
+    });
+  }
+
   function render(game, data, pending = false, extras = {}) {
     const unchangedArt = state.currentGame?.art === game.art && state.currentGame?.art2x === game.art2x;
     state.currentGame = game;
     const nintendo = isNativeConsole(game);
-    const displayNames = D.releaseDisplayNames(game);
+    // The page is about the game. A platform's edition (bundle, Deluxe) is a
+    // fact of that version and is shown in 平台版本, never as the page title.
+    const name = String(game.name || ""), nameEn = String(game.nameEn || "");
     document.body.dataset.gameSource = game.source || "steam";
     document.body.dataset.gameHero = "on";
-    renderPlatforms(game);
     state.recommendationsReady = !pending;
     if (state.selectedTag && !R.hasTag(game, state.selectedTag)) state.selectedTag = "";
     state.knownGames = D.cardGames([...data.games, ...data.recent]);
@@ -25,13 +84,13 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
       ...D.selectGames(data, "released", today),
     ]);
     document.body.dataset.gameTheme = R.theme(game);
-    $("gameTitle").textContent = displayNames.name;
-    $("gameEnglish").hidden = !displayNames.nameEn || displayNames.nameEn === displayNames.name;
-    $("gameEnglish").textContent = displayNames.nameEn === displayNames.name ? "" : displayNames.nameEn;
-    $("gameDescription").textContent = game.description || "簡介尚未公開，後續將持續更新。";
-    $("gameDescription").hidden = false;
-    $("gameDescription").lang = game.descriptionLanguage === 'en' ? 'en' : 'zh-Hant';
-    renderDescriptionSource($("descriptionSource"), game, node);
+    $("gameTitle").textContent = name;
+    $("gameTitle").lang = hasChineseName(name) ? "zh-Hant" : /^[\x20-\x7e]+$/.test(name) ? "en" : "";
+    const subline = !hasChineseName(name) ? "暫無官方中文名稱" : nameEn && nameEn !== name ? nameEn : "";
+    $("gameEnglish").textContent = subline;
+    $("gameEnglish").hidden = !subline;
+    $("gameEnglish").dataset.kind = hasChineseName(name) ? "original" : "missing";
+    renderDescription(game);
     $("gameGenres").replaceChildren(
       node("small", "game-genres-label", "遊戲類型"),
       ...game.genres
@@ -39,8 +98,9 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
         .map((genre) => node("span", "", R.genreLabel(genre))),
     );
     $("gameGenres").hidden = !game.genres.length;
-    renderLanguages(game);
-    renderReleaseDates(game);
+    const hero = renderHeroRelease(game);
+    renderHeroChips(game, hero.days);
+    const targets = versions?.render(game, extras.store, hero.date) || [];
     // NS/NS2 games admitted by IGDB PopScore show their rank, not a low hypes count.
     const popscore = nintendo && game.popularityBasis === "igdb_popscore" ? D.consoleInterest(game) : null;
     $("gameInterestLabel").textContent = popscore ? "IGDB 熱度" : nintendo ? "發售前的社群關注" : "Steam 關注數";
@@ -62,6 +122,11 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
         timeZone:"Asia/Taipei", year:"numeric", month:"2-digit", day:"2-digit",
         hour:"2-digit", minute:"2-digit", hour12:false,
       }).format(measuredAt) + "（台灣）";
+    // Console versions of a Steam game keep their own interest number in the heat card.
+    const consoleInterest = !nintendo ? D.consoleInterest(game) : null;
+    $("gameHeatConsole").hidden = !consoleInterest;
+    $("gameHeatConsole").textContent = !consoleInterest ? "" : `主機版本：${consoleInterest.text}（${
+      consoleInterest.basis === "hypes" ? "遊戲整體的發售前關注數" : "NS／NS2 頁面瀏覽或「想玩」排名"}，不跟 Steam 合併）`;
     $("gameAppId").textContent = nintendo ? `IGDB ID：${game.igdbId}` : `Steam AppID：${game.appid}`;
     const timestamp = new Date((nintendo ? game.updated : data.updated) || "");
     $("gameUpdated").textContent = Number.isFinite(timestamp.getTime())
@@ -77,34 +142,18 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
         }).format(timestamp) +
         "（台灣）"
       : nintendo ? "資料更新時間未提供" : "日期以台灣時間為準";
-    const sourceURL = nintendo ? publicSourceURL(game.link) || `https://www.igdb.com/search?type=1&q=${encodeURIComponent(game.nameEn || game.name)}` : game.link;
-    const sourceName = !nintendo ? "Steam 商店" : new URL(sourceURL).hostname === "store.playstation.com"
-      ? "PlayStation 商店" : /(?:^|\.)playstation\.com$/.test(new URL(sourceURL).hostname)
-        ? "PlayStation 官網" : /(?:^|\.)nintendo\./.test(new URL(sourceURL).hostname)
-          ? "Nintendo 官網" : new URL(sourceURL).pathname === "/search" ? "IGDB 搜尋" : "IGDB 遊戲頁";
-    if (nintendo) game = { ...game, link: sourceURL };
-    $("gameSteam").href = game.link;
-    $("gameSteam").replaceChildren(node("span", "", `前往 ${sourceName}`), node("span", "", "↗"));
-    $("gameSteamInfo").replaceChildren(node("span", "", `前往 ${sourceName}`), node("span", "", "↗"));
-    $("gameSteamMobile").textContent = `${sourceName} ↗`;
     $("gameFootnote").textContent = nintendo
-      ? `發售日期可能依平台、地區調整；平台與語言支援請以各平台官方及發行商最新公告為準。${popscore
+      ? popscore
         ? "IGDB 熱度是 IGDB 頁面瀏覽或「想玩」在 NS／NS2 遊戲間的排名，並非玩家人數。"
-        : "IGDB hypes 屬遊戲整體的發售前關注數，並非單一平台玩家人數。"}`
+        : "IGDB hypes 屬遊戲整體的發售前關注數，並非單一平台玩家人數。"
       : game.hasNativePlatforms === true || game.hasNintendo === true
-        ? "各平台發售日期可能不同；實際上市時間與語言支援請以各平台官方公告為準。各版本語言依各自官方來源顯示；卡片主要語言標籤為 Steam 版本。IGDB hypes 與 Steam Followers 分別呈現，不合併計算。"
-      : "發售日期可能調整，實際上市時間與語言支援請以 Steam 商店公告為準。";
-    document.querySelectorAll("[data-game-steam]").forEach((link) => {
-      link.href = game.link;
-      link.setAttribute(
-        "aria-label",
-        `在 ${sourceName}開啟 ${game.name}（另開分頁）`,
-      );
-    });
-    document.title = `${displayNames.name}｜遊戲資訊・Game Trend Radar`;
+        ? "IGDB hypes 與 Steam Followers 分別呈現，不合併計算。"
+        : "";
+    $("gameFootnote").hidden = !$("gameFootnote").textContent;
+    renderBuyButtons(game, targets);
+    document.title = `${name}｜遊戲資訊・Game Trend Radar`;
     if (!unchangedArt) showArtwork(game);
     media?.render(game, extras.media);
-    overview?.render(game);
     overview?.renderFacts(game, extras.media, extras.store);
     radar?.render(game, extras);
     updateSaveControls();

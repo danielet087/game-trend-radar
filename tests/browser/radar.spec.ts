@@ -96,7 +96,7 @@ for (const scenario of [
     await expect(original).toHaveAttribute('href', `https://store.steampowered.com/app/${steam.appid}/`);
     await expect(original).toHaveAttribute('target', '_blank');
     await expect(original).toHaveAttribute('rel', 'noopener noreferrer');
-    await expect(page.locator('#gameLanguageBadge')).toHaveText('支援英文');
+    await expect(page.locator('#gameVersionRows tr[data-platform="Steam"] .game-version-lang')).toHaveText('無中文（有英文）');
   });
 }
 

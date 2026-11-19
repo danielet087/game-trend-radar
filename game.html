@@ -23,12 +23,12 @@
     />
     <link rel="dns-prefetch" href="https://cdn.akamai.steamstatic.com" />
     <link rel="dns-prefetch" href="https://video.akamai.steamstatic.com" />
-  <script type="module" crossorigin src="/game-trend-radar/assets/app/game-u61gqOFB.js"></script>
+  <script type="module" crossorigin src="/game-trend-radar/assets/app/game-B2xpi8LC.js"></script>
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/contracts-CXfvy2kB.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/storage-BFm3YYgN.js">
-  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-CHRBpwi0.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-B8udYxfm.js">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/bootstrap-oTuMO7h7.css">
-  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/game-D7oAFa5f.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/game-C7SPaN1L.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-BA41KRG3.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/styles-B-kWLpPp.css">
 </head>
@@ -59,12 +59,20 @@
           <div class="game-hero-art" id="gameHeroArt" data-state="empty">
             <span class="game-hero-rings" aria-hidden="true"></span>
             <img class="game-hero-image" id="gameHeroImage" alt="" hidden />
-            <div class="game-platform-badges" id="gamePlatforms" aria-label="遊戲原生平台與獨佔資訊" hidden></div>
           </div>
           <div class="game-wrap">
             <div class="game-title-card" id="gameTitleCard">
+              <button
+                class="game-cover"
+                id="gameCover"
+                type="button"
+                aria-haspopup="dialog"
+                aria-label="放大遊戲封面"
+                hidden
+                disabled
+              ></button>
               <div class="game-headline">
-                <p class="game-state" id="gameState">UPCOMING</p>
+                <div class="game-title-chips" id="gamePlatforms" aria-label="發售狀態與平台" hidden></div>
                 <h1 class="game-page-title" id="gameTitle"></h1>
                 <p class="game-page-en" id="gameEnglish" hidden></p>
                 <div
@@ -114,7 +122,7 @@
           <div class="game-section-nav-inner">
             <a href="#gameNews" data-section="gameNews">雷達快報</a>
             <a href="#gameStory" data-section="gameStory">遊戲簡介</a>
-            <a href="#gameOverview" data-section="gameOverview">玩法一覽</a>
+            <a href="#gameVersions" data-section="gameVersions">平台版本</a>
             <a href="#gameMedia" data-section="gameMedia">影音</a>
             <a href="#gameHeat" data-section="gameHeat">熱度</a>
             <a href="#gameInfo" data-section="gameInfo">遊戲資訊</a>
@@ -143,20 +151,39 @@
             </div>
             <div class="game-intro" id="gameIntro">
               <p class="game-description" id="gameDescription" lang="zh-Hant" hidden></p>
+              <button class="game-description-more" id="gameDescriptionMore" type="button" aria-controls="gameDescription" aria-expanded="false" hidden>展開全文</button>
               <p class="description-source" id="descriptionSource" hidden></p>
             </div>
           </div>
         </section>
 
-        <section class="game-section game-wrap" id="gameOverview" aria-labelledby="gameOverviewTitle">
+        <section class="game-section game-wrap" id="gameVersions" aria-labelledby="gameVersionsTitle">
           <div class="game-section-heading">
             <div>
-              <p class="eyebrow">OVERVIEW</p>
-              <h2 id="gameOverviewTitle">玩法一覽</h2>
+              <p class="eyebrow">VERSIONS</p>
+              <h2 id="gameVersionsTitle">平台版本</h2>
             </div>
-            <p class="game-section-note">資料來自商店與 IGDB 的公開資訊</p>
+            <p class="game-section-note">每個平台一列：發售日、中文、玩法、商店</p>
           </div>
-          <div class="game-overview" id="gameOverviewCards"></div>
+          <div class="game-versions-card">
+            <table class="game-versions" id="gameVersionTable">
+              <thead>
+                <tr>
+                  <th scope="col">平台</th>
+                  <th scope="col">發售日（台灣）</th>
+                  <th scope="col">中文</th>
+                  <th scope="col">遊玩方式</th>
+                  <th scope="col"><span class="sr-only">商店</span></th>
+                </tr>
+              </thead>
+              <tbody id="gameVersionRows"></tbody>
+            </table>
+            <p class="game-versions-also" id="gameVersionsAlso" hidden></p>
+            <details class="game-version-sources" id="gameVersionSources">
+              <summary>資料來源與說明</summary>
+              <ul id="gameVersionSourceList"></ul>
+            </details>
+          </div>
         </section>
 
         <section class="game-media" id="gameMedia" aria-labelledby="gameMediaTitle" hidden>
@@ -199,6 +226,7 @@
                   </p>
                   <p class="intel-caption" id="gameInterestCaption">Steam Followers · 非願望清單數</p>
                   <p class="intel-caption" id="gameFollowersMeasured" hidden></p>
+                  <p class="intel-caption game-heat-console" id="gameHeatConsole" hidden></p>
                 </div>
                 <ul class="game-heat-changes" id="gameHeatChanges" aria-label="關注數變化" hidden></ul>
               </div>
@@ -225,101 +253,14 @@
               <p class="eyebrow">GAME INFO</p>
               <h2 id="gameInfoTitle">遊戲資訊</h2>
             </div>
-            <p class="game-section-note">每款遊戲都用同一張資訊卡</p>
+            <p class="game-section-note">沒有資料的欄位不顯示，順序每款都一樣</p>
           </div>
           <div class="game-intel">
-            <div class="game-info-side">
-              <div class="game-art-stage">
-                <button
-                  class="game-detail-art"
-                  id="gameArt"
-                  type="button"
-                  aria-haspopup="dialog"
-                  aria-label="放大遊戲封面"
-                  disabled
-                >
-                  <span class="game-cover-corner" id="artHint">正在載入封面</span>
-                </button>
-              </div>
-              <div class="game-info-actions">
-                <a
-                  class="button primary"
-                  id="gameSteamInfo"
-                  data-game-steam
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >前往 Steam 商店 <span aria-hidden="true">↗</span></a
-                >
-                <button
-                  class="game-profile-save"
-                  id="gameSaveInfo"
-                  data-game-save
-                  type="button"
-                  aria-pressed="false"
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                      d="M20.8 4.8a5.6 5.6 0 0 0-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"
-                    /></svg
-                  ><span data-save-label>加入收藏</span>
-                </button>
-              </div>
-            </div>
-            <div class="game-info-main">
-              <dl class="game-facts" id="gameFacts"></dl>
-              <div class="game-info-block">
-                <h3 class="game-info-label">發售日</h3>
-                <div class="release-intel" id="gameReleaseDates" role="list" aria-label="各平台發售日期">
-                  <div class="release-ticket" id="gameReleasePrimary" role="listitem">
-                    <div class="release-stamp" aria-hidden="true">
-                      <span id="releaseMonth"></span><strong id="releaseDay"></strong
-                      ><small id="releaseYear"></small>
-                    </div>
-                    <div class="release-ticket-copy">
-                      <p class="release-platform-label" id="gameReleasePlatform"></p>
-                      <p class="intel-label" id="gameReleaseLabel">預定發售・台灣</p>
-                      <time class="release-ticket-date" id="gameDate"></time>
-                      <p class="game-countdown" id="gameCountdown"></p>
-                      <p class="game-release-note" id="gameReleaseNote" hidden></p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="game-info-block game-language-line" id="gameLanguageLine">
-                <div id="gamePlatformSupport" hidden>
-                  <h3 class="game-info-label">平台與版本</h3>
-                  <p class="game-platform-label" id="gamePlatformLabel"></p>
-                  <p class="game-platform-note" id="gamePlatformNote"></p>
-                  <ul class="game-platform-dates" id="gamePlatformDates"></ul>
-                  <div class="game-platform-store-actions">
-                    <div id="gameNativeStoreLinks" hidden></div>
-                  </div>
-                </div>
-                <div id="gameLanguageContent">
-                  <h3 class="game-info-label">語言</h3>
-                  <section class="game-language-version" id="steamLanguageSection" aria-label="Steam 版本遊戲支援語言">
-                    <p class="game-language-version-title">Steam 版本</p>
-                    <div
-                      class="game-language-badges"
-                      id="gameLanguageBadge"
-                      aria-label="遊戲支援語言"
-                    ></div>
-                    <details class="language-details">
-                      <summary>語言支援說明</summary>
-                      <p id="gameLanguageDescription"></p>
-                    </details>
-                  </section>
-                  <div id="nintendoLanguageSections" hidden></div>
-                  <p class="game-language-policy" id="gameLanguagePolicy" hidden>各平台、地區版本的語言分開確認；中文名稱不代表遊戲支援中文。</p>
-                </div>
-              </div>
-              <div class="game-footnotes">
-                <p id="gameUpdated"></p>
-                <p id="gameAppId"></p>
-                <p id="gameFootnote">
-                  發售日期可能調整，實際上市時間與語言支援請以 Steam 商店公告為準。
-                </p>
-              </div>
+            <dl class="game-facts" id="gameFacts"></dl>
+            <div class="game-footnotes">
+              <p id="gameUpdated"></p>
+              <p id="gameAppId"></p>
+              <p id="gameFootnote" hidden></p>
             </div>
           </div>
         </section>

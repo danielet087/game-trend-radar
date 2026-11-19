@@ -149,6 +149,7 @@ class FakeElement extends FakeNode {
     if (key === 'class') this.className = '';
     else if (key.startsWith('data-')) delete this.dataset[camel(key.slice(5))];
     else if (BOOLEAN.has(key)) this[key] = false;
+    else if (REFLECTED[key]) delete this[REFLECTED[key]];
   }
   toggleAttribute(name, force) {
     const on = force === undefined ? !this.hasAttribute(name) : force;

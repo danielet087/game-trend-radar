@@ -6,41 +6,34 @@ export function createDetailArtwork(ctx) {
       large: img.fetchPriority === "high", onLoad, onExhausted,
     });
   }
+  // Console games show their portrait cover whole in the title card (the hero
+  // behind it is the same cover, blurred). Steam games have wide key art instead.
   function showArtwork(game) {
-    const art = $("gameArt");
+    const art = $("gameCover");
     const prior = art.querySelector("img");
     if (prior) cancelArtwork(prior);
-    const hint = $("artHint");
-    const fallback = node("span", "cover-placeholder");
-    fallback.setAttribute("aria-hidden", "true");
+    art.hidden = !isNativeConsole(game);
+    art.disabled = true;
+    if (art.hidden) { art.replaceChildren(); return; }
     const img = node("img");
     img.alt = `${game.name} 的遊戲封面`;
     img.loading = "eager";
     img.fetchPriority = "high";
     img.decoding = "async";
-    img.width = 616;
-    img.height = 353;
-    art.disabled = true;
+    img.width = 264;
+    img.height = 374;
     art.setAttribute("aria-label", `放大 ${game.name} 的遊戲封面`);
-    art.replaceChildren(fallback, img, hint);
+    art.replaceChildren(img);
     loadArtwork(
       img,
       game,
-      () => {
-        fallback.remove();
-        art.disabled = false;
-        hint.textContent = `${isNativeConsole(game) ? "IGDB" : "STEAM"} 遊戲封面 · 點一下看大圖`;
-      },
-      () => {
-        img.remove();
-        art.disabled = true;
-        hint.textContent = "封面暫時無法載入";
-      },
+      () => { art.disabled = false; },
+      () => { img.remove(); art.hidden = true; },
     );
   }
   let previousOverflow = "";
-  on($("gameArt"), "click", () => {
-    const img = $("gameArt").querySelector("img");
+  on($("gameCover"), "click", () => {
+    const img = $("gameCover").querySelector("img");
     if (!img || !state.currentGame) return;
     RadarArtwork.load($("artDialogImage"), state.currentGame, { large: true });
     $("artDialogImage").alt = `${state.currentGame.name} 的遊戲封面大圖`;
@@ -61,7 +54,7 @@ export function createDetailArtwork(ctx) {
     document.documentElement.style.overflow = previousOverflow;
   });
   return { showArtwork, destroy() {
-    const hero = $('gameArt').querySelector('img');
+    const hero = $('gameCover').querySelector('img');
     if (hero) cancelArtwork(hero);
     cancelArtwork($('artDialogImage'));
     if ($('artDialog').open) { $('artDialog').close(); document.documentElement.style.overflow = previousOverflow; }
