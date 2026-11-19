@@ -69,8 +69,16 @@ export function createReleaseStrip(root: HTMLElement, context: {
       artwork.load(image, game, { onExhausted: () => image.remove() });
       art.append(image);
     }
-    const platforms = game.releasePlatforms?.length ? game.releasePlatforms : [game.source === 'nintendo' ? game.platformShort : 'Steam'];
-    const platform = node('span', 'release-card-platform' + (platforms.includes('Steam') ? ' is-steam' : ''), platforms.join('／'));
+    // A band under the art in each platform's color, as on Nintendo's schedule: one
+    // platform gets its full name, a same-day multi-platform release one segment each.
+    const releasing = game.releasePlatforms?.length ? game.releasePlatforms : [game.source === 'nintendo' ? game.platformShort : 'Steam'];
+    const chips = D.cardPlatformChips(game, releasing).chips.filter((chip: any) => chip.released);
+    const platform = node('span', 'release-card-platform');
+    platform.setAttribute('aria-label', `發售平台：${chips.map((chip: any) => chip.label).join('、')}`);
+    for (const chip of chips) {
+      const name = chips.length === 1 ? D.platformFullNames?.[chip.code] || chip.label : chip.label;
+      platform.append(node('span', `is-${chip.family}`, chip.exclusive ? `${name} 獨佔` : name));
+    }
     link.append(art, platform, node('span', 'release-card-title', display.name));
     const meta = node('p', 'release-card-meta');
     const interest = Number.isFinite(game.followers) ? `${number.format(game.followers)} 人關注`

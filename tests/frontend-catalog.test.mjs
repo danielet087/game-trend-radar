@@ -87,11 +87,12 @@ async function renderCard(game, options = {}, mode = 'all', model = null) {
   return renderToString(createSSRApp(GameCard,{game,options,environment:{domain:D,discovery:R,mode,today:TODAY,
     model:()=>model,tags:()=>({include:[],exclude:[],match:'all'}),isSaved:()=>false,subscribeSaved:()=>()=>{},artwork:{load(){}}}}));
 }
-test('Vue card preserves one combined platform badge, accessibility, title metadata, and separate measured metrics', async () => {
+test('Vue card names every known platform, and keeps accessibility, title metadata, and separate measured metrics', async () => {
   const data=D.datasets({games:[raw()]},null,native());
   const html=await renderCard(D.cardGames(data.games)[0]);
   assert.match(html,/class="game-card"[^>]*data-appid="42"/);
-  assert.match(html,/class="platform-badge platform-[^"]+"[^>]*>PC＋主機<\/span>/);
+  assert.match(html,/<span class="platform-chip is-steam">Steam<\/span><span class="platform-chip is-playstation">PS5<\/span>/);
+  assert.match(html,/class="card-platforms" title="已確認平台：PC（Steam）／PS5。[^"]*之後可能增加[^"]*" aria-label="平台：Steam、PS5"/);
   assert.match(html,/class="card-title" title="遊戲範例"/);
   assert.match(html,/class="card-english" title="Example"/);
   assert.match(html,/6,000<small>人關注<\/small>/); assert.match(html,/40<small>IGDB hypes<\/small>/);
@@ -109,7 +110,9 @@ test('Vue event card honors the selected platform date and multiplayer language 
   assert.doesNotMatch(steam,/class="card-multiplayer"/);
   assert.match(ps5,/class="card-multiplayer"/); assert.match(ps5,/多人遊戲；PS5/);
   assert.match(ps5,/datetime="2026-10-18"/); assert.match(ps5,/>10 天後登場<\/span>/);
-  assert.match(ps5,/class="card-release-platform" title="本次發售的平台">PS5<\/span>/);
+  assert.match(ps5,/<span class="platform-chip is-steam">Steam<\/span><span class="platform-chip is-playstation is-released">PS5<\/span>/);
+  assert.match(ps5,/aria-label="平台：Steam、PS5；本次發售：PS5"/);
+  assert.match(steam,/<span class="platform-chip is-steam is-released">Steam<\/span><span class="platform-chip is-playstation">PS5<\/span>/);
   assert.match(ps5,/aria-label="PS5 版本遊戲支援語言"/);
   assert.doesNotMatch(ps5,/支援繁中/);
 });

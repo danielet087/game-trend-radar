@@ -66,7 +66,8 @@ export const GameCard = defineComponent({
       const merchantURL = merchant && D.platformURL?.(merchant.url, nativePlatforms[0]);
       const storeGame = merchantURL ? { ...game, source: 'nintendo', link: merchantURL, linkLabel: merchant.label } : game;
       const storeName = game.source === 'nintendo' ? display.name : game.name;
-      const badge = D.cardPlatformBadge(game), active = env.isSaved(game, entity);
+      const platforms = D.cardPlatformChips(game, event ? game.releasePlatforms : null), active = env.isSaved(game, entity);
+      const releasedChips = platforms.chips.filter((chip: any) => chip.released).map((chip: any) => chip.label);
       return h('article', { class: 'game-card', 'data-appid': game.appid, 'data-game-key': D.gameKey(game), 'data-source': game.source || 'steam' }, [
         h('div', { class: 'cover-link' }, [
           h('span', { class: 'cover-placeholder', 'aria-hidden': 'true', hidden: loaded.value }),
@@ -86,7 +87,6 @@ export const GameCard = defineComponent({
             h('div', { class: 'card-release-dates' }, [
               h('div', { class: 'card-release-date' }, [h('time', { datetime: displayedDate,
                 title: event ? '本次平台發售日期' : '最早發售日期；各平台日期可於遊戲資訊查看' }, displayedDate.replaceAll('-', '/'))]),
-              event && game.releasePlatforms?.length ? h('span', { class: 'card-release-platform', title: '本次發售的平台' }, game.releasePlatforms.join('／')) : null,
             ]),
             h('div', { class: 'card-interest' }, metrics.map(([value, label]) => h('span', { class: 'card-followers' }, [
               new Intl.NumberFormat('zh-TW').format(Number(value)), h('small', null, String(label)),
@@ -97,7 +97,9 @@ export const GameCard = defineComponent({
             ] : [])),
           ]),
           h('div', { class: 'card-footer' }, [
-            h('div', { class: 'card-platforms', 'aria-label': '遊戲平台與獨佔狀態' }, [h('span', { class: 'platform-badge platform-' + badge.status, title: badge.title }, badge.label)]),
+            h('div', { class: 'card-platforms', title: platforms.title, 'aria-label': `平台：${platforms.chips.map((chip: any) => chip.label).join('、')}${
+              releasedChips.length ? `；本次發售：${releasedChips.join('、')}` : ''}` }, platforms.chips.map((chip: any) =>
+              h('span', { class: ['platform-chip', 'is-' + chip.family, chip.released && 'is-released', chip.exclusive && 'is-exclusive'] }, chip.label))),
             h('div', { class: 'card-footer-right' }, [h('a', { class: 'steam-store-link', href: storeGame.link, target: '_blank', rel: 'noopener noreferrer',
               'aria-label': `在 ${storeGame.source === 'nintendo' ? storeGame.linkLabel : 'Steam'} 開啟 ${storeName}（另開分頁）` }, [
               storeGame.source === 'nintendo' ? storeGame.linkLabel : 'Steam 商店', h('span', { 'aria-hidden': 'true' }, '↗'),

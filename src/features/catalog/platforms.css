@@ -1,4 +1,4 @@
-/* The footer keeps one platform-status tag beside the store link. */
+/* The footer keeps the platform chips beside the store link. */
 .card-footer {
   position: relative;
   z-index: 2;
@@ -19,69 +19,73 @@
 .card-platforms {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 4px;
   align-items: flex-end;
   margin: 0;
 }
-.platform-badge {
+/* One chip per known platform in its color. In a release event the platforms
+   releasing that day are filled; "獨佔" is filled too and only shown with proof. */
+.platform-chip {
+  --chip: var(--platform-other);
   display: inline-flex;
-  padding: 4px 7px;
-  border: 1px solid #d8d6ce;
-  border-radius: 6px;
-  color: #6c685c;
-  background: #f7f5ee;
+  align-items: center;
+  padding: 2px 7px;
+  border: 1px solid color-mix(in srgb, var(--chip) 38%, white);
+  border-radius: 5px;
+  color: var(--chip);
+  background: color-mix(in srgb, var(--chip) 7%, white);
   font-size: var(--text-xs);
-  font-weight: 700;
-  line-height: 1.45;
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
-.platform-exclusive {
-  border-color: #f0b7bd;
-  color: #a8243b;
-  background: #fff0f2;
+.platform-chip.is-steam { --chip: var(--platform-steam); }
+.platform-chip.is-nintendo { --chip: var(--platform-nintendo); }
+.platform-chip.is-playstation { --chip: var(--platform-playstation); }
+.platform-chip.is-xbox { --chip: var(--platform-xbox); }
+.platform-chip.is-released,
+.platform-chip.is-exclusive {
+  border-color: var(--chip);
+  background: var(--chip);
+  color: white;
 }
-.platform-steam { border-color: #cbd6ed; color: #3b5391; background: #edf1fb; }
-.platform-playstation-exclusive { border-color: #cbd6ed; color: #3b5391; background: #edf1fb; }
-.platform-multi { border-color: #d8d6ce; color: #6c685c; background: #f7f5ee; }
 .platform-release-note {
   margin: -7px 0 11px;
   font-size: var(--text-xs);
   color: var(--muted);
 }
+/* Calendar entries take the color of the first platform releasing that day. */
 .day-game-platform {
   display: flex;
   align-items: center;
   gap: 4px;
 }
-.day-game-exclusive {
-  background: #fff0f2;
-  color: #a8243b;
-}
-.day-game-exclusive.second { background: #fff0f2; color: #a8243b; }
-.day-game-exclusive:hover { background: #ffe0e5; }
-.day-game-playstation-exclusive,
-.day-game-playstation-exclusive.second { background: #edf1fb; color: #3b5391; }
-.day-game-playstation-exclusive:hover { background: #e1e8f7; }
-.day-game-multi,
 .day-game-nintendo,
-.day-game-unknown,
-.day-game-multi.second,
-.day-game-nintendo.second,
-.day-game-unknown.second { background: #f7f5ee; color: #6c685c; }
-.day-game-multi:hover,
-.day-game-nintendo:hover,
-.day-game-unknown:hover { background: #eeece4; }
+.day-game-nintendo.second { background: #fff0f2; color: #a8243b; }
+.day-game-nintendo:hover { background: #ffe0e5; }
+.day-game-playstation,
+.day-game-playstation.second { background: #edf3ff; color: #1f4fb4; }
+.day-game-playstation:hover { background: #dfe9ff; }
+.day-game-xbox,
+.day-game-xbox.second { background: #eef7ee; color: #2b6a2e; }
+.day-game-xbox:hover { background: #e0f0e1; }
+.day-game-other,
+.day-game-other.second { background: #f7f5ee; color: #6c685c; }
+.day-game-other:hover { background: #eeece4; }
 .day-platform {
   flex: 0 0 auto;
   padding: 1px 4px;
   border-radius: 4px;
-  background: #746f62;
+  background: var(--platform-other);
   color: #fff;
   font-size: var(--text-xs);
   line-height: 1.7;
 }
-.day-game-steam .day-platform { background: #526bac; }
-.day-game-exclusive .day-platform { background: #ae2941; }
-.day-game-playstation-exclusive .day-platform { background: #526bac; }
+.day-platform.is-steam { background: var(--platform-steam); }
+.day-platform.is-nintendo { background: var(--platform-nintendo); }
+.day-platform.is-playstation { background: var(--platform-playstation); }
+.day-platform.is-xbox { background: var(--platform-xbox); }
 .day-game-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .game-card[data-source="nintendo"] .cover-link img { object-position: center 35%; }
 @media (max-width: 520px) {

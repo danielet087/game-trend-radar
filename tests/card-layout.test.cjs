@@ -14,6 +14,10 @@ test.before(async () => { catalog = await bundle('tests/support/catalog-entry.mj
 const TODAY = '2026-10-04';
 const PAGES = { all: 'games.html', home: 'index.html', released: 'released.html', date: 'date.html' };
 const flush = async () => { for (let turn = 0; turn < 5; turn++) await new Promise(resolve => setImmediate(resolve)); };
+// Platform chips on a card, and the ones filled because they release that day (or are proven exclusive).
+const chips = card => card.querySelectorAll('.platform-chip').map(tag => tag.textContent);
+const filled = card => card.querySelectorAll('.platform-chip')
+  .filter(tag => /\bis-(released|exclusive)\b/.test(tag.className)).map(tag => tag.textContent);
 
 function pageElements(page) {
   const html = readFileSync(join(__dirname, '..', PAGES[page]), 'utf8');
@@ -105,13 +109,14 @@ function edition(changes = {}) {
     source_url: 'https://ec.nintendo.com/TW/zh/titles/70010000106881', checked_at: '2026-10-04T03:00:00Z', ...changes };
 }
 
-test('merged PC and console card renders one combined tag, with the actual platforms available on hover', () => {
+test('merged PC and console card names each known platform, with the evidence on hover', () => {
   const data = D.datasets({ games: [steam()] }, null, nintendo());
   const card = renderer().card(D.cardGames(data.games)[0]);
-  assert.deepEqual(card.querySelectorAll('.platform-badge').map(tag => tag.textContent), ['PC＋主機']);
-  assert.equal(card.querySelector('.card-platforms').textContent, 'PC＋主機');
-  assert.match(card.querySelector('.platform-badge').title, /PC|Steam/);
-  assert.match(card.querySelector('.platform-badge').title, /Nintendo Switch 2|NS2/);
+  assert.deepEqual(chips(card), ['Steam', 'NS2']);
+  assert.deepEqual(filled(card), []);
+  assert.equal(card.querySelector('.card-platforms').attributes['aria-label'], '平台：Steam、NS2');
+  assert.match(card.querySelector('.card-platforms').title, /已確認平台：PC（Steam）／NS2。/);
+  assert.match(card.querySelector('.card-platforms').title, /之後可能增加/);
   assert.deepEqual(card.querySelectorAll('.card-followers').map(metric => metric.textContent), ['39,021人關注', '46IGDB hypes']);
   assert.equal(card.querySelectorAll('time').length, 1);
   assert.equal(card.querySelector('.card-release-date').textContent, '2026/12/01');
@@ -152,7 +157,7 @@ test('a later native-port event shows only the earliest verified date and uses i
 
 test('Steam card keeps support languages directly above the dates-and-interest separator, outside its footer', () => {
   const card = renderer().card(D.normalize(steam()));
-  assert.deepEqual(card.querySelectorAll('.platform-badge').map(tag => tag.textContent), ['Steam']);
+  assert.deepEqual(chips(card), ['Steam']);
   assert.equal(card.querySelectorAll('.card-followers').length, 1);
   const body = card.querySelector('.card-body'), languages = card.querySelector('.card-languages');
   assert.equal(languages.parentElement, body);
@@ -195,20 +200,23 @@ test('calendar event cards do not show another platform multiplayer mode while s
   assert.doesNotMatch(summary.title, /Steam/);
 });
 
-test('ordinary NS2 listing and official sole-platform proof produce different card tags', () => {
+test('an NS2-only listing names NS2 without 獨佔 until official sole-platform proof', () => {
   const listed = nintendo({ websites: [], known_platforms: [{ id: 508, code: 'NS2' }], exclusivity: { status: 'listed_only' } });
-  assert.deepEqual(renderer().card(D.nintendoGames(listed)[0]).querySelectorAll('.platform-badge').map(tag => tag.textContent), ['主機']);
+  const listedCard = renderer().card(D.nintendoGames(listed)[0]);
+  assert.deepEqual(chips(listedCard), ['NS2']);
+  assert.deepEqual(filled(listedCard), []);
+  assert.match(listedCard.querySelector('.card-platforms').title, /之後可能增加/);
   const confirmed = nintendo({ websites: [], known_platforms: [{ id: 508, code: 'NS2' }],
     exclusivity: { status: 'confirmed', platform: 'NS2', url: 'https://www.nintendo.com/us/store/products/hela-switch-2/' } });
-  assert.deepEqual(renderer().card(D.nintendoGames(confirmed)[0]).querySelectorAll('.platform-badge').map(tag => tag.textContent), ['NS2 獨佔']);
+  assert.deepEqual(filled(renderer().card(D.nintendoGames(confirmed)[0])), ['NS2 獨佔']);
   const confirmedNS = nintendo({ websites: [], platforms: [{ id: 130, code: 'NS' }],
     known_platforms: [{ id: 130, code: 'NS' }],
     releases: [{ date: '2026-12-01', platform: 'NS', precision: 'day', region: 'worldwide', source: 'IGDB' }],
     exclusivity: { status: 'confirmed', platform: 'NS', url: 'https://www.nintendo.com/us/store/products/hela-switch/' } });
-  assert.deepEqual(renderer().card(D.nintendoGames(confirmedNS)[0]).querySelectorAll('.platform-badge').map(tag => tag.textContent), ['NS 獨佔']);
+  assert.deepEqual(chips(renderer().card(D.nintendoGames(confirmedNS)[0])), ['NS 獨佔']);
 });
 
-test('console-only titles render one console tag while Nintendo titles also on PC render one PC-and-console tag', () => {
+test('a game on NS and NS2 names both consoles, and a console game also listed for PC names PC', () => {
   const both = nintendo({ websites: [],
     platforms: [{ id: 130, code: 'NS' }, { id: 508, code: 'NS2' }],
     known_platforms: [{ id: 130, code: 'NS' }, { id: 508, code: 'NS2' }],
@@ -217,23 +225,18 @@ test('console-only titles render one console tag while Nintendo titles also on P
   });
   const later = D.nintendoGames(both).find(game => game.date === '2026-12-05');
   const card = renderer().card(later);
-  assert.deepEqual(card.querySelectorAll('.platform-badge').map(tag => tag.textContent), ['主機多平台']);
-  assert.equal(card.querySelector('.card-platforms').textContent, '主機多平台');
-  assert.match(card.querySelector('.platform-badge').title, /Nintendo Switch|NS/);
-  assert.match(card.querySelector('.platform-badge').title, /Nintendo Switch 2|NS2/);
+  assert.deepEqual(chips(card), ['NS2', 'NS']);
   assert.equal(card.querySelector('time').dateTime, '2026-12-01');
   const otherPlatform = nintendo({ websites: [] });
-  assert.deepEqual(renderer().card(D.nintendoGames(otherPlatform)[0]).querySelectorAll('.platform-badge').map(tag => tag.textContent), ['PC＋主機']);
+  assert.deepEqual(chips(renderer().card(D.nintendoGames(otherPlatform)[0])), ['PC', 'NS2']);
 });
 
-test('unknown additional platform evidence does not falsely label a card as console-only multi-platform', () => {
+test('an unclassified extra platform gets no chip of its own but is noted on hover', () => {
   const payload = nintendo({ websites: [], known_platforms: [{ id: 508, code: 'NS2' }, { id: 999999, name: 'Unclassified platform' }] });
   const card = renderer().card(D.nintendoGames(payload)[0]);
-  const tags = card.querySelectorAll('.platform-badge');
-  assert.equal(tags.length, 1);
-  assert.notEqual(tags[0].textContent, '主機多平台');
-  assert.notEqual(tags[0].textContent, 'PC＋主機');
-  assert.match(tags[0].title, /Nintendo Switch 2|NS2/);
+  assert.deepEqual(chips(card), ['NS2']);
+  assert.match(card.querySelector('.card-platforms').title, /Unclassified platform（類型待確認）/);
+  assert.match(card.querySelector('.card-platforms').title, /仍待確認/);
 });
 
 test('old Nintendo bookmarks remain selected on merged cards and toggle both identities together', async () => {
@@ -291,7 +294,7 @@ test('October calendar list writes the Nintendo edition into its title while the
   await app.load(official, null, native);
   const cards = app.render();
   assert.deepEqual(cards.map(card => card.querySelector('time').dateTime), ['2026-10-08', '2026-10-09']);
-  assert.deepEqual(cards.map(card => card.querySelector('.card-release-platform').textContent), ['NS2', 'Steam']);
+  assert.deepEqual(cards.map(filled), [['NS2'], ['Steam']]);
   assert.deepEqual(cards.map(card => card.querySelector('.card-detail-link').href), [
     './game.html?appid=3167930&date=2026-10-08', './game.html?appid=3167930&date=2026-10-09',
   ]);
@@ -311,11 +314,11 @@ test('October calendar list writes the Nintendo edition into its title while the
   assert.equal(cards[0].querySelector('.card-languages').attributes['aria-label'], 'Nintendo 版本遊戲支援語言');
   assert.deepEqual(cards[0].querySelectorAll('.card-language').map(chip => chip.textContent), ['語言支援待確認']);
   assert.deepEqual(cards[1].querySelectorAll('.card-language').map(chip => chip.textContent), ['支援繁中', '支援簡中']);
-  assert.deepEqual(cards.map(card => card.querySelectorAll('.platform-badge').map(tag => tag.textContent)), [['PC＋主機'], ['PC＋主機']]);
+  assert.deepEqual(cards.map(chips), [['Steam', 'NS2'], ['Steam', 'NS2']]);
   const calendarLinks = app.calendar.querySelectorAll('.day-game');
-  assert.deepEqual(calendarLinks.map(link => link.querySelector('.day-platform').textContent), ['PC＋主機', 'PC＋主機']);
-  assert.match(calendarLinks[0].querySelector('.day-platform').title, /PC|Steam/);
-  assert.match(calendarLinks[0].querySelector('.day-platform').title, /Nintendo Switch 2|NS2/);
+  assert.deepEqual(calendarLinks.map(link => link.querySelector('.day-platform').textContent), ['NS2', 'Steam']);
+  assert.deepEqual(calendarLinks.map(link => link.className.match(/day-game-(steam|nintendo|playstation|xbox|other)\b/)[1]), ['nintendo', 'steam']);
+  assert.match(calendarLinks[0].querySelector('.day-platform').title, /已確認平台：PC（Steam）／NS2。/);
   assert.match(calendarLinks[0].querySelector('.day-platform').title, /本日發售：NS2/);
   assert.match(calendarLinks[1].querySelector('.day-platform').title, /本日發售：Steam/);
   assert.match(calendarLinks[0].querySelector('.day-game-name').textContent, /Deluxe版/);
@@ -333,7 +336,7 @@ test('daily release card names its edition while the general physical card selec
   const day = renderer([], 'date', '?date=2027-05-20'); await day.load(official, null, native);
   const dailyCard = day.render()[0];
   assert.equal(dailyCard.querySelector('time').dateTime, '2027-05-20');
-  assert.equal(dailyCard.querySelector('.card-release-platform').textContent, 'NS2');
+  assert.deepEqual(filled(dailyCard), ['NS2']);
   assert.equal(dailyCard.querySelector('.card-title').textContent, 'Hela：鼠鼠奇旅（本體＋Dark Arisen擴充版）');
   assert.equal(dailyCard.querySelector('.card-english').textContent, 'Hela: Of Mice & Magic - Dark Arisen');
   assert.equal(dailyCard.querySelector('.card-edition'), null);
@@ -341,7 +344,7 @@ test('daily release card names its edition while the general physical card selec
   const generalCard = catalog.render()[0];
   assert.equal(catalog.render().length, 1);
   assert.equal(generalCard.querySelector('time').dateTime, '2027-02-18');
-  assert.equal(generalCard.querySelector('.card-release-platform'), null);
+  assert.deepEqual(filled(generalCard), []);
   assert.equal(generalCard.querySelector('.card-title').textContent, 'Hela：鼠鼠奇旅');
   assert.equal(generalCard.querySelector('.card-english').textContent, 'Hela: Of Mice & Magic');
   assert.equal(generalCard.querySelector('.card-edition'), null);
@@ -356,18 +359,19 @@ test('same-day Steam and Nintendo versions produce one monthly release card show
   }));
   const cards = app.render();
   assert.equal(cards.length, 1);
-  assert.equal(cards[0].querySelector('.card-release-platform').textContent, 'Steam／NS2');
+  assert.deepEqual(filled(cards[0]), ['Steam', 'NS2']);
+  assert.deepEqual(app.calendar.querySelectorAll('.day-platform').map(tag => tag.textContent), ['Steam +1']);
   assert.equal(cards[0].querySelector('time').dateTime, '2026-10-08');
   assert.equal(cards[0].querySelector('.card-editions'), null);
 });
 
-test('month calendar reserves named Nintendo tags for verified exclusivity and keeps actual native platforms on hover', async () => {
+test('month calendar names the platform releasing that day and adds 獨佔 only with official proof', async () => {
   const cases = [
-    { expected: '主機', changes: { exclusivity: { status: 'listed_only' } } },
-    { expected: '主機', changes: { platform_data_complete: false, exclusivity: { status: 'unknown' } } },
+    { expected: 'NS2', changes: { exclusivity: { status: 'listed_only' } } },
+    { expected: 'NS2', changes: { platform_data_complete: false, exclusivity: { status: 'unknown' } } },
     { expected: 'NS2 獨佔', changes: { exclusivity: { status: 'confirmed', platform: 'NS2',
       url: 'https://www.nintendo.com/us/store/products/hela-switch-2/' } } },
-    { expected: '平台待確認', changes: { known_platforms: [{ id: 508, code: 'NS2' }, { id: 999999, name: 'Unclassified platform' }] } },
+    { expected: 'NS2', changes: { known_platforms: [{ id: 508, code: 'NS2' }, { id: 999999, name: 'Unclassified platform' }] } },
   ];
   for (const { expected, changes } of cases) {
     const app = renderer([], 'home', '?month=2026-12&view=list');
@@ -377,7 +381,8 @@ test('month calendar reserves named Nintendo tags for verified exclusivity and k
     assert.equal(links.length, 1);
     const tags = links[0].querySelectorAll('.day-platform');
     assert.deepEqual(tags.map(tag => tag.textContent), [expected]);
-    assert.equal(card.querySelector('.platform-badge').textContent, expected);
+    assert.deepEqual(filled(card), [expected]);
+    assert.match(links[0].className, /day-game-nintendo/);
     assert.match(tags[0].title, /Nintendo Switch 2|NS2/);
     assert.match(tags[0].title, /本日發售：NS2/);
     assert.equal(links[0].href, './game.html?igdb=314449&date=2026-12-01');
@@ -405,12 +410,12 @@ test('PS5 calendar event retains its release date, own shop and unknown language
   const event = data.games.find(game => game.date === '2027-01-15');
   const card = renderer([], 'date').card(event);
   assert.equal(card.querySelector('time').textContent, '2027/01/15');
-  assert.equal(card.querySelector('.card-release-platform').textContent, 'PS5');
+  assert.deepEqual(filled(card), ['PS5']);
   assert.match(card.querySelector('.card-languages').textContent, /語言支援待確認/);
   assert.doesNotMatch(card.querySelector('.card-languages').textContent, /支援繁中|支援簡中/);
   assert.equal(card.querySelector('.steam-store-link').href, ps5Store);
   assert.match(card.querySelector('.steam-store-link').textContent, /PlayStation 商店/);
   assert.equal(card.querySelector('.card-names').href, './game.html?appid=3167930&date=2027-01-15');
-  assert.deepEqual(card.querySelectorAll('.platform-badge').map(tag => tag.textContent), ['PC＋主機']);
-  assert.match(card.querySelector('.platform-badge').title, /PS5/);
+  assert.deepEqual(chips(card), ['Steam', 'PS5']);
+  assert.match(card.querySelector('.card-platforms').title, /本次發售：PS5。已確認平台：PC（Steam）／PS5。/);
 });

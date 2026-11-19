@@ -224,3 +224,24 @@ test('a list on desktop folds the same way and a filter shows every day again', 
   await expect(earlier).toHaveCount(0);
   await expect(page.locator('#gamesGrid .game-card')).toHaveCount(1);
 });
+
+test('platforms are named in the calendar, on the strip band and under the art in the list', async ({ page }) => {
+  await open(page, fixtureTime, 'index.html?view=list');
+  // GTA VI comes out on PS5 on 11/19 and IGDB also lists Xbox.
+  const band = page.locator('#homeReleases .release-day[data-date="2026-11-19"] .release-card-platform').first();
+  await expect(band).toHaveText('PlayStation 5');
+  await expect(band.locator('.is-playstation')).toHaveCount(1);
+  const card = page.locator('#gamesGrid .game-card').filter({ hasText: 'Grand Theft Auto VI' });
+  await expect(card.locator('.platform-chip')).toHaveText(['PS5', 'Xbox']);
+  await expect(card.locator('.platform-chip.is-released')).toHaveText(['PS5']);
+  await expect(card.locator('.card-platforms')).toHaveAttribute('aria-label', '平台：PS5、Xbox；本次發售：PS5');
+  const art = await card.locator('.cover-link').boundingBox(), chips = await card.locator('.card-platforms').boundingBox();
+  expect(chips!.y).toBeGreaterThan(art!.y + art!.height);
+  expect(Math.abs(chips!.x - art!.x)).toBeLessThanOrEqual(1);
+
+  await page.locator('#calendarView').click();
+  const entry = page.locator('.calendar-day .day-game').filter({ hasText: 'Grand Theft Auto VI' });
+  await expect(entry.locator('.day-platform')).toHaveText('PS5');
+  await expect(entry).toHaveClass(/day-game-playstation/);
+  await expect(entry.locator('.day-platform')).toHaveAttribute('title', /^本日發售：PS5。/);
+});
