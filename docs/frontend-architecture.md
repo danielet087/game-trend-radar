@@ -21,7 +21,7 @@
 
 - GameEntity、PlatformVersion、ReleaseEvent 分別描述遊戲、原生平台版本與發售事件；同款跨平台可以有不同發售日期與語言。
 - 原公開 JSON 格式由來源轉接層處理。LegacyGame／LegacyDataset 是保留既有畫面行為的呈現模型。
-- Steam Followers、IGDB hypes 與 Twitch 量測各自保留來源及查核時間，不互相換算。
+- Steam Followers、IGDB hypes 與 Twitch 量測各自保留來源及查核時間，不互相換算。NS／NS2 另可依 IGDB PopScore 收錄（`popularity_basis: igdb_popscore`）：這類遊戲顯示 `popscore.top_percent` 的「IGDB 熱度前 X%」，不顯示 hypes；`src/domain/interest.mjs` 統一產生文字與排序。
 - date-only 保留原日；時間戳依已發布的日期政策驗證。台灣時區不等於台灣官方上市確認，缺值不補零或虛構時刻。
 - storage Result 區分 fresh、cached、stale、unavailable、invalid，保留來源、查核版本及原發布時間；快取60秒、請求去重、超時與備援集中管理。
 - 部分單款紀錄尚未提供 revision。詳情合併時以已讀取的 catalog 為收錄與欄位權威，單款舊紀錄僅補允許的詳情欄位；不能以 generated_at 相同假定所有檔案同版。

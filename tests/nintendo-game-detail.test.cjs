@@ -698,3 +698,15 @@ test('PS5 Deluxe edition title and product evidence stay distinct from the Steam
   assert.doesNotMatch(steam.get('gameTitle').textContent, /Deluxe/);
   assert.match(steam.get('gamePlatformDates').textContent, /PS5 Deluxe 版/);
 });
+
+test('NS detail admitted by IGDB PopScore shows its rank instead of a hypes count', async () => {
+  const { elements: e } = await display('?igdb=366896&date=2027-01-15', sample({ hypes: null,
+    popularity_basis: 'igdb_popscore', popscore: { visits: 0.001, want_to_play: 0.002, top_percent: 8 } }));
+  assert.equal(e.get('detailPage').hidden, false);
+  assert.equal(e.get('gameInterestLabel').textContent, 'IGDB 熱度');
+  assert.equal(e.get('gameFollowers').textContent, '前 8%');
+  assert.equal(e.get('gameInterestUnit').textContent, '');
+  assert.equal(e.get('gameInterestCaption').textContent, 'IGDB PopScore · NS／NS2 頁面瀏覽或「想玩」排名');
+  assert.match(e.get('gameFootnote').textContent, /IGDB 熱度是 IGDB 頁面瀏覽或「想玩」在 NS／NS2 遊戲間的排名/);
+  assert.doesNotMatch(e.get('gameFootnote').textContent, /hypes/);
+});

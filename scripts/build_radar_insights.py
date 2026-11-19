@@ -347,10 +347,18 @@ def accepted_nintendo(catalog, now):
             raise ValueError("Qualified IGDB public rows required")
         igdb_id, hypes = row.get("igdb_id"), row.get("hypes")
         key = f"igdb:{igdb_id}"
+        counted = hypes is None or (isinstance(hypes, int) and not isinstance(hypes, bool) and hypes >= 0)
+        status = ("unknown" if hypes is None else "qualified" if hypes >= 30 else "observe" if hypes >= 20
+                  else "below_threshold") if counted else None
+        by_hypes = status == "qualified" and row.get("popularity_status") == "qualified"
+        # NS/NS2 games may instead rank in the top 20% of IGDB PopScore; the
+        # platform check below keeps that path to NS/NS2 games.
+        by_popscore = (status not in {None, "qualified"} and row.get("popularity_basis") == "igdb_popscore"
+                       and row.get("popularity_status") == status)
         if (not isinstance(igdb_id, int) or isinstance(igdb_id, bool) or igdb_id <= 0
                 or row.get("id") != key or key in result or igdb_id in unavailable
-                or not isinstance(hypes, int) or isinstance(hypes, bool) or hypes < 30
-                or row.get("hypes_status") != "available" or row.get("popularity_status") != "qualified"
+                or not (by_hypes or by_popscore)
+                or row.get("hypes_status") != ("missing" if hypes is None else "available")
                 or row.get("calendar_eligible") is not True or row.get("sexual_content_screened") is not True
                 or row.get("game_type") not in NINTENDO_GAME_TYPES
                 or not isinstance(row.get("platforms"), list) or not row["platforms"]
@@ -365,6 +373,8 @@ def accepted_nintendo(catalog, now):
                     or isinstance(platform.get("id"), bool) or platform["code"] in platforms):
                 raise ValueError("Verified native IGDB platform identities required")
             platforms.add(platform["code"])
+        if by_popscore and not platforms & {"NS", "NS2"}:
+            raise ValueError("IGDB PopScore admits NS/NS2 games only")
         releases = {}
         for release in row["releases"]:
             if (not isinstance(release, dict) or release.get("platform") not in platforms

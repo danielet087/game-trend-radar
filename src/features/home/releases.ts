@@ -82,7 +82,7 @@ export function createReleaseStrip(root: HTMLElement, context: {
     link.append(art, platform, node('span', 'release-card-title', display.name));
     const meta = node('p', 'release-card-meta');
     const interest = Number.isFinite(game.followers) ? `${number.format(game.followers)} 人關注`
-      : Number.isFinite(game.hypes) ? `IGDB ${number.format(game.hypes)} hypes` : '關注數待確認';
+      : D.consoleInterest(game)?.text || '關注數待確認';
     meta.append(node('span', 'release-card-interest', interest));
     const badge = languageBadge(game);
     if (badge) meta.append(node('span', `release-card-badge badge-${badge.tone}`, badge.label));

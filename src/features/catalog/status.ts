@@ -29,7 +29,7 @@ export function createCatalogStatus(D: CatalogAPI, model: CatalogState, mode: Ca
     const nintendoCount = consoleCount(["NS", "NS2"]);
     const ps5Count = consoleCount(["PS5"]);
     const steamCount = new Set(data.games.filter(game => game.source !== "nintendo").map(game => game.appid)).size;
-    let coverage = `目前收錄 ${number.format(steamCount)} 款 Steam 遊戲、${number.format(nintendoCount)} 款 NS／NS2 遊戲、${number.format(ps5Count)} 款 PS5 遊戲。Steam 新作需至少 5,000 人關注，已驗證 Twitch 新作可另行收錄；IGDB 主機新作試行門檻為 hypes ≥ 30。各平台以確切發售日收錄；僅有年、月或季度的遊戲持續觀察。${data.partial ? "清單尚在持續補齊，不代表全部符合條件的遊戲。" : ""}`;
+    let coverage = `目前收錄 ${number.format(steamCount)} 款 Steam 遊戲、${number.format(nintendoCount)} 款 NS／NS2 遊戲、${number.format(ps5Count)} 款 PS5 遊戲。Steam 新作需至少 5,000 人關注，已驗證 Twitch 新作可另行收錄；IGDB 主機新作試行門檻為 hypes ≥ 30，NS／NS2 另收 IGDB 熱度（頁面瀏覽或「想玩」）排進前 20% 的遊戲。各平台以確切發售日收錄；僅有年、月或季度的遊戲持續觀察。${data.partial ? "清單尚在持續補齊，不代表全部符合條件的遊戲。" : ""}`;
     if (init?.candidate_count)
       coverage += ` 已取得 ${number.format(init.candidate_count)} 款候選新作，逐步核對關注人數。`;
     if (mode === "released")

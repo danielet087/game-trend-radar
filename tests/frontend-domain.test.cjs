@@ -28,12 +28,12 @@ test('ES modules keep the public adapter API and read every published dataset co
   const { RadarData } = await load();
   // Pages and the provider rule suites depend on exactly this adapter surface.
   assert.deepEqual(Object.keys(RadarData).sort(), ["calendarFeatured", "cardGames", "cardMultiplayerBadge",
-    "cardPlatformBadge", "cardPlatformChips", "datasets", "detailURL", "exactReleaseDate", "gameKey", "hasTaiwanStoreDateAuthority",
+    "cardPlatformBadge", "cardPlatformChips", "consoleInterest", "consoleInterestCompare", "datasets", "detailURL", "exactReleaseDate", "gameKey", "hasTaiwanStoreDateAuthority",
     "hasTwitchAdmission", "imageURL", "isSaved", "isTwitchQualified", "nativeCardLanguages", "nativePlatformIDs",
     "nativePlatformOrder", "nativeReleaseAudited", "nintendoCardLanguages", "nintendoEdition", "nintendoGames",
     "nintendoHongKongDateURL", "nintendoLanguageSupport", "nintendoLanguageURL", "nintendoSteamIdentity",
     "nintendoURL", "normalize", "officialTaiwanReleaseTime", "offsetDate", "platformEdition",
-    "platformFamily", "platformFullNames", "platformLanguageSupport", "platformURL", "popularityCompare", "releaseDisplayNames", "releaseEditionBadges",
+    "platformFamily", "platformFullNames", "platformLanguageSupport", "platformURL", "popscoreTop", "popularityCompare", "releaseDisplayNames", "releaseEditionBadges",
     "saveID", "savedID", "selectGames", "todayInTaipei", "unique", "validDate"]);
   const read = name => JSON.parse(fs.readFileSync(path.join(repo, 'tests', 'fixtures', 'site-data', name), 'utf8'));
   const official = read('steam_upcoming.json');

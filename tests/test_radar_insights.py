@@ -979,6 +979,20 @@ class NintendoInsightTests(unittest.TestCase):
                 M.update(first, catalog(game()), observed_at=observed, nintendo_catalog=nintendo_catalog(
                     nintendo_game(releases={"NS2": release}), at=later_at))
 
+    def test_ns_games_ranked_by_igdb_popscore_are_accepted_without_hypes(self):
+        popscore = {"popularity_basis": "igdb_popscore", "popscore": {"visits": 0.001, "want_to_play": 0.002, "top_percent": 8}}
+        quiet = nintendo_game(2, hypes=None, hypes_status="missing", popularity_status="unknown", **popscore)
+        low = nintendo_game(3, hypes=12, popularity_status="below_threshold", **popscore)
+        state = self.update(document=nintendo_catalog(nintendo_game(), quiet, low))
+        self.assertEqual({key: row["active"] for key, row in state["nintendo_records"].items()},
+                         {"igdb:1": True, "igdb:2": True, "igdb:3": True})
+        self.assertEqual(state["nintendo_records"]["igdb:2"]["hypes_history"][-1]["hypes"], None)
+        ps5 = nintendo_game(4, releases={"PS5": "2026-11-05"}, hypes=12, popularity_status="below_threshold", **popscore)
+        for row in (ps5, {**low, "popularity_basis": None}, {**low, "popularity_status": "observe"},
+                    {**quiet, "hypes_status": "available"}, {**low, "hypes": True}):
+            with self.subTest(row=row), self.assertRaises(ValueError):
+                self.update(document=igdb_catalog(row))
+
     def test_bounded_history_and_projection_age_use_real_instants_not_string_sorting(self):
         state = self.update(document=nintendo_catalog(nintendo_game()))
         steam = {"id": "steam-later", "appid": 1, "type": "added", "name": "Test", "date": "2026-11-05", "at": "2026-10-04T02:00:00Z"}

@@ -61,7 +61,11 @@ export const GameCard = defineComponent({
       const tags = ['explore', 'all'].includes(env.mode) && game.tags?.length ? h('div', { class: 'explorer-card-tags' }, [...game.tags].sort((a, b) =>
         Number(selected.some(tag => R.key(tag) === R.key(b))) - Number(selected.some(tag => R.key(tag) === R.key(a))))
         .slice(0, 2).map(tag => h('span', { title: tag }, R.label(tag)))) : null;
-      const metrics = [[game.followers, '人關注'], [game.hypes, 'IGDB hypes']].filter(([value]) => Number.isFinite(value));
+      const interest = D.consoleInterest(game);
+      const metrics: Array<{ value: string; unit: string; title?: string }> = [
+        ...(Number.isFinite(game.followers) ? [{ value: new Intl.NumberFormat('zh-TW').format(game.followers), unit: '人關注' }] : []),
+        ...(interest ? [interest] : []),
+      ];
       const merchant = nativeEvent && nativePlatforms.length === 1 ? game.platformLinks?.[nativePlatforms[0]] : null;
       const merchantURL = merchant && D.platformURL?.(merchant.url, nativePlatforms[0]);
       const storeGame = merchantURL ? { ...game, source: 'nintendo', link: merchantURL, linkLabel: merchant.label } : game;
@@ -88,8 +92,8 @@ export const GameCard = defineComponent({
               h('div', { class: 'card-release-date' }, [h('time', { datetime: displayedDate,
                 title: event ? '本次平台發售日期' : '最早發售日期；各平台日期可於遊戲資訊查看' }, displayedDate.replaceAll('-', '/'))]),
             ]),
-            h('div', { class: 'card-interest' }, metrics.map(([value, label]) => h('span', { class: 'card-followers' }, [
-              new Intl.NumberFormat('zh-TW').format(Number(value)), h('small', null, String(label)),
+            h('div', { class: 'card-interest' }, metrics.map(metric => h('span', { class: 'card-followers', title: metric.title }, [
+              metric.value, h('small', null, metric.unit),
             ])).concat(game.twitchAdmission && !Number.isFinite(game.followers) ? [
               h('span', { class: 'card-followers', title: 'Steam Followers 尚未取得；已通過 Twitch 收錄資格' }, [
                 '未取得', h('small', null, '收錄依據 Twitch'),

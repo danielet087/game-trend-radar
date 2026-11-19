@@ -41,12 +41,16 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     $("gameGenres").hidden = !game.genres.length;
     renderLanguages(game);
     renderReleaseDates(game);
-    $("gameInterestLabel").textContent = nintendo ? "發售前的社群關注" : "Steam 關注數";
-    $("gameFollowers").textContent = nintendo
+    // NS/NS2 games admitted by IGDB PopScore show their rank, not a low hypes count.
+    const popscore = nintendo && game.popularityBasis === "igdb_popscore" ? D.consoleInterest(game) : null;
+    $("gameInterestLabel").textContent = popscore ? "IGDB 熱度" : nintendo ? "發售前的社群關注" : "Steam 關注數";
+    $("gameFollowers").textContent = popscore ? popscore.value : nintendo
       ? Number.isSafeInteger(game.hypes) ? number.format(game.hypes) : "未知"
       : Number.isFinite(game.followers) ? number.format(game.followers) : "未取得";
-    $("gameInterestUnit").textContent = nintendo ? "次關注" : Number.isFinite(game.followers) ? "人" : "";
-    $("gameInterestCaption").textContent = nintendo
+    $("gameInterestUnit").textContent = popscore ? "" : nintendo ? "次關注" : Number.isFinite(game.followers) ? "人" : "";
+    $("gameInterestCaption").textContent = popscore
+      ? D.popscoreTop(game.popscoreTop) === null ? "IGDB PopScore · 曾排進 NS／NS2 前 20%" : "IGDB PopScore · NS／NS2 頁面瀏覽或「想玩」排名"
+      : nintendo
       ? "IGDB hypes · 發售前關注數"
       : game.twitchAdmission && !Number.isFinite(game.followers)
         ? "收錄依據 Twitch · Steam Followers 尚未取得"
@@ -84,7 +88,9 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     $("gameSteamInfo").replaceChildren(node("span", "", `前往 ${sourceName}`), node("span", "", "↗"));
     $("gameSteamMobile").textContent = `${sourceName} ↗`;
     $("gameFootnote").textContent = nintendo
-      ? "發售日期可能依平台、地區調整；平台與語言支援請以各平台官方及發行商最新公告為準。IGDB hypes 屬遊戲整體的發售前關注數，並非單一平台玩家人數。"
+      ? `發售日期可能依平台、地區調整；平台與語言支援請以各平台官方及發行商最新公告為準。${popscore
+        ? "IGDB 熱度是 IGDB 頁面瀏覽或「想玩」在 NS／NS2 遊戲間的排名，並非玩家人數。"
+        : "IGDB hypes 屬遊戲整體的發售前關注數，並非單一平台玩家人數。"}`
       : game.hasNativePlatforms === true || game.hasNintendo === true
         ? "各平台發售日期可能不同；實際上市時間與語言支援請以各平台官方公告為準。各版本語言依各自官方來源顯示；卡片主要語言標籤為 Steam 版本。IGDB hypes 與 Steam Followers 分別呈現，不合併計算。"
       : "發售日期可能調整，實際上市時間與語言支援請以 Steam 商店公告為準。";

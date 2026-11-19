@@ -83,8 +83,11 @@ export function createDetailMetadata(ctx, policy) {
     $("gamePlatformSupport").hidden = false;
     $("gamePlatformLabel").textContent = game.platformLabel || "平台資訊待確認";
     $("gamePlatformNote").textContent = [...new Set((game.platformBadges || []).map(badge => badge.title).filter(Boolean))].join(" ");
-    if (!nintendo && Number.isSafeInteger(game.hypes))
-      $("gamePlatformNote").append(node("span", "", ` IGDB hypes ${number.format(game.hypes)}（遊戲整體關注數，與 Steam Followers 分開計算）。`));
+    const interest = nintendo ? null : D.consoleInterest(game);
+    if (interest)
+      $("gamePlatformNote").append(node("span", "", interest.basis === "hypes"
+        ? ` IGDB hypes ${number.format(game.hypes)}（遊戲整體關注數，與 Steam Followers 分開計算）。`
+        : ` ${interest.text}（NS／NS2 頁面瀏覽或「想玩」排名，與 Steam Followers 分開計算）。`));
     const rows = Array.isArray(game.releases) ? game.releases : [];
     const seen = new Set();
     const dates = rows.filter((row) => {
