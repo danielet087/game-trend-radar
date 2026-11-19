@@ -149,8 +149,10 @@ export function createDetailVersions(ctx, policy) {
     return { cell, target };
   }
 
+  // The Steam version of a console game carries only its Store title.
   function edition(game, code) {
     const value = game.platformEditions?.[code];
+    if (code === 'Steam') return value?.title && /^https:\/\/store\.steampowered\.com\/app\/[1-9]\d*\/$/.test(value.source_url || '') ? value : null;
     return value?.label && value.title && publicSourceURL(value.source_url) ? value : null;
   }
 
@@ -162,8 +164,8 @@ export function createDetailVersions(ctx, policy) {
     const version = edition(game, code);
     if (version) {
       const box = node('p', 'game-version-edition');
-      box.append(node('span', 'game-version-badge is-edition', version.label),
-        node('span', 'game-version-meta', `商店名稱：${version.title}`));
+      if (version.label) box.append(node('span', 'game-version-badge is-edition', version.label));
+      box.append(node('span', 'game-version-meta', `商店名稱：${version.title}`));
       cell.append(box);
     }
     return cell;

@@ -115,3 +115,20 @@ test('reference games rank with console games by IGDB interest, after Steam Foll
   assert.deepEqual(ranked.map(game => game.name), ['Hela', '王國之心 III + Re Mind (DLC)', 'Quiet']);
   assert.deepEqual(D.calendarFeatured(result.games).map(game => game.name), ['Hela', '王國之心 III + Re Mind (DLC)']);
 });
+
+test('a Steam product titled with an edition keeps the game name; the Store title stays on the Steam row', () => {
+  const english = { display_name: 'KINGDOM HEARTS III + Re Mind (DLC)', display_name_source: 'english', name_zh_tw: null };
+  const game = data({ references: [reference(english)] }).games[0];
+  assert.equal(game.name, 'Kingdom Hearts III');
+  assert.equal(game.nameEn, 'Kingdom Hearts III');
+  assert.deepEqual(game.platformEditions.Steam, { label: '', title: 'KINGDOM HEARTS III + Re Mind (DLC)',
+    source_url: 'https://store.steampowered.com/app/2552450/' });
+  assert.ok(game.nameSearchAliases.includes('KINGDOM HEARTS III + Re Mind (DLC)'));
+  // The same title on Steam, or an official Chinese Store title, names the game as before.
+  const exact = { ...english, name: 'Kingdom Hearts III', name_en: 'Kingdom Hearts III', display_name: 'Kingdom Hearts III',
+    reference: { ...reference().reference, title_match: 'exact' } };
+  const same = data({ references: [reference(exact)] }).games[0];
+  assert.equal(same.name, 'Kingdom Hearts III');
+  assert.equal(same.platformEditions.Steam, undefined);
+  assert.equal(data().games[0].name, '王國之心 III + Re Mind (DLC)');
+});

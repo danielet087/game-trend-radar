@@ -151,6 +151,7 @@ export function normalizeReference(raw) {
   // The Steam version's own day, shown on the game page but never a radar event.
   const releases = date ? [{ platform: "Steam", date, precision: "day", source: "Steam", reference: true }] : [];
   return { ...row, steamReference: true, referenceIgdbIds: igdbIds, releaseComingSoon: raw.release_coming_soon === true,
+    referenceTitleMatch: typeof reference.title_match === "string" ? reference.title_match : "",
     releases, dateReleases: releases, releasePlatforms: date ? ["Steam"] : [] };
 }
 
