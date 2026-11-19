@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { RadarData } from '../../src/domain/index.mjs';
 
-const catalog = JSON.parse(readFileSync('data/catalog.json', 'utf8'));
+const catalog = JSON.parse(readFileSync('tests/fixtures/site-data/catalog.json', 'utf8'));
 const archive = catalog.games.find((row: any) => row.appid === 5356470);
 const high = catalog.games.find((row: any) => {
   const game = RadarData.normalize(row);

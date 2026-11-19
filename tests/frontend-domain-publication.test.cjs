@@ -53,9 +53,9 @@ test('declared revision conflict rejects supplementary detail; absent revision i
 
 test('existing catalog and AppID files remain readable without requiring nonexistent revision fields', async () => {
   const { detailCatalog } = await load();
-  const catalog = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../data/catalog.json'), 'utf8'));
-  const row = catalog.games.find(game => fs.existsSync(path.resolve(__dirname, `../data/games/${game.appid}.json`)));
-  const raw = JSON.parse(fs.readFileSync(path.resolve(__dirname, `../data/games/${row.appid}.json`), 'utf8'));
+  const catalog = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'fixtures/site-data/catalog.json'), 'utf8'));
+  const row = catalog.games.find(game => fs.existsSync(path.resolve(__dirname, `fixtures/site-data/games/${game.appid}.json`)));
+  const raw = JSON.parse(fs.readFileSync(path.resolve(__dirname, `fixtures/site-data/games/${row.appid}.json`), 'utf8'));
   const result = detailCatalog(catalog, raw, row.appid);
   assert.equal(result.games.length, catalog.games.length);
   const merged = result.games.find(game => game.appid === row.appid);
