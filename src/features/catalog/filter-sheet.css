@@ -1,0 +1,256 @@
+/* Phones (≤ 800px): the search box stays in the page; the other filters move
+   into a bottom sheet behind 篩選 and applied ones show as removable chips
+   (features/catalog/filter-sheet.ts). Desktop never shows any of this. */
+.filter-toggle,
+.applied-filters,
+.filter-scrim,
+.filter-sheet {
+  display: none;
+}
+@media (max-width: 800px) {
+  /* Hidden before the script moves them, so the list does not jump up once it runs. */
+  .explorer-panel [data-sheet] {
+    display: none;
+  }
+  .filter-bar {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .filter-bar .search-box {
+    flex: 1 1 auto;
+    min-height: 44px;
+  }
+  .filter-toggle {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid #c9d0f5;
+    border-radius: 12px;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+  .filter-toggle svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .filter-toggle-count {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--blue);
+    color: white;
+    font-size: var(--text-xs);
+    line-height: 20px;
+    text-align: center;
+  }
+  .applied-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 26px 0;
+  }
+  .applied-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 36px;
+    padding: 0 8px 0 12px;
+    border: 1px solid #c9d0f5;
+    border-radius: 18px;
+    background: white;
+    color: var(--blue-dark);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+  .applied-chip svg,
+  .filter-sheet-close svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+  .results-bar .view-switch {
+    margin-left: auto;
+  }
+
+  .filter-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: #202c4673;
+  }
+  .filter-sheet {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 71;
+    max-height: calc(100dvh - 72px);
+    padding: 8px 16px 0;
+    border-radius: 24px 24px 0 0;
+    background: var(--paper);
+    box-shadow: 0 -10px 30px #202c4626;
+  }
+  .filter-sheet:focus {
+    outline: none;
+  }
+  .filter-sheet::before {
+    content: "";
+    flex: none;
+    width: 36px;
+    height: 4px;
+    margin: 0 auto 4px;
+    border-radius: 2px;
+    background: #d5cfbf;
+  }
+  .filter-sheet-head {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .filter-sheet-head h2 {
+    font-size: var(--text-lg);
+    font-weight: 900;
+  }
+  .filter-sheet-close {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-right: -10px;
+    border-radius: 22px;
+    color: var(--muted);
+  }
+  .filter-sheet-close svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2.2;
+  }
+  .filter-sheet-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
+    padding: 8px 0 16px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* Labels the page keeps short or screen-reader only are shown in the sheet. */
+  .filter-sheet-body .sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+  .filter-sheet-body .month-jump > span,
+  .filter-sheet-body .sort-wrap > span {
+    display: inline;
+  }
+  .filter-sheet-body .select-wrap,
+  .filter-sheet-body .catalog-filters,
+  .filter-sheet-body .catalog-filters label,
+  .filter-sheet-body .month-jump,
+  .filter-sheet-body .sort-wrap {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    color: var(--ink);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+  .filter-sheet-body .catalog-filters {
+    gap: 16px;
+  }
+  /* 16px text keeps iOS from zooming in when a control is tapped. */
+  .filter-sheet .filter-sheet-body select,
+  .filter-sheet .filter-sheet-body input {
+    width: 100%;
+    max-width: none;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background-color: white;
+    color: var(--ink);
+    font-size: var(--text-md);
+    font-weight: 400;
+    line-height: 1.4;
+  }
+  .filter-sheet-body .filter-chip {
+    align-self: flex-start;
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: var(--text-sm);
+  }
+  .filter-sheet-foot {
+    flex: none;
+    padding: 12px 0 calc(16px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+  }
+  .filter-sheet-count {
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+  }
+  .filter-sheet-actions {
+    display: flex;
+    gap: 12px;
+  }
+  .filter-sheet-clear,
+  .filter-sheet-done {
+    min-height: 48px;
+    border-radius: 14px;
+    font-size: var(--text-md);
+    font-weight: 700;
+  }
+  .filter-sheet-clear {
+    padding: 0 20px;
+    border: 1px solid var(--line);
+    background: white;
+  }
+  .filter-sheet-done {
+    flex: 1;
+    background: var(--blue);
+    color: white;
+  }
+  html.filter-sheet-open,
+  html.filter-sheet-open body {
+    overflow: hidden;
+  }
+}
+@media (max-width: 800px) and (prefers-reduced-motion: no-preference) {
+  body:not(.motion-off) .filter-sheet:not([hidden]) {
+    animation: explore-sheet-enter 0.2s var(--ease) both;
+  }
+}
+@media (max-width: 620px) {
+  .applied-filters {
+    padding: 12px 15px 0;
+  }
+}

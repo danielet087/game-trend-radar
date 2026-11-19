@@ -2,6 +2,7 @@ import '../../shared/styles/play.css';
 import '../../features/twitch/styles.css';
 import '../../features/twitch/igdb.css';
 import '../../features/twitch/archive.css';
+import '../../features/twitch/phone.css';
 import { bootstrap } from '../../app/bootstrap.ts';
 import { streamPlanningHref } from '../../features/twitch/series.js';
 

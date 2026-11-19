@@ -241,6 +241,41 @@
   .toast {
     bottom: calc(var(--bottom-nav) + 12px);
   }
+  /* Controls that move to another row on phones stay hidden until they are
+     placed (shared/phone-slots.ts), so nothing jumps when the script runs. */
+  [data-phone-before]:not(.phone-placed),
+  [data-phone-after]:not(.phone-placed) {
+    display: none !important;
+  }
+  /* Content first: one title and one line of description; the bottom bar
+     already offers 我的收藏, so the heading shortcut goes. */
+  .workspace-heading .eyebrow,
+  .page-heading > .eyebrow,
+  .heading-extra,
+  .workspace-shortcut {
+    display: none;
+  }
+  .workspace-heading,
+  .page-heading {
+    margin-bottom: 8px;
+  }
+  .workspace-heading h1,
+  .page-heading h1 {
+    font-size: var(--text-xl);
+    line-height: 1.35;
+  }
+  .workspace-heading p:not(.eyebrow),
+  .page-heading > p:not(.eyebrow) {
+    margin-top: 2px;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    max-width: none;
+  }
+  /* These scope notes repeat the period in the line above; 關於資料 keeps
+     the platform details. (The saved page's note about local storage stays.) */
+  body:is([data-page="upcoming"], [data-page="released"], [data-page="explore"]) .page-heading > .scope-note {
+    display: none;
+  }
 }
 @keyframes explore-sheet-enter {
   from { opacity: 0; transform: translateY(16px); }
@@ -251,6 +286,8 @@
   body:not(.motion-off) .explore-nav[open] .explore-menu {
     animation: explore-sheet-enter .2s var(--ease) both;
   }
+}
+@media (max-width: 800px) {
   .page-shell {
     padding: 30px 24px 44px;
   }
@@ -325,14 +362,7 @@
     opacity: 0.4;
   }
   .page-shell {
-    padding: 26px 16px 38px;
-  }
-  .workspace-heading {
-    margin-bottom: 20px;
-  }
-  .workspace-heading p:not(.eyebrow) {
-    font-size: var(--text-xs);
-    max-width: 235px;
+    padding: 16px 16px 38px;
   }
   .workspace-shortcut {
     padding: 9px 10px;
@@ -346,12 +376,6 @@
   .eyebrow {
     font-size: var(--text-xs);
     letter-spacing: 0.13em;
-  }
-  .page-heading {
-    margin-bottom: 19px;
-  }
-  .page-heading > p:not(.eyebrow) {
-    font-size: var(--text-xs);
   }
   .data-status {
     font-size: var(--text-xs);
@@ -386,7 +410,7 @@
   }
   .calendar-toolbar {
     gap: 14px;
-    padding: 18px 15px;
+    padding: 10px 15px;
   }
   .month-controls {
     width: 100%;
@@ -398,13 +422,13 @@
     flex: 1;
   }
   .icon-button {
-    width: 35px;
-    height: 35px;
+    width: 44px;
+    height: 44px;
   }
   .quiet-button {
     margin-left: 0;
-    min-height: 35px;
-    padding: 7px 10px;
+    min-height: 44px;
+    padding: 7px 12px;
   }
   .month-jump {
     order: initial;
@@ -425,7 +449,7 @@
     font-size: var(--text-xs);
   }
   .filter-bar {
-    padding: 17px 15px 0;
+    padding: 12px 15px 0;
     gap: 8px;
   }
   .search-box {
@@ -451,7 +475,8 @@
     padding: 9px 13px;
   }
   .results-bar {
-    padding: 11px 15px;
+    min-height: 0;
+    padding: 8px 15px;
     gap: 6px;
   }
   #resultCount {

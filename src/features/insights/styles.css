@@ -217,19 +217,16 @@ body[data-page="analysis"] { --page-wash:#e2dcf4; --page-wash-soft:#f5e8ed; --pa
   .compare-suggestions { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (max-width:700px) {
-  .activity-ticker { display:grid; grid-template-columns:1fr auto auto; gap:2px 8px; margin-bottom:22px; padding:5px 10px; }
-  .activity-label { grid-column:1; grid-row:1; padding-right:0; border-right:0; gap:5px; font-size:var(--text-xs); }
-  .activity-viewport { grid-column:1 / -1; grid-row:2; width:100%; height:68px; }
-  .activity-ticker .activity-item { display:grid; grid-template-columns:auto auto minmax(0,1fr); grid-template-rows:auto auto; gap:4px 7px; height:68px; padding:7px 0; }
-  .activity-ticker .activity-added-at { grid-column:1; grid-row:1; }
-  .activity-ticker .activity-kind { justify-self:start; }
-  .activity-ticker .activity-origin { min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden; text-overflow:ellipsis; }
-  .activity-ticker .activity-platform { grid-column:1; grid-row:2; }
-  .activity-ticker .activity-name { grid-column:2 / -1; grid-row:2; }
-  .activity-ticker .activity-change { display:none; }
+  /* One line on phones: the latest update, pause and the full list. */
+  .activity-ticker { gap:4px; margin:0 0 14px; padding:2px 2px 2px 12px; }
+  .activity-label { gap:5px; padding-right:6px; border-right:0; font-size:var(--text-sm); }
   .activity-label > span { font-size:var(--text-md); }
-  #activityMore { grid-column:3; grid-row:1; padding:8px; font-size:var(--text-xs); }
-  #activityPause { grid-column:2; grid-row:1; width:34px; }
+  .activity-viewport { height:44px; }
+  .activity-ticker .activity-item { gap:6px; height:44px; padding:0; }
+  .activity-ticker .activity-origin, .activity-ticker .activity-platform, .activity-ticker .activity-change { display:none; }
+  .activity-ticker .activity-name { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  .activity-ticker > button { min-width:44px; min-height:44px; padding:0 8px; }
+  .activity-more-text { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
   .activity-dialog { padding:19px; }
   .tag-combination-controls { gap:12px; }
   .tag-intent { width:100%; }

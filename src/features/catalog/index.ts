@@ -14,6 +14,8 @@ import { cardDate, selectCatalog } from './selectors';
 import { element as $, node, emptyState, createNotifier } from './dom';
 import { createCatalogMotion } from './motion';
 import { createCatalogStatus } from './status';
+import { createFilterSheet } from './filter-sheet';
+import { mountPhoneSlots } from '../../shared/phone-slots';
 import { normalizeCatalog } from './boundary';
 import type { CatalogAPI, CatalogGame, CatalogMode, CatalogState } from './types';
 
@@ -227,7 +229,10 @@ export function initCatalogPage(context: CatalogContext = {}) {
   }
   const favorites = createCatalogFavorites(filters, render, cards.gameFor, notify, motion.celebrate, collection);
   bindFilters(); bindPage(); render();
+  const panel = document.querySelector<HTMLElement>('.explorer-panel');
+  const sheet = panel ? createFilterSheet(panel, { signal: signal.signal }) : null;
+  const slots = mountPhoneSlots(document, { signal: signal.signal });
   const ready = load();
-  return { filters, state, ready, reload: load, render,
-    dispose() { disposed = true; cancelSearch(); signal.abort(); dateNavigation?.dispose(); tags?.dispose(); favorites.dispose(); cards.disposeAll(); motion.dispose(); } };
+  return { filters, state, ready, reload: load, render, sheet,
+    dispose() { disposed = true; cancelSearch(); sheet?.dispose(); slots.dispose(); signal.abort(); dateNavigation?.dispose(); tags?.dispose(); favorites.dispose(); cards.disposeAll(); motion.dispose(); } };
 }

@@ -6,6 +6,7 @@ import { createTwitchCards } from "./cards.js";
 import { createTwitchRenderer } from "./render.js";
 import { createTwitchLoader } from "./load.js";
 import { createTwitchArchive } from "./archive.js";
+import { mountPhoneSlots } from "../../shared/phone-slots.ts";
 export { RadarTwitch } from "./data.js";
 export { RadarTwitchChart } from "./chart.js";
 
@@ -27,6 +28,7 @@ export function initTwitchPage() {
   const cards = new Map(), historyCache = new Map(), chartDisposers = new Set();
   let searchTimer, composing = false, view = 'current';
   const archive = createTwitchArchive({ $, signal });
+  const slots = mountPhoneSlots(document, { signal });
   const { urlState, syncURL } = createTwitchURLState(state, $);
   const { historyPanel } = createTwitchHistory({ state, historyCache, chartDisposers, signal });
   const { gameCard, empty, evidence } = createTwitchCards({ state, historyPanel, signal });
@@ -105,7 +107,7 @@ on(document, "keydown",event => {
 on(window, "popstate",showView);
   const controller = { state, refresh: () => view === 'archive' ? archive.load(true) : load(), destroy() {
     if (state.disposed) return;
-    state.disposed = true; events.abort(); clearTimeout(searchTimer); archive.destroy(); unsubscribeSaved();
+    state.disposed = true; events.abort(); slots.dispose(); clearTimeout(searchTimer); archive.destroy(); unsubscribeSaved();
     chartDisposers.forEach(dispose => dispose()); chartDisposers.clear();
     cards.clear(); historyCache.clear(); controllers.delete(anchor); activeControllers.delete(controller);
   } };
