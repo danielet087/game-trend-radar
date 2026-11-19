@@ -1,5 +1,6 @@
 import '../../shared/styles/play.css';
 import '../../features/insights/styles.css';
+import '../../features/home/home.css';
 import { bootstrap } from '../../app/bootstrap.ts';
 bootstrap('home').catch(error => {
   console.error('Unable to initialize game radar:', error);

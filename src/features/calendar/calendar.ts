@@ -7,7 +7,8 @@ export function createCalendarFeature(D: CatalogAPI, filters: FilterState, state
   const number = new Intl.NumberFormat('zh-TW');
   function renderCalendar(games: CatalogGame[]) {
     const [year, month] = filters.state.month.split("-").map(Number);
-    $("monthLabel").textContent = `${year} 年 ${month} 月`;
+    $("monthLabel").textContent = `${year}.${String(month).padStart(2, "0")}`;
+    $("monthLabel").setAttribute("aria-label", `${year} 年 ${month} 月`);
     const first = new Date(Date.UTC(year, month - 1, 1, 12));
     const dayOffset = first.getUTCDay();
     const days = new Date(Date.UTC(year, month, 0)).getUTCDate();

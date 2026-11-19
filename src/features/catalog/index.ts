@@ -10,19 +10,21 @@ import { createTagExplorer } from '../tags/tag-explorer';
 import { createCatalogFavorites } from '../favorites/catalog-favorites';
 import { createCardFactory } from './GameCard';
 import { FilterState, MONTH_PATTERN, PAGE_SIZE } from './filter-state';
-import { cardDate, selectCatalog } from './selectors';
+import { selectCatalog } from './selectors';
 import { element as $, node, emptyState, createNotifier } from './dom';
 import { createCatalogMotion } from './motion';
 import { createCatalogStatus } from './status';
 import { createFilterSheet } from './filter-sheet';
 import { mountPhoneSlots } from '../../shared/phone-slots';
+import { createHomeFeatures } from '../home/index';
+import { addDays, dotDate, longDate } from '../home/dates';
 import { normalizeCatalog } from './boundary';
 import type { CatalogAPI, CatalogGame, CatalogMode, CatalogState } from './types';
 
 export interface CatalogContext {
   data?: CatalogAPI;
   discovery?: CatalogAPI;
-  storage?: Pick<typeof RadarStorage, 'loadSources' | 'loadNintendo'> & Partial<Pick<typeof RadarStorage, 'loadNintendoResult'>>;
+  storage?: Pick<typeof RadarStorage, 'loadSources' | 'loadNintendo'> & Partial<Pick<typeof RadarStorage, 'loadNintendoResult' | 'loadMedia'>>;
   favorites?: typeof sharedFavorites;
   artwork?: { load: (image: HTMLImageElement, game: CatalogGame, options: any) => void };
 }
@@ -55,6 +57,12 @@ export function initCatalogPage(context: CatalogContext = {}) {
   const dateNavigation = mode === 'date' ? createDateNavigation(D, filters, state, writeURL, render, cancelSearch) : null;
   const status = createCatalogStatus(D, state, mode, today);
   const empty = (title: string, text: string, action: {label: string; run: () => void} | null = null) => emptyState(mode, title, text, action);
+  const home = mode === 'home' ? createHomeFeatures({ D, storage, artwork: context.artwork || RadarArtwork,
+    favorites: collection, signal: signal.signal }) : null;
+  // Phones show the month as a dated list only: seven columns of ~51px cannot hold game names.
+  const phoneList = mode === 'home' && typeof matchMedia === 'function' ? matchMedia('(max-width: 620px)') : null;
+  const homeView = () => (phoneList?.matches ? 'list' : filters.state.view);
+  let showEarlier = false, earlierMonth = '';
 
   function syncControls() {
     for (const key of Object.keys(fieldIds) as (keyof typeof fieldIds)[]) {
@@ -66,7 +74,7 @@ export function initCatalogPage(context: CatalogContext = {}) {
   function writeURL() {
     history.replaceState(history.state, '', filters.url(location.href)); dateNavigation?.refreshLinks();
   }
-  function replaceCards(area: HTMLElement, games: CatalogGame[], event = false) {
+  function cardsFor(area: HTMLElement, games: CatalogGame[], event = false) {
     const retained = new Map([...area.querySelectorAll<HTMLElement>('.game-card[data-appid]')]
       .map(card => [card.dataset.gameKey || card.dataset.appid, card]));
     const next = games.map(game => {
@@ -74,21 +82,73 @@ export function initCatalogPage(context: CatalogContext = {}) {
       return old && cards.gameFor(old) === game ? old : cards.create(game, { event, eager: false, priority: false });
     });
     for (const old of retained.values()) if (!next.includes(old)) cards.dispose(old);
-    area.replaceChildren(...next);
+    return next;
+  }
+  function replaceCards(area: HTMLElement, games: CatalogGame[], event = false) {
+    area.replaceChildren(...cardsFor(area, games, event));
+  }
+  /** The month as a dated list, like Nintendo's release schedule. In the current
+      month it starts at today; the earlier releases fold into one button. */
+  function renderSchedule(area: HTMLElement, items: CatalogGame[]) {
+    const f = filters.state, dated = f.sort === 'date';
+    if (earlierMonth !== f.month) { showEarlier = false; earlierMonth = f.month; }
+    const fold = dated && !filters.active && f.month === today.slice(0, 7);
+    const earlier = fold ? items.filter(game => game.date < today) : [];
+    const listed = earlier.length && !showEarlier ? items.filter(game => game.date >= today) : items;
+    const shown = listed.slice(0, state.limit);
+    const nodes: HTMLElement[] = [];
+    if (earlier.length) {
+      const toggle = node('button', 'schedule-earlier', showEarlier
+        ? `收起本月較早已發售的 ${earlier.length} 款`
+        : `${Number(f.month.slice(5))}/1～${Number(f.month.slice(5))}/${Number(addDays(today, -1).slice(8))} 已發售 ${earlier.length} 款`) as HTMLButtonElement;
+      toggle.type = 'button';
+      toggle.setAttribute('aria-expanded', String(showEarlier));
+      toggle.addEventListener('click', () => { showEarlier = !showEarlier; render(); $('gamesGrid').querySelector<HTMLElement>('.schedule-earlier')?.focus(); });
+      nodes.push(toggle);
+    }
+    let last = '';
+    const built = cardsFor(area, shown, true);
+    shown.forEach((game, index) => {
+      if (dated && game.date !== last) {
+        last = game.date;
+        const heading = node('h3', 'schedule-date' + (game.date === today ? ' is-today' : game.date < today ? ' is-past' : ''));
+        heading.dataset.date = game.date;
+        heading.setAttribute('aria-label', `${longDate(game.date)}${game.date === today ? '，今天' : ''}`);
+        heading.append(node('span', 'schedule-day', Number(game.date.slice(8))), node('span', 'schedule-weekday', dotDate(game.date).slice(5)));
+        if (game.date === today) heading.append(node('span', 'schedule-today', '今天'));
+        nodes.push(heading);
+      }
+      nodes.push(built[index]);
+    });
+    area.replaceChildren(...nodes);
+    return listed.length;
+  }
+  /** Eight month tabs from this month on, like Nintendo's release schedule. */
+  function renderMonthTabs() {
+    const tabs = document.getElementById('monthTabs');
+    if (!tabs) return;
+    const start = today.slice(0, 7);
+    if (tabs.dataset.start !== start) {
+      tabs.dataset.start = start;
+      const [year, month] = start.split('-').map(Number);
+      tabs.replaceChildren(...Array.from({ length: 8 }, (_, offset) => {
+        const date = new Date(Date.UTC(year, month - 1 + offset, 1));
+        const value = date.toISOString().slice(0, 7), y = date.getUTCFullYear(), m = date.getUTCMonth() + 1;
+        const tab = node('button', 'month-tab', `${m}月`) as HTMLButtonElement;
+        tab.type = 'button';
+        tab.dataset.month = value;
+        tab.setAttribute('aria-label', `${y} 年 ${m} 月${offset === 0 ? '（本月）' : ''}`);
+        return tab;
+      }));
+    }
+    for (const tab of tabs.querySelectorAll<HTMLButtonElement>('.month-tab')) {
+      if (tab.dataset.month === filters.state.month) tab.setAttribute('aria-current', 'true');
+      else tab.removeAttribute('aria-current');
+    }
   }
   function renderHome() {
     if (mode !== 'home' || !state.viewModel) return;
-    const data = state.viewModel;
-    const upcoming: CatalogGame[] = D.cardGames(D.selectGames(data, 'upcoming', today));
-    upcoming.sort((a, b) => cardDate(a, D).localeCompare(cardDate(b, D)) || D.popularityCompare(a, b));
-    const recent: CatalogGame[] = D.cardGames(D.selectGames(data, 'released', today), 'latest');
-    recent.sort((a, b) => cardDate(b, D).localeCompare(cardDate(a, D)) || D.popularityCompare(a, b));
-    replaceCards($('spotlightGames'), upcoming.slice(0, 4));
-    $('spotlightGames').setAttribute('aria-busy', 'false'); motion.reveal($('spotlightGames'));
-    if (!upcoming.length) $('spotlightGames').append(empty('下一波新作，正在路上', '目前尚無未來 45 天內已收錄的遊戲。'));
-    replaceCards($('recentGames'), recent.slice(0, 3)); motion.reveal($('recentGames'));
-    if (!recent.length) $('recentGames').append(empty(data.recentAvailable ? '下一匹黑馬，值得等待' : '近期上市資料暫時無法讀取',
-      data.recentAvailable ? '目前沒有符合條件的近期上市遊戲，確認發售與關注人數後就會加入。' : '稍後再試；已收錄的新作仍可正常瀏覽。'));
+    home?.render(state.viewModel, today);
   }
   function renderEmpty(filtered: boolean) {
     let title = '這裡還有位置，留給下一款好遊戲', text = '目前沒有符合日期與關注人數條件的遊戲，資料會持續更新。';
@@ -113,11 +173,15 @@ export function initCatalogPage(context: CatalogContext = {}) {
   function render() {
     const f = filters.state;
     tags?.renderSelection();
+    const view = homeView();
     if (mode === 'home') {
-      $('calendarArea').hidden = f.view !== 'calendar'; $('gamesGrid').hidden = f.view === 'calendar';
-      $('calendarView').setAttribute('aria-pressed', String(f.view === 'calendar')); $('listView').setAttribute('aria-pressed', String(f.view === 'list'));
-      $('sortWrap').hidden = f.view === 'calendar'; $<HTMLInputElement>('monthPicker').value = f.month;
-      $('monthLabel').textContent = `${f.month.slice(0, 4)} 年 ${Number(f.month.slice(5))} 月`;
+      $('calendarArea').hidden = view !== 'calendar'; $('gamesGrid').hidden = view === 'calendar';
+      $('gamesGrid').classList.toggle('schedule-list', view === 'list');
+      $('calendarView').setAttribute('aria-pressed', String(view === 'calendar')); $('listView').setAttribute('aria-pressed', String(view === 'list'));
+      $('sortWrap').hidden = view === 'calendar'; $<HTMLInputElement>('monthPicker').value = f.month;
+      $('monthLabel').textContent = `${f.month.slice(0, 4)}.${f.month.slice(5)}`;
+      $('monthLabel').setAttribute('aria-label', `${f.month.slice(0, 4)} 年 ${Number(f.month.slice(5))} 月`);
+      renderMonthTabs();
     }
     const { source, items, events } = selectCatalog(state.viewModel, filters, D, R, collection.readSaved());
     $('savedFilter').setAttribute('aria-pressed', String(f.savedOnly)); $('resetFilters').hidden = !filters.active;
@@ -126,11 +190,11 @@ export function initCatalogPage(context: CatalogContext = {}) {
     $('resultCount').textContent = state.viewModel ? `${mode === 'home' ? '本月' : '共'} ${items.length} ${unit}${filters.active ? ` / ${source.length} ${unit}` : ''}${mode === 'home' && !items.length ? ' · 尚無符合條件的遊戲' : ''}` : '資料暫時無法讀取';
     if (mode === 'home') calendar.render(events);
     const grid = $('gamesGrid'); grid.setAttribute('aria-busy', 'false'); motion.clear(grid);
-    if (mode === 'home' && f.view === 'calendar') {
+    if (mode === 'home' && view === 'calendar') {
       replaceCards(grid, []); $('loadMoreWrap').hidden = true;
     } else {
-      replaceCards(grid, items.slice(0, state.limit), mode === 'home' || mode === 'date');
-      $('loadMoreWrap').hidden = items.length <= state.limit;
+      const listed = mode === 'home' ? renderSchedule(grid, items) : (replaceCards(grid, items.slice(0, state.limit), mode === 'date'), items.length);
+      $('loadMoreWrap').hidden = listed <= state.limit;
       if (!items.length) renderEmpty(filters.active);
       motion.reveal(grid);
     }
@@ -183,6 +247,12 @@ export function initCatalogPage(context: CatalogContext = {}) {
       }, { signal: signal.signal });
       $('todayButton').addEventListener('click', () => { filters.state.month = today.slice(0, 7); changeFilters(); }, { signal: signal.signal });
       for (const view of ['calendar', 'list'] as const) $(view + 'View').addEventListener('click', () => { filters.state.view = view; changeFilters(); }, { signal: signal.signal });
+      document.getElementById('monthTabs')?.addEventListener('click', event => {
+        const tab = (event.target as Element).closest<HTMLButtonElement>('.month-tab');
+        if (!tab?.dataset.month || tab.dataset.month === filters.state.month) return;
+        filters.state.month = tab.dataset.month; changeFilters();
+      }, { signal: signal.signal });
+      phoneList?.addEventListener('change', () => render(), { signal: signal.signal });
     } else {
       const notes = { upcoming: '未來 45 天 · Steam／NS／NS2／PS5 平台別確切發售日', released: '近 30 天 · Steam／NS／NS2／PS5 已收錄發售紀錄',
         saved: '收藏儲存在此瀏覽器；此處顯示仍在目前公開資料內的遊戲。', date: 'Steam／NS／NS2／PS5 平台別確切發售日 · 平台類別 TAG 可移上查看完整平台',
@@ -208,8 +278,7 @@ export function initCatalogPage(context: CatalogContext = {}) {
         $('updateText').textContent = '資料暫時無法讀取'; $('notice').replaceChildren(node('span', '', '暫時連不上遊戲資料，請稍後再試。'));
         const retry = node('button', '', '重新讀取'); retry.addEventListener('click', load); $('notice').append(retry); $('notice').hidden = false;
         if (mode === 'home') {
-          replaceCards($('spotlightGames'), []); $('spotlightGames').append(empty('新作資料暫時無法讀取', '請使用下方「重新讀取」再試一次。')); $('spotlightGames').setAttribute('aria-busy', 'false');
-          replaceCards($('recentGames'), []); $('recentGames').append(empty('近期上市資料暫時無法讀取', '稍後再回來看看。'));
+          home?.unavailable();
         }
       } else {
         collection.registerSavedGames([...state.viewModel.games, ...state.viewModel.recent]); status.render(); renderHome();
@@ -234,5 +303,5 @@ export function initCatalogPage(context: CatalogContext = {}) {
   const slots = mountPhoneSlots(document, { signal: signal.signal });
   const ready = load();
   return { filters, state, ready, reload: load, render, sheet,
-    dispose() { disposed = true; cancelSearch(); sheet?.dispose(); slots.dispose(); signal.abort(); dateNavigation?.dispose(); tags?.dispose(); favorites.dispose(); cards.disposeAll(); motion.dispose(); } };
+    dispose() { disposed = true; cancelSearch(); sheet?.dispose(); slots.dispose(); home?.dispose(); signal.abort(); dateNavigation?.dispose(); tags?.dispose(); favorites.dispose(); cards.disposeAll(); motion.dispose(); } };
 }

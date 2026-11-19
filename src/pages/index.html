@@ -28,16 +28,31 @@
       </section>
       <dialog class="activity-dialog" id="activityDialog" aria-labelledby="activityDialogTitle"><div class="activity-dialog-head"><div><p class="eyebrow">RADAR UPDATES</p><h2 id="activityDialogTitle">最近的雷達動態</h2></div><button id="activityClose" type="button" aria-label="關閉更新動態">×</button></div><p class="activity-dialog-note">近 14 天的新收錄與公開發售日期更新；日期修正不一定代表遊戲延期。</p><ol id="activityList" class="activity-list"></ol></dialog>
 
-      <header class="workspace-heading">
-        <div>
-          <p class="eyebrow">RELEASE CALENDAR</p>
-          <h1 id="pageTitle">發售月曆</h1>
-          <p>追蹤遊戲熱度，收藏發售日。<span class="heading-extra">你的下一場冒險，從這裡開始。</span></p>
+      <section class="home-hero" id="homeHero" aria-roledescription="carousel" aria-label="焦點新作" hidden></section>
+      <section class="home-releases" id="homeReleases" aria-labelledby="releasesTitle">
+        <div class="section-title">
+          <h2 id="releasesTitle">近期新作</h2>
+          <span class="section-title-en" lang="en" aria-hidden="true">RELEASES</span>
         </div>
-        <a class="workspace-shortcut" href="./saved.html"
-          >打開我的收藏 <span aria-hidden="true">↗</span></a
-        >
-      </header>
+        <div class="releases-scroller" tabindex="0" role="region" aria-label="近期新作，可左右捲動"></div>
+        <div class="releases-nav">
+          <button class="releases-step" type="button" data-step="-1" aria-label="往前看"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg></button>
+          <div class="releases-weeks" role="group" aria-label="跳到">
+            <button type="button" data-week="-1">上週</button><button type="button" data-week="0">本週</button><button type="button" data-week="1">下週</button>
+          </div>
+          <button class="releases-step" type="button" data-step="1" aria-label="往後看"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg></button>
+        </div>
+      </section>
+      <div class="notice" id="notice" hidden role="alert"></div>
+      <section
+        class="explorer home-calendar"
+        id="releaseCalendar"
+        aria-labelledby="pageTitle"
+      >
+        <div class="section-title">
+          <h1 id="pageTitle">發售月曆</h1>
+          <span class="section-title-en" lang="en" aria-hidden="true">RELEASE CALENDAR</span>
+        </div>
       <div class="data-status" id="dataStatus" role="status">
         <span class="signal-dot"></span
         ><span id="updateText">正在與新作相遇…</span>
@@ -53,12 +68,6 @@
           </div>
         </details>
       </div>
-      <div class="notice" id="notice" hidden role="alert"></div>
-      <section
-        class="explorer"
-        id="releaseCalendar"
-        aria-labelledby="pageTitle"
-      >
         <div class="explorer-panel">
           <div class="calendar-toolbar">
             <div class="month-controls">
@@ -68,8 +77,9 @@
               <h3 id="monthLabel"></h3>
               <button class="icon-button" id="nextMonth" aria-label="下個月">
                 →</button
-              ><button class="quiet-button" id="todayButton">本月</button>
+              ><button class="quiet-button" id="todayButton" hidden>本月</button>
             </div>
+            <nav class="month-tabs" id="monthTabs" aria-label="選擇月份"></nav>
             <label class="month-jump" data-sheet="setting"
               ><span>跳至月份</span
               ><input
@@ -144,43 +154,16 @@
           </div>
         </div>
       </section>
-      <section class="spotlight-section" aria-labelledby="spotlightTitle">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">COMING SOON</p>
-            <h2 id="spotlightTitle">即將登場，先放進雷達</h2>
-          </div>
-          <a class="text-link" href="./upcoming.html"
-            >查看全部 <span aria-hidden="true">↗</span></a
-          >
+      <nav class="home-more" aria-label="更多探索">
+        <a href="./games.html"><strong>全部遊戲</strong><span>本站所有收錄</span></a>
+        <a href="./upcoming.html"><strong>即將上市</strong><span>未來 45 天</span></a>
+        <a href="./released.html"><strong>近期上市</strong><span>近 30 天</span></a>
+        <a href="./explore.html"><strong>TAG 探索</strong><span>照喜好組合</span></a>
+        <div class="home-more-side">
+          <a href="./saved.html">我的收藏</a>
+          <a href="./growth.html">關注成長榜</a>
         </div>
-        <div class="spotlight-grid" id="spotlightGames" aria-busy="true">
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
-        </div>
-      </section>
-      <section class="recent-section" aria-labelledby="recentTitle">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">JUST RELEASED</p>
-            <h2 id="recentTitle">新鮮上架，現在就出發</h2>
-          </div>
-          <a class="text-link" href="./released.html"
-            >查看全部 <span aria-hidden="true">↗</span></a
-          >
-        </div>
-        <div id="recentGames" class="recent-grid"></div>
-      </section>
-      <section class="bottom-note">
-        <span class="mini-radar" aria-hidden="true">◎</span>
-        <div>
-          <strong>讓每一份期待，都有個位置。</strong>
-          <p>點擊遊戲旁的愛心，即可收藏在這個瀏覽器。無須登入。</p>
-        </div>
-        <a href="./saved.html" class="text-link">我的收藏 ↗</a>
-      </section>
+      </nav>
       <noscript
         ><p class="notice">
           請啟用 JavaScript 以查看遊戲資料、使用搜尋與收藏功能。

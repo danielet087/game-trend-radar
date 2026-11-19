@@ -8,13 +8,9 @@
   .explore-toggle {
     padding: 10px 13px;
   }
-  .games-grid,
-  .spotlight-grid {
+  .games-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 18px;
-  }
-  .spotlight-grid .game-card:last-child {
-    display: none;
   }
   .calendar-toolbar {
     flex-wrap: wrap;
@@ -247,24 +243,17 @@
   [data-phone-after]:not(.phone-placed) {
     display: none !important;
   }
-  /* Content first: one title and one line of description; the bottom bar
-     already offers 我的收藏, so the heading shortcut goes. */
-  .workspace-heading .eyebrow,
-  .page-heading > .eyebrow,
-  .heading-extra,
-  .workspace-shortcut {
+  /* Content first: one title and one line of description. */
+  .page-heading > .eyebrow {
     display: none;
   }
-  .workspace-heading,
   .page-heading {
     margin-bottom: 8px;
   }
-  .workspace-heading h1,
   .page-heading h1 {
     font-size: var(--text-xl);
     line-height: 1.35;
   }
-  .workspace-heading p:not(.eyebrow),
   .page-heading > p:not(.eyebrow) {
     margin-top: 2px;
     font-size: var(--text-sm);
@@ -291,12 +280,6 @@
   .page-shell {
     padding: 30px 24px 44px;
   }
-  .workspace-heading {
-    gap: 14px;
-  }
-  .workspace-shortcut {
-    padding: 11px 13px;
-  }
   .calendar-toolbar {
     padding: 20px;
   }
@@ -307,14 +290,9 @@
   .month-jump {
     margin-left: 8px;
   }
-  .games-grid,
-  .spotlight-grid,
-  .recent-grid {
+  .games-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
-  }
-  .spotlight-grid .game-card:last-child {
-    display: flex;
   }
   .calendar-day {
     padding: 6px;
@@ -330,10 +308,6 @@
   }
   .calendar-help {
     padding: 14px 20px;
-  }
-  .spotlight-section,
-  .recent-section {
-    padding: 24px;
   }
   .site-footer {
     padding: 26px 24px;
@@ -363,15 +337,6 @@
   }
   .page-shell {
     padding: 16px 16px 38px;
-  }
-  .workspace-shortcut {
-    padding: 9px 10px;
-    font-size: var(--text-xs);
-    gap: 7px;
-    border-radius: 10px;
-  }
-  .workspace-shortcut span {
-    font-size: var(--text-md);
   }
   .eyebrow {
     font-size: var(--text-xs);
@@ -569,21 +534,6 @@
     padding: 13px;
     gap: 8px;
   }
-  .spotlight-section,
-  .recent-section {
-    margin-top: 34px;
-  }
-  .spotlight-section,
-  .recent-section {
-    margin-left: -2px;
-    margin-right: -2px;
-    padding: 20px 15px;
-    border-radius: 19px;
-  }
-  .spotlight-grid,
-  .recent-grid {
-    gap: 13px;
-  }
   .bottom-note {
     margin-top: 33px;
     padding: 20px;
@@ -624,12 +574,7 @@
   }
 }
 @media (max-width: 420px) {
-  .workspace-shortcut {
-    display: none;
-  }
-  .games-grid,
-  .spotlight-grid,
-  .recent-grid {
+  .games-grid {
     grid-template-columns: minmax(0, 1fr);
   }
   .card-body {
