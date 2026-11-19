@@ -10,7 +10,7 @@
 | src/app | 頁面初始化與過渡 API 邊界 |
 | src/domain | 身分、日期、平台、語言、多人、版本、發售證據、合併與契約型別 |
 | src/data | 公開 JSON 轉接、執行時驗證、快取、來源狀態與詳情發布權威 |
-| src/features | 清單、月曆、TAG、詳情、成長、比較、Twitch、排程 |
+| src/features | 清單、月曆、首頁焦點輪播與近期新作、TAG、詳情、成長、比較、Twitch、排程 |
 | src/shared | Vue 導覽與頁尾、收藏／動態狀態、圖片備援及共用互動 |
 | 根目錄 HTML、assets/app | 由建置產生的靜態發布檔，供目前 main/root Pages 直接服務 |
 | assets/radar-*.js、舊 CSS | 凍結的相容性與測試基準；新頁面不載入這些腳本 |

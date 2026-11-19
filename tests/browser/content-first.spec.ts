@@ -4,7 +4,8 @@ import { resolve } from 'node:path';
 
 // Phones (≤800px) put the list on the first screen: 雷達動態 only on the home
 // page, one title and one line under it, and the filters other than search in
-// a bottom sheet behind 篩選. Desktop keeps every control where it was.
+// a bottom sheet behind 篩選. Desktop keeps every control where it was. On the
+// home page the first games are the carousel or the 近期新作 strip.
 const DATA = 'tests/fixtures/site-data';
 const frozenAt = new Date(JSON.parse(readFileSync(resolve(DATA, 'catalog.json'), 'utf8')).generated_at);
 const phone = { width: 390, height: 844 };
@@ -19,12 +20,14 @@ const top = (page: Page, selector: string) => page.locator(selector).filter({ vi
 
 test('phones reach the first game within the first screen; only home keeps 雷達動態', async ({ page }) => {
   await page.setViewportSize(phone);
-  for (const [path, limit] of [['index.html', 460], ['games.html', 340], ['upcoming.html', 420], ['released.html', 420]] as const) {
+  const pages = [['index.html', 460], ['games.html', 340], ['upcoming.html', 420], ['released.html', 420]] as const;
+  for (const [path, limit] of pages) {
+    const first = path === 'index.html' ? '.home-hero-title, .release-card' : '.game-card';
     await page.goto(path);
-    await expect(page.locator('.game-card').filter({ visible: true }).first()).toBeVisible();
-    expect(await top(page, '.game-card'), path).toBeLessThanOrEqual(limit);
+    await expect(page.locator(first).filter({ visible: true }).first()).toBeVisible();
+    expect(await top(page, first), path).toBeLessThanOrEqual(limit);
     await expect(page.locator('.activity-ticker')).toHaveCount(path === 'index.html' ? 1 : 0);
-    await expect(page.locator('.workspace-heading .eyebrow, .page-heading > .eyebrow').first()).toBeHidden();
+    await expect(page.locator('.page-heading > .eyebrow').first()).toBeHidden();
   }
 });
 
@@ -92,11 +95,12 @@ test('the sheet closes by its button, 完成 and the scrim, keeps Tab inside, an
   await expect(page.locator('.applied-filters')).toBeHidden();
 });
 
-test('the calendar puts month jump and sort in the sheet and the view switch beside the count; desktop gets them back', async ({ page }) => {
+test('the calendar puts month jump and sort in the sheet and phones get the list only; desktop gets them back', async ({ page }) => {
   await page.setViewportSize(phone);
   await page.goto('index.html');
   await expect(page.locator('#prevMonth')).toBeVisible();
-  await expect(page.locator('.results-bar .view-switch')).toBeVisible();
+  await expect(page.locator('#gamesGrid.schedule-list')).toBeVisible();
+  await expect(page.locator('.view-switch').filter({ visible: true })).toHaveCount(0);
   await expect(page.locator('.calendar-toolbar .view-switch')).toHaveCount(0);
   await page.locator('.filter-toggle').click();
   const sheet = page.getByRole('dialog', { name: '篩選' });
