@@ -234,3 +234,14 @@ test("catalog descriptions explain the verified Twitch admission without univers
     assert.match(html, /<script type="module"[^>]*src="\/game-trend-radar\/assets\/app\//);
   }
 });
+
+test("the page theme follows the leading Steam tags, not a low-voted one", () => {
+  const filler = ['Action', 'RPG', 'Fantasy', 'Open World', 'Story Rich', 'Adventure'];
+  const lateHorror = [...filler, 'Funny', 'Third Person', 'Psychological Horror'];
+  assert.equal(R.theme({ tags: lateHorror }), 'iris');
+  assert.equal(R.theme({ tags: ['Psychological Horror', ...filler] }), 'twilight');
+  assert.equal(R.theme({ tags: ['Puzzle', 'Platformer'], genres: ['RPG'] }), 'iris');
+  assert.equal(R.theme({ tags: [...filler.slice(0, 6), 'Cozy'] }), 'iris');
+  assert.equal(R.theme({ tags: ['Space', 'Cozy'] }), 'grove');
+  assert.equal(R.theme({}), 'sunset');
+});

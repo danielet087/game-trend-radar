@@ -52,6 +52,18 @@ test('game page opens on the key art, title card and the sections that have cont
   expect(failures).toEqual([]);
 });
 
+test('the info card shows the Steam price, CSRR rating and Steam Deck status with the check time', async ({ page }) => {
+  const facts = readData('store_facts.json').games['2638890'];
+  expect(facts.rating.code).toBe('R');
+  await page.goto('game.html?appid=2638890');
+  await expect(page.locator('#detailPage')).toBeVisible();
+  const row = (label: string) => page.locator('#gameFacts .game-fact').filter({ has: page.locator('dt', { hasText: label }) });
+  await expect(row('售價').locator('dd')).toContainText('NT$ 1,990');
+  await expect(row('售價').locator('.game-fact-note')).toHaveText('Steam 台灣商店 11/18 19:30 確認');
+  await expect(row('分級').locator('dd')).toHaveText('限制級（暴力）');
+  await expect(row('Steam Deck').locator('dd')).toHaveText('可遊玩');
+});
+
 test('the desktop dock appears once the title card scrolls away; phones always show it', async ({ page }) => {
   await page.goto(`game.html?appid=${game.appid}`);
   await expect(page.locator('#detailPage')).toBeVisible();

@@ -118,7 +118,13 @@ export function createRadarStorage(environment: StorageEnvironment = {}) {
     if (!Number.isSafeInteger(id) || id <= 0) return null;
     return readJSON<JsonRecord>(`./data/media/${id}.json`, value => isRecord(value) && Number(value.appid) === id, options);
   }
-  return { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia };
+  // Taiwan price, CSRR rating and Steam Deck status for every Steam game; also
+  // a content-backend publication, checked four times a day.
+  async function loadStoreFacts(options: LoadOptions = {}) {
+    return readJSON<JsonRecord>('./data/store_facts.json',
+      value => isRecord(value) && value.schema_version === 1 && isRecord(value.games), options);
+  }
+  return { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia, loadStoreFacts };
 }
 export const RadarStorage = createRadarStorage();
-export const { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia } = RadarStorage;
+export const { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia, loadStoreFacts } = RadarStorage;

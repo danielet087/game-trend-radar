@@ -76,14 +76,16 @@ def make(source: Path, games: int) -> dict:
             write(TARGET / "games" / path.name, read(path))
             copied += 1
     media = copy_media(source, kept)
+    store = copy_store_facts(source, kept)
     (TARGET / "README.md").write_text(
         "# Test site data\n\n"
-        f"A frozen copy of the site's data from {catalog['generated_at']}: {len(chosen)} catalog games, their files and Steam media.\n"
+        f"A frozen copy of the site's data from {catalog['generated_at']}: {len(chosen)} catalog games, their files, Steam media\n"
+        "and Steam store facts (price, rating, Steam Deck).\n"
         "Tests read it and the preview server serves it (`RADAR_SITE_DATA`). Regenerate on purpose with\n"
         "`python scripts/make_test_site_data.py` and review the diff like any other test change.\n",
         encoding="utf-8")
     size = sum(path.stat().st_size for path in TARGET.rglob("*") if path.is_file())
-    return {"games": len(chosen), "game_files": copied, "media_files": media, "bytes": size,
+    return {"games": len(chosen), "game_files": copied, "media_files": media, "store_facts_games": store, "bytes": size,
             "generated_at": catalog["generated_at"]}
 
 
@@ -96,6 +98,17 @@ def copy_media(source: Path, kept) -> int:
             write(TARGET / "media" / path.name, read(path))
             copied += 1
     return copied
+
+
+def copy_store_facts(source: Path, kept) -> int:
+    """Price, CSRR rating and Steam Deck rows (game.html) for the chosen games."""
+    path = source / "store_facts.json"
+    if not path.is_file():
+        return 0
+    facts = read(path)
+    games = {key: value for key, value in facts.get("games", {}).items() if key.isdigit() and int(key) in kept}
+    write(TARGET / "store_facts.json", {**facts, "games": games})
+    return len(games)
 
 
 def main(argv=None) -> int:

@@ -1243,6 +1243,13 @@ body[data-page="game"] .button.primary:hover {
   line-height: 1.6;
   overflow-wrap: anywhere;
 }
+.game-fact-note {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
 .game-info-block {
   min-width: 0;
 }

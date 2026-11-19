@@ -1,6 +1,7 @@
 import { detailCatalog } from '../../data/publication.mjs';
 import { withLatestFollowers, followerHistory } from '../../domain/followers.mjs';
 import { steamMedia } from './media.js';
+import { storeFacts } from './store.js';
 const validActivity = value => !!value && typeof value === 'object' && Array.isArray(value.events);
 /** Progressive hero loading: optional console/catalog failures do not block a known Steam game. */
 export function createDetailLoader(ctx, render, favorites, related) {
@@ -103,7 +104,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
       setStatus("找不到這款遊戲", "連結沒有有效的 Steam AppID 或發售日期，請返回遊戲清單重新選擇。");
       return;
     }
-    let rawGame = null, catalog = null, preview = null, nintendo = null, growth = null, media = null, activity = null;
+    let rawGame = null, catalog = null, preview = null, nintendo = null, growth = null, media = null, activity = null, store = null;
     let catalogDone = false, shown = false;
     function present() {
       if (!active()) return;
@@ -129,7 +130,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
       const record = official?.games?.find(row => Number(row.appid) === appid);
       const history = growth?.games?.find(row => row?.appid === appid)?.history;
       render(withLatestFollowers(game, record, history, today), data, !catalogDone, {
-        media, activity, record: rawGame || record, history: followerHistory(record, history),
+        media, activity, store, record: rawGame || record, history: followerHistory(record, history),
       });
       shown = true;
       if (catalogDone && !catalog && !preview) {
@@ -154,6 +155,9 @@ export function createDetailLoader(ctx, render, favorites, related) {
         Promise.resolve(storage.loadMedia?.(appid, { force }))
           .then(result => { media = steamMedia(result, appid); if (media) present(); })
           .catch(() => { /* Pages without Steam media keep the theme-colored hero. */ }),
+        Promise.resolve(storage.loadStoreFacts?.({ force }))
+          .then(result => { store = storeFacts(result, appid); if (store) present(); })
+          .catch(() => { /* Price, rating and Steam Deck rows are optional. */ }),
         readActivity(force).then(result => { activity = result; if (activity) present(); })
           .catch(() => { /* The news list is optional. */ }),
       ]);

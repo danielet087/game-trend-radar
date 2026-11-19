@@ -28,6 +28,8 @@ class MakeTests(unittest.TestCase):
                 "growth.json": {"version": 1, "games": [{"appid": 1}, {"appid": 9}]},
                 "games/1.json": game(1), "games/5356470.json": game(5356470), "games/9.json": game(9),
                 "media/2.json": {"schema_version": 1, "appid": 2}, "media/9.json": {"schema_version": 1, "appid": 9},
+                "store_facts.json": {"schema_version": 1, "checked_at": "2026-11-18T00:00:00Z",
+                                     "games": {"1": {"steam_deck": "verified"}, "9": {"steam_deck": "playable"}}},
             }
             for name, value in files.items():
                 (source / name).parent.mkdir(parents=True, exist_ok=True)
@@ -45,6 +47,8 @@ class MakeTests(unittest.TestCase):
             # game.html's Steam media follows the chosen games too.
             self.assertEqual(sorted(path.name for path in (target / "media").iterdir()), ["2.json"])
             self.assertEqual(report["media_files"], 1)
+            self.assertEqual(read("store_facts.json")["games"], {"1": {"steam_deck": "verified"}})
+            self.assertEqual(report["store_facts_games"], 1)
 
     def test_the_committed_fixture_is_consistent(self):
         read = lambda name: json.loads((FIXTURE / name).read_text())
@@ -58,6 +62,8 @@ class MakeTests(unittest.TestCase):
         self.assertTrue({int(path.stem) for path in (FIXTURE / "games").glob("*.json")} <= appids)
         media = {int(path.stem) for path in (FIXTURE / "media").glob("*.json")}
         self.assertTrue(media and media <= appids)
+        store = {int(key) for key in read("store_facts.json")["games"]}
+        self.assertTrue(store and store <= appids)
         self.assertLess(sum(path.stat().st_size for path in FIXTURE.rglob("*") if path.is_file()), 4_000_000)
 
 
