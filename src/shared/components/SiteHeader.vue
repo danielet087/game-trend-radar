@@ -8,6 +8,7 @@ const props = withDefaults(defineProps<{ page?: string }>(), { page: 'home' });
 const exploreDisclosure = ref<HTMLDetailsElement>();
 const analysisDisclosure = ref<HTMLDetailsElement>();
 const count = ref(savedCount());
+const menuOpen = ref(false);
 const motion = ref(readMotion());
 const exploreActive = computed(() => ['all', 'games', 'upcoming', 'released', 'explore'].includes(props.page));
 const analysisActive = computed(() => ['growth', 'analysis', 'twitch', 'twitch-game', 'stream-planning'].includes(props.page));
@@ -35,6 +36,7 @@ function openMenu(menu: HTMLDetailsElement): void {
 function menuToggle(event: Event): void {
   const menu = event.currentTarget as HTMLDetailsElement;
   if (menu.open) openMenu(menu);
+  menuOpen.value = menus().some(item => item.open);
 }
 
 function outsidePointer(event: PointerEvent): void {
@@ -100,13 +102,15 @@ onBeforeUnmount(() => {
     <div class="header-inner">
       <a class="brand" href="./index.html" aria-label="Game Trend Radar 首頁">
         <img :src="radarMark" width="40" height="40" alt="" />
-        <span>GAME TREND <b>RADAR<span class="brand-dot">.</span></b></span>
+        <span><span class="brand-kicker">GAME TREND </span><b>RADAR<span class="brand-dot">.</span></b></span>
       </a>
+      <div v-if="menuOpen" class="nav-scrim" aria-hidden="true"></div>
       <nav class="main-nav" aria-label="主要導覽">
-        <a href="./index.html" :aria-current="page === 'home' ? 'page' : undefined">發售月曆</a>
+        <a href="./index.html" :aria-current="page === 'home' ? 'page' : undefined"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M8 3v4m8-4v4M3 10h18" /></svg><span class="nav-label">發售月曆</span><span class="nav-short">月曆</span></a>
         <details ref="exploreDisclosure" class="explore-nav" :data-active="exploreActive ? '' : undefined" @toggle="menuToggle" @focusout="focusOut" @keydown="moveMenuFocus">
-          <summary class="explore-toggle" aria-controls="exploreMenu">遊戲探索<svg class="explore-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></summary>
+          <summary class="explore-toggle" aria-controls="exploreMenu"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5Z" /></svg><span class="nav-label">遊戲探索</span><span class="nav-short">探索</span><svg class="explore-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></summary>
           <div id="exploreMenu" class="explore-menu">
+            <div class="explore-menu-head"><strong>遊戲探索</strong><button type="button" class="explore-menu-close" aria-label="關閉遊戲探索選單" @click="closeMenus"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
             <a class="explore-route explore-route-all" href="./games.html" :aria-current="['all', 'games'].includes(page) ? 'page' : undefined">
               <span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><rect x="14" y="15" width="22" height="22" rx="6" /><rect x="44" y="15" width="22" height="22" rx="6" /><rect x="14" y="45" width="22" height="22" rx="6" /><path d="M55 47v18m-9-9h18" /></svg></span>
               <span class="explore-route-copy"><span class="explore-route-title">全部遊戲</span><span class="explore-route-note">瀏覽本站全部收錄</span></span>
@@ -130,8 +134,9 @@ onBeforeUnmount(() => {
           </div>
         </details>
         <details ref="analysisDisclosure" class="explore-nav analysis-nav" :data-active="analysisActive ? '' : undefined" @toggle="menuToggle" @focusout="focusOut" @keydown="moveMenuFocus">
-          <summary class="explore-toggle" aria-controls="analysisMenu">趨勢分析<svg class="explore-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></summary>
+          <summary class="explore-toggle" aria-controls="analysisMenu"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h16" /><path d="m7 15 4-4 3 3 5-6" /></svg><span class="nav-label">趨勢分析</span><span class="nav-short">趨勢</span><svg class="explore-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></summary>
           <div id="analysisMenu" class="explore-menu">
+            <div class="explore-menu-head"><strong>趨勢分析</strong><button type="button" class="explore-menu-close" aria-label="關閉趨勢分析選單" @click="closeMenus"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
             <a class="explore-route explore-route-growth" href="./growth.html" :aria-current="page === 'growth' ? 'page' : undefined">
               <span class="explore-route-art"><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M15 16v48h52M22 50l15-16 12 7 16-22M53 19h12v13" /><circle cx="37" cy="34" r="4" /></svg></span>
               <span class="explore-route-copy"><span class="explore-route-title">關注成長榜</span><span class="explore-route-note">找出正在上升的新作</span></span>
@@ -154,7 +159,7 @@ onBeforeUnmount(() => {
             </a>
           </div>
         </details>
-        <a href="./saved.html" :aria-current="page === 'saved' ? 'page' : undefined">我的收藏 <span class="saved-count" data-saved-count>{{ count }}</span></a>
+        <a href="./saved.html" :aria-current="page === 'saved' ? 'page' : undefined"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" /></svg><span class="nav-label">我的收藏</span><span class="nav-short">收藏</span> <span class="saved-count" data-saved-count>{{ count }}</span></a>
       </nav>
       <button id="motionToggle" class="motion-toggle" type="button" :disabled="motion.reduced" :aria-pressed="motion.enabled" :aria-label="motionLabel" :title="motionLabel" @click="toggleMotion">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="motion.enabled ? 'M9 5v14M15 5v14' : 'm8 5 11 7-11 7Z'" /></svg>
