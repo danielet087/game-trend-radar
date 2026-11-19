@@ -1,19 +1,21 @@
 import { renderDescriptionSource } from '../../domain/descriptions.mjs';
 
-export function createDetailRenderer(ctx, policy, release, metadata, artwork, favorites, related) {
+export function createDetailRenderer(ctx, policy, release, metadata, artwork, favorites, related, sections = {}) {
   const { $, node, D, R, state, today, number, isNativeConsole, document } = ctx;
   const { publicSourceURL } = policy;
-  const { releaseDays, renderReleaseDates } = release;
+  const { renderReleaseDates } = release;
   const { renderLanguages, renderPlatforms } = metadata;
   const { showArtwork } = artwork;
   const { updateSaveControls } = favorites;
   const { setupTags } = related;
-  function render(game, data, pending = false) {
+  const { media, radar, overview, navigation } = sections;
+  function render(game, data, pending = false, extras = {}) {
     const unchangedArt = state.currentGame?.art === game.art && state.currentGame?.art2x === game.art2x;
     state.currentGame = game;
     const nintendo = isNativeConsole(game);
     const displayNames = D.releaseDisplayNames(game);
     document.body.dataset.gameSource = game.source || "steam";
+    document.body.dataset.gameHero = "on";
     renderPlatforms(game);
     state.recommendationsReady = !pending;
     if (state.selectedTag && !R.hasTag(game, state.selectedTag)) state.selectedTag = "";
@@ -22,7 +24,6 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
       ...data.games.filter((row) => row.date >= today),
       ...D.selectGames(data, "released", today),
     ]);
-    const days = releaseDays(game.date);
     document.body.dataset.gameTheme = R.theme(game);
     $("gameTitle").textContent = displayNames.name;
     $("gameEnglish").hidden = !displayNames.nameEn || displayNames.nameEn === displayNames.name;
@@ -40,7 +41,7 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     $("gameGenres").hidden = !game.genres.length;
     renderLanguages(game);
     renderReleaseDates(game);
-    $("gameInterestLabel").textContent = nintendo ? "發售前的社群關注" : "已經有這麼多人關注";
+    $("gameInterestLabel").textContent = nintendo ? "發售前的社群關注" : "Steam 關注數";
     $("gameFollowers").textContent = nintendo
       ? Number.isSafeInteger(game.hypes) ? number.format(game.hypes) : "未知"
       : Number.isFinite(game.followers) ? number.format(game.followers) : "未取得";
@@ -57,12 +58,6 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
         timeZone:"Asia/Taipei", year:"numeric", month:"2-digit", day:"2-digit",
         hour:"2-digit", minute:"2-digit", hour12:false,
       }).format(measuredAt) + "（台灣）";
-    $("gameState").textContent =
-      days > 0
-        ? "值得期待的新作"
-        : days === 0
-          ? "預定今天登場"
-          : "上市日期已過";
     $("gameAppId").textContent = nintendo ? `IGDB ID：${game.igdbId}` : `Steam AppID：${game.appid}`;
     const timestamp = new Date((nintendo ? game.updated : data.updated) || "");
     $("gameUpdated").textContent = Number.isFinite(timestamp.getTime())
@@ -86,6 +81,7 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     if (nintendo) game = { ...game, link: sourceURL };
     $("gameSteam").href = game.link;
     $("gameSteam").replaceChildren(node("span", "", `前往 ${sourceName}`), node("span", "", "↗"));
+    $("gameSteamInfo").replaceChildren(node("span", "", `前往 ${sourceName}`), node("span", "", "↗"));
     $("gameSteamMobile").textContent = `${sourceName} ↗`;
     $("gameFootnote").textContent = nintendo
       ? "發售日期可能依平台、地區調整；平台與語言支援請以各平台官方及發行商最新公告為準。IGDB hypes 屬遊戲整體的發售前關注數，並非單一平台玩家人數。"
@@ -101,6 +97,10 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     });
     document.title = `${displayNames.name}｜遊戲資訊・Game Trend Radar`;
     if (!unchangedArt) showArtwork(game);
+    media?.render(game, extras.media);
+    overview?.render(game);
+    overview?.renderFacts(game, extras.media);
+    radar?.render(game, extras);
     updateSaveControls();
     setupTags(game);
     $("gameRelatedGrid").setAttribute("aria-busy", String(pending));
@@ -111,6 +111,7 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     }
     $("detailStatus").hidden = true;
     $("detailPage").hidden = false;
+    navigation?.update();
   }
   return render;
 }

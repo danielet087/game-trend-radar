@@ -3,8 +3,9 @@
 usage: python scripts/make_test_site_data.py [SOURCE_DIR] [--games N]
 
 Writes tests/fixtures/site-data/ from SOURCE_DIR (default data/): the first N
-catalog games (plus the games the browser tests name) with their per-game files,
-and the catalog, Steam, Nintendo, activity and growth files trimmed to them.
+catalog games (plus the games the browser tests name) with their per-game and
+Steam media files, and the catalog, Steam, Nintendo, activity and growth files
+trimmed to them.
 Tests read this copy and the preview server serves it (RADAR_SITE_DATA), so they
 no longer change with every collection and keep working once data/ leaves Git.
 The browser tests pin their clock to the catalog's generated_at. Regenerate only
@@ -74,14 +75,27 @@ def make(source: Path, games: int) -> dict:
         if path.is_file():
             write(TARGET / "games" / path.name, read(path))
             copied += 1
+    media = copy_media(source, kept)
     (TARGET / "README.md").write_text(
         "# Test site data\n\n"
-        f"A frozen copy of the site's data from {catalog['generated_at']}: {len(chosen)} catalog games and their files.\n"
+        f"A frozen copy of the site's data from {catalog['generated_at']}: {len(chosen)} catalog games, their files and Steam media.\n"
         "Tests read it and the preview server serves it (`RADAR_SITE_DATA`). Regenerate on purpose with\n"
         "`python scripts/make_test_site_data.py` and review the diff like any other test change.\n",
         encoding="utf-8")
     size = sum(path.stat().st_size for path in TARGET.rglob("*") if path.is_file())
-    return {"games": len(chosen), "game_files": copied, "bytes": size, "generated_at": catalog["generated_at"]}
+    return {"games": len(chosen), "game_files": copied, "media_files": media, "bytes": size,
+            "generated_at": catalog["generated_at"]}
+
+
+def copy_media(source: Path, kept) -> int:
+    """Steam hero art, screenshot and trailer addresses (game.html) for the chosen games."""
+    copied = 0
+    for appid in sorted(kept):
+        path = source / "media" / f"{appid}.json"
+        if path.is_file():
+            write(TARGET / "media" / path.name, read(path))
+            copied += 1
+    return copied
 
 
 def main(argv=None) -> int:

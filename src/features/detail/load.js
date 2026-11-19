@@ -1,5 +1,7 @@
 import { detailCatalog } from '../../data/publication.mjs';
-import { withLatestFollowers } from '../../domain/followers.mjs';
+import { withLatestFollowers, followerHistory } from '../../domain/followers.mjs';
+import { steamMedia } from './media.js';
+const validActivity = value => !!value && typeof value === 'object' && Array.isArray(value.events);
 /** Progressive hero loading: optional console/catalog failures do not block a known Steam game. */
 export function createDetailLoader(ctx, render, favorites, related) {
   const { $, D, R, storage, location, document, window, today,
@@ -45,8 +47,11 @@ export function createDetailLoader(ctx, render, favorites, related) {
       /* Direct entry returns to the calendar. */
     }
   }
+  // Small optional files: the page renders without them and fills in when they arrive.
+  const readActivity = force => Promise.resolve(storage.readJSON?.('./data/activity.json', validActivity, { force }))
+    .then(value => validActivity(value) ? value : null);
   async function loadConsoleDetail(force, active) {
-    let catalog = null, preview = null, nintendo = null, sourcesDone = false, shown = false;
+    let catalog = null, preview = null, nintendo = null, activity = null, sourcesDone = false, shown = false;
     function present() {
       if (!active()) return;
       if (!nintendo) return;
@@ -59,7 +64,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
       );
       const game = matches.find(entry => entry.date >= today) || matches[0];
       if (!game) return;
-      render(game, enriched, !sourcesDone);
+      render(game, enriched, !sourcesDone, { activity });
       shown = true;
     }
     try {
@@ -68,6 +73,8 @@ export function createDetailLoader(ctx, render, favorites, related) {
         storage.loadSources({ force }).then(result => {
           catalog = result.catalog; preview = result.preview; sourcesDone = true; present();
         }),
+        readActivity(force).then(result => { activity = result; if (activity) present(); })
+          .catch(() => { /* The news list is optional. */ }),
       ]);
       if (!active()) return;
       if (!shown) setStatus(nintendo ? "這款遊戲目前不在公開清單中" : "IGDB 主機遊戲資料暫時無法讀取",
@@ -96,7 +103,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
       setStatus("找不到這款遊戲", "連結沒有有效的 Steam AppID 或發售日期，請返回遊戲清單重新選擇。");
       return;
     }
-    let rawGame = null, catalog = null, preview = null, nintendo = null, growth = null;
+    let rawGame = null, catalog = null, preview = null, nintendo = null, growth = null, media = null, activity = null;
     let catalogDone = false, shown = false;
     function present() {
       if (!active()) return;
@@ -121,7 +128,9 @@ export function createDetailLoader(ctx, render, favorites, related) {
       }
       const record = official?.games?.find(row => Number(row.appid) === appid);
       const history = growth?.games?.find(row => row?.appid === appid)?.history;
-      render(withLatestFollowers(game, record, history, today), data, !catalogDone);
+      render(withLatestFollowers(game, record, history, today), data, !catalogDone, {
+        media, activity, record: rawGame || record, history: followerHistory(record, history),
+      });
       shown = true;
       if (catalogDone && !catalog && !preview) {
         $("recommendationSummary").textContent = "相似遊戲暫時無法讀取";
@@ -142,6 +151,11 @@ export function createDetailLoader(ctx, render, favorites, related) {
           value => value?.version === 1 && Array.isArray(value.games), { force }))
           .then(result => { growth = result; present(); })
           .catch(() => { /* Retain the catalog measurement when history is unavailable. */ }),
+        Promise.resolve(storage.loadMedia?.(appid, { force }))
+          .then(result => { media = steamMedia(result, appid); if (media) present(); })
+          .catch(() => { /* Pages without Steam media keep the theme-colored hero. */ }),
+        readActivity(force).then(result => { activity = result; if (activity) present(); })
+          .catch(() => { /* The news list is optional. */ }),
       ]);
       if (!active()) return;
       if (!shown) {

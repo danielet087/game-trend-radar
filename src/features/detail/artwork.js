@@ -45,6 +45,10 @@ export function createDetailArtwork(ctx) {
     RadarArtwork.load($("artDialogImage"), state.currentGame, { large: true });
     $("artDialogImage").alt = `${state.currentGame.name} 的遊戲封面大圖`;
     $("artDialogCaption").textContent = state.currentGame.name;
+    // The same dialog also pages through screenshots (media.js).
+    $("artDialog").dataset.mode = "cover";
+    $("artDialogCount").textContent = "";
+    $("artPrev").hidden = $("artNext").hidden = true;
     previousOverflow = document.documentElement.style.overflow;
     $("artDialog").showModal();
     document.documentElement.style.overflow = "hidden";
