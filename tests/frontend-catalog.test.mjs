@@ -9,6 +9,7 @@ import { FilterState, PAGE_SIZE } from '../src/features/catalog/filter-state.ts'
 import { cardDate, selectCatalog } from '../src/features/catalog/selectors.ts';
 import { GameCard } from '../src/features/catalog/GameCard.ts';
 import { normalizeCatalog, catalogEntity, catalogCardDate } from '../src/features/catalog/boundary.ts';
+import { artShape } from '../src/shared/artwork.js';
 
 const TODAY = '2026-10-08';
 function filters(mode = 'all', search = '') {
@@ -157,4 +158,20 @@ test('current public JSON uses canonical indexes while catalog view models and V
     const f=filters(mode,'month=2026-10&date=2026-10-10');
     assert.deepEqual(selectCatalog(normalized.viewModel,f,D,R,new Set()),selectCatalog(baseline,f,D,R,new Set()));
   }
+});
+
+test('card art keeps its whole picture when its shape is not a Steam capsule', () => {
+  const art = (width, height, src = 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1.jpg') =>
+    artShape({ naturalWidth: width, naturalHeight: height, currentSrc: src });
+  // 616×353 capsules and 16:9 art fill the box.
+  assert.deepEqual(art(616, 353), { whole: false, backdrop: '' });
+  assert.deepEqual(art(1280, 720), { whole: false, backdrop: '' });
+  // IGDB portrait covers and 460×215 Steam headers sit over a blurred copy.
+  assert.deepEqual(art(264, 374), { whole: true, backdrop: 'url("https://images.igdb.com/igdb/image/upload/t_cover_big/co1.jpg")' });
+  assert.equal(art(460, 215).whole, true);
+  // Only plain https URLs reach CSS; an image that has not loaded changes nothing.
+  assert.deepEqual(art(264, 374, 'https://x.test/a"),url(b.jpg'), { whole: true, backdrop: '' });
+  assert.deepEqual(art(264, 374, 'http://images.igdb.com/a.jpg'), { whole: true, backdrop: '' });
+  assert.deepEqual(art(0, 0), { whole: false, backdrop: '' });
+  assert.deepEqual(artShape(null), { whole: false, backdrop: '' });
 });

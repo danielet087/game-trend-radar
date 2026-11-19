@@ -3,6 +3,7 @@ import { NATIVE_PLATFORMS } from './selectors';
 import { catalogCardDate, catalogEntity } from './boundary';
 import type { GameEntity } from '../../domain/contracts';
 import type { CatalogAPI, CatalogDomainModel, CatalogGame, CatalogMode, TagFilters } from './types';
+import { artShape } from '../../shared/artwork.js';
 
 export interface CardOptions { eager?: boolean; priority?: boolean; event?: boolean }
 export interface CardEnvironment {
@@ -23,12 +24,13 @@ export const GameCard = defineComponent({
   },
   setup(props) {
     const image = ref<HTMLImageElement | null>(null), loaded = ref(false), exhausted = ref(false);
+    const shape = ref({ whole: false, backdrop: '' });
     const savedRevision = ref(0);
     const unsubscribe = props.environment.subscribeSaved(() => savedRevision.value++);
     onBeforeUnmount(unsubscribe);
     onMounted(() => {
       if (image.value && props.game.art) props.environment.artwork.load(image.value, props.game, {
-        onLoad: () => { loaded.value = true; },
+        onLoad: () => { loaded.value = true; shape.value = artShape(image.value); },
         onExhausted: () => { exhausted.value = true; loaded.value = false; },
       });
     });
@@ -72,12 +74,15 @@ export const GameCard = defineComponent({
       const storeName = game.source === 'nintendo' ? display.name : game.name;
       const platforms = D.cardPlatformChips(game, event ? game.releasePlatforms : null), active = env.isSaved(game, entity);
       const releasedChips = platforms.chips.filter((chip: any) => chip.released).map((chip: any) => chip.label);
+      const countdown = days === 0 ? '今日登場' : days > 0 ? `${days} 天後登場` : '已上市';
+      const shortCountdown = days === 0 ? '今天' : days > 0 ? `${days} 天後` : '已上市';
       return h('article', { class: 'game-card', 'data-appid': game.appid, 'data-game-key': D.gameKey(game), 'data-source': game.source || 'steam' }, [
-        h('div', { class: 'cover-link' }, [
+        h('div', { class: ['cover-link', shape.value.whole && 'art-whole'],
+          style: shape.value.backdrop ? { '--art-backdrop': shape.value.backdrop } : undefined }, [
           h('span', { class: 'cover-placeholder', 'aria-hidden': 'true', hidden: loaded.value }),
           game.art && !exhausted.value ? h('img', { ref: image, alt: '', loading: options.eager ? 'eager' : 'lazy', decoding: 'async',
-            fetchpriority: options.priority ? 'high' : 'auto', width: 616, height: 288, class: loaded.value ? 'art-loaded' : '' }) : null,
-          h('span', { class: ['countdown', days < 0 && 'released'] }, days === 0 ? '今日登場' : days > 0 ? `${days} 天後登場` : '已上市'),
+            fetchpriority: options.priority ? 'high' : 'auto', width: 616, height: 353, class: loaded.value ? 'art-loaded' : '' }) : null,
+          h('span', { class: ['countdown', days < 0 && 'released'] }, countdown),
         ]),
         h('div', { class: 'card-body' }, [
           h('a', { class: 'card-names', ...detailAttributes }, [
@@ -90,7 +95,9 @@ export const GameCard = defineComponent({
           h('div', { class: 'card-meta' }, [
             h('div', { class: 'card-release-dates' }, [
               h('div', { class: 'card-release-date' }, [h('time', { datetime: displayedDate,
-                title: event ? '本次平台發售日期' : '最早發售日期；各平台日期可於遊戲資訊查看' }, displayedDate.replaceAll('-', '/'))]),
+                title: event ? '本次平台發售日期' : '最早發售日期；各平台日期可於遊戲資訊查看' }, displayedDate.replaceAll('-', '/')),
+                // Phones show the countdown here instead of over the small art.
+                h('span', { class: ['card-countdown', days < 0 && 'released'] }, shortCountdown)]),
             ]),
             h('div', { class: 'card-interest' }, metrics.map(metric => h('span', { class: 'card-followers', title: metric.title }, [
               metric.value, h('small', null, metric.unit),
