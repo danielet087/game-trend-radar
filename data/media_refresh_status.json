@@ -1,10 +1,20 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-19T02:26:51Z",
+  "generated_at": "2026-11-19T05:32:20Z",
   "game_count": 265,
   "with_media": 265,
-  "due_count": 265,
-  "updated_appids": [
+  "due_count": 0,
+  "updated_appids": [],
+  "unchanged_count": 0,
+  "removed_appids": [],
+  "failed_appids": [],
+  "retry_pending_appids": [],
+  "pending_count": 0,
+  "complete": true,
+  "stop_reason": "",
+  "next_due_at": "2026-11-26T02:26:51Z",
+  "facts_game_count": 265,
+  "facts_changed_appids": [
     499170,
     632950,
     744200,
@@ -271,14 +281,9 @@
     5379260,
     5455340
   ],
-  "unchanged_count": 0,
-  "removed_appids": [],
-  "failed_appids": [],
-  "retry_pending_appids": [],
-  "pending_count": 0,
-  "complete": true,
-  "stop_reason": "",
-  "next_due_at": "2026-11-26T02:26:51Z",
+  "facts_failed_appids": [],
+  "facts_publish": true,
+  "facts_stop_reason": "",
   "checkpoints": {
     "499170": {
       "attempted_at": "2026-11-19T02:26:51Z",
@@ -1606,5 +1611,6 @@
       "outcome": "success"
     }
   },
-  "superseded_appids": []
+  "superseded_appids": [],
+  "store_facts": "written"
 }
