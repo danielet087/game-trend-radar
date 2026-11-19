@@ -1,0 +1,11 @@
+/* Six text sizes for the whole site; 12px is the floor. Display numerals
+   above 32px and fluid clamp() headings keep their own size. The scheduler
+   page loads this file without the rest of the site's tokens. */
+:root {
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+}

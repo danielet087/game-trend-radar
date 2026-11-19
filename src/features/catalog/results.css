@@ -11,7 +11,7 @@
   min-height: 44px;
   border: 1px solid transparent;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 700;
   transition:
     transform 0.2s,
@@ -60,18 +60,18 @@
   color: var(--blue);
   border-radius: 17px;
   font:
-    27px Arial,
+    var(--text-xl) Arial,
     "Noto Sans TC",
     sans-serif;
 }
 .empty-state h3 {
-  font-size: 16px;
+  font-size: var(--text-md);
   font-weight: 750;
 }
 .empty-state p {
   max-width: 430px;
   margin-top: 9px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   line-height: 1.9;
   color: var(--muted);
 }

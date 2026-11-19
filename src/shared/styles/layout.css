@@ -45,14 +45,14 @@
 }
 .brand > span {
   font-family: Arial, "Noto Sans TC", sans-serif;
-  font-size: 9px;
+  font-size: var(--text-xs);
   font-weight: 800;
   letter-spacing: 1.3px;
   line-height: 1.4;
 }
 .brand b {
   display: block;
-  font-size: 24px;
+  font-size: var(--text-xl);
   letter-spacing: 0.7px;
   line-height: 1.1;
 }
@@ -68,7 +68,7 @@
 .main-nav > a,
 .explore-toggle {
   position: relative;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 700;
   white-space: nowrap;
   padding: 11px 17px;
@@ -161,8 +161,8 @@
 .explore-route-released { --route-tone: #95512f; --route-fill: #ffe4d2; --route-edge: #dab49a; }
 .explore-route-tags { --route-tone: #625096; --route-fill: #e9e3f8; --route-edge: #c2b4de; }
 .explore-route-twitch { --route-tone: #70518e; --route-fill: #eee3f7; --route-edge: #c7b4dc; }
-.explore-route-twitch small { font-size: 9px; border: 1px solid #cbb4dc; border-radius: 4px; padding: 1px 4px; margin-left: 3px; font-weight: 500; }
-.explore-menu-label { margin: 8px 10px 0; padding-top: 13px; border-top: 1px dashed #d7d1dc; color: #746783; font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+.explore-route-twitch small { font-size: var(--text-xs); border: 1px solid #cbb4dc; border-radius: 4px; padding: 1px 4px; margin-left: 3px; font-weight: 500; }
+.explore-menu-label { margin: 8px 10px 0; padding-top: 13px; border-top: 1px dashed #d7d1dc; color: #746783; font-size: var(--text-xs); font-weight: 700; letter-spacing: .08em; }
 .explore-route-growth { --route-tone: #477047; --route-fill: #e3efcf; --route-edge: #b3c899; }
 .explore-route-analysis { --route-tone: #776094; --route-fill: #ede2f3; --route-edge: #c8b4d6; }
 .explore-route:hover,
@@ -192,15 +192,15 @@
 }
 .explore-route:hover .explore-route-art svg { transform: rotate(-7deg); }
 .explore-route-copy { display: grid; gap: 5px; min-width: 0; }
-.explore-route-title { font-size: 14px; font-weight: 800; line-height: 1.4; }
-.explore-route-note { color: var(--muted); font-size: 11px; line-height: 1.5; }
+.explore-route-title { font-size: var(--text-sm); font-weight: 800; line-height: 1.4; }
+.explore-route-note { color: var(--muted); font-size: var(--text-xs); line-height: 1.5; }
 .explore-route-arrow {
   margin-left: auto;
   flex-shrink: 0;
   color: var(--route-tone);
-  font: 500 18px/1 Arial, sans-serif;
+  font: 500 var(--text-lg)/1 Arial, sans-serif;
 }
-.explore-route[aria-current] .explore-route-arrow { font-size: 15px; font-weight: 700; }
+.explore-route[aria-current] .explore-route-arrow { font-size: var(--text-md); font-weight: 700; }
 @keyframes explore-menu-enter {
   from { opacity: 0; transform: translate(-50%, -5px) scale(.98); }
   to { opacity: 1; transform: translate(-50%, 0) scale(1); }
@@ -220,7 +220,7 @@
   border-radius: 7px;
   background: var(--lavender);
   color: var(--blue-dark);
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
 }
 .main-nav > a[aria-current] .saved-count {
@@ -241,7 +241,7 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   font:
-    600 10px Arial,
+    600 var(--text-xs) Arial,
     "Noto Sans TC",
     sans-serif;
   letter-spacing: 0.04em;
@@ -290,7 +290,7 @@
   gap: 7px;
   color: var(--blue);
   font:
-    800 10px/1.5 Arial,
+    800 var(--text-xs)/1.5 Arial,
     "Noto Sans TC",
     sans-serif;
   letter-spacing: 0.16em;
@@ -323,7 +323,7 @@ h1 {
 .workspace-heading p:not(.eyebrow),
 .page-heading > p:not(.eyebrow) {
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--text-sm);
   line-height: 1.9;
   margin-top: 9px;
 }
@@ -335,14 +335,14 @@ h1 {
   border: 1px solid #d8bb80;
   border-radius: 14px;
   background: #fffdf0;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 700;
   transition:
     transform 0.2s,
     box-shadow 0.2s;
 }
 .workspace-shortcut span {
-  font-size: 20px;
+  font-size: var(--text-lg);
 }
 .workspace-shortcut:hover {
   transform: translateY(-3px);
@@ -350,8 +350,10 @@ h1 {
 }
 .back-link {
   display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--text-xs);
   margin-bottom: 20px;
   transition:
     color 0.2s,
@@ -365,5 +367,5 @@ h1 {
   display: inline-block;
   border-left: 3px solid #b9c5ed;
   padding-left: 10px;
-  font-size: 11px !important;
+  font-size: var(--text-xs) !important;
 }
