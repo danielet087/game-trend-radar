@@ -108,6 +108,17 @@
     sans-serif;
   color: var(--muted);
 }
+/* The edition this release sells (a bundle, Deluxe): only on those cards. */
+.card-edition {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 1px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--muted);
+}
 .card-languages {
   display: flex;
   flex-wrap: nowrap;

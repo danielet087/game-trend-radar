@@ -5,7 +5,7 @@ import { cardPlatformBadge, cardPlatformChips, platformFamily, platformFullNames
 import { cardMultiplayerBadge } from './multiplayer.mjs';
 import { nintendoURL, platformURL, nintendoLanguageURL, nintendoHongKongDateURL } from './storefronts.mjs';
 import { platformLanguageSupport, nintendoLanguageSupport, nintendoCardLanguages } from './languages.mjs';
-import { platformEdition, nintendoEdition, releaseEditionBadges, releaseDisplayNames } from './editions.mjs';
+import { platformEdition, nintendoEdition, releaseEditionBadges, releaseDisplayNames, releaseCardNames } from './editions.mjs';
 import { nintendoReleaseAudited, officialTaiwanReleaseTime } from './release-audit.mjs';
 import { detailURL, popularityCompare, calendarFeatured, unique, cardGames, selectGames } from './collections.mjs';
 import { consoleInterest, consoleInterestCompare, popscoreTop } from './interest.mjs';
@@ -26,7 +26,7 @@ export const RadarData = {
   nativeReleaseAudited: nintendoReleaseAudited,
   nintendoHongKongDateURL, officialTaiwanReleaseTime, nintendoLanguageURL,
   nintendoLanguageSupport, nintendoCardLanguages, nintendoEdition,
-  releaseEditionBadges, releaseDisplayNames, nintendoGames, detailURL,
+  releaseEditionBadges, releaseDisplayNames, releaseCardNames, nintendoGames, detailURL,
   popularityCompare, calendarFeatured, unique, cardGames, datasets, selectGames,
   consoleInterest, consoleInterestCompare, popscoreTop,
 };
@@ -40,7 +40,7 @@ export {
   platformURL, platformLanguageSupport, platformEdition,
   nintendoHongKongDateURL, officialTaiwanReleaseTime, nintendoLanguageURL,
   nintendoLanguageSupport, nintendoCardLanguages, nintendoEdition,
-  releaseEditionBadges, releaseDisplayNames, nintendoGames, detailURL,
+  releaseEditionBadges, releaseDisplayNames, releaseCardNames, nintendoGames, detailURL,
   popularityCompare, calendarFeatured, unique, cardGames, datasets, selectGames,
   consoleInterest, consoleInterestCompare, popscoreTop,
 };

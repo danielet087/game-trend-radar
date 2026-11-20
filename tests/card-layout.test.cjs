@@ -288,7 +288,7 @@ test('recently released list retains the latest event context and orders cards b
   assert.equal(card.querySelector('.countdown').textContent, '已上市');
 });
 
-test('October calendar list writes the Nintendo edition into its title while the Steam event retains the original name', async () => {
+test('October calendar list names the game and notes the Nintendo edition under it, while the Steam event has no note', async () => {
   const official = { games: [steam({ release_start: '2026-10-09' })] }, native = nintendo({
     releases: [{ date: '2026-10-08', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }],
     platform_editions: { NS2: edition() },
@@ -301,19 +301,20 @@ test('October calendar list writes the Nintendo edition into its title while the
   assert.deepEqual(cards.map(card => card.querySelector('.card-detail-link').href), [
     './game.html?appid=3167930&date=2026-10-08', './game.html?appid=3167930&date=2026-10-09',
   ]);
-  assert.equal(cards[0].querySelector('.card-title').textContent, 'Hela：鼠鼠奇旅（Deluxe版）');
-  assert.equal(cards[0].querySelector('.card-title').title, 'Hela：鼠鼠奇旅（Deluxe版）');
-  assert.equal(cards[0].querySelector('.card-english').textContent, 'Hela: Of Mice & Magic Deluxe Edition');
-  assert.equal(cards[0].querySelector('.card-english').title, 'Hela: Of Mice & Magic Deluxe Edition');
-  assert.equal(cards[0].querySelector('.card-names').attributes['aria-label'], '查看 Hela：鼠鼠奇旅（Deluxe版） 的遊戲資訊');
-  assert.equal(cards[0].querySelector('.card-detail-link').attributes['aria-label'], '查看 Hela：鼠鼠奇旅（Deluxe版） 的遊戲資訊');
-  assert.equal(cards[0].querySelector('button[data-save]').attributes['aria-label'], '收藏 Hela：鼠鼠奇旅（Deluxe版）');
+  // The card names the game, as its page does; the edition sold is the small line.
+  assert.equal(cards[0].querySelector('.card-title').textContent, 'Hela：鼠鼠奇旅');
+  assert.equal(cards[0].querySelector('.card-title').title, 'Hela：鼠鼠奇旅');
+  assert.equal(cards[0].querySelector('.card-english').textContent, 'Hela: Of Mice & Magic');
+  assert.equal(cards[0].querySelector('.card-english').title, 'Hela: Of Mice & Magic');
+  assert.equal(cards[0].querySelector('.card-edition').textContent, 'Deluxe版');
+  assert.equal(cards[0].querySelector('.card-edition').title, '這次發售的版本：Deluxe版');
+  assert.equal(cards[0].querySelector('.card-names').attributes['aria-label'], '查看 Hela：鼠鼠奇旅 的遊戲資訊');
+  assert.equal(cards[0].querySelector('.card-detail-link').attributes['aria-label'], '查看 Hela：鼠鼠奇旅 的遊戲資訊');
+  assert.equal(cards[0].querySelector('button[data-save]').attributes['aria-label'], '收藏 Hela：鼠鼠奇旅');
   assert.equal(cards[0].querySelector('.steam-store-link').attributes['aria-label'], '在 Steam 開啟 Hela：鼠鼠奇旅（另開分頁）');
   assert.equal(cards[1].querySelector('.card-title').textContent, 'Hela：鼠鼠奇旅');
-  for (const card of cards) {
-    assert.equal(card.querySelector('.card-editions'), null);
-    assert.equal(card.querySelector('.card-edition'), null);
-  }
+  assert.equal(cards[1].querySelector('.card-edition'), null);
+  for (const card of cards) assert.equal(card.querySelector('.card-editions'), null);
   assert.equal(cards[0].querySelector('.card-languages').attributes['aria-label'], 'Nintendo 版本遊戲支援語言');
   assert.deepEqual(cards[0].querySelectorAll('.card-language').map(chip => chip.textContent), ['語言支援待確認']);
   assert.deepEqual(cards[1].querySelectorAll('.card-language').map(chip => chip.textContent), ['支援繁中', '支援簡中']);
@@ -324,12 +325,12 @@ test('October calendar list writes the Nintendo edition into its title while the
   assert.match(calendarLinks[0].querySelector('.day-platform').title, /已確認平台：PC（Steam）／NS2。/);
   assert.match(calendarLinks[0].querySelector('.day-platform').title, /本日發售：NS2/);
   assert.match(calendarLinks[1].querySelector('.day-platform').title, /本日發售：Steam/);
-  assert.match(calendarLinks[0].querySelector('.day-game-name').textContent, /Deluxe版/);
-  assert.match(calendarLinks[0].title, /Hela: Of Mice & Magic Deluxe Edition/);
+  assert.equal(calendarLinks[0].querySelector('.day-game-name').textContent, 'Hela：鼠鼠奇旅');
+  assert.match(calendarLinks[0].title, /^Hela：鼠鼠奇旅 · Hela: Of Mice & Magic · Deluxe版 · 本日發售：NS2/);
   assert.equal(calendarLinks[0].href, './game.html?appid=3167930&date=2026-10-08');
 });
 
-test('daily release card names its edition while the general physical card selected for the original Steam event keeps the base title', async () => {
+test('daily release card notes its edition under the game name while the general card for the original Steam event has no note', async () => {
   const official = { games: [steam({ release_start: '2027-02-18' })] }, native = nintendo({
     releases: [{ date: '2027-05-20', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }],
     platform_editions: { NS2: edition({ type: 'base_plus_expansion', label: '本體＋Dark Arisen擴充版',
@@ -340,9 +341,9 @@ test('daily release card names its edition while the general physical card selec
   const dailyCard = day.render()[0];
   assert.equal(dailyCard.querySelector('time').dateTime, '2027-05-20');
   assert.deepEqual(filled(dailyCard), ['NS2']);
-  assert.equal(dailyCard.querySelector('.card-title').textContent, 'Hela：鼠鼠奇旅（本體＋Dark Arisen擴充版）');
-  assert.equal(dailyCard.querySelector('.card-english').textContent, 'Hela: Of Mice & Magic - Dark Arisen');
-  assert.equal(dailyCard.querySelector('.card-edition'), null);
+  assert.equal(dailyCard.querySelector('.card-title').textContent, 'Hela：鼠鼠奇旅');
+  assert.equal(dailyCard.querySelector('.card-english').textContent, 'Hela: Of Mice & Magic');
+  assert.equal(dailyCard.querySelector('.card-edition').textContent, '本體＋Dark Arisen擴充版');
   const catalog = renderer(); await catalog.load(official, null, native);
   const generalCard = catalog.render()[0];
   assert.equal(catalog.render().length, 1);
@@ -353,6 +354,20 @@ test('daily release card names its edition while the general physical card selec
   assert.equal(generalCard.querySelector('.card-edition'), null);
   assert.equal(data.games[0].name, 'Hela：鼠鼠奇旅');
   assert.equal(data.games[0].nameEn, 'Hela: Of Mice & Magic');
+});
+
+test('a card without an original name puts the edition on that line instead of leaving it empty', async () => {
+  const official = { games: [steam({ release_start: '2027-02-18', display_name: 'Hela: Of Mice & Magic' })] }, native = nintendo({
+    name_zh_tw: null,
+    releases: [{ date: '2027-05-20', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }],
+    platform_editions: { NS2: edition() },
+  });
+  const day = renderer([], 'date', '?date=2027-05-20'); await day.load(official, null, native);
+  const [card] = day.render();
+  const names = card.querySelector('.card-names');
+  assert.equal(names.querySelector('.card-title').textContent, 'Hela: Of Mice & Magic');
+  assert.equal(names.querySelector('.card-english'), null);
+  assert.equal(names.querySelector('.card-edition').textContent, 'Deluxe版');
 });
 
 test('same-day Steam and Nintendo versions produce one monthly release card showing both event platforms', async () => {

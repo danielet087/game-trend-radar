@@ -42,12 +42,12 @@ export function releaseEditionBadges(game, platforms = game?.releasePlatforms ||
     });
 }
 
-export function releaseDisplayNames(game, platforms = game?.releasePlatforms || []) {
-  const original = { name: String(game?.name || ""), nameEn: String(game?.nameEn || "") };
+// The editions sold in one release, grouped across its platforms. A platform
+// prefix is needed when another version or a platform without one shares it.
+function releaseVersions(game, platforms) {
   const selected = [...new Set(Array.isArray(platforms) ? platforms : [])]
     .filter(platform => game?.platforms?.includes(platform));
   const editions = releaseEditionBadges(game, selected);
-  if (!editions.length) return original;
   const groups = new Map();
   for (const edition of editions) {
     const key = JSON.stringify([edition.type, edition.label, edition.title]);
@@ -56,7 +56,25 @@ export function releaseDisplayNames(game, platforms = game?.releasePlatforms || 
   }
   const versions = [...groups.values()];
   const scoped = versions.length > 1 || selected.some(platform => !editions.some(edition => edition.platform === platform));
-  const platformPrefix = (version) => scoped ? version.platforms.join("／") + " " : "";
+  return { versions, platformPrefix: version => scoped ? version.platforms.join("／") + " " : "" };
+}
+
+// Cards name the game, as its page does. The edition a release sells (a
+// bundle, Deluxe) is a separate note, e.g. "NS2 本體＋Re Mind DLC".
+export function releaseCardNames(game, platforms = game?.releasePlatforms || []) {
+  const name = String(game?.name || ""), nameEn = String(game?.nameEn || "");
+  const { versions, platformPrefix } = releaseVersions(game, platforms);
+  // An official name can already end in its edition ("…（Deluxe 版）"): no repeat.
+  const plain = value => value.replace(/[\s：:（）()]/g, "").toLocaleLowerCase("en-US");
+  const notes = versions.filter(version => !plain(name).endsWith(plain(version.label)));
+  return { name, nameEn, edition: notes.map(version => platformPrefix(version) + version.label).join("；") };
+}
+
+// The name of what one platform version sells, e.g. a version's title.
+export function releaseDisplayNames(game, platforms = game?.releasePlatforms || []) {
+  const original = { name: String(game?.name || ""), nameEn: String(game?.nameEn || "") };
+  const { versions, platformPrefix } = releaseVersions(game, platforms);
+  if (!versions.length) return original;
   const nameEn = versions.map(version => platformPrefix(version) + version.title).join("／");
   if (!/[\u3400-\u9fff]/.test(original.name)) return { name: nameEn, nameEn };
   // Canonical names stay intact. Repeated suffixes in a localized display

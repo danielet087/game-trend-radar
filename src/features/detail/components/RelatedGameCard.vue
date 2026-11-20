@@ -11,7 +11,7 @@ const props = defineProps({
 const image = ref(null);
 const loaded = ref(false);
 const exhausted = ref(false);
-const names = computed(() => props.ctx.D.releaseDisplayNames(props.game));
+const names = computed(() => props.ctx.D.releaseCardNames(props.game));
 const english = computed(() => names.value.nameEn !== names.value.name ? names.value.nameEn : '');
 const shared = computed(() => props.selectedTag
   ? [props.selectedTag, ...props.game.sharedTags.filter(tag => props.ctx.R.key(tag) !== props.ctx.R.key(props.selectedTag))]
@@ -35,6 +35,7 @@ onBeforeUnmount(() => { if (image.value) cancelArtwork(image.value); });
       <div class="related-names">
         <strong :title="names.name">{{ names.name }}</strong>
         <p v-if="english" class="related-english" :title="english">{{ english }}</p>
+        <p v-if="names.edition" class="related-edition" :title="`這次發售的版本：${names.edition}`">{{ names.edition }}</p>
       </div>
       <div class="match-tags">
         <span v-if="basis === 'date'">發售時間相近</span>

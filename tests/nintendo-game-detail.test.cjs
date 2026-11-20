@@ -640,7 +640,7 @@ test('missing or unverified edition records never produce an edition or base-ver
   }
 });
 
-test('detail recommendations show the candidate release edition in its title and original English subtitle', async () => {
+test('detail recommendations name the game and note the candidate release edition under the original English name', async () => {
   const payload = sample({ name_en: 'Resident Evil 2', name_zh_tw: '惡靈古堡 2', tags: ['Action'],
     platform_editions: { NS2: edition({ type: 'deluxe', label: 'Deluxe 版', title: 'Resident Evil 2: Deluxe Edition',
       product_id: '70010000114443', region: 'australia', source_url: 'https://ec.nintendo.com/AU/en/titles/70010000114443' }) } });
@@ -651,10 +651,13 @@ test('detail recommendations show the candidate release edition in its title and
   assert.equal(card.href, './game.html?igdb=366896&date=2027-01-15');
   const names = card.children[1].children[0];
   assert.equal(names.className, 'related-names');
-  assert.equal(names.children[0].textContent, '惡靈古堡 2（Deluxe 版）');
-  assert.equal(names.children[0].title, '惡靈古堡 2（Deluxe 版）');
-  assert.equal(names.children[1].textContent, 'Resident Evil 2: Deluxe Edition');
-  assert.equal(names.children[1].title, 'Resident Evil 2: Deluxe Edition');
+  assert.equal(names.children[0].textContent, '惡靈古堡 2');
+  assert.equal(names.children[0].title, '惡靈古堡 2');
+  assert.equal(names.children[1].textContent, 'Resident Evil 2');
+  assert.equal(names.children[1].title, 'Resident Evil 2');
+  assert.equal(names.children[2].className, 'related-edition');
+  assert.equal(names.children[2].textContent, 'Deluxe 版');
+  assert.equal(names.children[2].title, '這次發售的版本：Deluxe 版');
 });
 
 
