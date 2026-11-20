@@ -1011,7 +1011,9 @@ body.motion-on .game-description.is-pending {
   box-shadow: 0 var(--depth-2) 0 var(--black-a30);
   transition: transform 0.2s;
 }
-.game-trailer-play:hover {
+.game-trailer-play:hover,
+.game-trailer-poster:hover .game-trailer-play,
+.game-trailer-poster:focus-visible .game-trailer-play {
   transform: translate(-50%, -50%) scale(1.06);
 }
 .game-trailer-play svg {
