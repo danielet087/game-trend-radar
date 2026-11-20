@@ -364,6 +364,12 @@ test('Steam\'s planned launch time shows in Taiwan time until launch and says it
   assert.equal(e.get('gameHeroNote').textContent, '01:00（台灣時間）・Steam 預定');
   assert.equal(versionCell(versionRow(e, 'Steam'), 'dates').textContent, '2027/01/15（五） 01:00');
   assert.match(sourceText(e), /Steam 版發售日：來源 Steam 台灣商店。時間是開發商在 Steam 設定的發售時間，換算成台灣時間（UTC\+8）；發售前仍可能調整。/);
+  assert.doesNotMatch(sourceText(e), /商店頁標示/);
+  // The Store page's own day, one day off Taiwan's, is explained once.
+  const evening = steamCatalog();
+  Object.assign(evening.games[0], { release_time_utc: '2027-01-14T17:00:00Z', release_store_date: '2027-01-14' });
+  const { elements: store } = await display('?appid=632950', null, evening);
+  assert.match(sourceText(store), /Steam 版發售日：來源 Steam 台灣商店。Steam 商店頁標示 2027\/01\/14（發行商公告的日期），依 Steam 發售時間換算，台灣是 2027\/01\/15。時間是開發商在 Steam 設定的發售時間/);
   // After launch the day stays, without the planned time.
   const released = { version: 3, generated_at: '2026-10-03T15:56:37Z', games: [{ appid: 632950, name: 'Steam Game',
     followers: 6000, release_start: '2026-09-20', release_time_utc: '2026-09-19T17:00:00Z' }] };

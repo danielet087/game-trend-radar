@@ -133,6 +133,14 @@ export function normalize(raw, recent = false, translated = null) {
 
 export const REFERENCE_METHOD = "igdb_console_steam_link_v1";
 
+/** The Store page's day when it differs from the Taiwan day by a time zone (one day). */
+function storeDay(raw, date) {
+  const day = raw?.release_store_date;
+  if (!validDate(day) || !validDate(date) || day === date) return {};
+  const gap = Math.abs(Date.parse(day + "T00:00:00Z") - Date.parse(date + "T00:00:00Z")) / 86400000;
+  return gap === 1 ? { store_date: day } : {};
+}
+
 /**
  * The Steam version of a public console game (data/steam_references.json).
  * It is only a merge target for the console games it names: it has no
@@ -149,7 +157,8 @@ export function normalizeReference(raw) {
   const date = raw.release_precision === "day" && validDate(raw.release_start) ? raw.release_start : null;
   const row = steamRow(raw, { appid, date, followers: null, recent: false, translated: null, twitchQualified: false });
   // The Steam version's own day, shown on the game page but never a radar event.
-  const releases = date ? [{ platform: "Steam", date, precision: "day", source: "Steam", reference: true }] : [];
+  const releases = date ? [{ platform: "Steam", date, precision: "day", source: "Steam", reference: true,
+    ...storeDay(raw, date) }] : [];
   return { ...row, steamReference: true, referenceIgdbIds: igdbIds, releaseComingSoon: raw.release_coming_soon === true,
     referenceTitleMatch: typeof reference.title_match === "string" ? reference.title_match : "",
     releases, dateReleases: releases, releasePlatforms: date ? ["Steam"] : [] };
@@ -270,11 +279,13 @@ function steamRow(raw, { appid, date, followers, recent, translated, twitchQuali
       if (base && high) artVariants[base] = high;
     }
   }
-  // The developer's release time, kept only when it falls on the Taiwan day shown.
+  // The developer's release time, kept only when it falls on the Taiwan day shown,
+  // and the Store page's own day when it is another time zone's day.
   const releaseInstant = awareTime(raw.release_time_utc);
   const steamRelease = { platform: "Steam", date, precision: "day", source: "Steam",
     ...(releaseInstant !== null && date && todayInTaipei(new Date(releaseInstant)) === date
-      ? { time_utc: raw.release_time_utc } : {}) };
+      ? { time_utc: raw.release_time_utc } : {}),
+    ...storeDay(raw, date) };
   return {
     ...descriptionRecord(Object.hasOwn(raw, 'short_description') ? raw : translated || raw),
     appid,
