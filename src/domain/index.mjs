@@ -9,6 +9,8 @@ import { platformEdition, nintendoEdition, releaseEditionBadges, releaseDisplayN
 import { nintendoReleaseAudited, officialTaiwanReleaseTime } from './release-audit.mjs';
 import { detailURL, popularityCompare, calendarFeatured, unique, cardGames, selectGames } from './collections.mjs';
 import { consoleInterest, consoleInterestCompare, popscoreTop } from './interest.mjs';
+import { releaseEvidence, dayEvidence, releaseClock, releaseState, platformFirstReleases, platformsOnDate,
+  otherPlatformReleases, releaseStatusGroups, releaseStateText, unlistedReleaseNote, shortReleaseDay, otherPlatformPhrases } from './release-display.mjs';
 import { imageURL, exactReleaseDate, hasTwitchAdmission, hasTaiwanStoreDateAuthority, isTwitchQualified, normalize } from '../data/steam.mjs';
 import { nintendoGames } from '../data/native.mjs';
 import { datasets } from '../data/datasets.mjs';
@@ -29,6 +31,8 @@ export const RadarData = {
   releaseEditionBadges, releaseDisplayNames, releaseCardNames, nintendoGames, detailURL,
   popularityCompare, calendarFeatured, unique, cardGames, datasets, selectGames,
   consoleInterest, consoleInterestCompare, popscoreTop,
+  releaseEvidence, dayEvidence, releaseClock, releaseState, platformFirstReleases, platformsOnDate,
+  otherPlatformReleases, releaseStatusGroups, releaseStateText, unlistedReleaseNote, shortReleaseDay, otherPlatformPhrases,
 };
 
 export {
@@ -43,6 +47,8 @@ export {
   releaseEditionBadges, releaseDisplayNames, releaseCardNames, nintendoGames, detailURL,
   popularityCompare, calendarFeatured, unique, cardGames, datasets, selectGames,
   consoleInterest, consoleInterestCompare, popscoreTop,
+  releaseEvidence, dayEvidence, releaseClock, releaseState, platformFirstReleases, platformsOnDate,
+  otherPlatformReleases, releaseStatusGroups, releaseStateText, unlistedReleaseNote, shortReleaseDay, otherPlatformPhrases,
 };
 export { nintendoReleaseAudited as nativeReleaseAudited } from './release-audit.mjs';
 export { nintendoCardLanguages as nativeCardLanguages } from './languages.mjs';

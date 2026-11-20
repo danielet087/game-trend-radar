@@ -270,6 +270,11 @@ function steamRow(raw, { appid, date, followers, recent, translated, twitchQuali
       if (base && high) artVariants[base] = high;
     }
   }
+  // The developer's release time, kept only when it falls on the Taiwan day shown.
+  const releaseInstant = awareTime(raw.release_time_utc);
+  const steamRelease = { platform: "Steam", date, precision: "day", source: "Steam",
+    ...(releaseInstant !== null && date && todayInTaipei(new Date(releaseInstant)) === date
+      ? { time_utc: raw.release_time_utc } : {}) };
   return {
     ...descriptionRecord(Object.hasOwn(raw, 'short_description') ? raw : translated || raw),
     appid,
@@ -296,8 +301,8 @@ function steamRow(raw, { appid, date, followers, recent, translated, twitchQuali
     platformShort: "Steam",
     platformLabel: "Steam",
     platformBadges: [{ label: "Steam", status: "steam", title: "Steam 商店收錄" }],
-    releases: [{ platform: "Steam", date, precision: "day", source: "Steam" }],
-    dateReleases: [{ platform: "Steam", date, precision: "day", source: "Steam" }],
+    releases: [steamRelease],
+    dateReleases: [steamRelease],
     followers,
     twitchAdmission: twitchQualified ? raw.twitch_admission : null,
     art: images[0] || "",

@@ -59,40 +59,29 @@ export function createDetailLoader(ctx, render, favorites, related) {
     .then(value => validActivity(value) ? value : null);
   async function loadConsoleDetail(force, active) {
     let catalog = null, preview = null, references = null, nintendo = null, activity = null, sourcesDone = false, shown = false;
-    let media = null, mediaDone = false, store = null, mediaFor = null, steamRecord = null, steamDone = true;
-    // A console game shown on its Steam version gets that version's media and prices.
-    function loadSteamExtras(appid) {
-      if (mediaFor === appid) return;
-      mediaFor = appid;
-      steamRecord = null; steamDone = false;
-      Promise.resolve(storage.loadGame?.(appid, { force }))
-        .then(record => { if (mediaFor === appid) steamRecord = record; })
-        .catch(() => { /* The catalog row still shows the game. */ })
-        .finally(() => { if (mediaFor === appid) { steamDone = true; present(); } });
-      // A missing media file settles too: the Store capsule then stands in.
-      Promise.resolve(storage.loadMedia?.(appid, { force }))
-        .then(result => { media = steamMedia(result, appid); mediaDone = true; present(); })
-        .catch(() => { mediaDone = true; present(); });
-      Promise.resolve(storage.loadStoreFacts?.({ force }))
-        .then(result => { store = storeFacts(result, appid); if (store) present(); })
-        .catch(() => { /* Price, rating and Steam Deck rows are optional. */ });
-    }
+    let moved = false;
     function present() {
-      if (!active()) return;
+      if (!active() || moved) return;
       if (!nintendo) return;
-      const official = catalog && mediaFor ? detailCatalog(catalog, steamRecord, mediaFor) : catalog;
-      const data = D.datasets(official, preview, nintendo, references);
+      const data = D.datasets(catalog, preview, nintendo, references);
       if (!data) return;
-      const enriched = R.enrich(data, official, preview, references);
+      const enriched = R.enrich(data, catalog, preview, references);
       const matches = [...enriched.games, ...enriched.recent].filter(entry =>
         (entry.igdbId === igdbId || entry.igdbIds?.includes(igdbId)) &&
         (!requestedDate || entry.date === requestedDate),
       );
       const game = matches.find(entry => entry.date >= today) || matches[0];
       if (!game) return;
-      if (game.source !== 'nintendo' && game.appid) loadSteamExtras(game.appid);
-      render(game, enriched, !sourcesDone, { activity, media, mediaDone, store,
-        descriptionPending: !steamDone && awaitsDescription(catalog, mediaFor) });
+      // A console game with a Steam version has one page, the Steam link kept on
+      // this release's day: both links then show the same Followers, news and dates.
+      if (game.source !== 'nintendo' && game.appid && typeof location?.replace === 'function') {
+        moved = true;
+        location.replace(D.detailURL(game));
+        return;
+      }
+      // Its Steam version can still arrive with the Steam catalog; wait for it.
+      if (game.steamAppid && !sourcesDone) return;
+      render(game, enriched, !sourcesDone, { activity });
       shown = true;
     }
     try {
@@ -105,7 +94,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
         readActivity(force).then(result => { activity = result; if (activity) present(); })
           .catch(() => { /* The news list is optional. */ }),
       ]);
-      if (!active()) return;
+      if (!active() || moved) return;
       if (!shown) setStatus(nintendo ? "這款遊戲目前不在公開清單中" : "IGDB 主機遊戲資料暫時無法讀取",
         nintendo ? "可能已調整平台、發售日期或未達收錄條件；請返回月曆看看其他遊戲。" : "請稍後再試，或返回遊戲清單。", !nintendo);
     } catch (error) {

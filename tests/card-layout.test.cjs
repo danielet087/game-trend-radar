@@ -151,10 +151,12 @@ test('a later native-port event shows only the earliest verified date and uses i
   const event = D.selectGames(data, 'date', '2026-10-04', '2026-12-01')[0];
   const card = renderer().card(event);
   assert.deepEqual(card.querySelectorAll('time').map(line => line.textContent), ['2026/11/01']);
-  assert.equal(card.querySelector('.card-countdown').textContent, '28 天後');
+  // The countdown says whose day it is, and the later NS2 day is named apart.
+  assert.equal(card.querySelector('.card-countdown').textContent, 'Steam 版 28 天後');
   assert.equal(card.querySelector('time').dateTime, '2026-11-01');
-  assert.equal(card.querySelector('.countdown').textContent, '28 天後登場');
-  assert.equal(card.querySelector('.card-release-platform'), null);
+  assert.equal(card.querySelector('.countdown').textContent, 'Steam 版 28 天後登場');
+  assert.equal(card.querySelector('.card-release-platform').textContent, 'NS2 12/01 發售（全球日期）');
+  assert.equal(card.querySelector('.card-release-basis'), null);
   assert.equal(card.querySelector('.card-detail-link').href, './game.html?appid=3167930&date=2026-12-01');
 });
 
@@ -330,6 +332,42 @@ test('October calendar list names the game and notes the Nintendo edition under 
   assert.equal(calendarLinks[0].href, './game.html?appid=3167930&date=2026-10-08');
 });
 
+test('a later platform\'s calendar day says it is a new platform and whose day it is, and its card says the same', async () => {
+  const official = { games: [steam({ release_start: '2026-09-20' })] }, native = nintendo({
+    releases: [{ date: '2026-10-08', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }],
+  });
+  const app = renderer([], 'home', '?month=2026-10&view=list');
+  await app.load(official, null, native);
+  const links = app.calendar.querySelectorAll('.day-game');
+  assert.equal(links.length, 1);
+  assert.deepEqual(links[0].querySelectorAll('.day-flag').map(flag => [flag.className, flag.textContent]),
+    [['day-flag is-new-platform', '新平台']]);
+  // Not a Taiwan day: the platform tag carries the asterisk, and the name keeps its room.
+  assert.equal(links[0].querySelector('.day-platform').className, 'day-platform is-nintendo is-unconfirmed');
+  assert.equal(links[0].querySelector('.day-platform').textContent, 'NS2');
+  assert.match(links[0].querySelector('.day-platform').title,
+    /^本日發售：NS2（IGDB 全球日期，台灣上市日待確認）。其他平台：Steam 09\/20 已上市。/);
+  const [card] = app.render();
+  assert.equal(card.querySelector('time').textContent, '2026/10/08');
+  assert.equal(card.querySelector('.card-release-basis').textContent, '全球日期');
+  assert.equal(card.querySelector('.countdown').textContent, 'NS2 版 4 天後登場');
+  assert.equal(card.querySelector('.card-release-platform').textContent, 'Steam 09/20 已上市');
+  // A day every tracked platform shares needs no flag or other-platform line.
+  const together = renderer([], 'home', '?month=2026-10&view=list');
+  await together.load({ games: [steam({ release_start: '2026-10-08' })] }, null, nintendo({
+    releases: [{ date: '2026-10-08', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }] }));
+  // Beside the Steam day only the console part is unconfirmed: the hover text and the card say so.
+  const [shared] = together.calendar.querySelectorAll('.day-game');
+  assert.deepEqual(shared.querySelectorAll('.day-flag').map(flag => flag.textContent), []);
+  assert.doesNotMatch(shared.querySelector('.day-platform').className, /is-unconfirmed/);
+  assert.match(shared.querySelector('.day-platform').title, /^本日發售：Steam／NS2（NS2：IGDB 全球日期，台灣上市日待確認）。/);
+  const [both] = together.render();
+  assert.equal(both.querySelector('.card-release-platform'), null);
+  assert.equal(both.querySelector('.countdown').textContent, '4 天後登場');
+  assert.equal(both.querySelector('.card-release-basis').textContent, '主機全球日期');
+  assert.match(both.querySelector('time').title, /Steam 為台灣時間；NS2：IGDB 全球日期/);
+});
+
 test('daily release card notes its edition under the game name while the general card for the original Steam event has no note', async () => {
   const official = { games: [steam({ release_start: '2027-02-18' })] }, native = nintendo({
     releases: [{ date: '2027-05-20', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }],
@@ -423,11 +461,18 @@ test('PS5 calendar event retains its release date, own shop and unknown language
   const data = D.datasets({ games: [steam()] }, null, native);
   const summary = renderer().card(D.cardGames(data.games)[0]);
   assert.equal(summary.querySelector('time').textContent, '2026/12/01');
+  assert.equal(summary.querySelector('.countdown').textContent, 'Steam 版 58 天後登場');
+  // A verified Taiwan PS5 day carries its official clock time and no caveat.
+  assert.equal(summary.querySelector('.card-release-platform').textContent, 'PS5 2027/01/15 00:00 發售');
   assert.match(summary.querySelector('.card-languages').textContent, /支援繁中/);
   assert.equal(summary.querySelector('.steam-store-link').href, 'https://store.steampowered.com/app/3167930/');
   const event = data.games.find(game => game.date === '2027-01-15');
   const card = renderer([], 'date').card(event);
-  assert.equal(card.querySelector('time').textContent, '2027/01/15');
+  assert.equal(card.querySelector('time').textContent, '2027/01/15 00:00');
+  assert.equal(card.querySelector('time').dateTime, '2027-01-14T16:00:00.000Z');
+  assert.equal(card.querySelector('.card-release-basis'), null);
+  assert.equal(card.querySelector('.countdown').textContent, 'PS5 版 103 天後登場');
+  assert.equal(card.querySelector('.card-release-platform').textContent, 'Steam 2026/12/01 發售');
   assert.deepEqual(filled(card), ['PS5']);
   assert.match(card.querySelector('.card-languages').textContent, /語言支援待確認/);
   assert.doesNotMatch(card.querySelector('.card-languages').textContent, /支援繁中|支援簡中/);

@@ -62,6 +62,16 @@ test('console news uses only that game’s IGDB events', () => {
   const items = newsItems({ game, history: [], media: null, today: '2026-11-19', number,
     activity: { events: [event(42, 'release_date', { previous_date: '2026-11-20' }), event(7, 'added')] } });
   assert.deepEqual(items.map(item => item.text), ['發售日從 2026/11/20 改成 2026/12/01']);
+  // Without a recorded admission, the game's first sighting is its arrival, on that Taiwan day.
+  const first = newsItems({ game: { ...game, firstObservedAt: '2026-09-30T18:00:00Z' }, history: [], media: null,
+    today: '2026-11-19', number, activity: { events: [event(42, 'release_date', { previous_date: '2026-11-20' })] } });
+  assert.deepEqual(first.map(item => [item.date, item.kind, item.text]), [['2026-11-18', 'release', '發售日從 2026/11/20 改成 2026/12/01'],
+    ['2026-10-01', 'added', '收錄進雷達（IGDB 主機新作）']]);
+  const recorded = newsItems({ game: { ...game, firstObservedAt: '2026-09-30T18:00:00Z' }, history: [], media: null,
+    today: '2026-11-19', number, activity: { events: [event(42, 'added')] } });
+  assert.equal(recorded.filter(item => item.kind === 'added').length, 1);
+  assert.equal(newsItems({ game: { ...game, firstObservedAt: 'not a time' }, history: [], media: null, today: '2026-11-19',
+    number, activity: null }).length, 0);
 });
 
 test('the Followers chart breaks only where measurements stop for more than a week', () => {

@@ -357,6 +357,31 @@ body[data-game-hero]::after {
   font-size: var(--text-sm);
   color: var(--muted);
 }
+/* Other platforms' days under the big date: never read as the same day. */
+.game-hero-others {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--game-edge);
+  list-style: none;
+  font-size: var(--text-sm);
+  color: var(--game-ink);
+}
+.game-hero-other {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+.game-hero-other strong {
+  min-width: 5.5em;
+  font-weight: 800;
+}
+.game-hero-other-state,
+.game-hero-other-basis {
+  color: var(--muted);
+}
 .game-hero-actions {
   display: flex;
   flex-wrap: wrap;

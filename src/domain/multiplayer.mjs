@@ -10,7 +10,8 @@ export const steamMultiplayerCategories = new Map([
 ]);
 
 export const igdbMultiplayerNames = new Map([
-  ["Multiplayer", "多人"], ["Co-operative", "合作"], ["Split screen", "分割螢幕"],
+  // The same words as Steam's categories, so both sources read alike.
+  ["Multiplayer", "多人"], ["Co-operative", "合作"], ["Split screen", "共用／分割螢幕"],
   ["Massively Multiplayer Online (MMO)", "大型多人線上"], ["Battle Royale", "大逃殺"],
 ]);
 

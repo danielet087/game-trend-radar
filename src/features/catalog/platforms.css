@@ -87,9 +87,22 @@
 .day-platform.is-playstation { background: var(--platform-playstation); }
 .day-platform.is-xbox { background: var(--platform-xbox); }
 .day-game-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 新平台: out on another platform already. */
+.day-flag {
+  flex: 0 0 auto;
+  padding: 0 3px;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+/* *: not a Taiwan day yet (an IGDB worldwide day, for instance). */
+.day-platform.is-unconfirmed::after { content: "*"; margin-left: 1px; }
 .game-card[data-source="nintendo"] .cover-link img { object-position: center 35%; }
 @media (max-width: 520px) {
   .day-game-platform { display: block; }
   .day-platform { display: inline-block; max-width: 100%; padding: 0 2px; white-space: normal; overflow-wrap: anywhere; vertical-align: top; font-size: var(--text-xs); }
   .day-game-name { display: block; }
+  .day-flag { display: inline-block; margin-left: 3px; }
 }

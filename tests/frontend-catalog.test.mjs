@@ -98,7 +98,11 @@ test('Vue card names every known platform, and keeps accessibility, title metada
   assert.match(html,/class="card-english" title="Example"/);
   assert.match(html,/6,000<small>人關注<\/small>/); assert.match(html,/40<small>IGDB hypes<\/small>/);
   assert.equal((html.match(/<time /g)||[]).length,1);
-  assert.match(html,/datetime="2026-10-10"/); assert.doesNotMatch(html,/class="card-release-platform"/);
+  assert.match(html,/datetime="2026-10-10"/);
+  // The summary date is the Steam day; the later PS5 day is named apart, as a worldwide IGDB day.
+  assert.match(html,/>Steam 版 2 天後登場<\/span>/);
+  assert.match(html,/class="card-release-platform" title="其他平台：PS5 10\/18 發售（全球日期）">PS5 10\/18 發售（全球日期）<\/span>/);
+  assert.doesNotMatch(html,/class="card-release-basis"/);
   assert.match(html,/aria-label="收藏 遊戲範例" aria-pressed="false"/);
   assert.match(html,/class="card-detail-link" tabindex="-1" href="\.\/game.html\?appid=42&amp;date=/);
 });
@@ -110,7 +114,12 @@ test('Vue event card honors the selected platform date and multiplayer language 
   const steam=await renderCard(early,{event:true},'date'), ps5=await renderCard(late,{event:true},'date');
   assert.doesNotMatch(steam,/class="card-multiplayer"/);
   assert.match(ps5,/class="card-multiplayer"/); assert.match(ps5,/多人遊戲；PS5/);
-  assert.match(ps5,/datetime="2026-10-18"/); assert.match(ps5,/>10 天後登場<\/span>/);
+  assert.match(ps5,/datetime="2026-10-18"/); assert.match(ps5,/>PS5 版 10 天後登場<\/span>/);
+  // A worldwide IGDB day says so beside the date, and the Steam day stays separate.
+  assert.match(ps5,/class="card-release-basis"[^>]*>全球日期<\/span>/);
+  assert.match(ps5,/class="card-release-platform"[^>]*>Steam 10\/10 發售<\/span>/);
+  assert.match(steam,/>Steam 版 2 天後登場<\/span>/); assert.doesNotMatch(steam,/class="card-release-basis"/);
+  assert.match(steam,/class="card-release-platform"[^>]*>PS5 10\/18 發售（全球日期）<\/span>/);
   assert.match(ps5,/<span class="platform-chip is-steam">Steam<\/span><span class="platform-chip is-playstation is-released">PS5<\/span>/);
   assert.match(ps5,/aria-label="平台：Steam、PS5；本次發售：PS5"/);
   assert.match(steam,/<span class="platform-chip is-steam is-released">Steam<\/span><span class="platform-chip is-playstation">PS5<\/span>/);

@@ -47,7 +47,8 @@ async function display(search, nintendo = sample(), catalog = null, stored = [],
   });
   const localStorage = { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) };
   const sessionStorage = { getItem: () => null, setItem() {} };
-  const location = { search, origin: 'https://example.test', href: `https://example.test/game.html${search}` };
+  const location = { search, origin: 'https://example.test', href: `https://example.test/game.html${search}`,
+    ...(options.location || {}) };
   const window = { localStorage, sessionStorage, location, addEventListener() {}, removeEventListener() {},
     ...(options.window || {}) };
   const radarStorage = {
@@ -57,7 +58,7 @@ async function display(search, nintendo = sample(), catalog = null, stored = [],
       if (options.nintendoPending) return options.nintendoPending;
       return nintendo;
     },
-    loadSources: async () => { calls.sources++; return { catalog, preview: null }; },
+    loadSources: async () => { calls.sources++; return { catalog, preview: null, references: options.references || null }; },
     loadGame: async () => { calls.steam++; return catalog?.games?.[0] || null; },
     readJSON: async () => null,
   };
@@ -107,11 +108,13 @@ test('Nintendo detail uses its own public source, hypes and verified native excl
   }
   // The title card: one date, the release state and the official exclusive label.
   assert.deepEqual(titleChips(e), ['即將上市', 'NS2 獨佔']);
-  assert.equal(e.get('gameHeroLabel').textContent, '預定發售・台灣時間');
+  // An IGDB worldwide day is named as such, never as Taiwan time.
+  assert.equal(e.get('gameHeroLabel').textContent, '預定發售・全球日期（IGDB）');
   assert.equal(e.get('gameHeroDate').textContent, '2027.01.15');
   assert.equal(e.get('gameHeroWeekday').textContent, '（五）');
   assert.equal(e.get('gameHeroCountdown').textContent, '還有 103 天');
-  assert.equal(e.get('gameHeroNote').textContent, '全球日期，台灣上市日待確認');
+  assert.equal(e.get('gameHeroNote').textContent, '台灣上市日待確認');
+  assert.equal(e.get('gameHeroOthers').hidden, true);
   // 平台版本: the NS2 row, and where its date and (missing) languages come from.
   const ns2 = versionRow(e, 'NS2');
   assert.equal(ns2.dataset.selected, 'true');
@@ -134,7 +137,11 @@ test('Nintendo date route selects the requested native-platform release and save
   });
   const { elements: e, storage } = await display('?igdb=366896&date=2027-03-19', payload, null, [632950]);
   assert.equal(e.get('gameHeroDate').textContent, '2027.03.19');
-  assert.equal(e.get('gameHeroLabel').textContent, 'Nintendo Switch 2 版發售・台灣時間');
+  assert.equal(e.get('gameHeroLabel').textContent, 'Nintendo Switch 2 版發售・全球日期（IGDB）');
+  // The NS version's own day is listed under the big date, so it is never read as this day.
+  assert.equal(e.get('gameHeroOthers').hidden, false);
+  assert.deepEqual(e.get('gameHeroOthers').children.map(item => item.textContent),
+    ['NS 版2027.01.15（五）還有 103 天日本日期・台灣待確認']);
   assert.deepEqual(titleChips(e), ['即將上市', 'NS', 'NS2']);
   assert.deepEqual(versionDates(e), [['NS', '2027-01-15'], ['NS2', '2027-03-19']]);
   assert.equal(versionRow(e, 'NS2').dataset.selected, 'true');
@@ -207,9 +214,11 @@ test('merged Steam detail preserves its Steam date, separate hypes and Nintendo 
   assert.equal(versionCell(versionRow(e, 'NS2'), 'dates').textContent, '2027/03/19（五）日本日期・台灣待確認還有 166 天');
   assert.match(sourceText(e), /Nintendo Switch 2 版發售日：來源 IGDB。依日本發售資料顯示；來源僅提供日期，尚未另行確認台灣上市日/);
   assert.equal(e.get('gameHeroDate').textContent, '2027.01.15');
-  assert.equal(e.get('gameHeroLabel').textContent, '最早發售・台灣時間');
+  assert.equal(e.get('gameHeroLabel').textContent, 'Steam 版發售・台灣時間');
   assert.equal(e.get('gameHeroCountdown').textContent, '還有 103 天');
-  assert.equal(e.get('gameHeroNote').textContent, '各平台日期不同，見平台版本');
+  assert.equal(e.get('gameHeroNote').hidden, true);
+  assert.deepEqual(e.get('gameHeroOthers').children.map(item => item.textContent),
+    ['NS2 版2027.03.19（五）還有 166 天日本日期・台灣待確認']);
   assert.equal(e.get('gameFollowers').textContent, '6,000');
   assert.equal(e.get('gameInterestCaption').textContent, 'Steam Followers · 非願望清單數');
   assert.deepEqual(titleChips(e), ['即將上市', 'Steam', 'NS2']);
@@ -258,9 +267,10 @@ test('both merged Steam event links and existing IGDB event links retain the req
     assert.equal(versionRow(e, 'Steam').dataset.selected, undefined);
     assert.equal(e.get('detailPage').hidden, false);
     assert.equal(e.get('gameHeroDate').textContent, '2027.03.19');
-    assert.equal(e.get('gameHeroLabel').textContent, 'Nintendo Switch 2 版發售・台灣時間');
+    assert.equal(e.get('gameHeroLabel').textContent, 'Nintendo Switch 2 版發售・日本日期（IGDB）');
     assert.equal(e.get('gameHeroNote').hidden, false);
-    assert.equal(e.get('gameHeroNote').textContent, '各平台日期不同，見平台版本・日本日期，台灣上市日待確認');
+    assert.equal(e.get('gameHeroNote').textContent, '台灣上市日待確認');
+    assert.deepEqual(e.get('gameHeroOthers').children.map(item => item.textContent), ['Steam 版2027.01.15（五）還有 103 天']);
     assert.equal(versionCell(versionRow(e, 'Steam'), 'dates').textContent, '2027/01/15（五）還有 103 天');
     assert.equal(e.get('gameFollowers').textContent, '6,000');
     assert.match(e.get('gameHeatConsole').textContent, /IGDB 45 hypes/);
@@ -294,10 +304,128 @@ test('Steam first paint does not wait for Nintendo and later enrichment keeps th
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(e.get('gamePlatforms').hidden, false);
   assert.equal(e.get('gameHeroDate').textContent, '2027.01.15');
-  assert.equal(e.get('gameHeroLabel').textContent, '最早發售・台灣時間');
+  assert.equal(e.get('gameHeroLabel').textContent, 'Steam 版發售・台灣時間');
   assert.deepEqual(titleChips(e), ['即將上市', 'Steam', 'NS2']);
   assert.deepEqual(versionDates(e), [['Steam', '2027-01-15'], ['NS2', '2027-03-19']]);
   assert.equal(versionRow(e, 'Steam').dataset.selected, 'true');
+});
+
+test('a console link to a game shown on its Steam page opens that Steam page on the same day', async () => {
+  const moves = [];
+  const { elements: e } = await display('?igdb=366896&date=2027-03-19', crossPlatformSample(), steamCatalog(), [],
+    { location: { replace: url => moves.push(url) } });
+  assert.deepEqual(moves, ['./game.html?appid=632950&date=2027-03-19']);
+  // Nothing is drawn while the browser moves to the Steam page.
+  assert.equal(e.get('gameTitle').textContent, '');
+  assert.equal(e.get('gameHeroDate').textContent, '');
+  assert.doesNotMatch(e.get('detailStatusTitle').textContent, /不在公開清單|無法讀取/);
+  // A console game without a Steam version stays on its own page.
+  const stays = [];
+  const { elements: own } = await display('?igdb=366896', sample(), steamCatalog(), [], { location: { replace: url => stays.push(url) } });
+  assert.deepEqual(stays, []);
+  assert.equal(own.get('detailPage').hidden, false);
+  assert.match(own.get('gameFollowersMeasured').textContent, /^IGDB 資料確認 · 2026\/10\/03\s23:56（台灣）$/);
+});
+
+test('platforms on different days each say where they stand, and the big date names its version', async () => {
+  const catalog = { version: 3, generated_at: '2026-10-03T15:56:37Z',
+    games: [{ appid: 632950, name: 'Steam Game', followers: 6000, release_start: '2026-09-20' }] };
+  const { elements: e } = await display('?appid=632950', crossPlatformSample(), catalog);
+  assert.deepEqual(titleChips(e), ['Steam 已發售', 'NS2 即將上市', 'Steam', 'NS2']);
+  assert.deepEqual(e.get('gamePlatforms').children.slice(0, 2).map(chip => chip.className),
+    ['game-title-chip is-state is-released', 'game-title-chip is-state is-upcoming']);
+  assert.equal(e.get('gameHeroLabel').textContent, 'Steam 版發售・台灣時間');
+  assert.equal(e.get('gameHeroCountdown').textContent, '已發售 14 天');
+  assert.deepEqual(e.get('gameHeroOthers').children.map(item => item.textContent),
+    ['NS2 版2027.03.19（五）還有 166 天日本日期・台灣待確認']);
+});
+
+test('a tracked version with no release in the data says its day is not recorded, not that it is undecided', async () => {
+  const payload = sample({ platforms: [{ id: 167, code: 'PS5' }, { id: 508, code: 'NS2' }],
+    known_platforms: [{ id: 167, code: 'PS5' }, { id: 508, code: 'NS2' }], exclusivity: { status: 'multi_platform' } });
+  const { elements: e } = await display('?igdb=366896', payload);
+  assert.deepEqual(titleChips(e), ['即將上市', 'NS2', 'PS5']);
+  assert.equal(e.get('gameHeroLabel').textContent, 'Nintendo Switch 2 版發售・全球日期（IGDB）');
+  const [other] = e.get('gameHeroOthers').children;
+  assert.equal(other.textContent, 'PS5 版日期未收錄');
+  assert.match(other.children[1].title, /可能早已上市/);
+  const cell = versionCell(versionRow(e, 'PS5'), 'dates');
+  assert.equal(cell.textContent, '日期未收錄');
+  assert.match(cell.children[0].title, /可能早已上市/);
+  assert.doesNotMatch(pageText(e), /日期未定/);
+});
+
+test('Steam\'s planned launch time shows in Taiwan time until launch and says it is Steam\'s plan', async () => {
+  const catalog = steamCatalog();
+  catalog.games[0].release_time_utc = '2027-01-14T17:00:00Z';
+  const { elements: e } = await display('?appid=632950', null, catalog);
+  assert.equal(e.get('gameHeroLabel').textContent, '預定發售・台灣時間');
+  assert.equal(e.get('gameHeroDate').dateTime, '2027-01-14T17:00:00.000Z');
+  assert.equal(e.get('gameHeroNote').textContent, '01:00（台灣時間）・Steam 預定');
+  assert.equal(versionCell(versionRow(e, 'Steam'), 'dates').textContent, '2027/01/15（五） 01:00');
+  assert.match(sourceText(e), /Steam 版發售日：來源 Steam 台灣商店。時間是開發商在 Steam 設定的發售時間，換算成台灣時間（UTC\+8）；發售前仍可能調整。/);
+  // After launch the day stays, without the planned time.
+  const released = { version: 3, generated_at: '2026-10-03T15:56:37Z', games: [{ appid: 632950, name: 'Steam Game',
+    followers: 6000, release_start: '2026-09-20', release_time_utc: '2026-09-19T17:00:00Z' }] };
+  const { elements: r } = await display('?appid=632950', null, released);
+  assert.equal(r.get('gameHeroDate').dateTime, '2026-09-20');
+  assert.equal(r.get('gameHeroNote').hidden, true);
+  assert.equal(versionCell(versionRow(r, 'Steam'), 'dates').textContent, '2026/09/20（日）');
+  assert.doesNotMatch(sourceText(r), /開發商在 Steam 設定/);
+});
+
+test('versions sharing a day and state share one line under the big date', async () => {
+  const payload = sample({ platforms: [{ id: 130, code: 'NS' }, { id: 508, code: 'NS2' }, { id: 167, code: 'PS5' }],
+    known_platforms: [{ id: 130, code: 'NS' }, { id: 508, code: 'NS2' }, { id: 167, code: 'PS5' }],
+    exclusivity: { status: 'multi_platform' }, websites: [{ url: 'https://store.steampowered.com/app/632950/' }],
+    // Audited IGDB days converted to Taiwan's calendar (PS5 needs the full audit).
+    releases: ['NS', 'NS2', 'PS5'].map(platform => ({ date: '2027-01-14', platform, precision: 'day', region: 'worldwide',
+      source: 'IGDB', source_date: '2027-01-13', source_timestamp: Date.parse('2027-01-13T18:00:00Z') / 1000,
+      source_region: 'worldwide', date_basis: 'igdb_timestamp_taipei', timezone_status: 'converted_to_taipei',
+      time_zone: 'Asia/Taipei', timestamp_taipei_date: '2027-01-14', taiwan_release_confirmed: false,
+      official_source_url: null, official_source_name: null, official_verified_at: null, official_product_id: null,
+      official_concept_id: null, official_release_time_utc: null })) });
+  const catalog = steamCatalog();
+  catalog.games[0].release_time_utc = '2027-01-14T17:00:00Z';
+  const { elements: e } = await display('?appid=632950', payload, catalog);
+  assert.equal(e.get('gameHeroLabel').textContent, 'Steam 版發售・台灣時間');
+  assert.deepEqual(e.get('gameHeroOthers').children.map(item => item.textContent),
+    ['NS、NS2、PS5 版2027.01.14（四）還有 102 天全球日期・台灣待確認']);
+  const { elements: day } = await display('?appid=632950&date=2027-01-14', payload, catalog);
+  assert.equal(day.get('gameHeroLabel').textContent, 'NS、NS2、PS5 版發售・全球日期（IGDB）');
+  assert.deepEqual(day.get('gameHeroOthers').children.map(item => item.textContent), ['Steam 版2027.01.15（五） 01:00還有 103 天']);
+});
+
+test('a day Steam shares with a console stays a Taiwan day, and only the console version is unconfirmed', async () => {
+  const payload = crossPlatformSample();
+  payload.games[0].releases = [{ date: '2027-01-15', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }];
+  const catalog = steamCatalog();
+  catalog.games[0].release_time_utc = '2027-01-14T17:00:00Z';
+  const { elements: e } = await display('?appid=632950', payload, catalog);
+  assert.equal(e.get('gameHeroLabel').textContent, '預定發售・台灣時間');
+  assert.equal(e.get('gameHeroNote').textContent, '01:00（台灣時間）・Steam 預定・兩個平台同一天・NS2 為全球日期，台灣上市日待確認');
+  assert.equal(e.get('gameHeroOthers').hidden, true);
+  assert.deepEqual(titleChips(e), ['即將上市', 'Steam', 'NS2']);
+});
+
+test('a Steam version the radar does not measure leads the heat card with the console interest and when IGDB was checked', async () => {
+  const steamVersion = { appid: 632950, name: 'Steam Game', name_en: 'Steam Game', display_name: 'Steam Game',
+    steam_type: 'game', followers: null, sexual_content_screened: true, release_start: '2025-02-28', release_precision: 'day',
+    release_coming_soon: false, release_date_timezone: 'Asia/Taipei', checked_at: '2026-10-01T00:00:00Z',
+    reference: { method: 'igdb_console_steam_link_v1', igdb_ids: [366896], console_titles: ["Fire Emblem: Fortune's Weave"] } };
+  const references = { schema_version: 1, generated_at: '2026-10-01T00:00:00Z', games: [steamVersion] };
+  const { elements: e } = await display('?appid=632950&date=2027-03-19', crossPlatformSample(), { version: 3, games: [] }, [],
+    { references });
+  assert.equal(e.get('detailPage').hidden, false);
+  assert.equal(e.get('gameInterestLabel').textContent, '發售前的社群關注');
+  assert.equal(e.get('gameFollowers').textContent, '45');
+  assert.equal(e.get('gameInterestCaption').textContent, 'IGDB hypes · 發售前關注數・Steam 版不在雷達的 Steam 清單，沒有量 Followers');
+  assert.match(e.get('gameFollowersMeasured').textContent, /^IGDB 資料確認 · 2026\/10\/03\s23:56（台灣）$/);
+  assert.equal(e.get('gameHeatConsole').hidden, true);
+  assert.match(e.get('gameFootnote').textContent, /IGDB hypes 屬遊戲整體的發售前關注數/);
+  // The Steam version came out long before: this day is a new platform, not the launch.
+  assert.equal(e.get('gameHeroLabel').textContent, 'Nintendo Switch 2 版發售・日本日期（IGDB）');
+  assert.deepEqual(e.get('gameHeroOthers').children.map(item => item.textContent), ['Steam 版2025.02.28（五）已發售']);
 });
 
 test('invalid merged Steam event dates stop before any source request', async () => {
@@ -342,7 +470,8 @@ test('Hong Kong official Nintendo dates show their real region and source withou
     official_source_name: 'Nintendo 香港', official_verified_at: '2026-10-04T15:00:00Z' });
   const { elements: e } = await display('?igdb=366896', sample({ releases: [hk] }));
   assert.equal(e.get('gameHeroDate').textContent, '2027.01.16');
-  assert.equal(e.get('gameHeroNote').textContent, '香港官方日期，台灣上市日待確認');
+  assert.equal(e.get('gameHeroLabel').textContent, '預定發售・香港官方日期');
+  assert.equal(e.get('gameHeroNote').textContent, '台灣上市日待確認');
   assert.equal(versionCell(versionRow(e, 'NS2'), 'dates').textContent, '2027/01/16（六）香港官方');
   assert.match(sourceText(e), /Nintendo Switch 2 版發售日：來源 Nintendo 香港。已確認香港官方發售日（UTC\+8，與台灣同時區）。/);
   assert.match(sourceText(e), /官方僅提供日期，未另行推算解鎖時間/);
@@ -355,7 +484,7 @@ test('Hong Kong official Nintendo dates show their real region and source withou
     official_release_time_utc: '2027-01-15T18:00:00Z' }] }));
   assert.equal(timed.get('gameHeroDate').textContent, '2027.01.16');
   assert.equal(timed.get('gameHeroDate').dateTime, '2027-01-15T18:00:00.000Z');
-  assert.equal(timed.get('gameHeroNote').textContent, '02:00（台灣時間）・香港官方日期，台灣上市日待確認');
+  assert.equal(timed.get('gameHeroNote').textContent, '02:00（台灣時間）・台灣上市日待確認');
   assert.equal(versionCell(versionRow(timed, 'NS2'), 'dates').textContent, '2027/01/16（六） 02:00香港官方');
   assert.match(sourceText(timed), /已確認香港官方發售日.*台灣時間 2027\/01\/16 02:00（UTC\+8），依官方發售時間換算/);
 });
@@ -365,9 +494,9 @@ test('audited IGDB dates show unconfirmed Taiwan provenance without inventing an
     source_date: '2027-01-15', source_timestamp: 1800057600, source_region: 'worldwide',
     time_zone: 'Asia/Taipei', timestamp_taipei_date: '2027-01-15', timezone_status: 'same_calendar_day', taiwan_release_confirmed: false };
   const { elements: e } = await display('?igdb=366896', sample({ releases: [release] }));
-  assert.equal(e.get('gameHeroLabel').textContent, '預定發售・台灣時間');
+  assert.equal(e.get('gameHeroLabel').textContent, '預定發售・全球日期（IGDB）');
   assert.equal(e.get('gameHeroDate').dateTime, '2027-01-15');
-  assert.equal(e.get('gameHeroNote').textContent, '全球日期，台灣上市日待確認');
+  assert.equal(e.get('gameHeroNote').textContent, '台灣上市日待確認');
   assert.equal(versionCell(versionRow(e, 'NS2'), 'dates').textContent, '2027/01/15（五）全球日期・台灣待確認');
   assert.match(sourceText(e), /來源僅提供日期，尚未另行確認台灣上市日，無法推算台灣解鎖時間/);
   assert.doesNotMatch(sourceText(e), /日期已核對台灣時區/);
@@ -389,19 +518,19 @@ test('all console versions display unified IGDB Taipei days without synthetic un
       known_platforms: [{ id: D.nativePlatformIDs[platform], code: platform }],
       releases: [unifiedRelease({ platform })] });
     const { elements: e } = await display('?igdb=366896&date=2027-01-16', payload);
-    assert.equal(e.get('gameHeroLabel').textContent, '預定發售・台灣時間');
+    assert.equal(e.get('gameHeroLabel').textContent, '預定發售・全球日期（IGDB）');
     assert.equal(e.get('gameHeroDate').textContent, '2027.01.16');
     assert.equal(e.get('gameHeroDate').dateTime, '2027-01-16');
     assert.equal(e.get('gameHeroWeekday').textContent, '（六）');
-    assert.equal(e.get('gameHeroNote').textContent, 'IGDB 日期，台灣上市日待確認');
+    assert.equal(e.get('gameHeroNote').textContent, '台灣上市日待確認');
     assert.deepEqual(versionDates(e), [[platform, '2027-01-16']]);
-    assert.equal(versionCell(versionRow(e, platform), 'dates').textContent, '2027/01/16（六）IGDB 日期');
+    assert.equal(versionCell(versionRow(e, platform), 'dates').textContent, '2027/01/16（六）全球日期・台灣待確認');
     assert.match(sourceText(e), /發售日：來源 IGDB 平台發售資料。依 IGDB 全球發售資料換算為台灣時區（Asia\/Taipei／UTC\+8）的日期。/);
     assert.match(sourceText(e), /原始 IGDB 日期為 2027\/01\/15，換算後為 2027\/01\/16/);
     assert.match(sourceText(e), /不視為實際解鎖時間/);
     assert.doesNotMatch(e.get('gameHeroDate').textContent + e.get('gameHeroNote').textContent +
       e.get('gameVersionRows').textContent, /02:00|08:00|00:00/);
-    assert.doesNotMatch(e.get('gameHeroLabel').textContent, /官方|待確認/);
+    assert.doesNotMatch(e.get('gameHeroLabel').textContent, /官方|待確認|台灣時間/);
   }
 });
 
@@ -411,8 +540,9 @@ test('date-only IGDB rows clearly retain calendar precision without a synthetic 
   const { elements: e } = await display('?igdb=366896', payload);
   assert.equal(e.get('gameHeroDate').textContent, '2027.01.15');
   assert.equal(e.get('gameHeroDate').dateTime, '2027-01-15');
-  assert.equal(e.get('gameHeroNote').textContent, 'IGDB 日期，台灣上市日待確認');
-  assert.equal(versionCell(versionRow(e, 'NS2'), 'dates').textContent, '2027/01/15（五）IGDB 日期');
+  assert.equal(e.get('gameHeroLabel').textContent, '預定發售・全球日期（IGDB）');
+  assert.equal(e.get('gameHeroNote').textContent, '台灣上市日待確認');
+  assert.equal(versionCell(versionRow(e, 'NS2'), 'dates').textContent, '2027/01/15（五）全球日期・台灣待確認');
   assert.match(sourceText(e), /依 IGDB 全球發售日期顯示。來源僅提供年月日，未提供可換算的時刻/);
   assert.doesNotMatch(sourceText(e), /換算為台灣時區|08:00|00:00/);
 });
@@ -426,11 +556,12 @@ test('unified console days remain separate from Steam dates and route to one mer
     assert.deepEqual(versionDates(e), [['Steam', '2027-01-15'], ['NS2', '2027-01-16']]);
     assert.equal(versionRow(e, selectedConsole ? 'NS2' : 'Steam').dataset.selected, 'true');
     assert.equal(e.get('gameHeroDate').textContent, selectedConsole ? '2027.01.16' : '2027.01.15');
-    assert.equal(e.get('gameHeroLabel').textContent, selectedConsole ? 'Nintendo Switch 2 版發售・台灣時間' : '最早發售・台灣時間');
-    assert.equal(e.get('gameHeroNote').textContent, selectedConsole
-      ? '各平台日期不同，見平台版本・IGDB 日期，台灣上市日待確認' : '各平台日期不同，見平台版本');
+    assert.equal(e.get('gameHeroLabel').textContent, selectedConsole ? 'Nintendo Switch 2 版發售・全球日期（IGDB）' : 'Steam 版發售・台灣時間');
+    assert.equal(e.get('gameHeroNote').textContent, selectedConsole ? '台灣上市日待確認' : '');
+    assert.deepEqual(e.get('gameHeroOthers').children.map(item => item.textContent), selectedConsole
+      ? ['Steam 版2027.01.15（五）還有 103 天'] : ['NS2 版2027.01.16（六）還有 104 天全球日期・台灣待確認']);
     assert.match(versionCell(versionRow(e, 'Steam'), 'dates').textContent, /^2027\/01\/15（五）/);
-    assert.match(versionCell(versionRow(e, 'NS2'), 'dates').textContent, /^2027\/01\/16（六）IGDB 日期/);
+    assert.match(versionCell(versionRow(e, 'NS2'), 'dates').textContent, /^2027\/01\/16（六）全球日期・台灣待確認/);
     assert.equal(shopLink(e, 'Steam').href, 'https://store.steampowered.com/app/632950/');
   }
 });
@@ -444,7 +575,8 @@ test('official release evidence sanitizes its source link before claiming Taiwan
   assert.doesNotMatch(e.get('gameVersionRows').textContent, /台灣官方/);
   assert.equal(sourceLinks(e).length, 0);
   assert.equal(versionCell(versionRow(e, 'NS2'), 'dates').textContent, '2027/01/16（六）台灣日期待確認');
-  assert.equal(e.get('gameHeroNote').textContent, '台灣上市日待確認');
+  assert.equal(e.get('gameHeroLabel').textContent, '預定發售・台灣日期待確認');
+  assert.equal(e.get('gameHeroNote').hidden, true);
 });
 
 test('Konami official Nintendo release evidence keeps its confirmed Taiwan source', async () => {
@@ -503,7 +635,7 @@ test('merged language detail shows Steam and NS2 support separately, including c
   assert.equal(ns2.children[1].textContent, '共 2 種語言');
   assert.doesNotMatch(ns2.textContent, /繁中/);
   assert.match(sourceText(e), /Steam 版中文：Steam 商店標示同時支援繁中與簡中/);
-  assert.match(sourceText(e), /Nintendo Switch 2 版中文：台灣版本，來源 Nintendo 台灣。已公布語言：簡體中文、英文。官方完整語言列表未列繁體中文。/);
+  assert.match(sourceText(e), /Nintendo Switch 2 版中文：台灣版本，來源 Nintendo 台灣（10\/04 確認）。已公布語言：簡體中文、英文。官方完整語言列表未列繁體中文。/);
   assert.equal(sourceLinks(e).find(link => link.textContent === 'Nintendo 台灣').href, 'https://www.nintendo.com/tw/games/switch2/example/');
   assert.match(sourceText(e), /各平台、地區版本的語言分開確認；中文名稱不代表遊戲支援中文。/);
 });
@@ -515,7 +647,7 @@ test('partial generic Chinese never invents a script or unsupported language cla
   const { elements: e } = await display('?igdb=366896', sample({ platform_language_support: { NS2: row } }));
   assert.deepEqual(versionDates(e), [['NS2', '2027-01-15']]);
   assert.deepEqual(languageChips(versionRow(e, 'NS2')), ['中文（字體待確認）']);
-  assert.match(sourceText(e), /Nintendo Switch 2 版中文：台灣版本，來源 Nintendo 台灣。已公布語言：中文。官方僅標示中文，尚未區分繁體／簡體字體。/);
+  assert.match(sourceText(e), /Nintendo Switch 2 版中文：台灣版本，來源 Nintendo 台灣（10\/04 確認）。已公布語言：中文。官方僅標示中文，尚未區分繁體／簡體字體。/);
   assert.doesNotMatch(versionCell(versionRow(e, 'NS2'), 'languages').textContent, /繁中|簡中|無中文/);
   assert.doesNotMatch(sourceText(e), /未列繁體|未列簡體|繁中|簡中/);
 });
@@ -528,12 +660,13 @@ test('separate NS and NS2 versions retain platform-specific official language so
       source_url: 'https://www.nintendo.com/us/store/products/example/' }), NS2: languageSupport() } });
   const { elements: e } = await display('?igdb=366896', payload);
   assert.deepEqual(versionDates(e), [['NS', '2027-01-15'], ['NS2', '2027-01-15']]);
-  assert.match(sourceNote(e, 'Nintendo Switch 版中文：').textContent, /北美版本，來源 Nintendo 北美。.*台灣販售版本的語言是否相同仍待確認/);
+  assert.match(sourceNote(e, 'Nintendo Switch 版中文：').textContent, /北美版本，來源 Nintendo 北美（10\/04 確認）。.*台灣販售版本的語言是否相同仍待確認/);
   assert.match(sourceNote(e, 'Nintendo Switch 2 版中文：').textContent, /台灣版本，來源 Nintendo 台灣/);
   assert.doesNotMatch(sourceNote(e, 'Nintendo Switch 2 版中文：').textContent, /台灣販售版本.*待確認/);
   assert.equal(sourceLinks(e).find(link => link.textContent === 'Nintendo 北美').href, 'https://www.nintendo.com/us/store/products/example/');
   // IGDB rows that name no region say so instead of inventing one.
-  assert.equal(e.get('gameHeroNote').textContent, '兩個平台同一天・地區未確認，台灣上市日待確認');
+  assert.equal(e.get('gameHeroLabel').textContent, '預定發售・地區未確認的日期（IGDB）');
+  assert.equal(e.get('gameHeroNote').textContent, '兩個平台同一天・台灣上市日待確認');
   assert.equal(versionCell(versionRow(e, 'NS'), 'dates').textContent, '2027/01/15（五）地區未確認・台灣待確認');
   assert.match(sourceText(e), /Nintendo Switch 版、Nintendo Switch 2 版發售日：來源 IGDB。來源未標示發售地區；/);
 });
@@ -739,7 +872,7 @@ test('merged Steam and PS5 detail keeps both versions and official shops with in
     assert.equal(e.get('gameVersionsAlso').hidden, true);
     assert.deepEqual(languageChips(versionRow(e, 'Steam')), ['繁中', '簡中']);
     assert.deepEqual(languageChips(versionRow(e, 'PS5')), ['簡中']);
-    assert.match(sourceText(e), /PlayStation 5 版中文：台灣版本，來源 PlayStation 台灣。已公布語言：簡體中文、英文。官方完整語言列表未列繁體中文。/);
+    assert.match(sourceText(e), /PlayStation 5 版中文：台灣版本，來源 PlayStation 台灣（10\/04 確認）。已公布語言：簡體中文、英文。官方完整語言列表未列繁體中文。/);
     assert.doesNotMatch(sourceText(e), /Nintendo/);
   }
 });
@@ -823,7 +956,7 @@ test('one source note covers every version it applies to, so the same sentence n
   const notes = sourceItems(e).map(item => item.textContent);
   assert.deepEqual(notes.filter(text => text.includes('發售日：')).map(text => text.split('：')[0]),
     ['Nintendo Switch 版、Nintendo Switch 2 版發售日']);
-  assert.match(notes.find(text => text.includes('中文：')), /^Nintendo Switch 版、Nintendo Switch 2 版中文：台灣版本，來源 Nintendo 台灣。/);
+  assert.match(notes.find(text => text.includes('中文：')), /^Nintendo Switch 版、Nintendo Switch 2 版中文：台灣版本，來源 Nintendo 台灣（10\/04 確認）。/);
   assert.equal(notes.filter(text => text.includes('中文：')).length, 1);
   assert.equal(sourceLinks(e).filter(link => link.textContent === 'Nintendo 台灣').length, 1);
   assert.equal(notes.filter(text => text.startsWith('各平台、地區版本的語言分開確認')).length, 1);
@@ -832,8 +965,8 @@ test('one source note covers every version it applies to, so the same sentence n
   assert.deepEqual(languageChips(versionRow(e, 'NS')), ['簡中']);
   assert.deepEqual(languageChips(versionRow(e, 'NS2')), ['簡中']);
   // Launching together is not "earliest", and one shared shop page is one buy button.
-  assert.equal(e.get('gameHeroLabel').textContent, '預定發售・台灣時間');
-  assert.equal(e.get('gameHeroNote').textContent, '兩個平台同一天・全球日期，台灣上市日待確認');
+  assert.equal(e.get('gameHeroLabel').textContent, '預定發售・全球日期（IGDB）');
+  assert.equal(e.get('gameHeroNote').textContent, '兩個平台同一天・台灣上市日待確認');
   assert.equal(shopLink(e, 'NS').href, shopLink(e, 'NS2').href);
   assert.equal(e.get('gameSteam').href, shopLink(e, 'NS').href);
   assert.equal(e.get('gameSteam').textContent, '前往 Nintendo 官網↗');
@@ -872,7 +1005,7 @@ test('a released game says so in the title card and never calls its date overdue
     releases: [{ date: '2026-09-20', platform: 'NS2', precision: 'day', region: 'worldwide', source: 'IGDB' }] }));
   assert.equal(e.get('detailPage').hidden, false);
   assert.deepEqual(titleChips(e), ['已發售', 'NS2 獨佔']);
-  assert.equal(e.get('gameHeroLabel').textContent, '發售日・台灣時間');
+  assert.equal(e.get('gameHeroLabel').textContent, '發售日・全球日期（IGDB）');
   assert.equal(e.get('gameHeroCountdown').textContent, '已發售 14 天');
   assert.equal(e.get('gameHeroCountdown').dataset.state, 'released');
   assert.doesNotMatch(pageText(e), /原定日期已過/);

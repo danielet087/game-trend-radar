@@ -145,4 +145,11 @@ test('description source links reject unsafe URLs and use safe external link att
   renderDescriptionSource(element, descriptionRecord(null), node);
   assert.equal(element.hidden, true);
   assert.deepEqual(element.children, []);
+  // The source says when it was last checked, in Taiwan time.
+  renderDescriptionSource(element, descriptionRecord(steam(description('steam_tchinese', '官方介紹',
+    { description_checked_at: '2026-10-08T17:30:00Z' }))), node);
+  assert.equal(element.children[0].textContent, 'Steam 官方繁中・10/09 確認');
+  renderDescriptionSource(element, descriptionRecord(steam(description('steam_tchinese', '官方介紹',
+    { description_checked_at: 'yesterday' }))), node);
+  assert.equal(element.children[0].textContent, 'Steam 官方繁中');
 });

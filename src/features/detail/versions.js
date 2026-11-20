@@ -33,6 +33,14 @@ export function releaseDayText(days) {
   return days === null ? '日期待確認' : days > 0 ? `還有 ${days} 天` : days === 0 ? '今天發售' : `已發售 ${-days} 天`;
 }
 
+// "11/20 確認": when a source was last checked, in Taiwan time.
+const checkedDay = value => {
+  const time = typeof value === 'string' ? Date.parse(value) : NaN;
+  if (!Number.isFinite(time)) return '';
+  const day = new Date(time + 8 * 3600000).toISOString().slice(5, 10);
+  return `${day.replace('-', '/')} 確認`;
+};
+
 export function createDetailVersions(ctx, policy) {
   const { $, node, D, today } = ctx;
   const { nativePlatforms, regionLabel, regionDateLabel, publicSourceURL, officialReleaseClock, unifiedIGDBRelease,
@@ -51,22 +59,27 @@ export function createDetailVersions(ctx, policy) {
 
   function dateBadge(row) {
     if (row.platform === 'Steam') return '';
-    if (unifiedIGDBRelease(row)) return 'IGDB 日期';
+    // The same words as the calendar and the cards: whose day it is, and that Taiwan is unconfirmed.
+    if (unifiedIGDBRelease(row)) return `${regionDateLabel(row.region)}・台灣待確認`;
     if (taiwanOfficialRelease(row)) return '台灣官方';
     if (hongKongOfficialRelease(row)) return '香港官方';
     return row.region === 'taiwan' ? '台灣日期待確認' : `${regionDateLabel(row.region)}・台灣待確認`;
   }
 
-  function dateCell(rows, heroDate) {
+  function dateCell(rows, heroDate, listed) {
     const cell = node('td', 'game-version-dates');
     cell.dataset.label = '發售日（台灣）';
     if (!rows.length) {
-      cell.append(node('p', 'game-version-date is-unknown', '日期未定'));
+      // No release at all for this version is unknown here, not "to be announced".
+      const line = node('p', 'game-version-date is-unknown', listed ? '日期未定' : D.releaseStateText?.unlisted || '日期未收錄');
+      if (!listed) line.title = D.unlistedReleaseNote || '';
+      cell.append(line);
       return cell;
     }
     for (const row of rows) {
       const line = node('p', 'game-version-date');
-      const clock = row.platform !== 'Steam' ? officialReleaseClock(row) : null;
+      // Steam's planned time is shown until launch; an official console time always.
+      const clock = row.platform !== 'Steam' ? officialReleaseClock(row) : days(row.date) >= 0 ? D.releaseClock?.(row) : null;
       const time = node('time', '', `${row.date.replaceAll('-', '/')}（${weekday(row.date)}）${clock ? ` ${clock.time}` : ''}`);
       time.dateTime = clock?.utc || row.date;
       line.append(time);
@@ -181,7 +194,10 @@ export function createDetailVersions(ctx, policy) {
     const prefix = (platforms, topic) => `${platforms.map(versionName).join('、')}${topic}：`;
     for (const [code, rows] of rowsByPlatform) {
       if (code === 'Steam') {
-        if (rows.length) add('date:steam', [code], platforms => [prefix(platforms, '發售日'), '來源 Steam 台灣商店。']);
+        // A planned clock time is the developer's setting on Steam, so it can still move.
+        const planned = rows.some(row => days(row.date) >= 0 && D.releaseClock?.(row));
+        if (rows.length) add(`date:steam${planned ? ':clock' : ''}`, [code], platforms => [prefix(platforms, '發售日'),
+          `來源 Steam 台灣商店。${planned ? '時間是開發商在 Steam 設定的發售時間，換算成台灣時間（UTC+8）；發售前仍可能調整。' : ''}`]);
         continue;
       }
       for (const row of rows) {
@@ -216,8 +232,10 @@ export function createDetailVersions(ctx, policy) {
       if (info.region !== 'taiwan') facts.push('台灣販售版本的語言是否相同仍待確認。');
       const region = info.region === 'worldwide' ? '全球公告' : `${regionLabel(info.region)}版本`;
       const listed = `已公布語言：${info.supported_languages.map(row => row.name).join('、')}。`;
-      add(`lang:${info.source}|${info.source_url}|${region}|${listed}|${facts.join('')}`, [code], platforms => [
-        prefix(platforms, '中文'), `${region}，來源 `, link(info.source, info.source_url), `。${listed}${facts.join('')}`]);
+      const checked = checkedDay(info.checked_at);
+      add(`lang:${info.source}|${info.source_url}|${region}|${listed}|${facts.join('')}|${checked}`, [code], platforms => [
+        prefix(platforms, '中文'), `${region}，來源 `, link(info.source, info.source_url),
+        `${checked ? `（${checked}）` : ''}。${listed}${facts.join('')}`]);
     }
     for (const code of rowsByPlatform.keys()) {
       const version = code !== 'Steam' && edition(game, code);
@@ -262,7 +280,8 @@ export function createDetailVersions(ctx, policy) {
       if (selected?.platform === code) line.dataset.selected = 'true';
       const { cell, target } = storeCell(game, code, store);
       if (target) targets.push(target);
-      line.append(platformCell(game, code, badges.get(code)), dateCell(dates, heroDate),
+      const listed = (game.releases || []).some(row => row?.platform === code);
+      line.append(platformCell(game, code, badges.get(code)), dateCell(dates, heroDate, listed),
         languageCell(game, code), modeCell(game, code), cell);
       return line;
     }));

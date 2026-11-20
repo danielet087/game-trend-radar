@@ -111,6 +111,7 @@ export function nintendoGames(payload) {
         recent: false, darkHorse: false, link,
         linkLabel: eventLink?.label || (igdbLink ? "IGDB 遊戲資料" : "IGDB 官網"),
         updated: raw.checked_at || payload.generated_at || null, exclusivity: exclusive,
+        firstObservedAt: typeof raw.first_observed_at === "string" ? raw.first_observed_at : null,
         tags: Array.isArray(raw.tags) ? raw.tags.filter(tag => typeof tag === "string") : [],
         genres: Array.isArray(raw.genres) ? raw.genres.filter(genre => typeof genre === "string") : [],
         ...descriptionRecord({ ...raw, steamAppid }),

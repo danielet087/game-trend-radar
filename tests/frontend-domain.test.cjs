@@ -28,13 +28,15 @@ test('ES modules keep the public adapter API and read every published dataset co
   const { RadarData } = await load();
   // Pages and the provider rule suites depend on exactly this adapter surface.
   assert.deepEqual(Object.keys(RadarData).sort(), ["calendarFeatured", "cardGames", "cardMultiplayerBadge",
-    "cardPlatformBadge", "cardPlatformChips", "consoleInterest", "consoleInterestCompare", "datasets", "detailURL", "exactReleaseDate", "gameKey", "hasTaiwanStoreDateAuthority",
+    "cardPlatformBadge", "cardPlatformChips", "consoleInterest", "consoleInterestCompare", "datasets", "dayEvidence", "detailURL", "exactReleaseDate", "gameKey", "hasTaiwanStoreDateAuthority",
     "hasTwitchAdmission", "imageURL", "isSaved", "isTwitchQualified", "nativeCardLanguages", "nativePlatformIDs",
     "nativePlatformOrder", "nativeReleaseAudited", "nintendoCardLanguages", "nintendoEdition", "nintendoGames",
     "nintendoHongKongDateURL", "nintendoLanguageSupport", "nintendoLanguageURL", "nintendoSteamIdentity",
-    "nintendoURL", "normalize", "officialTaiwanReleaseTime", "offsetDate", "platformEdition",
-    "platformFamily", "platformFullNames", "platformLanguageSupport", "platformURL", "popscoreTop", "popularityCompare", "releaseCardNames", "releaseDisplayNames", "releaseEditionBadges",
-    "saveID", "savedID", "selectGames", "todayInTaipei", "unique", "validDate"]);
+    "nintendoURL", "normalize", "officialTaiwanReleaseTime", "offsetDate", "otherPlatformPhrases", "otherPlatformReleases",
+    "platformEdition", "platformFamily", "platformFirstReleases", "platformFullNames", "platformLanguageSupport", "platformURL",
+    "platformsOnDate", "popscoreTop", "popularityCompare", "releaseCardNames", "releaseClock", "releaseDisplayNames",
+    "releaseEditionBadges", "releaseEvidence", "releaseState", "releaseStateText", "releaseStatusGroups",
+    "saveID", "savedID", "selectGames", "shortReleaseDay", "todayInTaipei", "unique", "unlistedReleaseNote", "validDate"]);
   const read = name => JSON.parse(fs.readFileSync(path.join(repo, 'tests', 'fixtures', 'site-data', name), 'utf8'));
   const official = read('steam_upcoming.json');
   const preview = read('steam_preview.json');

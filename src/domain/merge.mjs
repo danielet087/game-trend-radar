@@ -75,6 +75,7 @@ export function mergePlatformGames(steamRows, nintendoRows, steamReference = ste
         return links.length && links.every(link => link.url === links[0].url) ? [[code, links[0]]] : [];
       })),
       hypes: nintendo.hypes, popularityBasis: nintendo.popularityBasis, popscoreTop: nintendo.popscoreTop,
+      consoleUpdated: nintendo.updated || null,
       platforms, releases,
       platformMultiplayer: Object.fromEntries(platforms.map(code => [code,
         code === "Steam" ? steam.platformMultiplayer?.Steam || unknownMultiplayer("Steam")

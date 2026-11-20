@@ -33,6 +33,12 @@ export function newsItems({ game, record, history, activity, media, today, numbe
       : `新增平台：${(event.platforms || []).join('／')}`;
     items.push({ date, kind: event.type === 'added' ? 'added' : 'release', label: reasons[event.type], text, target: event.type === 'added' ? null : 'gameInfo' });
   }
+  // A console game's first sighting is its arrival on the radar when no event recorded it.
+  if (nintendo && !events.some(event => event.type === 'added')) {
+    const first = followerDay(game.firstObservedAt);
+    if (first && first <= today)
+      items.push({ date: first, kind: 'added', label: '收錄', text: '收錄進雷達（IGDB 主機新作）', target: null });
+  }
   if (!nintendo) {
     const points = dailyFollowerPoints(history, today);
     const latest = points.at(-1);
