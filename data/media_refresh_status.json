@@ -1,10 +1,12 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-20T17:32:33Z",
-  "game_count": 377,
-  "with_media": 377,
-  "due_count": 0,
-  "updated_appids": [],
+  "generated_at": "2026-11-20T19:08:46Z",
+  "game_count": 378,
+  "with_media": 378,
+  "due_count": 1,
+  "updated_appids": [
+    3916430
+  ],
   "unchanged_count": 0,
   "removed_appids": [],
   "failed_appids": [],
@@ -13,11 +15,19 @@
   "complete": true,
   "stop_reason": "",
   "next_due_at": "2026-11-26T02:26:51Z",
-  "facts_game_count": 377,
+  "facts_game_count": 378,
   "facts_changed_appids": [
-    2796640,
-    3768400,
-    4072240
+    1158160,
+    2710040,
+    3010850,
+    3047750,
+    3115160,
+    3699590,
+    3916430,
+    4024440,
+    4784510,
+    4986470,
+    5160800
   ],
   "facts_failed_appids": [],
   "facts_publish": true,
@@ -1906,6 +1916,11 @@
     "2979810": {
       "attempted_at": "2026-11-20T04:03:11Z",
       "checked_at": "2026-11-20T04:03:11Z",
+      "outcome": "success"
+    },
+    "3916430": {
+      "attempted_at": "2026-11-20T19:08:46Z",
+      "checked_at": "2026-11-20T19:08:46Z",
       "outcome": "success"
     }
   },
