@@ -189,14 +189,13 @@ export function initCatalogPage(context: CatalogContext = {}) {
     const unit = mode === 'home' ? '筆發售' : '款';
     $('resultCount').textContent = state.viewModel ? `${mode === 'home' ? '本月' : '共'} ${items.length} ${unit}${filters.active ? ` / ${source.length} ${unit}` : ''}${mode === 'home' && !items.length ? ' · 尚無符合條件的遊戲' : ''}` : '資料暫時無法讀取';
     if (mode === 'home') calendar.render(events);
-    const grid = $('gamesGrid'); grid.setAttribute('aria-busy', 'false'); motion.clear(grid);
+    const grid = $('gamesGrid'); grid.setAttribute('aria-busy', 'false');
     if (mode === 'home' && view === 'calendar') {
       replaceCards(grid, []); $('loadMoreWrap').hidden = true;
     } else {
       const listed = mode === 'home' ? renderSchedule(grid, items) : (replaceCards(grid, items.slice(0, state.limit), mode === 'date'), items.length);
       $('loadMoreWrap').hidden = listed <= state.limit;
       if (!items.length) renderEmpty(filters.active);
-      motion.reveal(grid);
     }
     document.dispatchEvent(new CustomEvent('radar:content-ready', { detail: { limit: state.limit } }));
   }

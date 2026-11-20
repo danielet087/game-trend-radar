@@ -24,17 +24,6 @@
   opacity: 1;
   transform: translate(-50%, 0);
 }
-body.motion-on .reveal-pending {
-  opacity: 0;
-  transform: translateY(13px);
-  transition:
-    opacity 0.45s var(--ease),
-    transform 0.45s var(--ease);
-}
-body.motion-on .reveal-pending.is-visible {
-  opacity: 1;
-  transform: none;
-}
 body.motion-on::after {
   animation: orbit-arrive 0.85s var(--ease) both;
 }
@@ -66,7 +55,7 @@ body.motion-on::after {
   }
 }
 @media (hover: hover) and (pointer: fine) {
-  body.motion-on .game-card:hover:not(.reveal-pending) {
+  body.motion-on .game-card:hover {
     transform: translateY(-5px);
   }
 }
