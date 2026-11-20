@@ -1,10 +1,68 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-11-19T23:33:38Z",
+  "checked_at": "2026-11-20T01:00:40Z",
   "currency": "TWD",
   "country": "TW",
   "source": "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/",
   "games": {
+    "203140": {
+      "price": {
+        "free": false,
+        "final_cents": 51000
+      },
+      "rating": {
+        "code": "R",
+        "label": "限制級",
+        "descriptors": []
+      },
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "230210": {
+      "price": {
+        "free": false,
+        "final_cents": 40800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "323190": {
+      "price": {
+        "free": false,
+        "final_cents": 48800
+      },
+      "rating": null,
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "327410": {
+      "price": {
+        "free": false,
+        "final_cents": 8200
+      },
+      "rating": null,
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "360430": {
+      "price": {
+        "free": false,
+        "final_cents": 89900
+      },
+      "rating": {
+        "code": "R",
+        "label": "限制級",
+        "descriptors": [
+          "性",
+          "暴力",
+          "毒品",
+          "菸酒"
+        ]
+      },
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
     "499170": {
       "price": {
         "free": false,
@@ -15,7 +73,34 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "512790": {
+      "price": {
+        "free": false,
+        "final_cents": 5800,
+        "original_cents": 58800,
+        "discount_pct": 90,
+        "discount_ends_at": "2026-11-21T18:00:00Z"
+      },
+      "rating": null,
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "536270": {
+      "price": {
+        "free": false,
+        "final_cents": 69900
+      },
+      "rating": {
+        "code": "C15",
+        "label": "輔15級",
+        "descriptors": [
+          "暴力"
+        ]
+      },
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "632950": {
       "price": {
@@ -24,7 +109,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "744200": {
       "price": {
@@ -32,7 +117,23 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "883710": {
+      "price": {
+        "free": false,
+        "final_cents": 119000
+      },
+      "rating": {
+        "code": "R",
+        "label": "限制級",
+        "descriptors": [
+          "暴力",
+          "恐怖"
+        ]
+      },
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "892970": {
       "price": {
@@ -41,7 +142,16 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "952060": {
+      "price": {
+        "free": false,
+        "final_cents": 119000
+      },
+      "rating": null,
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "972450": {
       "price": {
@@ -50,13 +160,80 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1007040": {
+      "price": {
+        "free": false,
+        "final_cents": 85800
+      },
+      "rating": null,
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1088850": {
+      "price": {
+        "free": false,
+        "final_cents": 22300,
+        "original_cents": 149000,
+        "discount_pct": 85,
+        "discount_ends_at": "2026-12-03T17:00:00Z"
+      },
+      "rating": {
+        "code": "C15",
+        "label": "輔15級",
+        "descriptors": [
+          "暴力",
+          "菸酒"
+        ]
+      },
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1094600": {
+      "price": {
+        "free": false,
+        "final_cents": 32800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1104280": {
+      "price": {
+        "free": false,
+        "final_cents": 32800
+      },
+      "rating": null,
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1154030": {
+      "price": {
+        "free": false,
+        "final_cents": 70000
+      },
+      "rating": null,
+      "steam_deck": "unsupported",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1154960": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1158160": {
+      "price": {
+        "free": false,
+        "final_cents": 53900,
+        "original_cents": 89900,
+        "discount_pct": 40,
+        "discount_ends_at": "2026-11-20T18:00:00Z"
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1167820": {
       "price": {
@@ -65,13 +242,22 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1173980": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1190970": {
+      "price": {
+        "free": false,
+        "final_cents": 64600
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1203620": {
       "price": {
@@ -80,13 +266,13 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1209970": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1215940": {
       "price": {
@@ -95,7 +281,34 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1233070": {
+      "price": {
+        "free": false,
+        "final_cents": 26900
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1304930": {
+      "price": {
+        "free": false,
+        "final_cents": 59900
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1313140": {
+      "price": {
+        "free": false,
+        "final_cents": 48800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1374860": {
       "price": {
@@ -104,13 +317,38 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1395520": {
+      "price": {
+        "free": false,
+        "final_cents": 32800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1426210": {
+      "price": {
+        "free": false,
+        "final_cents": 21900,
+        "original_cents": 109900,
+        "discount_pct": 80,
+        "discount_ends_at": "2026-12-03T18:00:00Z"
+      },
+      "rating": {
+        "code": "C12",
+        "label": "輔12級",
+        "descriptors": []
+      },
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1426870": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1488490": {
       "price": {
@@ -119,13 +357,22 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1505940": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1522160": {
+      "price": {
+        "free": false,
+        "final_cents": 59900
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1551980": {
       "price": {
@@ -134,7 +381,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1566200": {
       "price": {
@@ -143,7 +390,33 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1574260": {
+      "price": {
+        "free": false,
+        "final_cents": 48800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1620730": {
+      "price": {
+        "free": false,
+        "final_cents": 119900
+      },
+      "rating": {
+        "code": "R",
+        "label": "限制級",
+        "descriptors": [
+          "暴力",
+          "恐怖",
+          "不當言語"
+        ]
+      },
+      "steam_deck": "unsupported",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1622130": {
       "price": {
@@ -151,7 +424,16 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1629520": {
+      "price": {
+        "free": false,
+        "final_cents": 26800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1636440": {
       "price": {
@@ -167,13 +449,13 @@
         ]
       },
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1637460": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1675260": {
       "price": {
@@ -182,7 +464,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1706510": {
       "price": {
@@ -194,7 +476,16 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1713730": {
+      "price": {
+        "free": false,
+        "final_cents": 46900
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1732430": {
       "price": {
@@ -202,7 +493,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1742440": {
       "price": {
@@ -211,19 +502,19 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1747470": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1752080": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1761910": {
       "price": {
@@ -232,7 +523,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1798230": {
       "price": {
@@ -241,7 +532,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1799840": {
       "price": {
@@ -250,13 +541,13 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1846700": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1853440": {
       "price": {
@@ -268,7 +559,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1867240": {
       "price": {
@@ -277,7 +568,29 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1876590": {
+      "price": {
+        "free": false,
+        "final_cents": 32800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1880620": {
+      "price": {
+        "free": false,
+        "final_cents": 119000
+      },
+      "rating": {
+        "code": "G",
+        "label": "普遍級",
+        "descriptors": []
+      },
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1892100": {
       "price": {
@@ -289,7 +602,16 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1899060": {
+      "price": {
+        "free": false,
+        "final_cents": 32800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1912410": {
       "price": {
@@ -304,7 +626,25 @@
         ]
       },
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1921490": {
+      "price": {
+        "free": false,
+        "final_cents": 30800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "1940340": {
+      "price": {
+        "free": false,
+        "final_cents": 74900
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "1963680": {
       "price": {
@@ -320,13 +660,46 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2017940": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2050650": {
+      "price": {
+        "free": false,
+        "final_cents": 119000
+      },
+      "rating": {
+        "code": "R",
+        "label": "限制級",
+        "descriptors": [
+          "暴力",
+          "恐怖"
+        ]
+      },
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2054970": {
+      "price": {
+        "free": false,
+        "final_cents": 119000
+      },
+      "rating": {
+        "code": "R",
+        "label": "限制級",
+        "descriptors": [
+          "性",
+          "暴力",
+          "不當言語"
+        ]
+      },
+      "steam_deck": "unsupported",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2067820": {
       "price": {
@@ -338,7 +711,22 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2071280": {
+      "price": {
+        "free": false,
+        "final_cents": 48800
+      },
+      "rating": {
+        "code": "C15",
+        "label": "輔15級",
+        "descriptors": [
+          "暴力"
+        ]
+      },
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2083660": {
       "price": {
@@ -350,7 +738,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2087540": {
       "price": {
@@ -359,7 +747,7 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2121510": {
       "price": {
@@ -368,19 +756,46 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2124120": {
+      "price": {
+        "free": false,
+        "final_cents": 43300,
+        "original_cents": 69900,
+        "discount_pct": 38,
+        "discount_ends_at": "2026-12-01T18:00:00Z"
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2141130": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2153760": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2155070": {
+      "price": null,
+      "rating": null,
+      "steam_deck": null,
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2163330": {
+      "price": {
+        "free": false,
+        "final_cents": 26800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2223980": {
       "price": {
@@ -388,8 +803,33 @@
         "final_cents": 27800
       },
       "rating": null,
-      "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2235200": {
+      "price": {
+        "free": false,
+        "final_cents": 32800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2246340": {
+      "price": {
+        "free": false,
+        "final_cents": 119000
+      },
+      "rating": {
+        "code": "C15",
+        "label": "輔15級",
+        "descriptors": [
+          "性",
+          "暴力"
+        ]
+      },
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2254990": {
       "price": {
@@ -398,7 +838,7 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2257440": {
       "price": {
@@ -407,13 +847,13 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2262630": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2272360": {
       "price": {
@@ -425,7 +865,19 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2272400": {
+      "price": {
+        "free": false,
+        "final_cents": 11900,
+        "original_cents": 29800,
+        "discount_pct": 60,
+        "discount_ends_at": "2026-12-03T18:00:00Z"
+      },
+      "rating": null,
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2288340": {
       "price": {
@@ -442,7 +894,23 @@
         ]
       },
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2290180": {
+      "price": {
+        "free": false,
+        "final_cents": 11200,
+        "original_cents": 112900,
+        "discount_pct": 90,
+        "discount_ends_at": "2026-12-02T17:00:00Z"
+      },
+      "rating": {
+        "code": "C12",
+        "label": "輔12級",
+        "descriptors": []
+      },
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2295060": {
       "price": {
@@ -451,13 +919,13 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2295170": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2315050": {
       "price": {
@@ -466,7 +934,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2320980": {
       "price": {
@@ -475,7 +943,28 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2321470": {
+      "price": {
+        "free": false,
+        "final_cents": 27500
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2321960": {
+      "price": {
+        "free": false,
+        "final_cents": 50500,
+        "original_cents": 56100,
+        "discount_pct": 10,
+        "discount_ends_at": "2026-11-23T18:00:46Z"
+      },
+      "rating": null,
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2333000": {
       "price": {
@@ -484,31 +973,61 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2348250": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2362070": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2364580": {
+      "price": {
+        "free": false,
+        "final_cents": 14300,
+        "original_cents": 21800,
+        "discount_pct": 34,
+        "discount_ends_at": "2026-11-30T05:00:00Z"
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2365790": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2376260": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2377280": {
+      "price": {
+        "free": false,
+        "final_cents": 79900
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2400510": {
+      "price": {
+        "free": false,
+        "final_cents": 26800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2411200": {
       "price": {
@@ -517,7 +1036,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2420580": {
       "price": {
@@ -526,7 +1045,16 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2430010": {
+      "price": {
+        "free": false,
+        "final_cents": 23800
+      },
+      "rating": null,
+      "steam_deck": null,
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2443590": {
       "price": {
@@ -535,7 +1063,47 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2453160": {
+      "price": {
+        "free": false,
+        "final_cents": 48800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2464280": {
+      "price": {
+        "free": false,
+        "final_cents": 89000
+      },
+      "rating": {
+        "code": "R",
+        "label": "限制級",
+        "descriptors": []
+      },
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2475490": {
+      "price": {
+        "free": false,
+        "final_cents": 23800
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2479650": {
+      "price": {
+        "free": false,
+        "final_cents": 59900
+      },
+      "rating": null,
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2482760": {
       "price": {
@@ -550,7 +1118,7 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2487190": {
       "price": {
@@ -562,7 +1130,19 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2492040": {
+      "price": {
+        "free": false,
+        "final_cents": 13900,
+        "original_cents": 55600,
+        "discount_pct": 75,
+        "discount_ends_at": "2026-11-21T08:00:00Z"
+      },
+      "rating": null,
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2522120": {
       "price": {
@@ -571,7 +1151,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2523740": {
       "price": {
@@ -580,7 +1160,16 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2529790": {
+      "price": {
+        "free": false,
+        "final_cents": 40800
+      },
+      "rating": null,
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2543830": {
       "price": {
@@ -592,7 +1181,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2548880": {
       "price": {
@@ -601,7 +1190,20 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2552450": {
+      "price": {
+        "free": false,
+        "final_cents": 119000
+      },
+      "rating": {
+        "code": "G",
+        "label": "普遍級",
+        "descriptors": []
+      },
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2561460": {
       "price": {
@@ -613,7 +1215,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2562390": {
       "price": {
@@ -622,7 +1224,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2590240": {
       "price": {
@@ -640,7 +1242,7 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2638080": {
       "price": {
@@ -652,7 +1254,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2638890": {
       "price": {
@@ -667,7 +1269,7 @@
         ]
       },
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2659410": {
       "price": {
@@ -676,7 +1278,23 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2679460": {
+      "price": {
+        "free": false,
+        "final_cents": 77000
+      },
+      "rating": {
+        "code": "C15",
+        "label": "輔15級",
+        "descriptors": [
+          "暴力",
+          "反社會性"
+        ]
+      },
+      "steam_deck": "playable",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2680280": {
       "price": {
@@ -685,7 +1303,36 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2686570": {
+      "price": null,
+      "rating": {
+        "code": "C12",
+        "label": "輔12級",
+        "descriptors": []
+      },
+      "steam_deck": null,
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2698940": {
+      "price": {
+        "free": false,
+        "final_cents": 33800,
+        "original_cents": 169000,
+        "discount_pct": 80,
+        "discount_ends_at": "2026-11-24T18:00:00Z"
+      },
+      "rating": {
+        "code": "C12",
+        "label": "輔12級",
+        "descriptors": [
+          "暴力",
+          "不當言語"
+        ]
+      },
+      "steam_deck": "verified",
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2710040": {
       "price": {
@@ -697,7 +1344,13 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
+    },
+    "2710920": {
+      "price": null,
+      "rating": null,
+      "steam_deck": null,
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2712590": {
       "price": {
@@ -709,7 +1362,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2738170": {
       "price": null,
@@ -722,7 +1375,7 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2769570": {
       "price": {
@@ -739,7 +1392,7 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2781660": {
       "price": {
@@ -751,7 +1404,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2796640": {
       "price": {
@@ -763,7 +1416,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2826790": {
       "price": {
@@ -772,7 +1425,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2828710": {
       "price": {
@@ -789,19 +1442,19 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2849490": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2870790": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2871520": {
       "price": {
@@ -810,7 +1463,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2887580": {
       "price": {
@@ -819,7 +1472,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2902720": {
       "price": {
@@ -827,7 +1480,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2916700": {
       "price": {
@@ -843,7 +1496,7 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2920220": {
       "price": {
@@ -852,7 +1505,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2929250": {
       "price": {
@@ -861,7 +1514,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2938460": {
       "price": {
@@ -870,7 +1523,7 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2963950": {
       "price": {
@@ -888,7 +1541,7 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2967950": {
       "price": {
@@ -897,19 +1550,19 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2975260": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "2988120": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3010850": {
       "price": {
@@ -925,7 +1578,7 @@
         ]
       },
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3024130": {
       "price": {
@@ -937,7 +1590,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3031880": {
       "price": {
@@ -946,7 +1599,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3070070": {
       "price": {
@@ -955,7 +1608,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3090810": {
       "price": {
@@ -964,7 +1617,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3115160": {
       "price": {
@@ -973,13 +1626,13 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3161310": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3188660": {
       "price": {
@@ -988,7 +1641,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3195440": {
       "price": {
@@ -997,7 +1650,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3195580": {
       "price": {
@@ -1006,7 +1659,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3204330": {
       "price": {
@@ -1015,7 +1668,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3218230": {
       "price": {
@@ -1024,7 +1677,7 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3218350": {
       "price": {
@@ -1036,7 +1689,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3218570": {
       "price": {
@@ -1045,7 +1698,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3219030": {
       "price": {
@@ -1054,7 +1707,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3219630": {
       "price": {
@@ -1073,7 +1726,7 @@
         ]
       },
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3222640": {
       "price": {
@@ -1082,13 +1735,13 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3224600": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3230960": {
       "price": null,
@@ -1103,13 +1756,13 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3255110": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3255500": {
       "price": {
@@ -1118,7 +1771,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3259780": {
       "price": {
@@ -1133,13 +1786,13 @@
         ]
       },
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3295000": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3299050": {
       "price": {
@@ -1148,7 +1801,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3310570": {
       "price": {
@@ -1157,7 +1810,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3314580": {
       "price": {
@@ -1166,7 +1819,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3328490": {
       "price": {
@@ -1175,13 +1828,13 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3333850": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3335310": {
       "price": {
@@ -1190,7 +1843,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3339970": {
       "price": {
@@ -1198,7 +1851,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3347910": {
       "price": {
@@ -1207,7 +1860,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3370490": {
       "price": {
@@ -1216,7 +1869,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3431300": {
       "price": {
@@ -1225,13 +1878,13 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3462190": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3469910": {
       "price": {
@@ -1240,13 +1893,13 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3470500": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3473210": {
       "price": {
@@ -1255,7 +1908,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3486530": {
       "price": {
@@ -1272,7 +1925,7 @@
         ]
       },
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3492120": {
       "price": {
@@ -1281,7 +1934,7 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3493540": {
       "price": {
@@ -1290,7 +1943,7 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3499790": {
       "price": {
@@ -1299,13 +1952,13 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3509420": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3510740": {
       "price": {
@@ -1314,7 +1967,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3558670": {
       "price": {
@@ -1331,7 +1984,7 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3560670": {
       "price": {
@@ -1340,7 +1993,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3569420": {
       "price": {
@@ -1349,7 +2002,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3581230": {
       "price": {
@@ -1358,7 +2011,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3629430": {
       "price": {
@@ -1370,7 +2023,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3640200": {
       "price": {
@@ -1379,19 +2032,19 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3644020": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3660710": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3669570": {
       "price": {
@@ -1400,7 +2053,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3669620": {
       "price": {
@@ -1409,7 +2062,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3669870": {
       "price": {
@@ -1418,7 +2071,7 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3681610": {
       "price": {
@@ -1431,7 +2084,7 @@
         "descriptors": []
       },
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3699590": {
       "price": {
@@ -1443,13 +2096,13 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3710600": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3727090": {
       "price": {
@@ -1458,13 +2111,13 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3734220": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3740090": {
       "price": {
@@ -1473,7 +2126,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3743140": {
       "price": {
@@ -1482,19 +2135,19 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3749580": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3751230": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3768400": {
       "price": {
@@ -1503,7 +2156,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3826670": {
       "price": {
@@ -1512,7 +2165,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3832490": {
       "price": {
@@ -1521,7 +2174,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3841510": {
       "price": {
@@ -1539,7 +2192,7 @@
         ]
       },
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3846830": {
       "price": null,
@@ -1551,7 +2204,7 @@
         ]
       },
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3883570": {
       "price": {
@@ -1560,13 +2213,13 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3895110": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3917700": {
       "price": {
@@ -1575,7 +2228,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3926930": {
       "price": {
@@ -1584,7 +2237,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3927170": {
       "price": {
@@ -1593,7 +2246,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "3960600": {
       "price": {
@@ -1602,7 +2255,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4019220": {
       "price": {
@@ -1611,7 +2264,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4024440": {
       "price": {
@@ -1620,7 +2273,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4045480": {
       "price": {
@@ -1632,7 +2285,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4047270": {
       "price": {
@@ -1644,7 +2297,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4071650": {
       "price": {
@@ -1653,7 +2306,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4072240": {
       "price": {
@@ -1662,7 +2315,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4078430": {
       "price": {
@@ -1678,7 +2331,7 @@
         ]
       },
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4080220": {
       "price": {
@@ -1694,7 +2347,7 @@
         "descriptors": []
       },
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4084710": {
       "price": {
@@ -1709,7 +2362,7 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4094350": {
       "price": {
@@ -1718,7 +2371,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4094660": {
       "price": {
@@ -1727,7 +2380,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4096830": {
       "price": {
@@ -1736,7 +2389,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4098030": {
       "price": {
@@ -1745,7 +2398,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4115450": {
       "price": {
@@ -1758,7 +2411,7 @@
         "descriptors": []
       },
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4126040": {
       "price": {
@@ -1770,7 +2423,7 @@
         "descriptors": []
       },
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4140530": {
       "price": {
@@ -1779,13 +2432,13 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4150720": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4171850": {
       "price": {
@@ -1797,7 +2450,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4182430": {
       "price": {
@@ -1806,7 +2459,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4200960": {
       "price": {
@@ -1815,7 +2468,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4218620": {
       "price": {
@@ -1824,7 +2477,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4231820": {
       "price": {
@@ -1840,7 +2493,7 @@
         ]
       },
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4247840": {
       "price": {
@@ -1849,7 +2502,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4251460": {
       "price": {
@@ -1858,19 +2511,19 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4253570": {
       "price": null,
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4253770": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4259190": {
       "price": {
@@ -1882,7 +2535,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4260840": {
       "price": {
@@ -1901,7 +2554,7 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4262460": {
       "price": {
@@ -1909,7 +2562,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4268590": {
       "price": {
@@ -1921,7 +2574,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4287460": {
       "price": {
@@ -1930,7 +2583,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4312190": {
       "price": {
@@ -1939,7 +2592,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4348910": {
       "price": {
@@ -1948,7 +2601,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4354570": {
       "price": {
@@ -1966,7 +2619,7 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4356430": {
       "price": {
@@ -1979,7 +2632,7 @@
         "descriptors": []
       },
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4358660": {
       "price": {
@@ -1988,7 +2641,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4358690": {
       "price": {
@@ -1997,7 +2650,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4412320": {
       "price": {
@@ -2006,7 +2659,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4416300": {
       "price": {
@@ -2023,7 +2676,7 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4435490": {
       "price": {
@@ -2041,7 +2694,7 @@
         ]
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4450660": {
       "price": {
@@ -2053,7 +2706,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4530370": {
       "price": {
@@ -2066,7 +2719,7 @@
         "descriptors": []
       },
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4538140": {
       "price": {
@@ -2075,13 +2728,13 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4554250": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4555040": {
       "price": {
@@ -2090,7 +2743,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4557380": {
       "price": {
@@ -2102,7 +2755,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4576490": {
       "price": {
@@ -2114,7 +2767,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4612650": {
       "price": {
@@ -2123,7 +2776,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4613790": {
       "price": {
@@ -2132,7 +2785,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4618570": {
       "price": {
@@ -2144,7 +2797,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4652040": {
       "price": {
@@ -2153,7 +2806,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4661070": {
       "price": {
@@ -2165,7 +2818,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4694270": {
       "price": {
@@ -2174,7 +2827,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4705510": {
       "price": {
@@ -2183,7 +2836,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4715160": {
       "price": {
@@ -2192,7 +2845,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4732690": {
       "price": {
@@ -2200,7 +2853,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4739040": {
       "price": {
@@ -2209,7 +2862,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4739500": {
       "price": {
@@ -2221,7 +2874,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4761550": {
       "price": {
@@ -2230,7 +2883,7 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4784510": {
       "price": {
@@ -2242,7 +2895,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4814120": {
       "price": {
@@ -2250,7 +2903,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4876650": {
       "price": {
@@ -2259,7 +2912,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4945790": {
       "price": {
@@ -2271,7 +2924,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4954910": {
       "price": {
@@ -2280,7 +2933,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4968640": {
       "price": {
@@ -2289,7 +2942,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4986470": {
       "price": {
@@ -2301,7 +2954,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "4992660": {
       "price": {
@@ -2313,7 +2966,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5000040": {
       "price": {
@@ -2322,7 +2975,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5033060": {
       "price": {
@@ -2334,7 +2987,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5037200": {
       "price": {
@@ -2346,7 +2999,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5037510": {
       "price": {
@@ -2355,7 +3008,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5041530": {
       "price": {
@@ -2364,7 +3017,7 @@
       },
       "rating": null,
       "steam_deck": "verified",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5070190": {
       "price": {
@@ -2373,7 +3026,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5073990": {
       "price": {
@@ -2382,7 +3035,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5085740": {
       "price": {
@@ -2391,13 +3044,13 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5117550": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5127370": {
       "price": {
@@ -2406,7 +3059,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5133900": {
       "price": {
@@ -2415,7 +3068,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5155360": {
       "price": {
@@ -2424,7 +3077,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5160800": {
       "price": {
@@ -2436,7 +3089,7 @@
       },
       "rating": null,
       "steam_deck": "unsupported",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5173660": {
       "price": {
@@ -2445,7 +3098,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5189160": {
       "price": {
@@ -2457,7 +3110,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5200620": {
       "price": {
@@ -2469,7 +3122,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5217440": {
       "price": {
@@ -2481,13 +3134,13 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5246700": {
       "price": null,
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5258340": {
       "price": {
@@ -2496,7 +3149,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5266240": {
       "price": {
@@ -2505,7 +3158,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5279620": {
       "price": {
@@ -2513,7 +3166,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5313470": {
       "price": {
@@ -2522,7 +3175,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5321510": {
       "price": {
@@ -2531,7 +3184,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5327150": {
       "price": {
@@ -2540,7 +3193,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5335510": {
       "price": {
@@ -2549,7 +3202,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5341070": {
       "price": {
@@ -2558,7 +3211,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5356470": {
       "price": {
@@ -2566,7 +3219,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5378110": {
       "price": {
@@ -2578,7 +3231,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5379260": {
       "price": {
@@ -2587,7 +3240,7 @@
       },
       "rating": null,
       "steam_deck": null,
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     },
     "5455340": {
       "price": {
@@ -2596,7 +3249,7 @@
       },
       "rating": null,
       "steam_deck": "playable",
-      "checked_at": "2026-11-19T23:33:38Z"
+      "checked_at": "2026-11-20T01:00:40Z"
     }
   }
 }
