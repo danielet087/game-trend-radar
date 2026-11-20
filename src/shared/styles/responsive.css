@@ -626,10 +626,6 @@ body.motion-off *::after {
   transition: none !important;
   scroll-behavior: auto !important;
 }
-body.motion-off .reveal-pending {
-  opacity: 1;
-  transform: none;
-}
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -640,9 +636,5 @@ body.motion-off .reveal-pending {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
-  }
-  .reveal-pending {
-    opacity: 1 !important;
-    transform: none !important;
   }
 }
