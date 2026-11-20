@@ -140,7 +140,7 @@ export function normalizeBoundary(input = {}) {
   const preview = publicPayload(input.preview);
   const native = publicPayload(input.native);
   const references = publicPayload(input.references);
-  const dataset = datasets(official, preview, native, references);
+  const dataset = datasets(official, preview, native, references, input.followers ?? null);
   if (!dataset) return null;
   const sources = sourceIndex(official, preview, native, references);
   const groups = new Map();
@@ -166,8 +166,9 @@ export function normalizeBoundary(input = {}) {
     if (platforms.includes('Steam')) {
       const appid = row.steamAppid || row.appid;
       const entry = sources.steam.get(appid);
+      // The count shown may be data/followers.json's newer one; its time comes with it.
       const source = provenance('Steam', entry?.dataset || 'official', entry?.payload,
-        entry?.raw, row.steamLink || row.link, entry?.raw?.follower_checked_at);
+        entry?.raw, row.steamLink || row.link, row.followersCheckedAt || entry?.raw?.follower_checked_at);
       metrics.push(observation('followers', 'Steam', appid, row.followers, source));
       const proof = row.twitchAdmission;
       if (proof) metrics.push(observation('viewers', 'Twitch', proof.twitch_game_id,

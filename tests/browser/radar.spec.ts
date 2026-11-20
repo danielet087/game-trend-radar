@@ -50,6 +50,7 @@ for (const [accepted, unknownFollowers] of [[true, false], [false, false], [true
     await page.route('**/data/catalog.json', route => route.fulfill({ json: catalog }));
     await page.route('**/data/games/4024440.json', route => route.fulfill({ json: row }));
     await page.route('**/data/growth.json', route => route.fulfill({ json: { version:1, games:[] } }));
+    await page.route('**/data/followers.json', route => route.fulfill({ json: { schema_version:1, games:{} } }));
     await page.route('**/data/nintendo_upcoming.json', route => route.fulfill({
       json: { schema_version: 1, generated_at: catalog.generated_at, games: [] },
     }));

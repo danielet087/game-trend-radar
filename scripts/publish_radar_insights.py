@@ -17,7 +17,7 @@ from radar_core.storage import primary
 from radar_core.storage.sql import StorageError
 from scripts import sync_scheduler_queue_status as queue
 
-PATHS = ("data/insights-state.json", "data/activity.json", "data/growth.json",
+PATHS = ("data/insights-state.json", "data/activity.json", "data/growth.json", "data/followers.json",
          "data/scheduler_queue_status.json", "data/twitch-launch-curves.json")
 # Heavy Steam jobs can hold the storage lease past one bounded wait. A busy
 # lease fails before any write, so the whole publication can simply run again.

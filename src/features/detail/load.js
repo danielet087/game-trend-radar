@@ -58,12 +58,12 @@ export function createDetailLoader(ctx, render, favorites, related) {
   const readActivity = force => Promise.resolve(storage.readJSON?.('./data/activity.json', validActivity, { force }))
     .then(value => validActivity(value) ? value : null);
   async function loadConsoleDetail(force, active) {
-    let catalog = null, preview = null, references = null, nintendo = null, activity = null, sourcesDone = false, shown = false;
+    let catalog = null, preview = null, references = null, followers = null, nintendo = null, activity = null, sourcesDone = false, shown = false;
     let moved = false;
     function present() {
       if (!active() || moved) return;
       if (!nintendo) return;
-      const data = D.datasets(catalog, preview, nintendo, references);
+      const data = D.datasets(catalog, preview, nintendo, references, followers);
       if (!data) return;
       const enriched = R.enrich(data, catalog, preview, references);
       const matches = [...enriched.games, ...enriched.recent].filter(entry =>
@@ -89,7 +89,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
         storage.loadNintendo({ force }).then(result => { nintendo = result; present(); }),
         storage.loadSources({ force }).then(result => {
           catalog = result.catalog; preview = result.preview; references = result.references || null;
-          sourcesDone = true; present();
+          followers = result.followers || null; sourcesDone = true; present();
         }),
         readActivity(force).then(result => { activity = result; if (activity) present(); })
           .catch(() => { /* The news list is optional. */ }),
@@ -121,14 +121,14 @@ export function createDetailLoader(ctx, render, favorites, related) {
       setStatus("找不到這款遊戲", "連結沒有有效的 Steam AppID 或發售日期，請返回遊戲清單重新選擇。");
       return;
     }
-    let rawGame = null, catalog = null, preview = null, references = null, nintendo = null, growth = null, media = null, activity = null, store = null;
+    let rawGame = null, catalog = null, preview = null, references = null, followers = null, nintendo = null, growth = null, media = null, activity = null, store = null;
     let mediaDone = false;
     let catalogDone = false, nintendoDone = false, gameDone = false, shown = false;
     function present() {
       if (!active()) return;
       if (!rawGame && !catalog && !preview) return;
       const official = detailCatalog(catalog, rawGame, appid);
-      const data = R.enrich(D.datasets(official, preview, nintendo, references), official, preview, references);
+      const data = R.enrich(D.datasets(official, preview, nintendo, references, followers), official, preview, references);
       if (!data) return;
       const matches = [...data.games, ...data.recent].filter(entry =>
         entry.appid === appid && (!requestedDate || entry.date === requestedDate),
@@ -167,7 +167,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
           .finally(() => { gameDone = true; present(); }),
         storage.loadSources({ force }).then(result => {
           catalog = result.catalog; preview = result.preview; references = result.references || null;
-          catalogDone = true; present();
+          followers = result.followers || null; catalogDone = true; present();
         }),
         storage.loadNintendo({ force }).then(result => { nintendo = result; nintendoDone = true; present(); })
           .catch(() => { nintendoDone = true; present(); /* Optional platform data must not block the Steam profile. */ }),

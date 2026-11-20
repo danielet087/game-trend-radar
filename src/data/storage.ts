@@ -102,12 +102,18 @@ export function createRadarStorage(environment: StorageEnvironment = {}) {
     return readJSON<JsonRecord>("./data/steam_references.json",
       value => isRecord(value) && value.schema_version === 1 && Array.isArray(value.games), options);
   }
+  // Each Steam game's latest official count (growth publication, hourly): lists
+  // show it in place of the catalog's daily count. Missing or invalid: no change.
+  async function loadLatestFollowers(options: LoadOptions = {}) {
+    return readJSON<JsonRecord>("./data/followers.json",
+      value => isRecord(value) && value.schema_version === 1 && isRecord(value.games), options);
+  }
   async function loadSources(options: LoadOptions = {}) {
-    const [catalogResult, references] = await Promise.all([loadCatalogResult(options),
-      loadSteamReferences(options).catch(() => null)]);
+    const [catalogResult, references, followers] = await Promise.all([loadCatalogResult(options),
+      loadSteamReferences(options).catch(() => null), loadLatestFollowers(options).catch(() => null)]);
     const catalog = catalogResult.data;
     const previewResult = !catalog || !(Number(catalog.version) >= 2) ? await readJSONResult("./data/steam_preview.json", validCatalog, options) : null;
-    return { catalog, preview: previewResult?.data ?? null, references: references ?? null, catalogResult, previewResult };
+    return { catalog, preview: previewResult?.data ?? null, references: references ?? null, followers: followers ?? null, catalogResult, previewResult };
   }
   async function loadNintendoResult(options: LoadOptions = {}) { return readJSONResult("./data/nintendo_upcoming.json", validNintendo, options); }
   async function loadNintendo(options: LoadOptions = {}) { return (await loadNintendoResult(options)).data; }
@@ -131,7 +137,7 @@ export function createRadarStorage(environment: StorageEnvironment = {}) {
     return readJSON<JsonRecord>('./data/store_facts.json',
       value => isRecord(value) && value.schema_version === 1 && isRecord(value.games), options);
   }
-  return { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadSteamReferences, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia, loadStoreFacts };
+  return { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadSteamReferences, loadLatestFollowers, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia, loadStoreFacts };
 }
 export const RadarStorage = createRadarStorage();
-export const { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadSteamReferences, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia, loadStoreFacts } = RadarStorage;
+export const { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadSteamReferences, loadLatestFollowers, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia, loadStoreFacts } = RadarStorage;

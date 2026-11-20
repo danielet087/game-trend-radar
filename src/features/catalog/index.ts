@@ -20,6 +20,7 @@ import { createHomeFeatures } from '../home/index';
 import { addDays, dotDate, longDate } from '../home/dates';
 import { normalizeCatalog } from './boundary';
 import type { CatalogAPI, CatalogGame, CatalogMode, CatalogState } from './types';
+import type { BoundaryInput } from '../../domain/contracts';
 
 export interface CatalogContext {
   data?: CatalogAPI;
@@ -271,7 +272,8 @@ export function initCatalogPage(context: CatalogContext = {}) {
       if (disposed) return;
       const { catalog: official, preview } = sources, nintendo = nativeResult.data;
       const references = (sources as { references?: typeof official }).references ?? null;
-      const normalized = normalizeCatalog({ official, preview, native: nintendo, references }, mode, R);
+      const followers = (sources as { followers?: BoundaryInput['followers'] }).followers ?? null;
+      const normalized = normalizeCatalog({ official, preview, native: nintendo, references, followers }, mode, R);
       state.model = normalized.model; state.viewModel = normalized.viewModel;
       if (mode === 'explore' && state.viewModel) tags!.setCatalog(R.catalog(D.cardGames(state.viewModel.games.filter(game => game.date >= today))));
       if (!state.viewModel) {

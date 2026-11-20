@@ -29,5 +29,8 @@ export function dailyFollowerPoints(history, today) {
 export function withLatestFollowers(game, record, history, today) {
   if (game.source === 'nintendo') return game;
   const latest = dailyFollowerPoints(followerHistory(record, history), today).at(-1);
-  return latest ? { ...game, followers:latest.followers, followersCheckedAt:latest.at } : game;
+  // data/followers.json may already have given the game a newer count than this history.
+  const shown = awareTime(game.followersCheckedAt);
+  return latest && !(shown !== null && shown > awareTime(latest.at))
+    ? { ...game, followers:latest.followers, followersCheckedAt:latest.at } : game;
 }

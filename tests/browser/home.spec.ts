@@ -34,7 +34,8 @@ test('the carousel shows the five most-followed Steam games of the next two week
   await expect(tabs.first()).toContainText(/\d\d\.\d\d（.）/);
   const slide = hero.getByRole('tabpanel');
   await expect(slide).toHaveCount(1);
-  await expect(slide.locator('.home-hero-meta')).toHaveText('Steam · 396,361 人關注');
+  // The latest official count (followers.json, 11/14), not the catalog's 396,361 from 10/16.
+  await expect(slide.locator('.home-hero-meta')).toHaveText('Steam · 410,124 人關注');
   await expect(slide.locator('.home-hero-when')).toContainText('還有 14 天');
   await expect(hero.locator('.home-hero-count')).toHaveText('1 / 5');
   await expect(hero.getByRole('button', { name: '暫停輪播' })).toBeVisible();

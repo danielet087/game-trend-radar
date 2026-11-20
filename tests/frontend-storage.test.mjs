@@ -18,7 +18,7 @@ function boot(routes = {}, shared = new Map(), clock = { at:1_000 }) {
   });
   return { api, calls, clock, shared };
 }
-const catalogCalls = calls => calls.filter(call => !call.url.includes('steam_references'));
+const catalogCalls = calls => calls.filter(call => !call.url.includes('steam_references') && !call.url.includes('followers'));
 test('one complete catalog skips preview and preserves publication metadata across cached page loads', async () => {
   const shared = new Map(), first = boot({'catalog.json':catalog},shared);
   const result = await first.api.loadSources();
@@ -41,6 +41,19 @@ test('the Steam versions of console games load beside the catalog when they are 
   assert.deepEqual((await api.loadSources()).references, references);
   const invalid = boot({'catalog.json':catalog, 'steam_references.json':{schema_version:2, games:[]}});
   assert.equal((await invalid.api.loadSources()).references, null);
+});
+test('the latest official counts load beside the catalog; a missing or invalid file changes nothing', async () => {
+  const followers = {schema_version:1, as_of:'2026-11-20T03:00:00Z', games:{'123':[6200, '2026-11-20T03:00:00Z']}};
+  const {api} = boot({'catalog.json':catalog, 'followers.json':followers});
+  const result = await api.loadSources();
+  assert.deepEqual(result.followers, followers);
+  assert.equal(result.catalogResult.status, 'fresh');
+  for (const value of [undefined, {schema_version:2, games:{}}, {schema_version:1, games:[]}]) {
+    const other = boot({'catalog.json':catalog, ...(value ? {'followers.json':value} : {})});
+    const loaded = await other.api.loadSources();
+    assert.equal(loaded.followers, null);
+    assert.equal(loaded.catalogResult.status, 'fresh');
+  }
 });
 test('concurrent requests deduplicate transport while each caller still validates the JSON', async () => {
   const {api,calls} = boot({'catalog.json':{...catalog,count:2},'steam_upcoming.json':{...catalog,version:2}});

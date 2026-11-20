@@ -84,6 +84,36 @@ test('alias collections, past/future, invalid dates and sorting preserve catalog
   assert.equal(PAGE_SIZE,36);
 });
 
+test('the latest official count replaces an older catalog count on cards, sorting and the followers metric only', async () => {
+  const checked='2026-10-08T01:00:00Z', latest='2026-10-08T04:00:00Z';
+  const rows=[raw({follower_checked_at:checked}),
+    raw({appid:43,name:'Second',release_start:'2026-10-09',followers:12000,follower_checked_at:checked}),
+    raw({appid:44,name:'Third',release_start:'2026-10-11',followers:7000,follower_checked_at:'2026-10-08T05:00:00Z'})];
+  const followers={schema_version:1,as_of:latest,games:{
+    '42':[13000,latest],
+    // Newer and below 5,000: shown, and the game stays listed because the catalog admitted it.
+    '43':[4800,latest],
+    // Older than the catalog's own measurement: ignored.
+    '44':[9000,latest],
+    '45':[1,latest], x:[1,latest], '46':[-1,latest], '47':[5,'yesterday'], '48':{followers:5}}};
+  const original=structuredClone(rows);
+  const data=D.datasets({games:rows},null,null,null,followers);
+  const byId=new Map(data.games.map(game=>[game.appid,game]));
+  assert.deepEqual([...byId.keys()].sort(),[42,43,44]);
+  assert.deepEqual([42,43,44].map(id=>[byId.get(id).followers,byId.get(id).followersCheckedAt]),
+    [[13000,latest],[4800,latest],[7000,'2026-10-08T05:00:00Z']]);
+  assert.deepEqual(rows,original,'published rows stay unchanged');
+  const f=filters(); f.state.sort='followers';
+  assert.deepEqual(selectCatalog(data,f,D,R,new Set()).items.map(g=>g.appid),[42,44,43]);
+  assert.match(await renderCard(D.cardGames(data.games).find(game=>game.appid===42)),/13,000<small>人關注<\/small>/);
+  const {model}=normalizeCatalog({official:{games:rows},preview:null,native:null,references:null,followers},'all',R);
+  const metric=model.entities.get('steam:42').metrics.find(item=>item.kind==='followers');
+  assert.equal(metric.value,13000); assert.equal(metric.provenance.checkedAt,latest);
+  // No file, or an unknown version of it: the catalog counts as before.
+  for (const other of [null,{schema_version:2,games:followers.games},{schema_version:1,games:[]}])
+    assert.equal(D.datasets({games:rows},null,null,null,other).games.find(g=>g.appid===42).followers,6000);
+});
+
 async function renderCard(game, options = {}, mode = 'all', model = null) {
   return renderToString(createSSRApp(GameCard,{game,options,environment:{domain:D,discovery:R,mode,today:TODAY,
     model:()=>model,tags:()=>({include:[],exclude:[],match:'all'}),isSaved:()=>false,subscribeSaved:()=>()=>{},artwork:{load(){}}}}));

@@ -12,7 +12,7 @@ const high = catalog.games.find((row: any) => {
 });
 const at = (date: string, followers: number) => ({ at:date, followers, source:'steam_community' });
 
-test('ranking and detail share the latest official Followers while the ranking excludes games below 5,000', async ({ page }) => {
+test('lists, ranking and detail share the latest official Followers while the ranking excludes games below 5,000', async ({ page }) => {
   await page.clock.install({ time:new Date('2026-11-10T04:00:00Z') });
   await page.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1'
     ? route.continue() : route.abort());
@@ -27,7 +27,14 @@ test('ranking and detail share the latest official Followers while the ranking e
     { appid:archive.appid, history:[at('2026-11-02T23:41:50Z', 500), at('2026-11-09T23:41:50Z', 807)] },
     { appid:high.appid, history:[at('2026-11-03T01:00:00Z', 5000), at('2026-11-10T01:00:00Z', 6000)] },
   ] } }));
+  // Published with growth.json from the same measurements.
+  await page.route('**/data/followers.json', route => route.fulfill({ json:{ schema_version:1, as_of:'2026-11-10T01:00:00Z',
+    games:{ [archive.appid]:[807, '2026-11-09T23:41:50Z'], [high.appid]:[6000, '2026-11-10T01:00:00Z'] } } }));
   for (const row of rows) await page.route(`**/data/games/${row.appid}.json`, route => route.fulfill({ json:row }));
+
+  // The list card shows the same latest count as the ranking and the game page, not the catalog's.
+  await page.goto('games.html');
+  await expect(page.locator(`.game-card[data-appid="${high.appid}"] .card-followers`)).toHaveText('6,000人關注');
 
   await page.goto('growth.html');
   await expect(page.locator('#growthUpdated')).toContainText('5,000 Followers 以上');

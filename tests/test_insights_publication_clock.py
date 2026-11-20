@@ -24,7 +24,7 @@ class InsightsPublicationClockTests(unittest.TestCase):
             result = self.invoke(root, "--observed-at", "2026-10-08T15:59:59Z")
             self.assertEqual(result.returncode, 0, result.stderr)
             first = {name: (root / name).read_bytes() for name in (
-                "insights-state.json", "activity.json", "growth.json")}
+                "insights-state.json", "activity.json", "growth.json", "followers.json")}
             state = json.loads(first["insights-state.json"])
             self.assertEqual(state["started_at"], "2026-10-08T15:59:59Z")
             self.assertEqual(state["records"]["1"]["first_seen_at"], "2026-10-08T15:59:59Z")

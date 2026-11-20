@@ -315,6 +315,8 @@ function steamRow(raw, { appid, date, followers, recent, translated, twitchQuali
     releases: [steamRelease],
     dateReleases: [steamRelease],
     followers,
+    // When the count was measured: list pages swap in a newer official count.
+    followersCheckedAt: followers !== null && awareTime(raw.follower_checked_at) !== null ? raw.follower_checked_at : null,
     twitchAdmission: twitchQualified ? raw.twitch_admission : null,
     art: images[0] || "",
     artSources: images,
