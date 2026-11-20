@@ -27,8 +27,8 @@
     gap: 6px;
     min-height: 44px;
     padding: 0 12px;
-    border: 1px solid #c9d0f5;
-    border-radius: 12px;
+    border: 1px solid var(--blue-84);
+    border-radius: var(--radius-md);
     background: var(--blue-light);
     color: var(--blue-dark);
     font-size: var(--text-sm);
@@ -46,9 +46,9 @@
     min-width: 20px;
     height: 20px;
     padding: 0 6px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     background: var(--blue);
-    color: white;
+    color: var(--white);
     font-size: var(--text-xs);
     line-height: 20px;
     text-align: center;
@@ -65,9 +65,9 @@
     gap: 4px;
     min-height: 36px;
     padding: 0 8px 0 12px;
-    border: 1px solid #c9d0f5;
-    border-radius: 18px;
-    background: white;
+    border: 1px solid var(--blue-84);
+    border-radius: var(--radius-lg);
+    background: var(--white);
     color: var(--blue-dark);
     font-size: var(--text-sm);
     font-weight: 700;
@@ -90,7 +90,7 @@
     position: fixed;
     inset: 0;
     z-index: 70;
-    background: #202c4673;
+    background: var(--ink-a50);
   }
   .filter-sheet {
     display: flex;
@@ -102,9 +102,9 @@
     z-index: 71;
     max-height: calc(100dvh - 72px);
     padding: 8px 16px 0;
-    border-radius: 24px 24px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     background: var(--paper);
-    box-shadow: 0 -10px 30px #202c4626;
+    box-shadow: var(--shadow-up);
   }
   .filter-sheet:focus {
     outline: none;
@@ -115,8 +115,8 @@
     width: 36px;
     height: 4px;
     margin: 0 auto 4px;
-    border-radius: 2px;
-    background: #d5cfbf;
+    border-radius: var(--radius-sm);
+    background: var(--sand-85);
   }
   .filter-sheet-head {
     display: flex;
@@ -134,7 +134,7 @@
     width: 44px;
     height: 44px;
     margin-right: -10px;
-    border-radius: 22px;
+    border-radius: var(--radius-lg);
     color: var(--muted);
   }
   .filter-sheet-close svg {
@@ -194,8 +194,8 @@
     min-height: 44px;
     padding: 0 12px;
     border: 1px solid var(--line);
-    border-radius: 12px;
-    background-color: white;
+    border-radius: var(--radius-md);
+    background-color: var(--white);
     color: var(--ink);
     font-size: var(--text-md);
     font-weight: 400;
@@ -225,19 +225,19 @@
   .filter-sheet-clear,
   .filter-sheet-done {
     min-height: 48px;
-    border-radius: 14px;
+    border-radius: var(--radius-md);
     font-size: var(--text-md);
     font-weight: 700;
   }
   .filter-sheet-clear {
     padding: 0 20px;
     border: 1px solid var(--line);
-    background: white;
+    background: var(--white);
   }
   .filter-sheet-done {
     flex: 1;
     background: var(--blue);
-    color: white;
+    color: var(--white);
   }
   html.filter-sheet-open,
   html.filter-sheet-open body {

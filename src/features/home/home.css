@@ -42,8 +42,8 @@
   position: relative;
   overflow: hidden;
   height: max(340px, calc(100cqi * 620 / 1920));
-  border-radius: 24px 24px 0 0;
-  background: #33415c;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--blue-27);
 }
 .home-hero-slide {
   position: absolute;
@@ -56,7 +56,7 @@
   right: 0;
   bottom: 0;
   height: 75%;
-  background: linear-gradient(to top, #121826d9, #12182600);
+  background: linear-gradient(to top, var(--blue-8-a85), transparent);
   pointer-events: none;
 }
 .home-hero-art {
@@ -72,7 +72,7 @@
   right: 48px;
   bottom: 36px;
   max-width: 680px;
-  color: white;
+  color: var(--white);
 }
 .home-hero-when {
   display: flex;
@@ -84,28 +84,28 @@
 .home-hero-countdown {
   height: 28px;
   padding: 0 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: var(--text-sm);
   font-weight: 700;
   line-height: 28px;
 }
 .home-hero-date {
-  background: white;
+  background: var(--white);
   color: var(--ink);
 }
 .home-hero-countdown {
-  box-shadow: inset 0 0 0 1px #ffffffbf;
+  box-shadow: inset 0 0 0 1px var(--white-a70);
 }
 .home-hero-title {
   margin: 12px 0 0;
   font-size: clamp(32px, 3.6vw, 48px);
   line-height: 1.2;
   font-weight: 900;
-  text-shadow: 0 2px 12px #00000059;
+  text-shadow: 0 2px 12px var(--black-a30);
 }
 .home-hero-meta {
   margin: 6px 0 0;
-  color: #e4e8f2;
+  color: var(--slate-92);
   font-size: var(--text-md);
   line-height: 1.5;
 }
@@ -120,8 +120,8 @@
   gap: 6px;
   min-height: 48px;
   padding: 0 22px;
-  border-radius: 24px;
-  background: white;
+  border-radius: var(--radius-lg);
+  background: var(--white);
   color: var(--ink);
   font-size: var(--text-md);
   font-weight: 700;
@@ -142,9 +142,9 @@
   place-items: center;
   width: 48px;
   height: 48px;
-  border-radius: 24px;
-  box-shadow: inset 0 0 0 1px #ffffffcc;
-  color: white;
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 0 0 1px var(--white-a80);
+  color: var(--white);
 }
 .home-hero-save svg {
   width: 22px;
@@ -155,8 +155,8 @@
   stroke-linejoin: round;
 }
 .home-hero-save[aria-pressed="true"] svg {
-  fill: #ff8a98;
-  stroke: #ff8a98;
+  fill: var(--red-71);
+  stroke: var(--red-71);
 }
 .home-hero-controls {
   position: absolute;
@@ -166,20 +166,20 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: white;
+  color: var(--white);
   font-size: var(--text-sm);
   font-weight: 700;
-  text-shadow: 0 1px 6px #00000080;
+  text-shadow: 0 1px 6px var(--black-a50);
 }
 .home-hero-pause {
   display: grid;
   place-items: center;
   width: 44px;
   height: 44px;
-  border-radius: 22px;
-  background: #12182666;
-  box-shadow: inset 0 0 0 1px #ffffffb3;
-  color: white;
+  border-radius: var(--radius-lg);
+  background: var(--blue-8-a40);
+  box-shadow: inset 0 0 0 1px var(--white-a70);
+  color: var(--white);
 }
 .home-hero-pause svg {
   width: 18px;
@@ -197,8 +197,8 @@
   overflow: hidden;
   border: 1px solid var(--line);
   border-top: 0;
-  border-radius: 0 0 24px 24px;
-  background: white;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  background: var(--white);
 }
 .home-hero-tab {
   position: relative;
@@ -220,15 +220,15 @@
   color: var(--blue-dark);
 }
 .home-hero-tab:hover {
-  background: #fbfaf6;
+  background: var(--white);
 }
 .home-hero-thumb {
   flex: none;
   width: 64px;
   height: 36px;
   overflow: hidden;
-  border-radius: 6px;
-  background: #e9e4d6;
+  border-radius: var(--radius-sm);
+  background: var(--line);
 }
 .home-hero-thumb img {
   display: block;
@@ -272,7 +272,7 @@
   scrollbar-width: thin;
   --fade-start: 0px;
   --fade-end: 0px;
-  mask-image: linear-gradient(90deg, transparent, #000 var(--fade-start), #000 calc(100% - var(--fade-end)), transparent);
+  mask-image: linear-gradient(90deg, transparent, var(--black) var(--fade-start), var(--black) calc(100% - var(--fade-end)), transparent);
 }
 /* The peek of the day before (and the cut-off card on the right) fades out, so it
    reads as "more this way" rather than as a stray badge. */
@@ -312,9 +312,9 @@
 .schedule-today {
   height: 24px;
   padding: 0 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--blue);
-  color: white;
+  color: var(--white);
   font-size: var(--text-xs);
   line-height: 24px;
   font-weight: 700;
@@ -338,8 +338,8 @@
   display: block;
   overflow: hidden;
   aspect-ratio: 16 / 9;
-  border-radius: 12px 12px 0 0;
-  background: #e9e4d6;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: var(--line);
 }
 .release-card-art img {
   display: block;
@@ -376,13 +376,13 @@
   min-width: 0;
   overflow: hidden;
   background: var(--platform-other);
-  color: white;
+  color: var(--white);
   font-size: var(--text-xs);
   font-weight: 800;
   letter-spacing: 0.03em;
   white-space: nowrap;
 }
-.release-card-platform > span + span { border-left: 2px solid white; }
+.release-card-platform > span + span { border-left: 2px solid var(--white); }
 .release-card-platform > .is-steam { background: var(--platform-steam); }
 .release-card-platform > .is-nintendo { background: var(--platform-nintendo); }
 .release-card-platform > .is-playstation { background: var(--platform-playstation); }
@@ -431,27 +431,27 @@
   box-sizing: border-box;
   padding: 0 8px;
   border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #f1eee5;
-  color: #4f5a6e;
+  border-radius: var(--radius-sm);
+  background: var(--gray-95);
+  color: var(--blue-38);
   font-weight: 700;
   line-height: 22px;
   white-space: nowrap;
 }
 .release-card-badge.badge-tchinese {
-  border-color: #cfe5d8;
-  background: #e3f3eb;
-  color: #1f6b4a;
+  border-color: var(--green-88);
+  background: var(--mint);
+  color: var(--teal-41);
 }
 .release-card-badge.badge-schinese {
-  border-color: #c9d0f5;
+  border-color: var(--blue-84);
   background: var(--blue-light);
   color: var(--blue-dark);
 }
 .release-card-badge.badge-english {
-  border-color: #f1cfa8;
-  background: #fdebd9;
-  color: #8a4b12;
+  border-color: var(--yellow-85);
+  background: var(--sand-93);
+  color: var(--orange-39);
 }
 .release-more {
   display: flex;
@@ -464,7 +464,7 @@
   min-height: 44px;
   padding: 0 16px;
   border: 1px solid var(--blue);
-  border-radius: 22px;
+  border-radius: var(--radius-lg);
   color: var(--blue-dark);
   font-size: var(--text-sm);
   font-weight: 700;
@@ -483,8 +483,8 @@
   width: 44px;
   height: 44px;
   border: 1px solid var(--line);
-  border-radius: 22px;
-  background: white;
+  border-radius: var(--radius-lg);
+  background: var(--white);
   color: var(--blue-dark);
 }
 .releases-step svg {
@@ -503,14 +503,14 @@
 .releases-weeks button {
   min-height: 36px;
   padding: 0 14px;
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   color: var(--muted);
   font-size: var(--text-sm);
   font-weight: 700;
 }
 .releases-weeks button[aria-current="true"] {
   background: var(--blue);
-  color: white;
+  color: var(--white);
 }
 
 /* 發售月曆: big month number and month tabs, like Nintendo's schedule. */
@@ -518,14 +518,14 @@ body[data-page="home"] .home-calendar .data-status {
   margin: -8px 0 16px;
 }
 body[data-page="home"] .calendar-toolbar {
-  background: white;
+  background: var(--white);
 }
 body[data-page="home"] .month-jump > span {
   white-space: nowrap;
 }
 body[data-page="home"] .month-controls h3 {
   min-width: 0;
-  color: #737a86;
+  color: var(--blue-49);
   font-size: 44px;
   line-height: 1;
   letter-spacing: 0.02em;
@@ -539,18 +539,18 @@ body[data-page="home"] .month-controls h3 {
   min-width: 52px;
   min-height: 44px;
   padding: 0 10px;
-  border-radius: 8px;
-  background: #f1eee5;
-  color: #4f5a6e;
+  border-radius: var(--radius-sm);
+  background: var(--gray-95);
+  color: var(--blue-38);
   font-size: var(--text-sm);
   font-weight: 700;
 }
 .month-tab:hover {
-  background: #e8e3d6;
+  background: var(--line);
 }
 .month-tab[aria-current="true"] {
   background: var(--blue);
-  color: white;
+  color: var(--white);
 }
 
 /* The month as a dated list: dates on a line at the left, one row per game. */
@@ -567,9 +567,9 @@ body[data-page="home"] .games-grid.schedule-list {
   min-height: 48px;
   margin: 8px 0 12px;
   padding: 0 16px;
-  border: 1px dashed #cfc9bb;
-  border-radius: 12px;
-  background: white;
+  border: 1px dashed var(--sand-81);
+  border-radius: var(--radius-md);
+  background: var(--white);
   color: var(--ink);
   font-size: var(--text-sm);
   font-weight: 700;
@@ -596,8 +596,8 @@ body[data-page="home"] .games-grid.schedule-list {
   gap: 6px;
   margin: 0 0 0 5px;
   padding: 18px 0 6px 22px;
-  border-left: 2px solid #d8d4c9;
-  color: #4f5a6e;
+  border-left: 2px solid var(--sand-85);
+  color: var(--blue-38);
   font-size: 28px;
   line-height: 36px;
   font-weight: 900;
@@ -610,7 +610,7 @@ body[data-page="home"] .games-grid.schedule-list {
   top: 31px;
   width: 10px;
   height: 10px;
-  background: #8a8f99;
+  background: var(--slate-60);
 }
 .schedule-date.is-today {
   color: var(--ink);
@@ -638,7 +638,7 @@ body[data-page="home"] .schedule-list .game-card {
   margin: 0 0 0 5px;
   padding: 12px 52px 14px 22px;
   border: 0;
-  border-left: 2px solid #d8d4c9;
+  border-left: 2px solid var(--sand-85);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
@@ -650,13 +650,13 @@ body[data-page="home"] .schedule-list .game-card::before {
   left: 22px;
   right: 0;
   bottom: 0;
-  border-bottom: 1px dotted #cfc9bb;
+  border-bottom: 1px dotted var(--sand-81);
 }
 body[data-page="home"] .schedule-list .cover-link {
   grid-column: 1;
   grid-row: 1 / span 2;
   aspect-ratio: 16 / 9;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 body[data-page="home"] .schedule-list .cover-placeholder {
   min-height: 0;
@@ -714,7 +714,7 @@ body[data-page="home"] .schedule-list .save-button {
 }
 body[data-page="home"] .schedule-list .game-card:hover,
 body[data-page="home"] .schedule-list .game-card:focus-within {
-  background: #fbfaf6;
+  background: var(--white);
   box-shadow: none;
 }
 
@@ -733,7 +733,7 @@ body[data-page="home"] .schedule-list .game-card:focus-within {
   padding: 14px 44px 14px 20px;
   position: relative;
   border-top: 4px solid var(--line);
-  background: white;
+  background: var(--white);
   color: var(--ink);
 }
 .home-more > a::after,
@@ -775,7 +775,7 @@ body[data-page="home"] .schedule-list .game-card:focus-within {
   min-height: 44px;
   padding: 0 36px 0 16px;
   border: 1px solid var(--blue);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--blue-dark);
   font-size: var(--text-sm);
   font-weight: 700;
@@ -838,7 +838,7 @@ body[data-page="home"] .schedule-list .game-card:focus-within {
   .home-hero-art {
     height: auto;
     aspect-ratio: 16 / 9;
-    background: #33415c;
+    background: var(--blue-27);
   }
   .home-hero-copy {
     position: static;
@@ -869,15 +869,15 @@ body[data-page="home"] .schedule-list .game-card:focus-within {
   .home-hero-link {
     flex: 1;
     justify-content: center;
-    border-radius: 14px;
+    border-radius: var(--radius-md);
     background: var(--blue);
-    color: white;
+    color: var(--white);
   }
   .home-hero-link:hover {
     background: var(--blue-dark);
   }
   .home-hero-save {
-    border-radius: 14px;
+    border-radius: var(--radius-md);
     box-shadow: inset 0 0 0 1px var(--line);
     color: var(--ink);
   }
@@ -905,7 +905,7 @@ body[data-page="home"] .schedule-list .game-card:focus-within {
     padding: 0;
     overflow: hidden;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
   }
   .home-hero-tab[aria-selected="true"] {
     border: 2px solid var(--blue);

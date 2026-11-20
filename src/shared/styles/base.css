@@ -12,32 +12,32 @@ body {
   isolation: isolate;
   background:
     url("../../../assets/radar-pattern.svg") 12px 14px / 480px 360px repeat,
-    radial-gradient(#b4a38624 0.8px, transparent 0.9px) 0 0 / 16px 16px,
+    radial-gradient(var(--yellow-68-a15) 0.8px, transparent 0.9px) 0 0 / 16px 16px,
     var(--paper);
 }
 body[data-page="upcoming"] {
-  --page-wash: #d1ecdd;
-  --page-wash-soft: #edf5da;
-  --page-orbit: #b1d7c7;
-  --page-orbit-line: #7dac9a;
+  --page-wash: var(--green-91d);
+  --page-wash-soft: var(--lime-95);
+  --page-orbit: var(--teal-83);
+  --page-orbit-line: var(--teal-67);
 }
 body[data-page="released"] {
-  --page-wash: #ffdac6;
-  --page-wash-soft: #ffeed8;
-  --page-orbit: #f7b799;
-  --page-orbit-line: #d58f73;
+  --page-wash: var(--orange-90c);
+  --page-wash-soft: var(--yellow-95);
+  --page-orbit: var(--orange-80b);
+  --page-orbit-line: var(--orange-66);
 }
 body[data-page="saved"] {
-  --page-wash: #e4dcf7;
-  --page-wash-soft: #f2e8f4;
-  --page-orbit: #c7b9e9;
-  --page-orbit-line: #a592cc;
+  --page-wash: var(--violet-89);
+  --page-wash-soft: var(--purple-93);
+  --page-orbit: var(--violet-78b);
+  --page-orbit-line: var(--violet-64);
 }
 body[data-page="date"] {
-  --page-wash: #dbeafb;
-  --page-wash-soft: #eaf2f7;
-  --page-orbit: #bad4ee;
-  --page-orbit-line: #8dadd0;
+  --page-wash: var(--sky-92);
+  --page-wash-soft: var(--gray-95c);
+  --page-orbit: var(--sky-84);
+  --page-orbit-line: var(--sky-70);
 }
 /* Background layers stay behind content and never participate in hit testing. */
 body::before,
@@ -77,7 +77,7 @@ body::after {
       var(--page-orbit-line) 167px 168px,
       transparent 169px
     ),
-    radial-gradient(circle at 44% 46%, #fffaf0 0 6px, transparent 7px);
+    radial-gradient(circle at 44% 46%, var(--paper) 0 6px, transparent 7px);
 }
 button,
 input,
@@ -157,8 +157,8 @@ summary {
   transform: translateY(-160%);
   padding: 12px 20px;
   background: var(--blue);
-  color: white;
-  border-radius: 12px;
+  color: var(--white);
+  border-radius: var(--radius-md);
   z-index: 100;
 }
 .skip-link:focus {

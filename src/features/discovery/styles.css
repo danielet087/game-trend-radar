@@ -1,17 +1,17 @@
 /* Tag discovery shares the list controls and remains entirely static. */
 body[data-page="explore"] {
-  --page-wash: #d5e8de;
-  --page-wash-soft: #eff1d8;
-  --page-orbit: #b5d2c2;
-  --page-orbit-line: #86b29b;
+  --page-wash: var(--teal-90);
+  --page-wash-soft: var(--lime-94);
+  --page-orbit: var(--green-82);
+  --page-orbit-line: var(--teal-69);
 }
 .tag-browser {
   padding: 28px;
   margin: 0 0 29px;
-  border: 1px solid #b9cfbf;
-  border-radius: 23px;
-  background: #f5f9ed;
-  box-shadow: 0 5px 0 #cddcca;
+  border: 1px solid var(--green-82);
+  border-radius: var(--radius-lg);
+  background: var(--sand-95);
+  box-shadow: 0 var(--depth-2) 0 var(--teal-84);
 }
 .tag-browser-head {
   display: flex;
@@ -21,7 +21,7 @@ body[data-page="explore"] {
   margin-bottom: 20px;
 }
 .tag-browser .eyebrow {
-  color: #39705a;
+  color: var(--teal-44);
 }
 .tag-browser h2 {
   font-size: var(--text-xl);
@@ -33,15 +33,15 @@ body[data-page="explore"] {
 }
 .tag-search input {
   width: 100%;
-  border: 1px solid #c5d5c8;
-  border-radius: 11px;
-  background: #fffefa;
+  border: 1px solid var(--teal-84);
+  border-radius: var(--radius-md);
+  background: var(--white);
   min-height: 43px;
   padding: 11px 14px;
   font-size: var(--text-xs);
 }
 .tag-search input:focus {
-  border-color: #54866a;
+  border-color: var(--green-50);
 }
 .tag-browser-meta {
   display: flex;
@@ -51,7 +51,7 @@ body[data-page="explore"] {
 }
 .tag-browser-meta > span {
   font-size: var(--text-xs);
-  color: #657769;
+  color: var(--green-49);
 }
 .tag-catalog {
   display: flex;
@@ -64,10 +64,10 @@ body[data-page="explore"] {
   gap: 9px;
   min-height: 37px;
   padding: 8px 12px;
-  border: 1px solid #c6d6c7;
-  border-radius: 9px;
-  background: #fffefa;
-  color: #345b48;
+  border: 1px solid var(--teal-84);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  color: var(--green-34);
   font-size: var(--text-xs);
   line-height: 1.5;
   transition:
@@ -81,8 +81,8 @@ body[data-page="explore"] {
   padding: 1px 5px;
   min-width: 21px;
   text-align: center;
-  background: #e6eee2;
-  border-radius: 4px;
+  background: var(--green-94);
+  border-radius: var(--radius-sm);
   font:
     700 var(--text-xs)/1.6 Arial,
     sans-serif;
@@ -90,20 +90,20 @@ body[data-page="explore"] {
 }
 .explore-tag:hover {
   transform: translateY(-2px);
-  border-color: #609375;
+  border-color: var(--teal-56);
 }
 .explore-tag[aria-pressed="true"] {
-  color: white;
-  border-color: #34735d;
-  background: #34735d;
-  box-shadow: 0 3px 0 #214b3b;
+  color: var(--white);
+  border-color: var(--teal-44);
+  background: var(--teal-44);
+  box-shadow: 0 var(--depth-1) 0 var(--teal-29);
 }
 .explore-tag[aria-pressed="true"] small {
-  color: white;
-  background: #ffffff25;
+  color: var(--white);
+  background: var(--white-a15);
 }
 .more-tags {
-  color: #39705a;
+  color: var(--teal-44);
   font-size: var(--text-xs);
   font-weight: 700;
   padding: 15px 0 0;
@@ -125,16 +125,16 @@ body[data-page="explore"] {
   max-width: 100%;
   gap: 11px;
   margin: 0 0 17px;
-  border: 1px solid #bed0c0;
-  border-radius: 10px;
+  border: 1px solid var(--teal-84);
+  border-radius: var(--radius-md);
   padding: 7px 8px 7px 13px;
-  background: #edf5e9;
+  background: var(--green-94);
   font-size: var(--text-xs);
-  color: #345b48;
+  color: var(--green-34);
 }
 .tag-active > span {
   font-size: var(--text-xs);
-  color: #637968;
+  color: var(--green-49);
   flex-shrink: 0;
 }
 .tag-active strong {
@@ -146,11 +146,11 @@ body[data-page="explore"] {
   flex-shrink: 0;
   width: 30px;
   height: 30px;
-  border-radius: 7px;
-  background: #d8e8d6;
+  border-radius: var(--radius-sm);
+  background: var(--green-91);
 }
 .tag-active button:hover {
-  background: #c5debf;
+  background: var(--green-83);
 }
 .explorer-card-tags {
   display: flex;
@@ -160,10 +160,10 @@ body[data-page="explore"] {
 }
 .explorer-card-tags span {
   max-width: 100%;
-  border-radius: 5px;
-  background: #f4f0fa;
+  border-radius: var(--radius-sm);
+  background: var(--violet-94);
   padding: 4px 6px;
-  color: #706087;
+  color: var(--violet-46b);
   font-size: var(--text-xs);
   white-space: nowrap;
   overflow: hidden;
@@ -172,7 +172,7 @@ body[data-page="explore"] {
 @media (max-width: 640px) {
   .tag-browser {
     padding: 21px 17px;
-    border-radius: 18px;
+    border-radius: var(--radius-lg);
     margin-bottom: 24px;
   }
   .tag-browser-head {
