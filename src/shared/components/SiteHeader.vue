@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import radarMark from '../../../assets/radar-mark.svg';
+import SiteSearch from './SiteSearch.vue';
 import { savedCount, subscribeSaved } from '../state/favorites';
 import { readMotion, subscribeMotion, toggleMotion } from '../state/motion';
 
@@ -161,6 +162,7 @@ onBeforeUnmount(() => {
         </details>
         <a href="./saved.html" :aria-current="page === 'saved' ? 'page' : undefined"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" /></svg><span class="nav-label">我的收藏</span><span class="nav-short">收藏</span> <span class="saved-count" data-saved-count>{{ count }}</span></a>
       </nav>
+      <SiteSearch :page="page" />
       <button id="motionToggle" class="motion-toggle" type="button" :disabled="motion.reduced" :aria-pressed="motion.enabled" :aria-label="motionLabel" :title="motionLabel" @click="toggleMotion">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="motion.enabled ? 'M9 5v14M15 5v14' : 'm8 5 11 7-11 7Z'" /></svg>
         <span>{{ motion.enabled ? '動態 ON' : '動態 OFF' }}</span>
