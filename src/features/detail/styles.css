@@ -638,6 +638,17 @@ body[data-page="game"] .button.primary:hover {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+/* Waiting for the game's own file: hold about three lines. */
+.game-description.is-pending {
+  min-height: 5.25em;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(100deg, var(--game-edge) 20%, var(--game-light) 50%, var(--game-edge) 80%);
+  background-size: 200% 100%;
+  opacity: 0.5;
+}
+body.motion-on .game-description.is-pending {
+  animation: shimmer 1.8s linear infinite;
+}
 .game-description-more {
   min-height: 40px;
   margin-top: 14px;

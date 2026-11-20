@@ -83,7 +83,7 @@ function loaderFixture(storage) {
   }, R:{enrich:data=>data}, document:{referrer:''}, window:{},
     location:{origin:'https://radar.test',href:'https://radar.test/game.html?appid=42'},
     today:'2026-10-08',appid:42,igdbId:null,requestedDate:null,nintendoRoute:false };
-  const loader = createDetailLoader(ctx, (game,data,pending)=>renders.push({game,data,pending}),
+  const loader = createDetailLoader(ctx, (game,data,pending,extras)=>renders.push({game,data,pending,extras}),
     {updateSaveControls(){}}, {showMessage(){}});
   return {ctx, loader, renders, elements};
 }
@@ -138,6 +138,34 @@ test('late authoritative catalog controls release dates over an unversioned dire
   await done;
   assert.equal(f.renders.at(-1).game.date,'2026-11-09');
   assert.equal(f.renders.at(-1).game.name,'Current');
+});
+
+test('a catalog row without a description waits for the game file before the page says there is none', async () => {
+  // catalog.json leaves out descriptions; games/<appid>.json brings them.
+  const file=deferred();
+  const f=loaderFixture({loadGame:()=>file.promise,loadNintendo:async()=>null,
+    loadSources:async()=>({catalog:{games:[raw('Hero')]},preview:null})});
+  const done=f.loader.load();
+  await tick();
+  assert.equal(f.renders.at(-1).extras.descriptionPending,true);
+  file.resolve({...raw('Hero'),short_description:'遊戲介紹'});
+  await done;
+  assert.equal(f.renders.at(-1).extras.descriptionPending,false);
+  assert.equal(f.renders.at(-1).game.short_description,'遊戲介紹');
+});
+
+test('a missing game file or a catalog row that has its description never holds the description', async () => {
+  for (const [row, record] of [[raw('Hero'), null], [{...raw('Hero'),short_description:'清單裡的介紹'}, undefined]]) {
+    const file=deferred();
+    const f=loaderFixture({loadGame:()=>file.promise,loadNintendo:async()=>null,
+      loadSources:async()=>({catalog:{games:[row]},preview:null})});
+    const done=f.loader.load();
+    await tick();
+    assert.equal(f.renders.at(-1).extras.descriptionPending,record===null);
+    file.resolve(record ?? null);
+    await done;
+    assert.equal(f.renders.at(-1).extras.descriptionPending,false);
+  }
 });
 
 test('late catalog exclusion hides a previously displayed old direct record', async () => {
