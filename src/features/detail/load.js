@@ -53,14 +53,15 @@ export function createDetailLoader(ctx, render, favorites, related) {
     .then(value => validActivity(value) ? value : null);
   async function loadConsoleDetail(force, active) {
     let catalog = null, preview = null, references = null, nintendo = null, activity = null, sourcesDone = false, shown = false;
-    let media = null, store = null, mediaFor = null;
+    let media = null, mediaDone = false, store = null, mediaFor = null;
     // A console game shown on its Steam version gets that version's media and prices.
     function loadSteamExtras(appid) {
       if (mediaFor === appid) return;
       mediaFor = appid;
+      // A missing media file settles too: the Store capsule then stands in.
       Promise.resolve(storage.loadMedia?.(appid, { force }))
-        .then(result => { media = steamMedia(result, appid); if (media) present(); })
-        .catch(() => { /* Pages without Steam media keep the theme-colored hero. */ });
+        .then(result => { media = steamMedia(result, appid); mediaDone = true; present(); })
+        .catch(() => { mediaDone = true; present(); });
       Promise.resolve(storage.loadStoreFacts?.({ force }))
         .then(result => { store = storeFacts(result, appid); if (store) present(); })
         .catch(() => { /* Price, rating and Steam Deck rows are optional. */ });
@@ -78,7 +79,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
       const game = matches.find(entry => entry.date >= today) || matches[0];
       if (!game) return;
       if (game.source !== 'nintendo' && game.appid) loadSteamExtras(game.appid);
-      render(game, enriched, !sourcesDone, { activity, media, store });
+      render(game, enriched, !sourcesDone, { activity, media, mediaDone, store });
       shown = true;
     }
     try {
@@ -119,6 +120,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
       return;
     }
     let rawGame = null, catalog = null, preview = null, references = null, nintendo = null, growth = null, media = null, activity = null, store = null;
+    let mediaDone = false;
     let catalogDone = false, nintendoDone = false, shown = false;
     function present() {
       if (!active()) return;
@@ -146,7 +148,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
       const record = official?.games?.find(row => Number(row.appid) === appid);
       const history = growth?.games?.find(row => row?.appid === appid)?.history;
       render(withLatestFollowers(game, record, history, today), data, !catalogDone, {
-        media, activity, store, record: rawGame || record, history: followerHistory(record, history),
+        media, mediaDone, activity, store, record: rawGame || record, history: followerHistory(record, history),
       });
       shown = true;
       if (catalogDone && !catalog && !preview) {
@@ -169,9 +171,10 @@ export function createDetailLoader(ctx, render, favorites, related) {
           value => value?.version === 1 && Array.isArray(value.games), { force }))
           .then(result => { growth = result; present(); })
           .catch(() => { /* Retain the catalog measurement when history is unavailable. */ }),
+        // A missing media file settles too: the Store capsule then stands in.
         Promise.resolve(storage.loadMedia?.(appid, { force }))
-          .then(result => { media = steamMedia(result, appid); if (media) present(); })
-          .catch(() => { /* Pages without Steam media keep the theme-colored hero. */ }),
+          .then(result => { media = steamMedia(result, appid); mediaDone = true; present(); })
+          .catch(() => { mediaDone = true; present(); }),
         Promise.resolve(storage.loadStoreFacts?.({ force }))
           .then(result => { store = storeFacts(result, appid); if (store) present(); })
           .catch(() => { /* Price, rating and Steam Deck rows are optional. */ }),

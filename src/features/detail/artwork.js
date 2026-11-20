@@ -7,21 +7,23 @@ export function createDetailArtwork(ctx) {
     });
   }
   // Console games show their portrait cover whole in the title card (the hero
-  // behind it is the same cover, blurred). Steam games have wide key art instead.
-  function showArtwork(game) {
+  // behind it is the same cover, blurred). Steam games have wide key art instead;
+  // until that is fetched, their wide Store capsule is shown the same way.
+  function showArtwork(game, capsule = false) {
     const art = $("gameCover");
     const prior = art.querySelector("img");
     if (prior) cancelArtwork(prior);
-    art.hidden = !isNativeConsole(game);
+    art.hidden = !isNativeConsole(game) && !capsule;
     art.disabled = true;
+    art.dataset.shape = capsule ? "wide" : "portrait";
     if (art.hidden) { art.replaceChildren(); return; }
     const img = node("img");
     img.alt = `${game.name} 的遊戲封面`;
     img.loading = "eager";
     img.fetchPriority = "high";
     img.decoding = "async";
-    img.width = 264;
-    img.height = 374;
+    img.width = capsule ? 616 : 264;
+    img.height = capsule ? 353 : 374;
     art.setAttribute("aria-label", `放大 ${game.name} 的遊戲封面`);
     art.replaceChildren(img);
     loadArtwork(

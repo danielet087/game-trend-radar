@@ -248,6 +248,11 @@ body[data-game-hero]::after {
   box-shadow: 0 10px 24px #43312f40;
   cursor: zoom-in;
 }
+.game-cover[data-shape="wide"] {
+  width: 224px;
+  aspect-ratio: 616 / 353;
+  margin-top: -64px;
+}
 .game-cover:disabled {
   cursor: default;
 }
@@ -2191,6 +2196,10 @@ body.motion-on .art-dialog[open] {
     width: 92px;
     margin-top: -64px;
     border-radius: 12px;
+  }
+  .game-cover[data-shape="wide"] {
+    width: 144px;
+    margin-top: -48px;
   }
   .game-versions-card {
     padding: 0;

@@ -190,3 +190,26 @@ test('text on the game page is at least 12px at desktop and phone widths', async
     expect(small).toEqual([]);
   }
 });
+
+test('a Steam game without media yet shows its Store capsule, blurred as the hero and whole in the title card', async ({ page }) => {
+  // 11-20: games admitted at 09:03 had no image of their own until the 13:30 media run.
+  const failures: string[] = [];
+  page.on('pageerror', error => failures.push(error.message));
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
+  await page.route(/steamstatic\.com/, route => route.fulfill({ contentType: 'image/png', body: png }));
+  await page.route(`**/data/media/${game.appid}.json*`, route => route.fulfill({ status: 404, body: '' }));
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`game.html?appid=${game.appid}`);
+    await expect(page.locator('#detailPage')).toBeVisible();
+    await expect(page.locator('#gameHeroArt')).toHaveAttribute('data-kind', 'cover');
+    await expect(page.locator('#gameHeroArt')).toHaveAttribute('data-state', 'ready');
+    await expect(page.locator('#gameHeroImage')).toHaveAttribute('src', game.art);
+    await expect(page.locator('#gameCover')).toBeVisible();
+    await expect(page.locator('#gameCover')).toHaveAttribute('data-shape', 'wide');
+    await expect(page.locator('#gameCover img')).toBeVisible();
+    await expect(page.locator('#gameMedia')).toBeHidden();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  }
+  expect(failures).toEqual([]);
+});

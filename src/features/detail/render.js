@@ -155,8 +155,12 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     $("gameFootnote").hidden = !$("gameFootnote").textContent;
     renderBuyButtons(game, targets);
     document.title = `${name}｜遊戲資訊・Game Trend Radar`;
-    if (!unchangedArt) showArtwork(game);
-    media?.render(game, extras.media);
+    // A Steam game whose media is not fetched yet (a new admission) has no key
+    // art: its Store capsule stands in, blurred as the hero and whole in the card.
+    const capsule = !isNativeConsole(game) && extras.mediaDone === true && !extras.media?.hero && Boolean(game.art);
+    if (!unchangedArt || state.capsule !== capsule) showArtwork(game, capsule);
+    state.capsule = capsule;
+    media?.render(game, extras.media, capsule);
     overview?.renderFacts(game, extras.media, extras.store);
     radar?.render(game, extras);
     updateSaveControls();
