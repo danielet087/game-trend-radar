@@ -138,3 +138,16 @@ test('the Steam release instant reaches the release row only when it falls on th
     assert.equal(D.releaseClock(row), null);
   }
 });
+
+test('the Store page day rides along only when it is one day off the Taiwan day', () => {
+  const rows = D.datasets({ games: [
+    { appid: 1, name: 'Evening', followers: 6000, release_start: '2026-12-04',
+      release_time_utc: '2026-12-03T17:00:00Z', release_store_date: '2026-12-03' },
+    { appid: 2, name: 'Same', followers: 6000, release_start: '2026-12-05', release_store_date: '2026-12-05' },
+    { appid: 3, name: 'Wide', followers: 6000, release_start: '2026-12-06', release_store_date: '2026-12-01' },
+  ] }, null, null).games;
+  const release = appid => rows.find(game => game.appid === appid).releases[0];
+  assert.equal(release(1).store_date, '2026-12-03');
+  assert.equal(Object.hasOwn(release(2), 'store_date'), false);
+  assert.equal(Object.hasOwn(release(3), 'store_date'), false);
+});

@@ -196,8 +196,13 @@ export function createDetailVersions(ctx, policy) {
       if (code === 'Steam') {
         // A planned clock time is the developer's setting on Steam, so it can still move.
         const planned = rows.some(row => days(row.date) >= 0 && D.releaseClock?.(row));
-        if (rows.length) add(`date:steam${planned ? ':clock' : ''}`, [code], platforms => [prefix(platforms, '發售日'),
-          `來源 Steam 台灣商店。${planned ? '時間是開發商在 Steam 設定的發售時間，換算成台灣時間（UTC+8）；發售前仍可能調整。' : ''}`]);
+        // The Store page shows the publisher's day; one day off Taiwan's is a time zone.
+        const store = rows.find(row => row.store_date);
+        const storeNote = store ? `Steam 商店頁標示 ${store.store_date.replaceAll('-', '/')}（發行商公告的日期），` +
+          `依 Steam 發售時間換算，台灣是 ${store.date.replaceAll('-', '/')}。` : '';
+        if (rows.length) add(`date:steam${planned ? ':clock' : ''}${store ? `:${store.store_date}` : ''}`, [code], platforms => [
+          prefix(platforms, '發售日'),
+          `來源 Steam 台灣商店。${storeNote}${planned ? '時間是開發商在 Steam 設定的發售時間，換算成台灣時間（UTC+8）；發售前仍可能調整。' : ''}`]);
         continue;
       }
       for (const row of rows) {

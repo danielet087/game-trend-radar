@@ -51,6 +51,14 @@ test('cards date a reference game by its console release, never the older Steam 
   assert.deepEqual(upcoming.items.map(row => cardDate(row, D)), ['2026-10-10', '2026-10-20']);
 });
 
+test('a reference keeps the Store page day beside its Taiwan day', () => {
+  const evening = { ...reference, release_start: '2024-06-14', release_store_date: '2024-06-13' };
+  const normalized = normalizeCatalog({ ...input, references: { ...references, games: [evening] } }, 'all', R);
+  const game = normalized.viewModel.games.find(row => row.appid === 2552450);
+  const steam = game.releases.find(row => row.platform === 'Steam');
+  assert.deepEqual([steam.date, steam.store_date, steam.reference], ['2024-06-14', '2024-06-13', true]);
+});
+
 test('the reference supplies tags and its description to the merged game', () => {
   const normalized = normalizeCatalog(input, 'all', R);
   const game = normalized.viewModel.games.find(row => row.appid === 2552450);
