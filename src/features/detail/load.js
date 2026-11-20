@@ -3,6 +3,12 @@ import { withLatestFollowers, followerHistory } from '../../domain/followers.mjs
 import { steamMedia } from './media.js';
 import { storeFacts } from './store.js';
 const validActivity = value => !!value && typeof value === 'object' && Array.isArray(value.events);
+// catalog.json leaves out descriptions; a Steam game's own file brings them.
+// Until it arrives the page holds the description's place.
+const awaitsDescription = (catalog, appid) => {
+  const row = catalog?.games?.find(entry => Number(entry?.appid) === Number(appid));
+  return !!row && !['short_description', 'short_description_en'].some(field => Object.hasOwn(row, field));
+};
 /** Progressive hero loading: optional console/catalog failures do not block a known Steam game. */
 export function createDetailLoader(ctx, render, favorites, related) {
   const { $, D, R, storage, location, document, window, today,
@@ -53,11 +59,16 @@ export function createDetailLoader(ctx, render, favorites, related) {
     .then(value => validActivity(value) ? value : null);
   async function loadConsoleDetail(force, active) {
     let catalog = null, preview = null, references = null, nintendo = null, activity = null, sourcesDone = false, shown = false;
-    let media = null, mediaDone = false, store = null, mediaFor = null;
+    let media = null, mediaDone = false, store = null, mediaFor = null, steamRecord = null, steamDone = true;
     // A console game shown on its Steam version gets that version's media and prices.
     function loadSteamExtras(appid) {
       if (mediaFor === appid) return;
       mediaFor = appid;
+      steamRecord = null; steamDone = false;
+      Promise.resolve(storage.loadGame?.(appid, { force }))
+        .then(record => { if (mediaFor === appid) steamRecord = record; })
+        .catch(() => { /* The catalog row still shows the game. */ })
+        .finally(() => { if (mediaFor === appid) { steamDone = true; present(); } });
       // A missing media file settles too: the Store capsule then stands in.
       Promise.resolve(storage.loadMedia?.(appid, { force }))
         .then(result => { media = steamMedia(result, appid); mediaDone = true; present(); })
@@ -69,9 +80,10 @@ export function createDetailLoader(ctx, render, favorites, related) {
     function present() {
       if (!active()) return;
       if (!nintendo) return;
-      const data = D.datasets(catalog, preview, nintendo, references);
+      const official = catalog && mediaFor ? detailCatalog(catalog, steamRecord, mediaFor) : catalog;
+      const data = D.datasets(official, preview, nintendo, references);
       if (!data) return;
-      const enriched = R.enrich(data, catalog, preview, references);
+      const enriched = R.enrich(data, official, preview, references);
       const matches = [...enriched.games, ...enriched.recent].filter(entry =>
         (entry.igdbId === igdbId || entry.igdbIds?.includes(igdbId)) &&
         (!requestedDate || entry.date === requestedDate),
@@ -79,7 +91,8 @@ export function createDetailLoader(ctx, render, favorites, related) {
       const game = matches.find(entry => entry.date >= today) || matches[0];
       if (!game) return;
       if (game.source !== 'nintendo' && game.appid) loadSteamExtras(game.appid);
-      render(game, enriched, !sourcesDone, { activity, media, mediaDone, store });
+      render(game, enriched, !sourcesDone, { activity, media, mediaDone, store,
+        descriptionPending: !steamDone && awaitsDescription(catalog, mediaFor) });
       shown = true;
     }
     try {
@@ -121,7 +134,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
     }
     let rawGame = null, catalog = null, preview = null, references = null, nintendo = null, growth = null, media = null, activity = null, store = null;
     let mediaDone = false;
-    let catalogDone = false, nintendoDone = false, shown = false;
+    let catalogDone = false, nintendoDone = false, gameDone = false, shown = false;
     function present() {
       if (!active()) return;
       if (!rawGame && !catalog && !preview) return;
@@ -149,6 +162,7 @@ export function createDetailLoader(ctx, render, favorites, related) {
       const history = growth?.games?.find(row => row?.appid === appid)?.history;
       render(withLatestFollowers(game, record, history, today), data, !catalogDone, {
         media, mediaDone, activity, store, record: rawGame || record, history: followerHistory(record, history),
+        descriptionPending: !gameDone && awaitsDescription(catalog, appid),
       });
       shown = true;
       if (catalogDone && !catalog && !preview) {
@@ -160,7 +174,8 @@ export function createDetailLoader(ctx, render, favorites, related) {
     try {
       // Independent requests: the hero does not wait for the whole catalog.
       await Promise.all([
-        storage.loadGame(appid, { force }).then(record => { rawGame = record; present(); }),
+        storage.loadGame(appid, { force }).then(record => { rawGame = record; })
+          .finally(() => { gameDone = true; present(); }),
         storage.loadSources({ force }).then(result => {
           catalog = result.catalog; preview = result.preview; references = result.references || null;
           catalogDone = true; present();

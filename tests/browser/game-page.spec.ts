@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { RadarData } from '../../src/domain/index.mjs';
+import { chooseDescription } from '../../src/domain/descriptions.mjs';
 
 // The game page sections on the frozen data the preview serves (tests/fixtures/site-data).
 const DATA = 'tests/fixtures/site-data';
@@ -143,9 +144,10 @@ test('an English description is translated in the page only when asked', async (
   });
   await page.goto('game.html?appid=4182430');
   await expect(page.locator('#detailPage')).toBeVisible();
-  const original = await page.locator('#gameDescription').textContent();
   const button = page.locator('#descriptionSource button.description-translate');
+  // The description comes with the game's own file, which may land after the hero.
   await expect(button).toHaveText('翻譯成中文');
+  const original = await page.locator('#gameDescription').textContent();
   await expect(page.locator('#gameDescriptionNote')).toBeHidden();
   await button.click();
   await expect(page.locator('#gameDescription')).toHaveAttribute('lang', 'zh-Hant');
@@ -164,6 +166,53 @@ test('without a built-in translator an English description opens Google Translat
   await expect(link).toHaveText('Google 翻譯 ↗');
   await expect(link).toHaveAttribute('href', /^https:\/\/translate\.google\.com\/\?sl=en&tl=zh-TW&text=/);
   await expect(link).toHaveAttribute('target', '_blank');
+});
+
+// catalog.json leaves out descriptions: a game page reads its own games/<appid>.json.
+async function holdGameFile(page: any, appid: number) {
+  let release = () => {};
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route(`**/data/games/${appid}.json`, async (route: any) => { await held; await route.continue(); });
+  return () => release();
+}
+
+test('the description holds its place until the game file arrives, never saying there is none', async ({ page }) => {
+  const expected = chooseDescription(readData(`games/${game.appid}.json`)).description;
+  expect(expected).toBeTruthy();
+  expect(readData('catalog.json').games.find((row: any) => row.appid === game.appid)).not.toHaveProperty('short_description');
+  const release = await holdGameFile(page, game.appid);
+  await page.goto(`game.html?appid=${game.appid}`);
+  await expect(page.locator('#detailPage')).toBeVisible();
+  const description = page.locator('#gameDescription');
+  await expect(description).toHaveClass(/is-pending/);
+  await expect(description).toHaveAttribute('aria-busy', 'true');
+  await expect(description).toHaveText('');
+  await expect(page.locator('#descriptionSource')).toBeHidden();
+  release();
+  await expect(description).toHaveText(expected);
+  await expect(description).not.toHaveClass(/is-pending/);
+  await expect(description).toHaveAttribute('aria-busy', 'false');
+  await expect(page.locator('#descriptionSource')).toBeVisible();
+});
+
+test('a console link to a game also on Steam shows the Steam copy, not the IGDB text first', async ({ page }) => {
+  const steamRow = readData('catalog.json').games.find((row: any) =>
+    readData(`games/${row.appid}.json`).short_description_source === 'steam_tchinese');
+  const record = readData(`games/${steamRow.appid}.json`);
+  const nintendo = readData('nintendo_upcoming.json');
+  const base = nintendo.games.find((row: any) => !row.steam_appid && row.short_description_en);
+  const consoleRow = { ...base, steam_appid: steamRow.appid,
+    websites: [{ url: `https://store.steampowered.com/app/${steamRow.appid}/` }] };
+  await page.route('**/data/nintendo_upcoming.json', route => route.fulfill({ json: { ...nintendo, games: [consoleRow] } }));
+  const release = await holdGameFile(page, steamRow.appid);
+  await page.goto(`game.html?igdb=${consoleRow.igdb_id}`);
+  await expect(page.locator('#detailPage')).toBeVisible();
+  await expect(page.locator('#gameVersionRows tr[data-platform="Steam"]')).toHaveCount(1);
+  await expect(page.locator('#gameDescription')).toHaveClass(/is-pending/);
+  await expect(page.locator('#gameDescription')).toHaveText('');
+  release();
+  await expect(page.locator('#gameDescription')).toHaveText(record.short_description);
+  await expect(page.locator('#descriptionSource')).toContainText('Steam 官方繁中');
 });
 
 test('the game page never scrolls sideways, with Steam key art or a console cover', async ({ page }) => {

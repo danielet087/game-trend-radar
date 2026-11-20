@@ -50,8 +50,8 @@ IGDB 後端 `game-trend-radar-igdb-backend` 同時收集 NS（130）、NS2（508
 
 ## 資料介面
 
-- `data/catalog.json`：一般瀏覽只讀這份精簡清單，保留篩選、TAG、語言與圖片欄位。
-- `data/games/APPID.json`：完整單款內容；詳細頁可先顯示這份資料，推薦清單另外載入。
+- `data/catalog.json`：一般瀏覽只讀這份精簡清單，保留篩選、TAG、語言與圖片欄位；簡介、小封面與 TAG 編號不放這裡（2026-11-20 起）。
+- `data/games/APPID.json`：完整單款內容；詳細頁可先顯示這份資料，推薦清單另外載入。簡介由這份帶來，它到之前簡介位置先留白。
 - `data/steam_upcoming.json`：精簡清單無法讀取時的完整備援；再失敗才讀 `data/index.json` 與月份分片。
 - `data/steam_preview.json`：僅在正式清單不可用或舊版格式時使用，避免舊快照覆蓋正式資料。
 - `data/content_refresh_status.json`：內容對帳的待補欄位、失敗與重試時間；不代表所有 Steam 候選都已查完。

@@ -20,18 +20,23 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     $("gameDescriptionMore").textContent = open ? "收合" : "展開全文";
   });
 
-  function renderDescription(game) {
-    const text = game.description || "簡介尚未公開，後續將持續更新。";
+  // While the game's own file is on its way (load.js), hold the place: no
+  // "not yet public" note, and no stand-in text that the Steam copy replaces.
+  function renderDescription(game, waiting = false) {
+    const text = waiting ? "" : game.description || "簡介尚未公開，後續將持續更新。";
     const long = text.length > CLAMP_CHARS;
     $("gameDescription").textContent = text;
     $("gameDescription").hidden = false;
     $("gameDescription").lang = game.descriptionLanguage === 'en' ? 'en' : 'zh-Hant';
+    $("gameDescription").classList.toggle("is-pending", waiting);
+    $("gameDescription").setAttribute("aria-busy", String(waiting));
     $("gameDescription").classList.toggle("is-clamped", long);
     $("gameDescriptionMore").hidden = !long;
     $("gameDescriptionMore").setAttribute("aria-expanded", "false");
     $("gameDescriptionMore").textContent = "展開全文";
-    renderDescriptionSource($("descriptionSource"), game, node);
-    translation?.render(game);
+    const shown = waiting ? { ...game, description: "" } : game;
+    renderDescriptionSource($("descriptionSource"), shown, node);
+    translation?.render(shown);
   }
 
   // One buy button: a single store opens directly; several stores scroll to 平台版本.
@@ -91,7 +96,7 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     $("gameEnglish").textContent = subline;
     $("gameEnglish").hidden = !subline;
     $("gameEnglish").dataset.kind = hasChineseName(name) ? "original" : "missing";
-    renderDescription(game);
+    renderDescription(game, extras.descriptionPending === true);
     $("gameGenres").replaceChildren(
       node("small", "game-genres-label", "遊戲類型"),
       ...game.genres
