@@ -38,7 +38,9 @@ export const GameCard = defineComponent({
       const game = props.game, options = props.options, env = props.environment;
       const D = env.domain, R = env.discovery;
       void savedRevision.value;
-      const display = D.releaseDisplayNames?.(game, game.releasePlatforms) || { name: game.name, nameEn: game.nameEn };
+      // The card names the game, as its page does; the edition this release
+      // sells (a bundle, Deluxe) is the small line under the names.
+      const display = D.releaseCardNames?.(game, game.releasePlatforms) || { name: game.name, nameEn: game.nameEn, edition: '' };
       const event = options.event ?? env.mode === 'date';
       const model = env.model?.() || null;
       const entity = catalogEntity(game, model);
@@ -71,7 +73,7 @@ export const GameCard = defineComponent({
       const merchant = nativeEvent && nativePlatforms.length === 1 ? game.platformLinks?.[nativePlatforms[0]] : null;
       const merchantURL = merchant && D.platformURL?.(merchant.url, nativePlatforms[0]);
       const storeGame = merchantURL ? { ...game, source: 'nintendo', link: merchantURL, linkLabel: merchant.label } : game;
-      const storeName = game.source === 'nintendo' ? display.name : game.name;
+      const storeName = game.source === 'nintendo' && display.edition ? `${display.name}（${display.edition}）` : game.name;
       const platforms = D.cardPlatformChips(game, event ? game.releasePlatforms : null), active = env.isSaved(game, entity);
       const releasedChips = platforms.chips.filter((chip: any) => chip.released).map((chip: any) => chip.label);
       const countdown = days === 0 ? '今日登場' : days > 0 ? `${days} 天後登場` : '已上市';
@@ -87,7 +89,10 @@ export const GameCard = defineComponent({
         h('div', { class: 'card-body' }, [
           h('a', { class: 'card-names', ...detailAttributes }, [
             h('h3', { class: 'card-title', title: display.name }, display.name),
-            h('p', { class: 'card-english', title: originalName || undefined, 'aria-hidden': originalName ? undefined : 'true' }, originalName),
+            // Without an original name the edition takes that line, so no gap opens.
+            originalName || !display.edition ? h('p', { class: 'card-english', title: originalName || undefined,
+              'aria-hidden': originalName ? undefined : 'true' }, originalName) : null,
+            display.edition ? h('p', { class: 'card-edition', title: `這次發售的版本：${display.edition}` }, display.edition) : null,
           ]), tags,
           game.darkHorse ? h('span', { class: 'dark-horse', title: '直接上市，並於發售首週內確認超過 3,000 人關注' }, '近期黑馬') : null,
           languages.length ? h('div', { class: 'card-languages', 'aria-label': nativeLanguages ? `${nativeLabel} 版本遊戲支援語言` : 'Steam 版本遊戲支援語言',

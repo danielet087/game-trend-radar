@@ -102,7 +102,7 @@ export function createHomeHero(root: HTMLElement, context: HeroContext, signal?:
 
   function slide(item: HeroSlide, index: number) {
     const { game } = item, days = daysBetween(today, game.date);
-    const display = D.releaseDisplayNames?.(game, game.releasePlatforms) || { name: game.name };
+    const display = D.releaseCardNames?.(game, game.releasePlatforms) || { name: game.name };
     const panel = node('div', 'home-hero-slide');
     panel.id = `homeHeroSlide${index}`;
     panel.setAttribute('role', 'tabpanel');
@@ -139,7 +139,7 @@ export function createHomeHero(root: HTMLElement, context: HeroContext, signal?:
 
   function tab(item: HeroSlide, index: number) {
     const { game } = item;
-    const display = D.releaseDisplayNames?.(game, game.releasePlatforms) || { name: game.name };
+    const display = D.releaseCardNames?.(game, game.releasePlatforms) || { name: game.name };
     const button = node('button', 'home-hero-tab') as HTMLButtonElement;
     button.type = 'button';
     button.id = `homeHeroTab${index}`;

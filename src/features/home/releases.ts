@@ -54,7 +54,7 @@ export function createReleaseStrip(root: HTMLElement, context: {
   const peek = () => parseFloat(getComputedStyle(scroller).scrollPaddingLeft) || 0;
 
   function card(game: CatalogGame) {
-    const display = D.releaseDisplayNames?.(game, game.releasePlatforms) || { name: game.name };
+    const display = D.releaseCardNames?.(game, game.releasePlatforms) || { name: game.name, edition: '' };
     const item = node('li', 'release-card');
     const link = node('a', 'release-card-link') as HTMLAnchorElement;
     link.href = D.detailURL(game);
@@ -89,7 +89,8 @@ export function createReleaseStrip(root: HTMLElement, context: {
       const name = chips.length === 1 ? D.platformFullNames?.[chip.code] || chip.label : chip.label;
       platform.append(node('span', `is-${chip.family}`, chip.exclusive ? `${name} 獨佔` : name));
     }
-    link.append(art, platform, node('span', 'release-card-title', display.name));
+    link.append(art, platform, node('span', 'release-card-title', display.name),
+      ...(display.edition ? [node('span', 'release-card-edition', display.edition)] : []));
     const meta = node('p', 'release-card-meta');
     const interest = Number.isFinite(game.followers) ? `${number.format(game.followers)} 人關注`
       : D.consoleInterest(game)?.text || '關注數待確認';

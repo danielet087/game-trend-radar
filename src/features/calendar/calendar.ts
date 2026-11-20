@@ -43,7 +43,7 @@ export function createCalendarFeature(D: CatalogAPI, filters: FilterState, state
       cell.append(link);
       D.calendarFeatured(dayGames).forEach((game: CatalogGame, rank: number) => {
         const releasePlatforms = game.releasePlatforms || [game.source === "nintendo" ? game.platformShort : "Steam"];
-        const display = D.releaseDisplayNames?.(game, releasePlatforms) || { name: game.name, nameEn: game.nameEn };
+        const display = D.releaseCardNames?.(game, releasePlatforms) || { name: game.name, nameEn: game.nameEn, edition: "" };
         const tag = detailLink(game, D, "day-game" + (rank ? " second" : ""), display.name);
         // The chip names what releases on this day: one platform, or the first and a count.
         const platforms = D.cardPlatformChips(game, releasePlatforms);
@@ -57,7 +57,7 @@ export function createCalendarFeature(D: CatalogAPI, filters: FilterState, state
         tag.append(platform,
           node("span", "day-game-name", display.name));
         const interest = D.consoleInterest(game);
-        tag.title = `${display.name}${display.nameEn && display.nameEn !== display.name ? ` · ${display.nameEn}` : ""} · ${platform.title}${interest ? ` · ${interest.text}` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;
+        tag.title = `${display.name}${display.nameEn && display.nameEn !== display.name ? ` · ${display.nameEn}` : ""}${display.edition ? ` · ${display.edition}` : ""} · ${platform.title}${interest ? ` · ${interest.text}` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;
         cell.append(tag);
       });
       if (dayGames.length > 2) {

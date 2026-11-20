@@ -153,6 +153,40 @@ test('distinct native editions remain distinguishable and repeated version suffi
   }
 });
 
+test('cards name the game, as its page does, and note the edition this release sells', () => {
+  const [chinese] = D.nintendoGames(payload(nintendo({ name_zh_tw: '王國之心 III' })));
+  assert.deepEqual(D.releaseCardNames(chinese), { name: '王國之心 III', nameEn: chinese.nameEn, edition: '本體＋Re Mind DLC' });
+  assert.equal(chinese.name, '王國之心 III');
+  // 11-20: the card read "NS2 KINGDOM HEARTS III + Re Mind (DLC)" while the page read "Kingdom Hearts III".
+  const [english] = D.nintendoGames(payload(nintendo()));
+  assert.deepEqual(D.releaseCardNames(english), { name: 'Kingdom Hearts III', nameEn: english.nameEn, edition: '本體＋Re Mind DLC' });
+  const sameDay = D.datasets({ games: [steam({ name_zh_tw: '王國之心 III', release_start: '2026-10-09' })] },
+    null, payload(nintendo())).games[0];
+  assert.deepEqual(D.releaseCardNames(sameDay), { name: sameDay.name, nameEn: sameDay.nameEn, edition: 'NS2 本體＋Re Mind DLC' });
+  const [pc, ns] = D.datasets({ games: [steam({ name_zh_tw: '王國之心 III' })] }, null, payload(nintendo())).games;
+  assert.deepEqual(D.releaseCardNames(pc), { name: pc.name, nameEn: pc.nameEn, edition: '' });
+  assert.equal(D.releaseCardNames(ns).edition, '本體＋Re Mind DLC');
+  assert.equal(D.releaseCardNames(ns, ['Steam']).edition, '');
+});
+
+test('card edition notes keep each platform version and never repeat an edition the name already carries', () => {
+  const deluxe = edition({ type: 'deluxe', label: 'Deluxe 版', title: 'Kingdom Hearts III Deluxe Edition',
+    product_id: '70010000117243', source_url: 'https://ec.nintendo.com/HK/zh/titles/70010000117243' });
+  const [game] = D.nintendoGames(payload(nintendo({ name_zh_tw: '王國之心 III',
+    platforms: [{ id: 130, code: 'NS' }, { id: 508, code: 'NS2' }],
+    releases: [{ platform: 'NS', date: '2026-10-09', precision: 'day', source: 'IGDB' },
+      { platform: 'NS2', date: '2026-10-09', precision: 'day', source: 'IGDB' }],
+    platform_editions: { NS: deluxe, NS2: edition() } })));
+  assert.deepEqual(D.releaseCardNames(game), { name: '王國之心 III', nameEn: game.nameEn,
+    edition: 'NS Deluxe 版；NS2 本體＋Re Mind DLC' });
+  for (const name of ['王國之心 III（Deluxe 版）', '王國之心 III（NS2 Deluxe 版）', '王國之心 III Deluxe版']) {
+    const [named] = D.nintendoGames(payload(nintendo({ display_name: name, platform_editions: { NS2: deluxe } })));
+    assert.deepEqual(D.releaseCardNames(named), { name: named.name, nameEn: named.nameEn, edition: '' });
+  }
+  const [plain] = D.nintendoGames(payload(nintendo({ platform_editions: {} })));
+  assert.deepEqual(D.releaseCardNames(plain), { name: plain.name, nameEn: plain.nameEn, edition: '' });
+});
+
 test('official edition titles and labels remain searchable on native and merged records', () => {
   const [native] = D.nintendoGames(payload(nintendo()));
   const merged = D.datasets({ games: [steam()] }, null, payload(nintendo())).games[0];
