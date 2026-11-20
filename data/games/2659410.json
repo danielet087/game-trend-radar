@@ -135,19 +135,19 @@
     5
   ],
   "twitch_admission": {
-    "schema_version": 1,
-    "method": "twitch_igdb_external_steam_v1",
     "appid": 2659410,
-    "twitch_game_id": "1576133629",
-    "igdb_id": "414942",
     "checked_at": "2026-10-04T20:12:49Z",
-    "source_frontend_commit": "e8985949d96008a156675f6beee978668030e1c2",
+    "igdb_id": "414942",
+    "method": "twitch_igdb_external_steam_v1",
+    "schema_version": 1,
     "source_enrollment": {
       "min_viewers": 7000,
       "observed_at": "2026-10-04T20:12:49Z",
       "source": "igdb_first_release_date",
       "viewer_count": 15547
-    }
+    },
+    "source_frontend_commit": "e8985949d96008a156675f6beee978668030e1c2",
+    "twitch_game_id": "1576133629"
   },
   "content_enrichment_signature": "2659410:5064:2027-02-03",
   "storage_version": 2,
@@ -162,7 +162,6 @@
   "community_url": "https://steamcommunity.com/app/2659410/",
   "description_source_url": "https://store.steampowered.com/app/2659410/",
   "description_next_check_at": "2026-11-20T17:32:27Z",
-  "name_en_traditional": "Elta: Defy All Gods",
   "content_screening": {
     "policy_version": "steam-primary-content-2026-11-08-v2",
     "status": "screened",
