@@ -5,7 +5,8 @@ usage: python scripts/make_test_site_data.py [SOURCE_DIR] [--games N]
 Writes tests/fixtures/site-data/ from SOURCE_DIR (default data/): the first N
 catalog games (plus the games the browser tests name) with their per-game and
 Steam media files, and the catalog, Steam, Nintendo, activity and growth files
-trimmed to them, plus the named console games' Steam references.
+trimmed to them, the latest-followers file the insights build makes from that
+growth, plus the named console games' Steam references.
 Tests read this copy and the preview server serves it (RADAR_SITE_DATA), so they
 no longer change with every collection and keep working once data/ leaves Git.
 The browser tests pin their clock to the catalog's generated_at. Regenerate only
@@ -17,6 +18,11 @@ import argparse
 import json
 from pathlib import Path
 import shutil
+
+try:
+    from scripts.build_radar_insights import latest_followers
+except ModuleNotFoundError:
+    from build_radar_insights import latest_followers
 
 ROOT = Path(__file__).resolve().parent.parent
 TARGET = ROOT / "tests" / "fixtures" / "site-data"
@@ -71,7 +77,10 @@ def make(source: Path, games: int) -> dict:
     write(TARGET / "activity.json", {**activity, "events": [
         event for event in activity["events"] if event.get("appid") in kept or event.get("appid") is None]})
     growth = read(source / "growth.json")
-    write(TARGET / "growth.json", {**growth, "games": [row for row in growth["games"] if row.get("appid") in kept]})
+    growth = {**growth, "games": [row for row in growth["games"] if row.get("appid") in kept]}
+    write(TARGET / "growth.json", growth)
+    # Published beside growth.json from the same measurements; list pages read it.
+    write(TARGET / "followers.json", latest_followers(growth))
     copied = 0
     for appid in sorted(kept):
         path = source / "games" / f"{appid}.json"

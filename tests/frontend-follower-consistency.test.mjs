@@ -33,6 +33,16 @@ test('the measurement time wins even when the newer catalog count is lower or ze
   }
 });
 
+test('a newer count from the latest-followers file is not replaced by older history', () => {
+  const history = [point('2026-11-09T23:41:50Z', 807)];
+  const listed = { ...game, followers:900, followersCheckedAt:'2026-11-10T01:00:00Z' };
+  assert.equal(withLatestFollowers(listed, record, history, today), listed);
+  const same = { ...game, followers:807, followersCheckedAt:'2026-11-09T23:41:50Z' };
+  assert.equal(withLatestFollowers(same, record, history, today).followersCheckedAt, '2026-11-09T23:41:50Z');
+  const older = { ...game, followers:500, followersCheckedAt:'2026-11-02T23:41:50Z' };
+  assert.equal(withLatestFollowers(older, record, history, today).followers, 807);
+});
+
 test('invalid, future, nonofficial and missing values never replace a valid observation', () => {
   const history = [
     point('2026-11-09T23:41:50Z', 807),

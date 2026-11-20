@@ -18,7 +18,7 @@ from scripts import publish_radar_insights as publication
 ROOT = Path(__file__).resolve().parents[1]
 FROZEN = "2026-10-08T15:59:59Z"
 AFTER_MIDNIGHT = "2026-10-08T16:00:01Z"
-OUTPUTS = ("insights-state.json", "activity.json", "growth.json", "scheduler_queue_status.json")
+OUTPUTS = ("insights-state.json", "activity.json", "growth.json", "scheduler_queue_status.json", "followers.json")
 
 
 def git(root, *args):
@@ -124,7 +124,7 @@ class InsightsWorkflowClockTests(unittest.TestCase):
         self.assertEqual(state["builder_clocks"], ["2026-10-08T15:59:59+00:00"] * attempts)
         first = state["publications"][0]
         self.assertTrue(all(snapshot == first for snapshot in state["publications"]))
-        record, activity, growth, queue = (json.loads(first[name]) for name in OUTPUTS)
+        record, activity, growth, queue, followers = (json.loads(first[name]) for name in OUTPUTS)
         self.assertEqual(record["updated_at"], FROZEN)
         self.assertEqual(record["records"]["2"]["first_seen_at"], FROZEN)
         self.assertEqual(activity["generated_at"], FROZEN)
@@ -135,6 +135,8 @@ class InsightsWorkflowClockTests(unittest.TestCase):
         self.assertEqual({row["release_date"] for row in growth["games"]}, {"2026-10-09"})
         for row in growth["games"]:
             self.assertEqual(row["history"], [{"at": "2026-10-08T15:50:00Z", "followers": 6000, "source": "steam_community"}])
+        # The list pages' latest counts come from the same measurements.
+        self.assertEqual(followers["games"], {str(row["appid"]): [6000, "2026-10-08T15:50:00Z"] for row in growth["games"]})
         self.assertEqual(queue["generated_at"], "2026-10-08T15:50:00Z")
 
     def test_workflow_invokes_the_production_module(self):

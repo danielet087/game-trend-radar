@@ -25,7 +25,9 @@ class MakeTests(unittest.TestCase):
                 "steam_preview.json": {"games": [game(2), game(9)], "recent_games": []},
                 "nintendo_upcoming.json": {"schema_version": 1, "games": [{"igdb_id": 7}]},
                 "activity.json": {"version": 1, "events": [{"appid": 2}, {"appid": 9}, {"igdb_id": 7}]},
-                "growth.json": {"version": 1, "games": [{"appid": 1}, {"appid": 9}]},
+                "growth.json": {"version": 1, "games": [
+                    {"appid": 1, "history": [{"at": "2026-11-17T01:00:00Z", "followers": 120, "source": "steam_community"}]},
+                    {"appid": 9, "history": [{"at": "2026-11-17T02:00:00Z", "followers": 900, "source": "steam_community"}]}]},
                 "games/1.json": game(1), "games/5356470.json": game(5356470), "games/9.json": game(9),
                 "media/2.json": {"schema_version": 1, "appid": 2}, "media/9.json": {"schema_version": 1, "appid": 9},
                 "store_facts.json": {"schema_version": 1, "checked_at": "2026-11-18T00:00:00Z",
@@ -45,7 +47,9 @@ class MakeTests(unittest.TestCase):
             self.assertEqual((read("catalog.json")["count"], report["games"], report["game_files"]), (4, 4, 2))
             self.assertEqual([row["appid"] for row in read("steam_preview.json")["games"]], [2])
             self.assertEqual(read("activity.json")["events"], [{"appid": 2}, {"igdb_id": 7}])
-            self.assertEqual(read("growth.json")["games"], [{"appid": 1}])
+            self.assertEqual([row["appid"] for row in read("growth.json")["games"]], [1])
+            self.assertEqual(read("followers.json"), {"schema_version": 1, "as_of": "2026-11-17T01:00:00Z",
+                                                      "games": {"1": [120, "2026-11-17T01:00:00Z"]}})
             self.assertEqual(sorted(path.name for path in (target / "games").iterdir()), ["1.json", "5356470.json"])
             # game.html's Steam media follows the chosen games and the named Steam references.
             self.assertEqual(sorted(path.name for path in (target / "media").iterdir()), ["2.json", "2246340.json"])
@@ -76,6 +80,8 @@ class MakeTests(unittest.TestCase):
         self.assertTrue(media and media <= steam)
         store = {int(key) for key in read("store_facts.json")["games"]}
         self.assertTrue(store and store <= steam)
+        # The latest counts are the ones the insights build derives from this growth.json.
+        self.assertEqual(read("followers.json"), make.latest_followers(read("growth.json")))
         self.assertLess(sum(path.stat().st_size for path in FIXTURE.rglob("*") if path.is_file()), 4_000_000)
 
 

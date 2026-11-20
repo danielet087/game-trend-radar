@@ -241,6 +241,23 @@ class InsightTests(unittest.TestCase):
         self.assertTrue(M.projections(first, date(2026, 9, 1))[1]["games"][0]["tracking"])
         self.assertFalse(M.projections(first, date(2026, 9, 2))[1]["games"][0]["tracking"])
 
+    def test_latest_followers_file_holds_each_games_newest_official_count(self):
+        state = M.update(None, catalog(game(release_start="2026-09-05"), game(2)), observed_at="2026-09-03T00:00:00Z",
+                         measurements=[
+            {"appid": 1, "at": "2026-09-02T01:00:00Z", "followers": 6200, "source": "steam_community"},
+            {"appid": 1, "at": "2026-09-01T18:00:00Z", "followers": 6100, "source": "steam_community"},
+            {"appid": 2, "at": "2026-09-02T03:00:00Z", "followers": 9000, "source": "third_party"}])
+        _, growth = M.projections(state, date(2026, 9, 3))
+        latest = M.latest_followers(growth)
+        self.assertEqual(latest["schema_version"], 1)
+        self.assertEqual(latest["games"]["1"], [6200, "2026-09-02T01:00:00Z"])
+        # A third-party number is never a Followers count.
+        self.assertEqual(latest["games"]["2"][0], 6000)
+        self.assertEqual(latest["as_of"], "2026-09-02T01:00:00Z")
+        # The same counts give the same file: no new publication without a new count.
+        again = M.update(state, catalog(game(release_start="2026-09-05"), game(2)), observed_at="2026-09-03T05:00:00Z")
+        self.assertEqual(M.latest_followers(M.projections(again, date(2026, 9, 3))[1]), latest)
+
     def test_missing_or_invalid_observations_are_not_zero_growth(self):
         first = M.update(None, catalog(game(follower_checked_at=None)), observed_at="2026-09-28T00:00:00Z")
         self.assertEqual(first["records"]["1"]["history"], [])

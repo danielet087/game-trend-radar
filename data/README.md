@@ -16,6 +16,7 @@
 | `nintendo_refresh_status.json` | IGDB 收集及發布回條，含真實候選、公開與待處理數、平台 ID、收集／發布時間 |
 | `activity.json`、`insights-state.json` | 已接受 Steam／IGDB 新作及平台／日期異動；保留同一遊戲的首次加入與既有活動歷史 |
 | `growth.json` | Steam Community 的實際 Followers 量測，不把 IGDB hypes 當成 Steam 成長 |
+| `followers.json` | 每款最新一次官方 Followers（`AppID → [人數, 量測時間]`），跟 `growth.json` 同一次產生；清單、月曆、搜尋拿它顯示與排序，收錄門檻仍看 `catalog.json` |
 | `scheduler_queue_status.json` | Steam Followers 待查佇列；IGDB 主機收集不混入此佇列 |
 | `twitch_live.json`、`youtube_live.json` | 原有直播輸出；本輪未改動其排程或資料來源 |
 

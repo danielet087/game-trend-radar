@@ -17,8 +17,9 @@ export function loadSearchIndex(): Promise<SearchIndex> {
     ]);
     const { catalog: official, preview } = sources as any;
     const references = (sources as any).references ?? null;
+    const followers = (sources as any).followers ?? null;
     const R = RadarDiscovery as any, D = RadarData as any;
-    const { model, viewModel } = normalizeCatalog({ official, preview, native, references } as any, 'all', R);
+    const { model, viewModel } = normalizeCatalog({ official, preview, native, references, followers } as any, 'all', R);
     if (!viewModel) throw new Error('Search data unavailable');
     return buildIndex(viewModel, D, R, D.todayInTaipei(), (game: any) => catalogCardDate(game, D, false, model));
   })().catch(error => { pending = null; throw error; });

@@ -17,8 +17,36 @@ export function steamReferences(payload) {
   return unique(payload.games.map(normalizeReference).filter(Boolean));
 }
 
-export function datasets(official, preview, nintendo = null, references = null) {
+/**
+ * data/followers.json: each Steam game's latest official count, refreshed by the
+ * hourly growth publication. Display only: membership stays with the catalog count.
+ */
+export function latestFollowerCounts(payload) {
+  const counts = new Map();
+  const games = payload && typeof payload === "object" && payload.schema_version === 1 ? payload.games : null;
+  if (!games || typeof games !== "object" || Array.isArray(games)) return counts;
+  for (const [appid, entry] of Object.entries(games)) {
+    if (!/^[1-9]\d*$/.test(appid) || !Array.isArray(entry)) continue;
+    const [followers, at] = entry;
+    if (Number.isSafeInteger(followers) && followers >= 0 && awareTime(at) !== null)
+      counts.set(Number(appid), { followers, at });
+  }
+  return counts;
+}
+
+/** A newer official count replaces the catalog's; an older or equal one never does. */
+export function withLatestCount(row, counts) {
+  const latest = row?.source === "steam" ? counts.get(row.appid) : null;
+  if (!latest) return row;
+  const shown = awareTime(row.followersCheckedAt);
+  return shown !== null && shown >= awareTime(latest.at) ? row
+    : { ...row, followers: latest.followers, followersCheckedAt: latest.at };
+}
+
+export function datasets(official, preview, nintendo = null, references = null, followers = null) {
   const chosen = official || preview;
+  const counts = latestFollowerCounts(followers);
+  const latest = row => withLatestCount(row, counts);
   const nintendoRows = nintendoGames(nintendo);
   if (!chosen && !nintendo) return null;
   const translations = new Map(
@@ -28,12 +56,13 @@ export function datasets(official, preview, nintendo = null, references = null) 
   );
   const steamUpdated = latestSourceUpdate(chosen?.generated_at, chosen?.updated_at);
   const nintendoUpdated = latestSourceUpdate(nintendo?.generated_at);
+  // normalize() admits each game on the catalog's own count; the newer count only changes what is shown.
   const steamGames = unique((chosen?.games || []).map(game =>
-    normalize(game, false, translations.get(Number(game?.appid)))).filter(Boolean));
+    normalize(game, false, translations.get(Number(game?.appid)))).filter(Boolean).map(latest));
   const steamRecent = unique([
     ...(preview?.recent_games || []).map(game => normalize(game, true)),
     ...(chosen?.games || []).map(game => normalize(game, true, translations.get(Number(game?.appid)))),
-  ].filter(Boolean));
+  ].filter(Boolean).map(latest));
   // unique() keeps the last row per game: a catalog row wins over a console
   // game's Steam reference, as the complete catalog wins over recent rows.
   const steamReference = unique([...steamReferences(references), ...steamRecent, ...steamGames]);

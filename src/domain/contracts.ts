@@ -148,6 +148,15 @@ export interface BoundaryInput {
   native?: PublicPayload | null;
   /** data/steam_references.json: Steam versions of console games. */
   references?: PublicPayload | null;
+  /** data/followers.json: each Steam game's latest official count, display only. */
+  followers?: LatestFollowers | null;
+}
+
+export interface LatestFollowers {
+  schema_version: 1;
+  as_of?: string | null;
+  /** AppID → [count, measured at]. */
+  games: Record<string, [number, string]>;
 }
 
 export interface BoundaryProjection {

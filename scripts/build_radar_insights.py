@@ -667,6 +667,27 @@ def projections(state, today):
     return activity, growth
 
 
+def latest_followers(growth):
+    """Each game's latest official count, small enough for every list page.
+
+    List pages read this instead of the catalog's admission count, so cards,
+    sorting and the threshold filter show what the game page shows. The file
+    changes only when a count does (its time is the newest measurement).
+    """
+    games, newest = {}, None
+    for row in growth["games"]:
+        points = [point for point in row.get("history", [])
+                  if isinstance(point, dict) and point.get("source", "steam_community") == "steam_community"
+                  and type(point.get("followers")) is int and point["followers"] >= 0 and stamp(point.get("at"))]
+        if not points:
+            continue
+        point = max(points, key=lambda item: stamp(item["at"]))
+        games[str(row["appid"])] = [point["followers"], point["at"]]
+        if newest is None or stamp(point["at"]) > stamp(newest):
+            newest = point["at"]
+    return {"schema_version": 1, "as_of": newest, "games": games}
+
+
 def growth_collection(run, state, now, *, publication_now=None):
     """Project coverage separately from Followers; unavailable never is a point.
 
@@ -874,6 +895,7 @@ def main():
     write(path, state)
     write(args.data_dir / "activity.json", activity)
     write(args.data_dir / "growth.json", growth)
+    write(args.data_dir / "followers.json", latest_followers(growth))
     print(f"INSIGHTS records={len(growth['games'])} events={len(activity['events'])} measurements={len(measurements)}")
 
 

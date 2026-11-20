@@ -39,7 +39,8 @@ test("detail reads published game metadata; no invented genres or separate Follo
                     "gameFollowers", "gameAppId", "gameSteam", "gameSave"]) {
     assert.match(html, new RegExp('id="' + id + '"'));
   }
-  assert.match(profile, /D\.datasets\(official, preview, nintendo, references\)/);
+  // The published latest-counts file, not a Steam call: display only, after catalog admission.
+  assert.match(profile, /D\.datasets\(official, preview, nintendo, references, followers\)/);
   assert.doesNotMatch(from("src/data/storage.ts"), /githubusercontent/);
   assert.match(from("src/data/storage.ts"), /"\.\/data\/" \+ filename \+ "\?r="/);
   assert.match(profile, /data\.games, \.\.\.data\.recent/);
