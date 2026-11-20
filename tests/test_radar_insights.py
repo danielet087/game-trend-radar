@@ -718,6 +718,35 @@ class NintendoInsightTests(unittest.TestCase):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 self.update(document=nintendo_catalog(nintendo_game(releases=[{**release, **changes}])))
 
+    def test_a_taiwan_store_day_is_reported_as_the_taiwan_official_update(self):
+        product = "JP0005-PPSA23593_00-APPLICATION00000"
+        igdb = audited_nintendo_release(platform="PS5")
+        taiwan = {**igdb, "date": "2026-10-09", "region": "taiwan", "source": "official_registry",
+                  "date_basis": "taiwan_official_calendar_day", "timezone_status": "taiwan_official_date",
+                  "taiwan_release_confirmed": True, "official_source_name": "PlayStation Store 台灣",
+                  "official_source_url": "https://store.playstation.com/zh-hant-tw/product/" + product,
+                  "official_verified_at": "2026-10-04T02:00:00Z", "official_product_id": product,
+                  "official_concept_id": None, "official_release_time_utc": "2026-10-08T16:00:00Z"}
+        self.assertTrue(M.accepted_nintendo_release_source(taiwan))
+        first = self.update(document=igdb_catalog(nintendo_game(releases=[igdb])))
+        state = self.update(first, igdb_catalog(nintendo_game(releases=[taiwan]), at="2026-10-04T03:00:00Z"))
+        [change] = [event for event in state["events"] if event["type"] == "release_date"]
+        self.assertEqual((change["previous_date"], change["date"]), ("2026-10-08", "2026-10-09"))
+        self.assertEqual(change["update_reason"], "taiwan_official")
+        self.assertEqual(change["update_context"], {"basis": "taiwan_official_release", "sources": ["PlayStation Store 台灣"],
+                                                    "catalog_at": "2026-10-04T03:00:00Z"})
+        # A new game is still IGDB's addition, and an IGDB day stays IGDB's update.
+        self.assertEqual(first["events"][0]["update_reason"], "igdb_update")
+        later = self.update(state, igdb_catalog(nintendo_game(releases=[{**igdb, "date": "2026-10-10",
+            "source_date": "2026-10-10", "timestamp_taipei_date": "2026-10-10",
+            "source_timestamp": int(M.stamp("2026-10-10T00:00:00Z").timestamp())}]), at="2026-10-04T04:00:00Z"))
+        self.assertEqual(later["events"][-1]["update_reason"], "igdb_update")
+        # Platforms changing together are the Taiwan source's update only when every new day is its own.
+        both = self.update(first, igdb_catalog(nintendo_game(releases=[taiwan, audited_nintendo_release("2026-10-09", platform="NS2")]),
+                                               at="2026-10-04T03:00:00Z"))
+        reasons = {tuple(event["platforms"]): event["update_reason"] for event in both["events"] if event["type"] != "added"}
+        self.assertEqual(reasons, {("PS5",): "taiwan_official", ("NS2",): "igdb_update"})
+
     def test_hong_kong_nintendo_official_date_keeps_the_calendar_day_and_activity_identity(self):
         release = {**official_nintendo_release(), "region": "hong_kong", "taiwan_release_confirmed": False,
                    "date_basis": "hong_kong_official_calendar_day", "timezone_status": "hong_kong_official_date",

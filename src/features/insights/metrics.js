@@ -23,6 +23,7 @@ const ACTIVITY_REASONS = {
   steam_daily_search: "每日 Steam 搜尋",
   twitch_rankings: "Twitch 排行榜",
   igdb_update: "IGDB 更新",
+  taiwan_official: "台灣官方公布",
   steam_official_verification: "Steam 官方驗證",
   steam_metadata_refresh: "Steam 資料更新",
   steam_catalog_sync: "Steam 清單同步",

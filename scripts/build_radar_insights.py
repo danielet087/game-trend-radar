@@ -53,7 +53,7 @@ NINTENDO_OFFICIAL_DATE_DOMAINS = {"nintendo.com", "nintendo.com.hk", "nintendo.c
                                   "sega.com", "konami.com", "playtombraider.com"}
 PS5_PRODUCT_ID = r"[A-Z]{2}[0-9]{4}-[A-Z0-9]{9}_[A-Z0-9]{2}-[A-Z0-9]{16}"
 ACTIVITY_REASONS = {
-    "steam_daily_search", "twitch_rankings", "igdb_update",
+    "steam_daily_search", "twitch_rankings", "igdb_update", "taiwan_official",
     "steam_official_verification", "steam_metadata_refresh", "steam_catalog_sync",
     "steam_recent_release", "legacy_unrecorded",
 }
@@ -515,6 +515,24 @@ def merge_nintendo(state, catalog, now, receipt=None):
     state["nintendo_hypes_source_digest"] = hypes_digest
 
 
+def taiwan_official_change(event, nintendo_catalog):
+    """A console date change whose new day every named platform has from a Taiwan official source."""
+    if event.get("type") not in {"release_date", "platform_added"} or not isinstance(nintendo_catalog, dict):
+        return None
+    rows = nintendo_catalog.get("games") if isinstance(nintendo_catalog.get("games"), list) else []
+    row = next((row for row in rows if isinstance(row, dict) and row.get("id") == event.get("game_id")), None)
+    releases = {release.get("platform"): release for release in (row or {}).get("releases") or []
+                if isinstance(release, dict)}
+    platforms = event.get("platforms") if isinstance(event.get("platforms"), list) else []
+    found = [releases.get(platform) for platform in platforms]
+    if (not platforms or any(not release or release.get("date") != event.get("date")
+                             or release.get("source") != "official_registry" or release.get("region") != "taiwan"
+                             or release.get("taiwan_release_confirmed") is not True
+                             or not accepted_nintendo_release_source(release) for release in found)):
+        return None
+    return sorted({release.get("official_source_name") for release in found})
+
+
 def annotate_activity_origins(state, current, origin_ledger=None, nintendo_catalog=None):
     """Freeze an event's collection cause, independently of its game platform.
 
@@ -545,8 +563,12 @@ def annotate_activity_origins(state, current, origin_ledger=None, nintendo_catal
         if not at:
             continue
         if event.get("source") == "nintendo":
-            event["update_reason"] = "igdb_update"
-            event["update_context"] = {"basis": "igdb_catalog"}
+            # A new console day from a Taiwan official source (the Taiwan
+            # PlayStation Store) is that source's update, not IGDB's.
+            sources = taiwan_official_change(event, nintendo_catalog)
+            event["update_reason"] = "taiwan_official" if sources else "igdb_update"
+            event["update_context"] = ({"basis": "taiwan_official_release", "sources": sources} if sources
+                                       else {"basis": "igdb_catalog"})
             if (isinstance(nintendo_catalog, dict) and stamp(nintendo_catalog.get("generated_at"))
                     and stamp(nintendo_catalog["generated_at"]) <= at):
                 event["update_context"]["catalog_at"] = nintendo_catalog["generated_at"]

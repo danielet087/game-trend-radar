@@ -34,6 +34,7 @@ test('activity reasons describe the triggering collector independently of platfo
     [steam({ update_reason: 'steam_catalog_sync' }), 'Steam 清單同步'],
     [steam({ update_reason: 'steam_recent_release' }), 'Steam 新上市補入'],
     [nintendo({ platforms: ['PS5'], update_reason: 'igdb_update' }), 'IGDB 更新'],
+    [nintendo({ platforms: ['PS5'], type: 'release_date', previous_date: '2026-10-30', update_reason: 'taiwan_official' }), '台灣官方公布'],
   ];
   for (const [event, label] of examples) {
     assert.equal(I.activityEvent(event).update_reason, event.update_reason);
