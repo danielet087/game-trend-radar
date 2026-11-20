@@ -88,7 +88,9 @@ test('a Steam game shows its hero art, media gallery, radar news, heat and the f
   assert.ok(requests.includes('media/3926930'));
   // Hero: Steam's library hero, the big release date and its countdown.
   assert.equal(e.get('gameHeroImage').src, files.media.hero_image);
+  assert.equal(e.get('gameHeroArt').dataset.kind, 'banner');
   assert.equal(e.get('gameHeroArt').dataset.state, 'loading');
+  assert.equal(e.get('gameCover').hidden, true);
   assert.equal(e.get('gameHeroDate').textContent, '2026.12.10');
   assert.equal(e.get('gameHeroWeekday').textContent, '（四）');
   assert.equal(e.get('gameHeroCountdown').textContent, '還有 21 天');
@@ -162,14 +164,18 @@ test('the info card drops invisible format characters Steam sends as whole name 
   assert.equal(facts['開發商'], 'EmilJoes Games');
 });
 
-test('without Steam media the hero keeps the theme color and the media section stays hidden', async () => {
+test('without Steam media yet the Store capsule stands in, blurred as the hero and whole in the title card', async () => {
+  // 11-20: games admitted at 09:03 had no image of their own until the 13:30 media run.
   const files = { ...steamFiles(), media: null, store: null, twitch: { games: {} } };
   const { e } = await display('?appid=3926930', files, { today: '2026-11-18' });
   const labels = e.get('gameFacts').children.map(row => row.children[0].textContent);
   assert.ok(!labels.includes('售價') && !labels.includes('分級') && !labels.includes('Steam Deck'));
   assert.equal(e.get('detailPage').hidden, false);
-  assert.equal(e.get('gameHeroArt').dataset.state, 'empty');
-  assert.equal(e.get('gameHeroImage').hidden, true);
+  assert.equal(e.get('gameHeroArt').dataset.kind, 'cover');
+  assert.equal(e.get('gameHeroArt').dataset.state, 'loading');
+  assert.equal(e.get('gameHeroImage').src, 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3926930/header.jpg');
+  assert.equal(e.get('gameCover').hidden, false);
+  assert.equal(e.get('gameCover').dataset.shape, 'wide');
   assert.equal(e.get('gameMedia').hidden, true);
   assert.equal(e.get('gameTwitchLink').hidden, true);
   assert.equal(e.get('gameTwitchStatus').textContent, '目前：還沒有紀錄');

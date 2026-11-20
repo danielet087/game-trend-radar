@@ -56,10 +56,11 @@ export function createDetailMedia(ctx) {
   };
 
   // Steam games show their wide key art. Console games have only a portrait
-  // cover, so it becomes a blurred backdrop and the title card shows it whole.
-  function renderHero(game, media) {
+  // cover, so it becomes a blurred backdrop and the title card shows it whole;
+  // so does a Steam game's Store capsule until its media is fetched (capsule).
+  function renderHero(game, media, capsule = false) {
     const art = $('gameHeroArt'), img = $('gameHeroImage');
-    const cover = isNativeConsole(game);
+    const cover = isNativeConsole(game) || capsule;
     const source = cover ? game.art || null : media?.hero;
     art.dataset.kind = cover ? 'cover' : 'banner';
     art.dataset.state = source ? 'loading' : 'empty';
@@ -243,7 +244,7 @@ export function createDetailMedia(ctx) {
   on($('gameShotsMore'), 'click', () => { expanded = !expanded; renderShots(); });
 
   return {
-    render(game, media) { renderHero(game, media); renderSection(game, media); },
+    render(game, media, capsule = false) { renderHero(game, media, capsule); renderSection(game, media); },
     destroy() { stopClip(); },
   };
 }
