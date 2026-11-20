@@ -5,7 +5,7 @@ export const NATIVE_PLATFORMS = ['NS', 'NS2', 'PS5'];
 export function cardDate(game: CatalogGame, domain: CatalogAPI, event = false): string {
   if (event) return game.date;
   const dates = (Array.isArray(game.releases) ? game.releases : [])
-    .filter((release: any) => release?.precision === 'day' && domain.validDate(release.date) &&
+    .filter((release: any) => release?.precision === 'day' && domain.validDate(release.date) && release.reference !== true &&
       ['Steam', ...NATIVE_PLATFORMS].includes(release.platform)).map((release: any) => release.date);
   return dates.sort()[0] || game.date;
 }

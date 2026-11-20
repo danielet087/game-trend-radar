@@ -271,7 +271,8 @@ export function initCatalogPage(context: CatalogContext = {}) {
         ? storage.loadNintendoResult() : storage.loadNintendo().then(data => ({ data, status: data ? 'fresh' : 'unavailable' }))]);
       if (disposed) return;
       const { catalog: official, preview } = sources, nintendo = nativeResult.data;
-      const normalized = normalizeCatalog({ official, preview, native: nintendo }, mode, R);
+      const references = (sources as { references?: typeof official }).references ?? null;
+      const normalized = normalizeCatalog({ official, preview, native: nintendo, references }, mode, R);
       state.model = normalized.model; state.viewModel = normalized.viewModel;
       if (mode === 'explore' && state.viewModel) tags!.setCatalog(R.catalog(D.cardGames(state.viewModel.games.filter(game => game.date >= today))));
       if (!state.viewModel) {

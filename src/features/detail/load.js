@@ -52,27 +52,41 @@ export function createDetailLoader(ctx, render, favorites, related) {
   const readActivity = force => Promise.resolve(storage.readJSON?.('./data/activity.json', validActivity, { force }))
     .then(value => validActivity(value) ? value : null);
   async function loadConsoleDetail(force, active) {
-    let catalog = null, preview = null, nintendo = null, activity = null, sourcesDone = false, shown = false;
+    let catalog = null, preview = null, references = null, nintendo = null, activity = null, sourcesDone = false, shown = false;
+    let media = null, store = null, mediaFor = null;
+    // A console game shown on its Steam version gets that version's media and prices.
+    function loadSteamExtras(appid) {
+      if (mediaFor === appid) return;
+      mediaFor = appid;
+      Promise.resolve(storage.loadMedia?.(appid, { force }))
+        .then(result => { media = steamMedia(result, appid); if (media) present(); })
+        .catch(() => { /* Pages without Steam media keep the theme-colored hero. */ });
+      Promise.resolve(storage.loadStoreFacts?.({ force }))
+        .then(result => { store = storeFacts(result, appid); if (store) present(); })
+        .catch(() => { /* Price, rating and Steam Deck rows are optional. */ });
+    }
     function present() {
       if (!active()) return;
       if (!nintendo) return;
-      const data = D.datasets(catalog, preview, nintendo);
+      const data = D.datasets(catalog, preview, nintendo, references);
       if (!data) return;
-      const enriched = R.enrich(data, catalog, preview);
+      const enriched = R.enrich(data, catalog, preview, references);
       const matches = [...enriched.games, ...enriched.recent].filter(entry =>
         (entry.igdbId === igdbId || entry.igdbIds?.includes(igdbId)) &&
         (!requestedDate || entry.date === requestedDate),
       );
       const game = matches.find(entry => entry.date >= today) || matches[0];
       if (!game) return;
-      render(game, enriched, !sourcesDone, { activity });
+      if (game.source !== 'nintendo' && game.appid) loadSteamExtras(game.appid);
+      render(game, enriched, !sourcesDone, { activity, media, store });
       shown = true;
     }
     try {
       await Promise.all([
         storage.loadNintendo({ force }).then(result => { nintendo = result; present(); }),
         storage.loadSources({ force }).then(result => {
-          catalog = result.catalog; preview = result.preview; sourcesDone = true; present();
+          catalog = result.catalog; preview = result.preview; references = result.references || null;
+          sourcesDone = true; present();
         }),
         readActivity(force).then(result => { activity = result; if (activity) present(); })
           .catch(() => { /* The news list is optional. */ }),
@@ -104,13 +118,13 @@ export function createDetailLoader(ctx, render, favorites, related) {
       setStatus("找不到這款遊戲", "連結沒有有效的 Steam AppID 或發售日期，請返回遊戲清單重新選擇。");
       return;
     }
-    let rawGame = null, catalog = null, preview = null, nintendo = null, growth = null, media = null, activity = null, store = null;
-    let catalogDone = false, shown = false;
+    let rawGame = null, catalog = null, preview = null, references = null, nintendo = null, growth = null, media = null, activity = null, store = null;
+    let catalogDone = false, nintendoDone = false, shown = false;
     function present() {
       if (!active()) return;
       if (!rawGame && !catalog && !preview) return;
       const official = detailCatalog(catalog, rawGame, appid);
-      const data = R.enrich(D.datasets(official, preview, nintendo), official, preview);
+      const data = R.enrich(D.datasets(official, preview, nintendo, references), official, preview, references);
       if (!data) return;
       const matches = [...data.games, ...data.recent].filter(entry =>
         entry.appid === appid && (!requestedDate || entry.date === requestedDate),
@@ -119,7 +133,9 @@ export function createDetailLoader(ctx, render, favorites, related) {
       if (!game) {
         // The late catalog may remove an initially displayed old direct record.
         // Published recent/console references still pass through datasets above.
-        if (catalogDone && catalog) {
+        // A console game's Steam version only exists once the console list arrives.
+        const referenced = references?.games?.some(row => Number(row?.appid) === appid);
+        if (catalogDone && catalog && (nintendoDone || !referenced)) {
           shown = false;
           related.showMessage('目前沒有其他符合條件的遊戲。');
           setStatus('這款遊戲目前不在公開清單中',
@@ -144,10 +160,11 @@ export function createDetailLoader(ctx, render, favorites, related) {
       await Promise.all([
         storage.loadGame(appid, { force }).then(record => { rawGame = record; present(); }),
         storage.loadSources({ force }).then(result => {
-          catalog = result.catalog; preview = result.preview; catalogDone = true; present();
+          catalog = result.catalog; preview = result.preview; references = result.references || null;
+          catalogDone = true; present();
         }),
-        storage.loadNintendo({ force }).then(result => { nintendo = result; present(); })
-          .catch(() => { /* Optional platform data must not block the Steam profile. */ }),
+        storage.loadNintendo({ force }).then(result => { nintendo = result; nintendoDone = true; present(); })
+          .catch(() => { nintendoDone = true; present(); /* Optional platform data must not block the Steam profile. */ }),
         Promise.resolve(storage.readJSON?.('./data/growth.json',
           value => value?.version === 1 && Array.isArray(value.games), { force }))
           .then(result => { growth = result; present(); })

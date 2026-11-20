@@ -67,6 +67,41 @@ test('the Steam version shows its Taiwan price and check time; the info card kee
   await expect(row('Steam Deck').locator('dd')).toHaveText('可遊玩');
 });
 
+test('a console game with a Steam version opens on the Steam version from either link, every platform in 平台版本', async ({ page }) => {
+  const failures: string[] = [];
+  page.on('pageerror', error => failures.push(error.message));
+  // Monster Hunter Wilds: on Steam since 2025 (a Steam reference), on NS2 from 2026-12-04.
+  const steamMedia = JSON.parse(readFileSync(mediaFile(2246340), 'utf8'));
+  for (const route of ['game.html?appid=2246340&date=2026-12-04', 'game.html?igdb=279661&date=2026-12-04']) {
+    await page.goto(route);
+    await expect(page.locator('#detailPage')).toBeVisible();
+    await expect(page.locator('#gameTitle')).toHaveText('魔物獵人 荒野');
+    await expect(page.locator('#gameHeroImage')).toHaveAttribute('src', steamMedia.hero_image);
+    await expect(page.locator('#gameHeroDate')).toHaveText('2026.12.04');
+    const steam = page.locator('#gameVersionRows tr[data-platform="Steam"]');
+    await expect(steam.locator('a[href="https://store.steampowered.com/app/2246340/"]')).toBeVisible();
+    await expect(steam).toContainText('2025/02/27');
+    await expect(steam).toContainText('已發售');
+    await expect(page.locator('#gameVersionRows tr[data-platform="NS2"]')).toContainText('2026/12/04');
+    await expect(page.locator('#descriptionSource')).toContainText('Steam 官方繁中');
+    await expect(page.locator('#gameShots .game-shot').first()).toBeVisible();
+  }
+  // A same-day Steam version joins the console release in the title card.
+  await page.goto('game.html?appid=4507990&date=2027-03-04');
+  await expect(page.locator('#gameVersionRows tr[data-platform="Steam"]')).toContainText('2027/03/04');
+  await expect(page.locator('#gameHeroNote')).toContainText('同一天');
+  expect(failures).toEqual([]);
+});
+
+test('lists date a console game shown on its Steam version by the console release and link to the Steam page', async ({ page }) => {
+  await page.goto('games.html?q=Monster');
+  const link = page.locator('a[href*="game.html?appid=2246340"]').first();
+  await expect(link).toHaveAttribute('href', './game.html?appid=2246340&date=2026-12-04');
+  const card = page.locator('.game-card, article').filter({ has: link }).first();
+  await expect(card).toContainText('2026/12/04');
+  await expect(card).not.toContainText('2025/02/27');
+});
+
 test('平台版本 is a table on wide screens and labelled cards on phones, with every source in one collapsed list', async ({ page }) => {
   await page.goto(`game.html?appid=${game.appid}`);
   await expect(page.locator('#gameVersions')).toBeVisible();

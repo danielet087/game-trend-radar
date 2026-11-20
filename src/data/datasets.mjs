@@ -2,7 +2,7 @@
 import { awareTime } from '../domain/dates.mjs';
 import { unique } from '../domain/collections.mjs';
 import { mergePlatformGames } from '../domain/merge.mjs';
-import { normalize } from './steam.mjs';
+import { normalize, normalizeReference } from './steam.mjs';
 import { nintendoGames } from './native.mjs';
 
 export function latestSourceUpdate(...values) {
@@ -11,7 +11,13 @@ export function latestSourceUpdate(...values) {
   return valid.sort((a, b) => b.instant - a.instant)[0]?.value || null;
 }
 
-export function datasets(official, preview, nintendo = null) {
+/** Steam versions of console games: merge targets only, never rows of their own. */
+export function steamReferences(payload) {
+  if (!payload || typeof payload !== "object" || payload.schema_version !== 1 || !Array.isArray(payload.games)) return [];
+  return unique(payload.games.map(normalizeReference).filter(Boolean));
+}
+
+export function datasets(official, preview, nintendo = null, references = null) {
   const chosen = official || preview;
   const nintendoRows = nintendoGames(nintendo);
   if (!chosen && !nintendo) return null;
@@ -28,7 +34,9 @@ export function datasets(official, preview, nintendo = null) {
     ...(preview?.recent_games || []).map(game => normalize(game, true)),
     ...(chosen?.games || []).map(game => normalize(game, true, translations.get(Number(game?.appid)))),
   ].filter(Boolean));
-  const steamReference = unique([...steamRecent, ...steamGames]);
+  // unique() keeps the last row per game: a catalog row wins over a console
+  // game's Steam reference, as the complete catalog wins over recent rows.
+  const steamReference = unique([...steamReferences(references), ...steamRecent, ...steamGames]);
   return {
     games: mergePlatformGames(steamGames, nintendoRows, steamReference),
     recent: mergePlatformGames(steamRecent, nintendoRows, steamReference),

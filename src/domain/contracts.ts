@@ -101,6 +101,8 @@ export interface ReleaseEvent {
   timestampTaipeiDate: CalendarDate | null;
   taiwanConfirmed: boolean | null;
   visibility: { games: boolean; recent: boolean };
+  /** A console game's Steam version day: shown on the game page, never a radar event. */
+  reference?: boolean;
   provenance: SourceProvenance;
   /** Preserve complete evidence for diagnostics; do not infer missing facts. */
   audit: Readonly<Record<string, unknown>>;
@@ -144,6 +146,8 @@ export interface BoundaryInput {
   official?: PublicPayload | null;
   preview?: PublicPayload | null;
   native?: PublicPayload | null;
+  /** data/steam_references.json: Steam versions of console games. */
+  references?: PublicPayload | null;
 }
 
 export interface BoundaryProjection {

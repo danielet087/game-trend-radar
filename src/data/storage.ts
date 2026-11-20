@@ -96,11 +96,18 @@ export function createRadarStorage(environment: StorageEnvironment = {}) {
     return result(catalog, shards.some(shard => shard.status === "stale") || index.status === "stale" ? "stale" : "fresh", index.source, index.fetchedAt);
   }
   async function loadCatalog(options: LoadOptions = {}) { return (await loadCatalogResult(options)).data; }
+  // Steam versions of console games (content backend): merge targets for the
+  // console catalog only. A missing or invalid file just means no references.
+  async function loadSteamReferences(options: LoadOptions = {}) {
+    return readJSON<JsonRecord>("./data/steam_references.json",
+      value => isRecord(value) && value.schema_version === 1 && Array.isArray(value.games), options);
+  }
   async function loadSources(options: LoadOptions = {}) {
-    const catalogResult = await loadCatalogResult(options);
+    const [catalogResult, references] = await Promise.all([loadCatalogResult(options),
+      loadSteamReferences(options).catch(() => null)]);
     const catalog = catalogResult.data;
     const previewResult = !catalog || !(Number(catalog.version) >= 2) ? await readJSONResult("./data/steam_preview.json", validCatalog, options) : null;
-    return { catalog, preview: previewResult?.data ?? null, catalogResult, previewResult };
+    return { catalog, preview: previewResult?.data ?? null, references: references ?? null, catalogResult, previewResult };
   }
   async function loadNintendoResult(options: LoadOptions = {}) { return readJSONResult("./data/nintendo_upcoming.json", validNintendo, options); }
   async function loadNintendo(options: LoadOptions = {}) { return (await loadNintendoResult(options)).data; }
@@ -124,7 +131,7 @@ export function createRadarStorage(environment: StorageEnvironment = {}) {
     return readJSON<JsonRecord>('./data/store_facts.json',
       value => isRecord(value) && value.schema_version === 1 && isRecord(value.games), options);
   }
-  return { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia, loadStoreFacts };
+  return { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadSteamReferences, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia, loadStoreFacts };
 }
 export const RadarStorage = createRadarStorage();
-export const { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia, loadStoreFacts } = RadarStorage;
+export const { readJSON, readJSONResult, loadCatalog, loadCatalogResult, loadSources, loadSteamReferences, loadNintendo, loadNintendoResult, loadGame, loadGameResult, loadMedia, loadStoreFacts } = RadarStorage;

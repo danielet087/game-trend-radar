@@ -20,9 +20,11 @@ export function newsItems({ game, record, history, activity, media, today, numbe
   const items = [];
   const nintendo = game.source === 'nintendo';
   const reasons = { added: '收錄', release_date: '發售日', platform_added: '平台' };
-  const events = I.activityEvents(Array.isArray(activity?.events) ? activity.events : []).filter(event => nintendo
-    ? event.source === 'nintendo' && (event.igdb_id === game.igdbId || game.igdbIds?.includes(event.igdb_id))
-    : event.source === 'steam' && event.appid === game.appid);
+  // A game with Steam and console versions keeps the console versions' news too.
+  const igdbIds = game.igdbIds || (game.igdbId ? [game.igdbId] : []);
+  const events = I.activityEvents(Array.isArray(activity?.events) ? activity.events : []).filter(event =>
+    event.source === 'nintendo' ? igdbIds.includes(event.igdb_id)
+      : !nintendo && event.source === 'steam' && event.appid === game.appid);
   for (const event of events) {
     const date = followerDay(event.at);
     if (!date || date > today) continue;

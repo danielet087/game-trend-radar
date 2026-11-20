@@ -24,7 +24,9 @@ export function mergePlatformGames(steamRows, nintendoRows, steamReference = ste
   const groups = new Map();
   const unmatched = [];
   for (const game of nintendoRows) {
-    if (!game.steamAppid || !steamByID.has(game.steamAppid)) {
+    const steam = game.steamAppid ? steamByID.get(game.steamAppid) : null;
+    // A Steam reference names the console games it was checked against.
+    if (!steam || (steam.steamReference && !steam.referenceIgdbIds?.includes(game.igdbId))) {
       unmatched.push(game);
       continue;
     }
@@ -43,6 +45,10 @@ export function mergePlatformGames(steamRows, nintendoRows, steamReference = ste
     const dates = [...new Set([...steamRows.filter(game => game.appid === appid), ...rows]
       .map(game => game.date))].sort();
     const translated = !/[\u3400-\u9fff]/.test(steam.name) && /[\u3400-\u9fff]/.test(nintendo.name);
+    // A Steam product titled with an edition or subtitle ("KINGDOM HEARTS III +
+    // Re Mind (DLC)") does not rename the game; its Store title stays on the Steam row.
+    const productTitle = steam.steamReference === true && steam.referenceTitleMatch !== "exact" &&
+      !/[\u3400-\u9fff]/.test(steam.name);
     const platformSources = [...rows, ...(steam.knownPlatforms?.length ? [steam] : [])];
     const completeness = platformSources.map(row => row.platformDataComplete);
     const signatures = platformSources.map(row => JSON.stringify((row.knownPlatforms || []).map(platform => platform.id).sort((a, b) => a - b)));
@@ -51,7 +57,8 @@ export function mergePlatformGames(steamRows, nintendoRows, steamReference = ste
     const metadata = {
       ...steam,
       ...chooseDescription(steam, ...rows),
-      ...(translated ? { name: nintendo.name, nameTw: nintendo.nameTw, nameCn: nintendo.nameCn } : {}),
+      ...(translated || productTitle ? { name: nintendo.name, nameTw: nintendo.nameTw, nameCn: nintendo.nameCn } : {}),
+      ...(productTitle ? { nameEn: nintendo.nameEn } : {}),
       nameOriginalTw: steam.nameOriginalTw || nintendo.nameOriginalTw,
       nameOriginalCn: steam.nameOriginalCn || nintendo.nameOriginalCn,
       nameSearchAliases: [...new Set([steam, ...rows].flatMap(game => [
@@ -77,12 +84,15 @@ export function mergePlatformGames(steamRows, nintendoRows, steamReference = ste
         return [code, sources.length && sources.every(source => JSON.stringify(source) === JSON.stringify(sources[0]))
           ? sources[0] : platformLanguageSupport(null, code)];
       })),
-      platformEditions: Object.fromEntries(platforms.filter(code => code !== "Steam").flatMap(code => {
-        const versions = rows.filter(row => row.platforms.includes(code));
-        const editions = versions.map(row => row.platformEditions?.[code]);
-        return editions.length && editions[0] && editions.every(edition =>
-          edition && JSON.stringify(edition) === JSON.stringify(editions[0])) ? [[code, editions[0]]] : [];
-      })),
+      platformEditions: Object.fromEntries([
+        ...(productTitle && steam.nameEn ? [["Steam", { label: "", title: steam.nameEn, source_url: steam.link }]] : []),
+        ...platforms.filter(code => code !== "Steam").flatMap(code => {
+          const versions = rows.filter(row => row.platforms.includes(code));
+          const editions = versions.map(row => row.platformEditions?.[code]);
+          return editions.length && editions[0] && editions.every(edition =>
+            edition && JSON.stringify(edition) === JSON.stringify(editions[0])) ? [[code, editions[0]]] : [];
+        }),
+      ]),
       platformLabel: platforms.join("／") + "・多平台",
       platformBadges: [
         ...platforms.map(code => ({ label: code,

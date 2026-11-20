@@ -35,8 +35,11 @@ function observation(kind, provider, providerId, value, source) {
     status: known ? 'observed' : 'unknown', provenance: source };
 }
 
-function sourceIndex(official, preview, native) {
+function sourceIndex(official, preview, native, references = null) {
   const steam = new Map();
+  for (const raw of list(references?.games)) {
+    if (decimalID(raw.appid)) steam.set(Number(raw.appid), { raw, payload: references, dataset: 'reference' });
+  }
   for (const raw of list(preview?.recent_games)) {
     if (decimalID(raw.appid)) steam.set(Number(raw.appid), { raw, payload: preview, dataset: 'preview' });
   }
@@ -119,6 +122,7 @@ function projectRelease(row, release, gameId, entry, visibility) {
         : instant ? todayInTaipei(new Date(instant)) : null,
     taiwanConfirmed: typeof release.taiwan_release_confirmed === 'boolean' ? release.taiwan_release_confirmed : null,
     visibility,
+    ...(release.reference === true ? { reference: true } : {}),
     provenance: provenance(steam ? 'Steam' : 'IGDB', entry?.dataset || (steam ? 'official' : 'native'),
       entry?.payload, raw, sourceUrl, steam ? raw.release_date_verified_at : release.official_verified_at),
     audit: audited,
@@ -135,9 +139,10 @@ export function normalizeBoundary(input = {}) {
   const official = publicPayload(input.official);
   const preview = publicPayload(input.preview);
   const native = publicPayload(input.native);
-  const dataset = datasets(official, preview, native);
+  const references = publicPayload(input.references);
+  const dataset = datasets(official, preview, native, references);
   if (!dataset) return null;
-  const sources = sourceIndex(official, preview, native);
+  const sources = sourceIndex(official, preview, native, references);
   const groups = new Map();
   const visibility = new Map();
   for (const scope of ['games', 'recent']) {

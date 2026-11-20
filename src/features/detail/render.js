@@ -115,7 +115,9 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
       ? "IGDB hypes · 發售前關注數"
       : game.twitchAdmission && !Number.isFinite(game.followers)
         ? "收錄依據 Twitch · Steam Followers 尚未取得"
-        : "Steam Followers · 非願望清單數";
+        : game.steamReference && !Number.isFinite(game.followers)
+          ? "Steam 版不在雷達的 Steam 清單，沒有量 Followers"
+          : "Steam Followers · 非願望清單數";
     const measuredAt = new Date(game.followersCheckedAt || "");
     $("gameFollowersMeasured").hidden = nintendo || !Number.isFinite(measuredAt.getTime());
     $("gameFollowersMeasured").textContent = $("gameFollowersMeasured").hidden ? ""

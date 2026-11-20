@@ -18,6 +18,7 @@ function boot(routes = {}, shared = new Map(), clock = { at:1_000 }) {
   });
   return { api, calls, clock, shared };
 }
+const catalogCalls = calls => calls.filter(call => !call.url.includes('steam_references'));
 test('one complete catalog skips preview and preserves publication metadata across cached page loads', async () => {
   const shared = new Map(), first = boot({'catalog.json':catalog},shared);
   const result = await first.api.loadSources();
@@ -25,12 +26,21 @@ test('one complete catalog skips preview and preserves publication metadata acro
   assert.equal(result.catalogResult.lastUpdated,catalog.generated_at);
   assert.equal(result.catalogResult.revision,'current');
   assert.equal(result.catalogResult.source,'./data/catalog.json');
-  assert.equal(result.preview,null); assert.equal(first.calls.length,1);
+  assert.equal(result.preview,null); assert.equal(catalogCalls(first.calls).length,1);
   assert.equal(first.calls[0].options.cache,'no-cache');
+  // No published Steam references is an ordinary state, not an error.
+  assert.equal(result.references,null);
   const second = boot({},shared);
   assert.equal((await second.api.loadSources()).catalogResult.status,'cached');
-  assert.equal(second.calls.length,0);
-  await first.api.loadSources({force:true}); assert.equal(first.calls.length,2);
+  assert.equal(catalogCalls(second.calls).length,0);
+  await first.api.loadSources({force:true}); assert.equal(catalogCalls(first.calls).length,2);
+});
+test('the Steam versions of console games load beside the catalog when they are valid', async () => {
+  const references = {schema_version:1, generated_at:'2026-11-19T02:00:00Z', games:[{appid:500}]};
+  const {api} = boot({'catalog.json':catalog, 'steam_references.json':references});
+  assert.deepEqual((await api.loadSources()).references, references);
+  const invalid = boot({'catalog.json':catalog, 'steam_references.json':{schema_version:2, games:[]}});
+  assert.equal((await invalid.api.loadSources()).references, null);
 });
 test('concurrent requests deduplicate transport while each caller still validates the JSON', async () => {
   const {api,calls} = boot({'catalog.json':{...catalog,count:2},'steam_upcoming.json':{...catalog,version:2}});
