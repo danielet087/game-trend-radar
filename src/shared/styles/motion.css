@@ -6,10 +6,10 @@
   width: max-content;
   max-width: calc(100% - 32px);
   background: var(--ink);
-  color: white;
-  border: 1px solid #ffffff30;
-  border-radius: 13px;
-  box-shadow: 0 6px 20px #202c4622;
+  color: var(--white);
+  border: 1px solid var(--white-a20);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
   padding: 14px 20px;
   font-size: var(--text-xs);
   line-height: 1.7;

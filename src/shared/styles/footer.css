@@ -5,25 +5,25 @@
   gap: 18px;
   margin-top: 46px;
   padding: 24px 28px;
-  border: 1px solid #e4c899;
-  border-radius: 18px;
+  border: 1px solid var(--yellow-81);
+  border-radius: var(--radius-lg);
   background:
     radial-gradient(
       circle at 97% 120%,
       transparent 0 48px,
-      #e8c39480 49px 50px,
+      var(--yellow-81b-a50) 49px 50px,
       transparent 51px 65px,
-      #e8c39480 66px 67px,
+      var(--yellow-81b-a50) 66px 67px,
       transparent 68px
     ),
-    #fff0d5;
+    var(--yellow-95);
 }
 .mini-radar {
   font:
     34px Arial,
     "Noto Sans TC",
     sans-serif;
-  color: #a17b46;
+  color: var(--yellow-54);
 }
 .bottom-note strong {
   font-size: var(--text-sm);
@@ -31,13 +31,13 @@
 }
 .bottom-note p {
   font-size: var(--text-xs);
-  color: #856f52;
+  color: var(--yellow-47);
   line-height: 1.8;
   margin-top: 5px;
 }
 .bottom-note .text-link {
   margin-left: auto;
-  color: #876538;
+  color: var(--orange-45);
 }
 .site-footer {
   display: flex;
@@ -47,8 +47,8 @@
   max-width: 1376px;
   margin: auto;
   padding: 28px 40px 38px;
-  border-top: 1px dashed #cdc3aa;
-  background: linear-gradient(180deg, #fffaf000, #fff4dccc);
+  border-top: 1px dashed var(--sand-78);
+  background: linear-gradient(180deg, transparent, var(--yellow-98-a80));
 }
 .footer-brand {
   display: inline-flex;
@@ -67,7 +67,7 @@
 .site-footer p {
   font-size: var(--text-xs);
   line-height: 1.9;
-  color: #8390a2;
+  color: var(--slate-60);
   margin-top: 10px;
 }
 .footer-actions {

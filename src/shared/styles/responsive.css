@@ -42,7 +42,7 @@
   .site-header {
     /* backdrop-filter would make the header the containing block of the fixed bar. */
     backdrop-filter: none;
-    background: #fffdf7;
+    background: var(--paper);
   }
   .header-inner {
     min-height: 56px;
@@ -78,9 +78,9 @@
     height: var(--bottom-nav);
     box-sizing: border-box;
     padding: 4px 6px env(safe-area-inset-bottom);
-    border-top: 1px solid #dfd8c7;
-    background: #fffdf7;
-    box-shadow: 0 -4px 18px #202c4612;
+    border-top: 1px solid var(--sand-85);
+    background: var(--paper);
+    box-shadow: var(--shadow-up);
   }
   .explore-nav {
     position: static;
@@ -99,7 +99,7 @@
     min-height: 56px;
     box-sizing: border-box;
     padding: 2px;
-    border-radius: 14px;
+    border-radius: var(--radius-md);
     color: var(--muted);
     font-size: var(--text-xs);
     line-height: 18px;
@@ -126,7 +126,7 @@
     height: 30px;
     box-sizing: border-box;
     padding: 3px 16px;
-    border-radius: 15px;
+    border-radius: var(--radius-md);
     fill: none;
     stroke: currentColor;
     stroke-width: 2;
@@ -154,9 +154,9 @@
     box-sizing: border-box;
     padding: 0 5px;
     margin: 0;
-    border-radius: 9px;
+    border-radius: var(--radius-md);
     background: var(--blue);
-    color: white;
+    color: var(--white);
     font-size: var(--text-xs);
     line-height: 18px;
   }
@@ -168,7 +168,7 @@
     top: 0;
     bottom: var(--bottom-nav);
     z-index: 24;
-    background: #202c4673;
+    background: var(--ink-a50);
   }
   .explore-menu {
     position: fixed;
@@ -183,8 +183,8 @@
     gap: 4px;
     padding: 8px 16px 16px;
     border: 0;
-    border-radius: 24px 24px 0 0;
-    box-shadow: 0 -10px 30px #202c4626;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: var(--shadow-up);
   }
   .explore-menu-head {
     display: flex;
@@ -201,7 +201,7 @@
     place-items: center;
     width: 44px;
     height: 44px;
-    border-radius: 22px;
+    border-radius: var(--radius-lg);
     color: var(--muted);
   }
   .explore-menu-close svg {
@@ -219,8 +219,8 @@
     min-height: 44px;
     padding: 0 12px;
     border: 1px solid var(--line);
-    border-radius: 12px;
-    background: #fffdf8;
+    border-radius: var(--radius-md);
+    background: var(--paper);
     color: var(--muted);
     font-size: var(--text-xs);
     font-weight: 700;
@@ -358,7 +358,7 @@
     padding: 0 0 0 8px;
   }
   .explorer-panel {
-    border-radius: 17px;
+    border-radius: var(--radius-lg);
   }
   .section-heading {
     gap: 10px;

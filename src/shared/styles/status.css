@@ -15,8 +15,8 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #4c9a7f;
-  box-shadow: 0 0 0 3px #4c9a7f16;
+  background: var(--teal-58);
+  box-shadow: 0 0 0 var(--ring) var(--teal-58-a10);
 }
 .data-status details {
   margin-left: auto;
@@ -41,9 +41,9 @@
   width: min(430px, 100%);
   padding: 20px;
   border: 1px solid var(--line);
-  border-radius: 16px;
-  background: white;
-  box-shadow: 0 12px 30px #202c4614;
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  box-shadow: var(--shadow-lg);
   color: var(--muted);
   font-size: var(--text-xs);
   line-height: 1.9;
@@ -56,11 +56,11 @@
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  background: #fff2dd;
-  border: 1px solid #ebd3a9;
+  background: var(--sand-94);
+  border: 1px solid var(--yellow-86);
   padding: 15px 18px;
-  border-radius: 12px;
-  color: #76521c;
+  border-radius: var(--radius-md);
+  color: var(--yellow-39);
   font-size: var(--text-sm);
   margin: 14px 0;
 }
