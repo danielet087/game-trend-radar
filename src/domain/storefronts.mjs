@@ -46,6 +46,16 @@ export function platformURL(value, platform, region = null) {
   } catch { return ""; }
 }
 
+// The store a console version's link opens: the Taiwan PlayStation Store, the
+// Hong Kong Nintendo eShop (Taiwan has no eShop of its own), or an official site.
+export function storeLabel(url, platform) {
+  let parsed;
+  try { parsed = new URL(url); } catch { return ""; }
+  if (platform === "PS5") return parsed.hostname === "store.playstation.com" ? "PlayStation 商店" : "PlayStation 官網";
+  if (!["NS", "NS2"].includes(platform)) return "";
+  return parsed.hostname === "ec.nintendo.com" && parsed.pathname.startsWith("/HK/") ? "任天堂 eShop（香港）" : "Nintendo 官網";
+}
+
 export const officialLanguageHosts = new Set(["www.nintendo.com", "www.nintendo.co.jp", "www.nintendo.com.hk",
   "ec.nintendo.com", "asia.sega.com", "www.konami.com", "www.playtombraider.com", "www.layton.jp"]);
 

@@ -11,7 +11,7 @@
 | `steam_upcoming.json` | 完整舊格式備援，也保留已上市的歷史紀錄 |
 | `content_refresh_status.json` | 內容補充的實際完成狀態、缺漏欄位與重試時間 |
 | `steam_preview.json` | 舊版備援；不能當成目前正式收錄數或更新時間 |
-| `nintendo_upcoming.json` | IGDB 原生主機公開清單，包含 NS／NS2／PS5；沿用既有檔名與 IGDB 身分 |
+| `nintendo_upcoming.json` | IGDB 原生主機公開清單，包含 NS／NS2／PS5；沿用既有檔名與 IGDB 身分。`platform_urls` 是各平台的商店（PS5 台灣 PS Store、NS／NS2 香港 eShop），`platform_prices` 是各平台的價格（PS5 新台幣、NS／NS2 港幣，含特價、預購與確認時間，確認後 7 天內才有） |
 | `nintendo_master.json` | IGDB 候選與平台別資格紀錄；包含尚未符合公開條件的候選 |
 | `nintendo_refresh_status.json` | IGDB 收集及發布回條，含真實候選、公開與待處理數、平台 ID、收集／發布時間 |
 | `activity.json`、`insights-state.json` | 已接受 Steam／IGDB 新作及平台／日期異動；保留同一遊戲的首次加入與既有活動歷史 |

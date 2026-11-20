@@ -74,6 +74,10 @@ export function mergePlatformGames(steamRows, nintendoRows, steamReference = ste
         const links = rows.map(row => row.platformLinks?.[code]).filter(Boolean);
         return links.length && links.every(link => link.url === links[0].url) ? [[code, links[0]]] : [];
       })),
+      platformPrices: Object.fromEntries(nativePlatformOrder.flatMap(code => {
+        const prices = rows.map(row => row.platformPrices?.[code]).filter(Boolean);
+        return prices.length && prices.every(price => JSON.stringify(price) === JSON.stringify(prices[0])) ? [[code, prices[0]]] : [];
+      })),
       hypes: nintendo.hypes, popularityBasis: nintendo.popularityBasis, popscoreTop: nintendo.popscoreTop,
       consoleUpdated: nintendo.updated || null,
       platforms, releases,

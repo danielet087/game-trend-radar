@@ -4,7 +4,8 @@ import { nativePlatformIDs, nativePlatformOrder } from '../domain/constants.mjs'
 import { validDate } from '../domain/dates.mjs';
 import { platformLanguageSupport, nintendoCardLanguages } from '../domain/languages.mjs';
 import { platformEdition } from '../domain/editions.mjs';
-import { nintendoURL, platformURL } from '../domain/storefronts.mjs';
+import { nintendoURL, platformURL, storeLabel } from '../domain/storefronts.mjs';
+import { consolePrices } from '../domain/prices.mjs';
 import { normalizeKnownPlatforms, knownPlatformCompleteness } from '../domain/platforms.mjs';
 import { nativeMultiplayer } from '../domain/multiplayer.mjs';
 import { nintendoReleaseAudited } from '../domain/release-audit.mjs';
@@ -79,9 +80,7 @@ export function nintendoGames(payload) {
       const platformLinks = Object.fromEntries(platforms.flatMap(code => {
         const url = platformURL(raw.platform_urls?.[code] ||
           (code === "PS5" ? raw.playstation_url : raw.nintendo_url), code);
-        return url ? [[code, { url, label: code === "PS5"
-          ? new URL(url).hostname === "store.playstation.com" ? "PlayStation 商店" : "PlayStation 官網"
-          : "Nintendo 官網" }]] : [];
+        return url ? [[code, { url, label: storeLabel(url, code) }]] : [];
       }));
       const igdbLink = nintendoURL(raw.url);
       const profile = consoleProfile(raw);
@@ -93,7 +92,7 @@ export function nintendoGames(payload) {
         savedAliases: [`igdb:${id}`, ...(steamAppid ? [steamAppid] : [])],
         steamAppid, steamLink: steamAppid ? `https://store.steampowered.com/app/${steamAppid}/` : "",
         hasNintendo: true, hasNativePlatforms: true, hasPlayStation: platforms.includes("PS5"),
-        sourceProvider: "IGDB", platformLinks,
+        sourceProvider: "IGDB", platformLinks, platformPrices: consolePrices(raw, platforms),
         multiPlatform, knownPlatforms, platformDataComplete: knownPlatformCompleteness(raw),
         name, nameEn, nameTw, nameCn, nameOriginalTw: raw.name_zh_tw || "", nameOriginalCn: raw.name_zh_cn || "",
         nameSearchAliases: [...new Set(Object.values(platformEditions).flatMap(edition => [edition.title, edition.label]))],

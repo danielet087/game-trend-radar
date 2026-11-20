@@ -1,6 +1,6 @@
 // 平台版本: one row per tracked platform (a table on wide screens, cards on
 // phones). Every platform-specific fact is said here once — date, Chinese,
-// play modes, edition, store and the Steam price — and all provenance goes to
+// play modes, edition, store and the store's price — and all provenance goes to
 // a single collapsed "資料來源與說明" list, each distinct note only once.
 import { playModes } from './overview.js';
 import { weekday } from './radar.js';
@@ -137,9 +137,18 @@ export function createDetailVersions(ctx, policy) {
     const merchant = game.platformLinks?.[code];
     const url = merchant && D.platformURL?.(merchant.url, code);
     if (!url) return null;
-    const label = code === 'PS5' ? new URL(url).hostname === 'store.playstation.com' ? 'PlayStation 商店' : 'PlayStation 官網'
-      : 'Nintendo 官網';
-    return { code, url, label };
+    return { code, url, label: D.storeLabel?.(url, code) || (code === 'PS5' ? 'PlayStation 官網' : 'Nintendo 官網') };
+  }
+
+  // A console price: its store's own check time, like the Steam price.
+  function consolePrice(game, code) {
+    const price = game.platformPrices?.[code];
+    if (!price) return [];
+    const row = node('p', 'game-version-price', priceText(price));
+    if (price.preorder) row.append(node('span', 'game-version-meta', '預購'));
+    const discount = discountText(price);
+    if (discount) row.append(node('span', 'game-version-meta', discount));
+    return [row, node('p', 'game-version-meta', `${price.source} ${taipeiTime(price.checkedAt)} 確認`)];
   }
 
   function storeCell(game, code, store) {
@@ -151,12 +160,13 @@ export function createDetailVersions(ctx, policy) {
       button.setAttribute('aria-label', `在 ${target.label}開啟 ${game.name}（另開分頁）`);
       cell.append(button);
     }
-    // Only Steam publishes a Taiwan price the radar can check.
     if (code === 'Steam' && store?.price) {
       const price = node('p', 'game-version-price', priceText(store.price));
       const discount = discountText(store.price);
       if (discount) price.append(node('span', 'game-version-meta', discount));
       cell.append(price, node('p', 'game-version-meta', `Steam 台灣商店 ${taipeiTime(store.checkedAt)} 確認`));
+    } else if (code !== 'Steam') {
+      cell.append(...consolePrice(game, code));
     }
     if (!cell.children.length) cell.classList.add('is-empty');
     return { cell, target };

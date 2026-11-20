@@ -1135,3 +1135,44 @@ test('Chinese descriptions get no translate control', async () => {
   assert.equal(e.get('gameDescription').textContent, '在森林中冒險。');
   assert.equal(translateControl(e), undefined);
 });
+
+const eshopURL = 'https://ec.nintendo.com/HK/zh/titles/70010000105918';
+const consolePrice = (overrides = {}) => ({ currency: 'HKD', free: false, final_cents: 18700, status: 'onsale',
+  source: '任天堂 eShop 香港', source_url: eshopURL, checked_at: '2026-10-03T00:30:00Z', ...overrides });
+
+test('a Switch 2 version opens the Hong Kong eShop and shows its HK$ price with when the eShop confirmed it', async () => {
+  const payload = sample({ platform_urls: { NS2: eshopURL }, platform_prices: { NS2: consolePrice({
+    original_cents: 37400, discount_pct: 50, discount_ends_at: '2026-10-10T15:59:59Z' }) } });
+  const { elements: e } = await display('?igdb=366896', payload);
+  assert.equal(shopLink(e, 'NS2').textContent, '任天堂 eShop（香港） ↗');
+  assert.equal(shopLink(e, 'NS2').href, eshopURL);
+  assert.equal(e.get('gameSteam').textContent, '前往 任天堂 eShop（香港）↗');
+  const store = versionCell(versionRow(e, 'NS2'), 'store');
+  const price = store.children.find(child => child.className === 'game-version-price');
+  assert.match(price.textContent, /^HK\$ 187/);
+  assert.deepEqual(price.children.map(note => note.textContent), ['-50%，原價 HK$ 374，特價到 10/10 23:59']);
+  assert.equal(store.children.at(-1).textContent, '任天堂 eShop 香港 10/3 08:30 確認');
+});
+
+test('a pre-order price says so, and a price that does not hold up is not shown', async () => {
+  const preorder = sample({ platform_urls: { NS2: eshopURL }, platform_prices: { NS2: consolePrice({ status: 'preorder', final_cents: 42900 }) } });
+  const { elements: e } = await display('?igdb=366896', preorder);
+  const price = versionCell(versionRow(e, 'NS2'), 'store').children.find(child => child.className === 'game-version-price');
+  assert.equal(price.children[0].textContent, '預購');
+  for (const bad of [consolePrice({ currency: 'TWD' }), consolePrice({ status: 'free' }), consolePrice({ checked_at: 'yesterday' }),
+    consolePrice({ source_url: 'https://example.com/shop' }), consolePrice({ final_cents: -1 })]) {
+    const { elements: shown } = await display('?igdb=366896', sample({ platform_prices: { NS2: bad } }));
+    assert.ok(!versionCell(versionRow(shown, 'NS2'), 'store').children.some(child => child.className === 'game-version-price'));
+  }
+});
+
+test('a PS5 version shows its Taiwan PlayStation Store price in NT$', async () => {
+  const product = 'https://store.playstation.com/zh-hant-tw/product/JP0005-PPSA23593_00-APPLICATION00000';
+  const payload = ps5Sample({ playstation_url: product, platform_urls: { PS5: product },
+    platform_prices: { PS5: { currency: 'TWD', free: false, final_cents: 179000, status: 'onsale', source: 'PlayStation Store 台灣',
+      source_url: product, checked_at: '2026-10-04T13:00:00Z' } } });
+  const { elements: e } = await display('?igdb=366896&date=2027-01-16', payload);
+  const store = versionCell(versionRow(e, 'PS5'), 'store');
+  assert.equal(store.children.find(child => child.className === 'game-version-price').textContent, 'NT$ 1,790');
+  assert.equal(store.children.at(-1).textContent, 'PlayStation Store 台灣 10/4 21:00 確認');
+});

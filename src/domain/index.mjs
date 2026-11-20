@@ -3,7 +3,7 @@ import { savedID, saveID, isSaved, gameKey, nintendoSteamIdentity } from './iden
 import { nativePlatformIDs, nativePlatformOrder } from './constants.mjs';
 import { cardPlatformBadge, cardPlatformChips, platformFamily, platformFullNames } from './platforms.mjs';
 import { cardMultiplayerBadge } from './multiplayer.mjs';
-import { nintendoURL, platformURL, nintendoLanguageURL, nintendoHongKongDateURL } from './storefronts.mjs';
+import { nintendoURL, platformURL, nintendoLanguageURL, nintendoHongKongDateURL, storeLabel } from './storefronts.mjs';
 import { platformLanguageSupport, nintendoLanguageSupport, nintendoCardLanguages } from './languages.mjs';
 import { platformEdition, nintendoEdition, releaseEditionBadges, releaseDisplayNames, releaseCardNames } from './editions.mjs';
 import { nintendoReleaseAudited, officialTaiwanReleaseTime } from './release-audit.mjs';
@@ -23,7 +23,7 @@ export const RadarData = {
   savedID, saveID, isSaved, gameKey, nativePlatformIDs, nativePlatformOrder,
   cardPlatformBadge, cardPlatformChips, platformFamily, platformFullNames,
   cardMultiplayerBadge, nintendoSteamIdentity, nintendoURL,
-  platformURL, platformLanguageSupport, platformEdition,
+  platformURL, storeLabel, platformLanguageSupport, platformEdition,
   nativeCardLanguages: nintendoCardLanguages,
   nativeReleaseAudited: nintendoReleaseAudited,
   nintendoHongKongDateURL, officialTaiwanReleaseTime, nintendoLanguageURL,
@@ -41,7 +41,7 @@ export {
   savedID, saveID, isSaved, gameKey, nativePlatformIDs, nativePlatformOrder,
   cardPlatformBadge, cardPlatformChips, platformFamily, platformFullNames,
   cardMultiplayerBadge, nintendoSteamIdentity, nintendoURL,
-  platformURL, platformLanguageSupport, platformEdition,
+  platformURL, storeLabel, platformLanguageSupport, platformEdition,
   nintendoHongKongDateURL, officialTaiwanReleaseTime, nintendoLanguageURL,
   nintendoLanguageSupport, nintendoCardLanguages, nintendoEdition,
   releaseEditionBadges, releaseDisplayNames, releaseCardNames, nintendoGames, detailURL,
