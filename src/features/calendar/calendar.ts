@@ -51,10 +51,18 @@ export function createCalendarFeature(D: CatalogAPI, filters: FilterState, state
         const lead = released[0] || platforms.chips[0];
         tag.classList.add("day-game-platform", "day-game-" + lead.family);
         if (lead.exclusive) tag.classList.add("is-exclusive");
-        const platform = node("span", "day-platform is-" + lead.family,
+        // A version already out elsewhere is a new platform, not the game's launch.
+        // A console-only day that is not a Taiwan day gets an asterisk; beside a
+        // Steam day the console caveat stays in the hover text. Names keep their room.
+        const others = D.otherPlatformReleases?.(game, releasePlatforms, today) || [];
+        const otherText = (D.otherPlatformPhrases?.(others, day) || []).join("；");
+        const evidence = D.dayEvidence?.((game.dateReleases || []).filter((row: any) => releasePlatforms.includes(row.platform))) || null;
+        const platform = node("span", `day-platform is-${lead.family}${evidence && !evidence.mixed ? " is-unconfirmed" : ""}`,
           released.length > 1 ? `${lead.label} +${released.length - 1}` : lead.label);
-        platform.title = `本日發售：${(released.length ? released.map((chip: any) => chip.label) : releasePlatforms).join("／")}。${platforms.scope}`;
-        tag.append(platform,
+        const flags = others.some((entry: any) => entry.state === "released") ? [node("span", "day-flag is-new-platform", "新平台")] : [];
+        platform.title = `本日發售：${(released.length ? released.map((chip: any) => chip.label) : releasePlatforms).join("／")}` +
+          `${evidence ? `（${evidence.detail}）` : ""}。${otherText ? `其他平台：${otherText}。` : ""}${platforms.scope}`;
+        tag.append(platform, ...flags,
           node("span", "day-game-name", display.name));
         const interest = D.consoleInterest(game);
         tag.title = `${display.name}${display.nameEn && display.nameEn !== display.name ? ` · ${display.nameEn}` : ""}${display.edition ? ` · ${display.edition}` : ""} · ${platform.title}${interest ? ` · ${interest.text}` : ""}${Number.isFinite(game.followers) ? ` · ${number.format(game.followers)} 人關注` : ""}`;

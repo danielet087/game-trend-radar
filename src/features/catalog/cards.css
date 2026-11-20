@@ -200,7 +200,18 @@
 }
 .card-release-dates { min-width: 0; }
 .card-release-platform { display: block; margin-top: 2px; color: var(--muted); font-size: var(--text-xs); line-height: 1.5; }
-.card-release-date { display: flex; align-items: baseline; }
+.card-release-date { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; }
+/* A day that is not a Taiwan day says whose it is ("全球日期"). */
+.card-release-basis {
+  padding: 0 5px;
+  border-radius: var(--radius-sm);
+  background: var(--yellow-96);
+  color: var(--orange-35);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: 1.6;
+  white-space: nowrap;
+}
 .card-interest { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; margin-left: auto; }
 .card-meta time {
   color: var(--blue-52);

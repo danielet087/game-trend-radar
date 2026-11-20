@@ -172,3 +172,13 @@
     gap: 9px;
   }
 }
+
+/* What the dates mean: Taiwan time, and which days are not yet Taiwan days. */
+.date-legend {
+  margin: 0;
+  padding: 10px 26px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: 1.7;
+}

@@ -99,8 +99,15 @@ test('lists date a console game shown on its Steam version by the console releas
   const link = page.locator('a[href*="game.html?appid=2246340"]').first();
   await expect(link).toHaveAttribute('href', './game.html?appid=2246340&date=2026-12-04');
   const card = page.locator('.game-card, article').filter({ has: link }).first();
-  await expect(card).toContainText('2026/12/04');
-  await expect(card).not.toContainText('2025/02/27');
+  // The card's date is the console release; the earlier Steam launch is named apart, never as this day.
+  await expect(card.locator('.card-release-date time')).toHaveText('2026/12/04');
+  await expect(card.locator('.countdown')).toContainText('NS2 版');
+  await expect(card.locator('.card-release-platform')).toHaveText('Steam 2025/02/27 已上市');
+  // The console link and the Steam link are one page, on the same day.
+  await page.goto('game.html?igdb=279661&date=2026-12-04');
+  await expect(page).toHaveURL(/game\.html\?appid=2246340&date=2026-12-04$/);
+  await expect(page.locator('#gameHeroLabel')).toHaveText('Nintendo Switch 2 版發售・全球日期（IGDB）');
+  await expect(page.locator('#gameHeroOthers li')).toHaveText(['Steam 版2025.02.27（四）已發售', 'PS5 版日期未收錄']);
 });
 
 test('平台版本 is a table on wide screens and labelled cards on phones, with every source in one collapsed list', async ({ page }) => {

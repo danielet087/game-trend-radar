@@ -243,7 +243,10 @@ test('platforms are named in the calendar, on the strip band and under the art i
   const entry = page.locator('.calendar-day .day-game').filter({ hasText: 'Grand Theft Auto VI' });
   await expect(entry.locator('.day-platform')).toHaveText('PS5');
   await expect(entry).toHaveClass(/day-game-playstation/);
-  await expect(entry.locator('.day-platform')).toHaveAttribute('title', /^本日發售：PS5。/);
+  // IGDB's worldwide day is named as such, never as a Taiwan date.
+  await expect(entry.locator('.day-platform')).toHaveAttribute('title', /^本日發售：PS5（IGDB 全球日期，台灣上市日待確認）。/);
+  await expect(entry.locator('.day-platform')).toHaveClass(/is-unconfirmed/);
+  await expect(entry.locator('.day-flag')).toHaveCount(0);
 });
 
 test('an NS2 game listed by IGDB PopScore shows its rank on the strip, the card and the calendar', async ({ page }) => {

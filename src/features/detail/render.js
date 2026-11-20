@@ -107,33 +107,39 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     const hero = renderHeroRelease(game);
     renderHeroChips(game, hero.days);
     const targets = versions?.render(game, extras.store, hero.date) || [];
+    // A Steam version the radar does not measure leads with the console interest it has.
+    const consoleInterest = !nintendo ? D.consoleInterest(game) : null;
+    const leadConsole = !nintendo && !Number.isFinite(game.followers) && !!consoleInterest;
+    const consoleMode = nintendo || leadConsole;
     // NS/NS2 games admitted by IGDB PopScore show their rank, not a low hypes count.
-    const popscore = nintendo && game.popularityBasis === "igdb_popscore" ? D.consoleInterest(game) : null;
-    $("gameInterestLabel").textContent = popscore ? "IGDB 熱度" : nintendo ? "發售前的社群關注" : "Steam 關注數";
-    $("gameFollowers").textContent = popscore ? popscore.value : nintendo
+    const popscore = consoleMode && game.popularityBasis === "igdb_popscore" ? D.consoleInterest(game) : null;
+    $("gameInterestLabel").textContent = popscore ? "IGDB 熱度" : consoleMode ? "發售前的社群關注" : "Steam 關注數";
+    $("gameFollowers").textContent = popscore ? popscore.value : consoleMode
       ? Number.isSafeInteger(game.hypes) ? number.format(game.hypes) : "未知"
       : Number.isFinite(game.followers) ? number.format(game.followers) : "未取得";
-    $("gameInterestUnit").textContent = popscore ? "" : nintendo ? "次關注" : Number.isFinite(game.followers) ? "人" : "";
-    $("gameInterestCaption").textContent = popscore
+    $("gameInterestUnit").textContent = popscore ? "" : consoleMode ? "次關注" : Number.isFinite(game.followers) ? "人" : "";
+    const steamUnmeasured = game.steamReference ? "Steam 版不在雷達的 Steam 清單，沒有量 Followers" : "Steam Followers 尚未取得";
+    $("gameInterestCaption").textContent = (popscore
       ? D.popscoreTop(game.popscoreTop) === null ? "IGDB PopScore · 曾排進 NS／NS2 前 20%" : "IGDB PopScore · NS／NS2 頁面瀏覽或「想玩」排名"
-      : nintendo
+      : consoleMode
       ? "IGDB hypes · 發售前關注數"
       : game.twitchAdmission && !Number.isFinite(game.followers)
         ? "收錄依據 Twitch · Steam Followers 尚未取得"
         : game.steamReference && !Number.isFinite(game.followers)
           ? "Steam 版不在雷達的 Steam 清單，沒有量 Followers"
-          : "Steam Followers · 非願望清單數";
-    const measuredAt = new Date(game.followersCheckedAt || "");
-    $("gameFollowersMeasured").hidden = nintendo || !Number.isFinite(measuredAt.getTime());
+          : "Steam Followers · 非願望清單數") + (leadConsole ? `・${steamUnmeasured}` : "");
+    // Every measurement says when it was taken: Steam Followers or the IGDB check.
+    const measuredAt = new Date((consoleMode ? nintendo ? game.updated : game.consoleUpdated : game.followersCheckedAt) || "");
+    const measuredLabel = consoleMode ? "IGDB 資料確認" : "關注數量測";
+    $("gameFollowersMeasured").hidden = !Number.isFinite(measuredAt.getTime());
     $("gameFollowersMeasured").textContent = $("gameFollowersMeasured").hidden ? ""
-      : "關注數量測 · " + new Intl.DateTimeFormat("zh-TW", {
+      : `${measuredLabel} · ` + new Intl.DateTimeFormat("zh-TW", {
         timeZone:"Asia/Taipei", year:"numeric", month:"2-digit", day:"2-digit",
         hour:"2-digit", minute:"2-digit", hour12:false,
       }).format(measuredAt) + "（台灣）";
-    // Console versions of a Steam game keep their own interest number in the heat card.
-    const consoleInterest = !nintendo ? D.consoleInterest(game) : null;
-    $("gameHeatConsole").hidden = !consoleInterest;
-    $("gameHeatConsole").textContent = !consoleInterest ? "" : `主機版本：${consoleInterest.text}（${
+    // Console versions of a measured Steam game keep their own interest number in the heat card.
+    $("gameHeatConsole").hidden = !consoleInterest || leadConsole;
+    $("gameHeatConsole").textContent = $("gameHeatConsole").hidden ? "" : `主機版本：${consoleInterest.text}（${
       consoleInterest.basis === "hypes" ? "遊戲整體的發售前關注數" : "NS／NS2 頁面瀏覽或「想玩」排名"}，不跟 Steam 合併）`;
     $("gameAppId").textContent = nintendo ? `IGDB ID：${game.igdbId}` : `Steam AppID：${game.appid}`;
     const timestamp = new Date((nintendo ? game.updated : data.updated) || "");
@@ -150,7 +156,7 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
         }).format(timestamp) +
         "（台灣）"
       : nintendo ? "資料更新時間未提供" : "日期以台灣時間為準";
-    $("gameFootnote").textContent = nintendo
+    $("gameFootnote").textContent = consoleMode
       ? popscore
         ? "IGDB 熱度是 IGDB 頁面瀏覽或「想玩」在 NS／NS2 遊戲間的排名，並非玩家人數。"
         : "IGDB hypes 屬遊戲整體的發售前關注數，並非單一平台玩家人數。"

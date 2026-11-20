@@ -46,6 +46,19 @@ export const GameCard = defineComponent({
       const entity = catalogEntity(game, model);
       const displayedDate = catalogCardDate(game, D, event, model);
       const days = Math.round((Date.parse(displayedDate + 'T12:00:00Z') - Date.parse(env.today + 'T12:00:00Z')) / 86400000);
+      // Which tracked platforms this date is for, and where the others stand, so a
+      // later or earlier version is never read as releasing on this day.
+      const shownPlatforms: string[] = event ? game.releasePlatforms || [] : D.platformsOnDate?.(game, displayedDate) || [];
+      const others = D.otherPlatformReleases?.(game, shownPlatforms, env.today) || [];
+      const otherPhrases: string[] = D.otherPlatformPhrases?.(others, displayedDate) || [];
+      const versionPrefix = others.length && shownPlatforms.length ? `${shownPlatforms.join('、')} 版` : '';
+      const dayRows = (Array.isArray(game.releases) ? game.releases : [])
+        .filter((row: any) => row?.date === displayedDate && shownPlatforms.includes(row.platform));
+      // Whose day it is when a version has no Taiwan date yet; a clock time only for a single version.
+      const unconfirmed = D.dayEvidence?.(dayRows) || null;
+      const clock = days >= 0 && shownPlatforms.length === 1 ? dayRows.map((row: any) => D.releaseClock?.(row)).find(Boolean) : null;
+      const dateBasis = unconfirmed ? unconfirmed.mixed ? `${unconfirmed.confirmed.join('、')} 為台灣時間；${unconfirmed.detail}` : unconfirmed.detail
+        : clock ? `台灣時間 ${clock.time}${clock.source === 'steam' ? '，Steam 預定' : ''}` : '台灣時間';
       const nativePlatforms = (game.releasePlatforms || []).filter(platform => NATIVE_PLATFORMS.includes(platform));
       const nativeEvent = event && nativePlatforms.length > 0 && !game.releasePlatforms?.includes('Steam');
       const nativeLanguages = nativeEvent || game.source === 'nintendo';
@@ -76,8 +89,10 @@ export const GameCard = defineComponent({
       const storeName = game.source === 'nintendo' && display.edition ? `${display.name}（${display.edition}）` : game.name;
       const platforms = D.cardPlatformChips(game, event ? game.releasePlatforms : null), active = env.isSaved(game, entity);
       const releasedChips = platforms.chips.filter((chip: any) => chip.released).map((chip: any) => chip.label);
-      const countdown = days === 0 ? '今日登場' : days > 0 ? `${days} 天後登場` : '已上市';
-      const shortCountdown = days === 0 ? '今天' : days > 0 ? `${days} 天後` : '已上市';
+      const word = days === 0 ? '今日登場' : days > 0 ? `${days} 天後登場` : '已上市';
+      const shortWord = days === 0 ? '今天' : days > 0 ? `${days} 天後` : '已上市';
+      const countdown = versionPrefix ? `${versionPrefix}${days > 0 ? ' ' : ''}${word}` : word;
+      const shortCountdown = versionPrefix ? `${versionPrefix}${days > 0 ? ' ' : ''}${shortWord}` : shortWord;
       return h('article', { class: 'game-card', 'data-appid': game.appid, 'data-game-key': D.gameKey(game), 'data-source': game.source || 'steam' }, [
         h('div', { class: ['cover-link', shape.value.whole && 'art-whole'],
           style: shape.value.backdrop ? { '--art-backdrop': shape.value.backdrop } : undefined }, [
@@ -99,10 +114,14 @@ export const GameCard = defineComponent({
             title: !nativeLanguages && (game.hasNativePlatforms || game.hasNintendo) ? '此處標籤為 Steam 版本語言支援；主機各版本請進入遊戲頁查看' : undefined }, languages) : null,
           h('div', { class: 'card-meta' }, [
             h('div', { class: 'card-release-dates' }, [
-              h('div', { class: 'card-release-date' }, [h('time', { datetime: displayedDate,
-                title: event ? '本次平台發售日期' : '最早發售日期；各平台日期可於遊戲資訊查看' }, displayedDate.replaceAll('-', '/')),
+              h('div', { class: 'card-release-date' }, [h('time', { datetime: clock?.utc || displayedDate,
+                title: `${versionPrefix ? `${versionPrefix}發售日` : event ? '本次平台發售日期' : '最早發售日期'}（${dateBasis}）` },
+                displayedDate.replaceAll('-', '/') + (clock ? ` ${clock.time}` : '')),
+                unconfirmed ? h('span', { class: 'card-release-basis', title: unconfirmed.detail }, unconfirmed.chip) : null,
                 // Phones show the countdown here instead of over the small art.
                 h('span', { class: ['card-countdown', days < 0 && 'released'] }, shortCountdown)]),
+              otherPhrases.length ? h('span', { class: 'card-release-platform', title: `其他平台：${otherPhrases.join('；')}` },
+                otherPhrases.join('・')) : null,
             ]),
             h('div', { class: 'card-interest' }, metrics.map(metric => h('span', { class: 'card-followers', title: metric.title }, [
               metric.value, h('small', null, metric.unit),

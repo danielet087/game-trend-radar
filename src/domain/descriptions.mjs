@@ -1,5 +1,7 @@
 // Description text and provenance always move together. Storefront copy does
 // not provide evidence about languages supported inside the game.
+import { awareTime } from './dates.mjs';
+
 const text = value => typeof value === 'string' ? value.trim().slice(0, 4000) : '';
 const ranks = {
   steam_tchinese: 800,
@@ -17,7 +19,7 @@ const labels = {
   steam_english: 'Steam 英文原文',
   igdb_original: 'IGDB 英文原文',
 };
-const blank = () => ({ description: '', descriptionLanguage: '', descriptionSource: '', descriptionSourceUrl: '', descriptionEn: '' });
+const blank = () => ({ description: '', descriptionLanguage: '', descriptionSource: '', descriptionSourceUrl: '', descriptionEn: '', descriptionCheckedAt: '' });
 const englishSource = (record, source) => source.startsWith('steam_') || source === 'editorial_zh_tw'
   ? 'steam_english' : source.startsWith('igdb_') || record.source === 'nintendo' || record.igdb_id
     ? 'igdb_original' : 'steam_english';
@@ -56,6 +58,9 @@ export function descriptionRecord(record) {
   if (!record || typeof record !== 'object') return blank();
   const normalized = Object.hasOwn(record, 'description');
   const value = text(normalized ? record.description : record.short_description);
+  // When the source was last checked, shown beside the source like the Steam price's check time.
+  const checked = normalized ? record.descriptionCheckedAt : record.description_checked_at;
+  const checkedAt = typeof checked === 'string' && awareTime(checked) !== null ? checked : '';
   const english = text(normalized ? record.descriptionEn : record.short_description_en);
   const source = text(normalized ? record.descriptionSource : record.short_description_source);
   // Retired automatic translations may remain in cached/public snapshots.
@@ -67,13 +72,14 @@ export function descriptionRecord(record) {
     const originalSource = englishSource(record, source);
     const origin = language === 'zh-TW' ? source : originalSource;
     return { description: value, descriptionLanguage: language === 'zh-TW' ? 'zh-TW' : 'en',
-      descriptionSource: origin, descriptionSourceUrl: sourceURL(record, origin), descriptionEn: english };
+      descriptionSource: origin, descriptionSourceUrl: sourceURL(record, origin), descriptionEn: english,
+      descriptionCheckedAt: checkedAt };
   }
   if (english) {
     // A zh-TW provenance field cannot be attached to the English fallback.
     const origin = englishSource(record, source);
     return { description: english, descriptionLanguage: 'en', descriptionSource: origin,
-      descriptionSourceUrl: sourceURL(record, origin), descriptionEn: english };
+      descriptionSourceUrl: sourceURL(record, origin), descriptionEn: english, descriptionCheckedAt: checkedAt };
   }
   return blank();
 }
@@ -91,12 +97,20 @@ export function descriptionLabel(game) {
   return labels[game.descriptionSource] || (game.descriptionLanguage === 'zh-TW' ? '繁中介紹' : '英文原文');
 }
 
+const checkedDay = value => {
+  const time = awareTime(value);
+  if (time === null) return '';
+  const day = new Date(time + 8 * 3600000).toISOString().slice(5, 10);
+  return `${day.replace('-', '/')} 確認`;
+};
+
 export function renderDescriptionSource(element, game, node) {
   element.replaceChildren();
   const label = descriptionLabel(game);
   element.hidden = !label;
   if (!label) return;
-  element.append(node('span', '', label));
+  const checked = checkedDay(game.descriptionCheckedAt);
+  element.append(node('span', '', checked ? `${label}・${checked}` : label));
   const url = descriptionSourceURL(game.descriptionSourceUrl);
   if (url) {
     const link = node('a', '', '查看原文 ↗');
