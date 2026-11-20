@@ -11,6 +11,7 @@ import { nintendoReleaseAudited } from '../domain/release-audit.mjs';
 import { unique } from '../domain/collections.mjs';
 import { descriptionRecord } from '../domain/descriptions.mjs';
 import { popscoreTop } from '../domain/interest.mjs';
+import { consoleProfile } from '../domain/console-profile.mjs';
 
 export function nintendoGames(payload) {
   if (!payload || payload.schema_version !== 1 || !Array.isArray(payload.games)) return [];
@@ -83,6 +84,7 @@ export function nintendoGames(payload) {
           : "Nintendo 官網" }]] : [];
       }));
       const igdbLink = nintendoURL(raw.url);
+      const profile = consoleProfile(raw);
       const eventLink = releasePlatforms.map(code => platformLinks[code]).find(Boolean);
       const link = eventLink?.url || igdbLink || "https://www.igdb.com/";
       games.push({
@@ -112,8 +114,11 @@ export function nintendoGames(payload) {
         linkLabel: eventLink?.label || (igdbLink ? "IGDB 遊戲資料" : "IGDB 官網"),
         updated: raw.checked_at || payload.generated_at || null, exclusivity: exclusive,
         firstObservedAt: typeof raw.first_observed_at === "string" ? raw.first_observed_at : null,
-        tags: Array.isArray(raw.tags) ? raw.tags.filter(tag => typeof tag === "string") : [],
-        genres: Array.isArray(raw.genres) ? raw.genres.filter(genre => typeof genre === "string") : [],
+        // IGDB genres and themes in the site's genre and tag names, plus companies, series and media.
+        tags: [...new Set([...(Array.isArray(raw.tags) ? raw.tags.filter(tag => typeof tag === "string") : []), ...profile.tags])],
+        genres: [...new Set([...(Array.isArray(raw.genres) ? raw.genres.filter(genre => typeof genre === "string") : []), ...profile.genres])],
+        developers: profile.developers, publishers: profile.publishers, franchises: profile.franchises,
+        igdbMedia: profile.igdbMedia,
         ...descriptionRecord({ ...raw, steamAppid }),
       });
     }

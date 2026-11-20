@@ -1,6 +1,8 @@
-// Steam hero art, screenshots and short trailers (data/media/<appid>.json).
-// Only Steam CDN addresses are accepted; the files themselves stay on Steam.
+// Steam hero art, screenshots and short trailers (data/media/<appid>.json),
+// or a console game's IGDB artwork, screenshots and YouTube trailers. Only
+// Steam CDN, IGDB image and YouTube addresses built from IDs are used.
 import { cancelArtwork } from '../../shared/artwork.js';
+import { igdbImage, youtubePoster, youtubeURL } from '../../domain/console-profile.mjs';
 
 const IMAGE_BASE = 'https://shared.akamai.steamstatic.com/store_item_assets/';
 const VIDEO_BASE = 'https://video.akamai.steamstatic.com/store_trailers/';
@@ -32,6 +34,20 @@ export function steamMedia(value, appid) {
     developers: names(value.developers), publishers: names(value.publishers), franchises: names(value.franchises), updatedAt: updated };
 }
 
+/** A console game's IGDB media in the same shape, with its YouTube trailers as links. */
+export function consoleMedia(game) {
+  const media = game?.igdbMedia;
+  if (!media) return null;
+  const screenshots = media.screenshots.map(id => ({ thumb: igdbImage(id, 't_screenshot_med'), full: igdbImage(id, 't_1080p') }))
+    .filter(row => row.thumb && row.full);
+  const videos = media.videos.map(row => ({ name: row.name, poster: youtubePoster(row.id), url: youtubeURL(row.id) }))
+    .filter(row => row.poster && row.url);
+  const developers = game.developers || [], publishers = game.publishers || [], franchises = game.franchises || [];
+  if (!screenshots.length && !videos.length && !media.artworks.length && !developers.length && !publishers.length && !franchises.length) return null;
+  return { provider: 'IGDB', hero: igdbImage(media.artworks[0], 't_1080p') || null, hero2x: null, screenshots, trailers: [], videos,
+    developers, publishers, franchises, updatedAt: game.updated || null };
+}
+
 const icon = (document, paths, size = 22) => {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
@@ -55,12 +71,13 @@ export function createDetailMedia(ctx) {
     return reduced || !wide || motion?.enabled === false || window?.navigator?.connection?.saveData === true;
   };
 
-  // Steam games show their wide key art. Console games have only a portrait
-  // cover, so it becomes a blurred backdrop and the title card shows it whole;
-  // so does a Steam game's Store capsule until its media is fetched (capsule).
+  // Steam games show their wide key art, and so does a console game with an
+  // IGDB artwork. Otherwise a console game has only a portrait cover, so it
+  // becomes a blurred backdrop and the title card shows it whole; so does a
+  // Steam game's Store capsule until its media is fetched (capsule).
   function renderHero(game, media, capsule = false) {
     const art = $('gameHeroArt'), img = $('gameHeroImage');
-    const cover = isNativeConsole(game) || capsule;
+    const cover = (isNativeConsole(game) && !media?.hero) || capsule;
     const source = cover ? game.art || null : media?.hero;
     art.dataset.kind = cover ? 'cover' : 'banner';
     art.dataset.state = source ? 'loading' : 'empty';
@@ -164,9 +181,35 @@ export function createDetailMedia(ctx) {
     return figure;
   }
 
+  // An official trailer on YouTube: its poster links out, nothing is embedded.
+  function videoFigure(game, video) {
+    const figure = node('figure', 'game-trailer is-youtube');
+    const poster = node('a', 'game-trailer-poster');
+    poster.href = video.url;
+    poster.target = '_blank';
+    poster.rel = 'noopener noreferrer';
+    poster.setAttribute('aria-label', `在 YouTube 觀看預告：${video.name || game.name}（另開分頁）`);
+    const still = node('img');
+    still.alt = '';
+    still.loading = 'lazy';
+    still.decoding = 'async';
+    still.src = video.poster;
+    still.addEventListener('error', () => still.remove());
+    const play = node('span', 'game-trailer-play');
+    play.setAttribute('aria-hidden', 'true');
+    play.append(icon(document, ['M8.5 5.5v13l10-6.5Z'], 30));
+    poster.append(still, play);
+    const caption = node('figcaption', 'game-trailer-caption');
+    const title = node('strong', '', video.name || '預告');
+    if (/^[\x20-\x7e]+$/.test(video.name)) title.lang = 'en';
+    caption.append(title, node('span', '', '官方預告・在 YouTube 觀看 ↗'));
+    figure.append(poster, caption);
+    return figure;
+  }
+
   function renderShots() {
     const total = gallery.length;
-    const side = current?.trailers.length ? gallery.slice(0, 2) : [];
+    const side = current?.trailers.length || current?.videos?.length ? gallery.slice(0, 2) : [];
     const rest = gallery.slice(side.length);
     const visible = expanded ? rest : rest.slice(0, Math.max(0, INITIAL_SHOTS - side.length));
     $('gameShots').replaceChildren(...visible.map((shot) => {
@@ -183,23 +226,35 @@ export function createDetailMedia(ctx) {
   }
 
   function renderSection(game, media) {
-    const usable = !isNativeConsole(game) && media && (media.trailers.length || media.screenshots.length);
-    const nextKey = usable ? `${game.appid}|${media.updatedAt}|${media.screenshots.length}|${media.trailers.length}` : '';
+    const igdb = media?.provider === 'IGDB';
+    const videos = igdb ? media.videos : [];
+    // Steam media belongs to a Steam version; a console game shows only its IGDB media.
+    const usable = !!media && (igdb || !isNativeConsole(game)) && (media.trailers.length || media.screenshots.length || videos.length);
+    const nextKey = usable ? `${game.appid}|${media.updatedAt}|${media.screenshots.length}|${media.trailers.length}|${videos.length}` : '';
     $('gameMedia').hidden = !usable;
     if (!usable) { stopClip(); key = ''; current = null; $('gameMediaStage').replaceChildren(); $('gameShots').replaceChildren(); return; }
-    $('gameMediaStore').href = game.link;
-    $('gameMediaStore').setAttribute('aria-label', `在 Steam 商店看 ${game.name} 的完整預告（另開分頁）`);
+    // Steam's full trailers are on its store page; a console game's are its YouTube trailers.
+    $('gameMediaStore').hidden = igdb && !videos.length;
+    $('gameMediaStore').href = igdb ? videos[0]?.url || game.link : game.link;
+    $('gameMediaStore').setAttribute('aria-label', igdb ? `在 YouTube 看 ${game.name} 的預告（另開分頁）`
+      : `在 Steam 商店看 ${game.name} 的完整預告（另開分頁）`);
+    const label = $('gameMediaStoreText'), credit = $('gameMediaCredit');
+    if (label) label.textContent = igdb ? '在 YouTube 看預告' : '在 Steam 看完整預告';
+    if (credit) credit.textContent = igdb ? '點一下看大圖 · 圖片由 IGDB、影片由 YouTube 提供，版權屬各權利人'
+      : '點一下看大圖 · 圖片與影片由 Steam 提供，版權屬各權利人';
     if (nextKey === key) return;
     stopClip();
     key = nextKey;
     expanded = false;
-    current = { name: game.name, trailers: media.trailers };
+    current = { name: game.name, trailers: media.trailers, videos };
     gallery = media.screenshots;
     const side = renderShots();
     const stage = $('gameMediaStage');
-    stage.dataset.layout = media.trailers.length ? (side.length ? 'trailer-shots' : 'trailer') : 'shots';
+    const lead = media.trailers.length || videos.length;
+    stage.dataset.layout = lead ? (side.length ? 'trailer-shots' : 'trailer') : 'shots';
     const parts = [];
     if (media.trailers.length) parts.push(trailerFigure(game, media.trailers[0]));
+    else if (videos.length) parts.push(videoFigure(game, videos[0]));
     if (side.length) {
       const column = node('div', 'game-media-side');
       column.append(...side.map(shot => shotButton(shot, gallery.indexOf(shot), gallery.length, game.name)));

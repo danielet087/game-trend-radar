@@ -1,5 +1,6 @@
 import { renderDescriptionSource } from '../../domain/descriptions.mjs';
 import { hasChineseName } from './overview.js';
+import { consoleMedia } from './media.js';
 
 // Long descriptions (console summaries) open as four lines with a toggle.
 const CLAMP_CHARS = 180;
@@ -171,8 +172,10 @@ export function createDetailRenderer(ctx, policy, release, metadata, artwork, fa
     const capsule = !isNativeConsole(game) && extras.mediaDone === true && !extras.media?.hero && Boolean(game.art);
     if (!unchangedArt || state.capsule !== capsule) showArtwork(game, capsule);
     state.capsule = capsule;
-    media?.render(game, extras.media, capsule);
-    overview?.renderFacts(game, extras.media, extras.store);
+    // A console game's own IGDB artwork, screenshots, trailers and companies.
+    const shown = extras.media || (isNativeConsole(game) ? consoleMedia(game) : null);
+    media?.render(game, shown, capsule);
+    overview?.renderFacts(game, shown, extras.store);
     radar?.render(game, extras);
     updateSaveControls();
     setupTags(game);

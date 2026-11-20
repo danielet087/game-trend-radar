@@ -1017,6 +1017,40 @@ test('a released game says so in the title card and never calls its date overdue
   assert.doesNotMatch(pageText(e), /原定日期已過/);
 });
 
+test('a console game shows its IGDB genres, tags, companies, artwork, screenshots and YouTube trailer', async () => {
+  const { elements: e } = await display('?igdb=366896', sample({
+    igdb_genres: ['Role-playing (RPG)', 'Tactical'], igdb_themes: ['Fantasy'],
+    developers: ['Intelligent Systems'], publishers: ['Nintendo'], franchises: ['Fire Emblem'],
+    media: { screenshots: ['sc0001', 'sc0002', 'sc0003'], artworks: ['ar0001'],
+      videos: [{ id: 'dQw4w9WgXcQ', name: 'Announcement Trailer' }] } }));
+  const facts = Object.fromEntries(e.get('gameFacts').children.map(row => [row.children[0].textContent, row.children[1].textContent]));
+  assert.equal(facts['類型'], '角色扮演、策略');
+  assert.equal(facts['開發商'], 'Intelligent Systems');
+  assert.equal(facts['發行商'], 'Nintendo');
+  assert.equal(facts['系列'], 'Fire Emblem');
+  assert.match(facts['特色 TAG'], /戰術/);
+  // The wide IGDB artwork is the banner; the portrait cover stays in the title card.
+  assert.equal(e.get('gameHeroArt').dataset.kind, 'banner');
+  assert.equal(e.get('gameHeroImage').src, 'https://images.igdb.com/igdb/image/upload/t_1080p/ar0001.jpg');
+  assert.equal(e.get('gameMedia').hidden, false);
+  const [trailer] = e.get('gameMediaStage').children;
+  assert.match(trailer.className, /is-youtube/);
+  const poster = trailer.children[0];
+  assert.equal(poster.href, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+  assert.equal(poster.target, '_blank');
+  assert.equal(poster.rel, 'noopener noreferrer');
+  assert.equal(poster.children[0].src, 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
+  assert.equal(e.get('gameMediaStore').href, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+  assert.equal(e.get('gameMediaStoreText').textContent, '在 YouTube 看預告');
+  assert.match(e.get('gameMediaCredit').textContent, /IGDB.*YouTube/);
+  const shots = [...e.get('gameMediaStage').children.slice(1).flatMap(column => column.children), ...e.get('gameShots').children];
+  assert.equal(shots.length, 3);
+  // Without a profile the section stays hidden, as before.
+  const { elements: plain } = await display('?igdb=366896');
+  assert.equal(plain.get('gameMedia').hidden, true);
+  assert.equal(plain.get('gameHeroArt').dataset.kind, 'cover');
+});
+
 test('a version without a verified shop leaves its store cell empty and the buy button falls back to the IGDB page', async () => {
   const { elements: e } = await display('?igdb=366896', sample({ nintendo_url: null,
     exclusivity: { status: 'listed_only', platform: 'NS2' } }));
