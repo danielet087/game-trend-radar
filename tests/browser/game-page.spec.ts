@@ -269,3 +269,27 @@ test('a Steam game without media yet shows its Store capsule, blurred as the her
   }
   expect(failures).toEqual([]);
 });
+
+test('a console version opens the Hong Kong eShop and shows its price and check time, also on the Steam version page', async ({ page }) => {
+  const failures: string[] = [];
+  page.on('pageerror', error => failures.push(error.message));
+  // Monster Hunter Wilds' NS2 version: its eShop page and a running sale, as the console backend publishes them.
+  const eshop = 'https://ec.nintendo.com/HK/zh/titles/70010000102605';
+  const nintendo = readData('nintendo_upcoming.json');
+  const wilds = nintendo.games.find((row: any) => row.igdb_id === 279661);
+  Object.assign(wilds, { platform_urls: { ...wilds.platform_urls, NS2: eshop }, platform_prices: { NS2: {
+    currency: 'HKD', free: false, final_cents: 22300, original_cents: 29800, discount_pct: 25,
+    discount_ends_at: '2027-01-07T15:59:59Z', status: 'preorder', source: '任天堂 eShop 香港', source_url: eshop,
+    checked_at: '2026-11-20T00:30:00Z' } } });
+  await page.route('**/data/nintendo_upcoming.json*', route => route.fulfill({ json: nintendo }));
+  await page.goto('game.html?appid=2246340&date=2026-12-04');
+  await expect(page.locator('#detailPage')).toBeVisible();
+  const row = page.locator('#gameVersionRows tr[data-platform="NS2"]');
+  await expect(row.locator('.game-version-shop')).toHaveText('任天堂 eShop（香港） ↗');
+  await expect(row.locator('.game-version-shop')).toHaveAttribute('href', eshop);
+  await expect(row.locator('.game-version-price')).toContainText('HK$ 223');
+  await expect(row.locator('.game-version-price')).toContainText('預購');
+  await expect(row.locator('.game-version-price')).toContainText('-25%，原價 HK$ 298，特價到 1/7 23:59');
+  await expect(row.locator('.game-version-store > .game-version-meta')).toHaveText('任天堂 eShop 香港 11/20 08:30 確認');
+  expect(failures).toEqual([]);
+});

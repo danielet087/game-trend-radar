@@ -60,21 +60,24 @@ export function taipeiTime(value) {
   return `${at.month}/${at.day} ${at.hour === '24' ? '00' : at.hour}:${at.minute}`;
 }
 
-export function money(value) {
+// Steam and PlayStation prices are Taiwan dollars; the Nintendo eShop's are Hong Kong dollars.
+const SYMBOLS = { TWD: 'NT$', HKD: 'HK$' };
+
+export function money(value, currency = 'TWD') {
   const amount = value / 100;
-  return `NT$ ${amount.toLocaleString('en-US', { maximumFractionDigits: Number.isInteger(amount) ? 0 : 2 })}`;
+  return `${SYMBOLS[currency] || 'NT$'} ${amount.toLocaleString('en-US', { maximumFractionDigits: Number.isInteger(amount) ? 0 : 2 })}`;
 }
 
 export function priceText(price) {
   if (!price) return '';
   if (price.free) return '免費';
-  return money(price.final);
+  return money(price.final, price.currency);
 }
 
 export function discountText(price) {
   if (!price?.discountPct) return '';
   const ends = price.discountEndsAt ? `，特價到 ${taipeiTime(price.discountEndsAt)}` : '';
-  return `-${price.discountPct}%，原價 ${money(price.original)}${ends}`;
+  return `-${price.discountPct}%，原價 ${money(price.original, price.currency)}${ends}`;
 }
 
 export function ratingText(rating) {

@@ -36,7 +36,7 @@ test('ES modules keep the public adapter API and read every published dataset co
     "platformEdition", "platformFamily", "platformFirstReleases", "platformFullNames", "platformLanguageSupport", "platformURL",
     "platformsOnDate", "popscoreTop", "popularityCompare", "releaseCardNames", "releaseClock", "releaseDisplayNames",
     "releaseEditionBadges", "releaseEvidence", "releaseState", "releaseStateText", "releaseStatusGroups",
-    "saveID", "savedID", "selectGames", "shortReleaseDay", "todayInTaipei", "unique", "unlistedReleaseNote", "validDate"]);
+    "saveID", "savedID", "selectGames", "shortReleaseDay", "storeLabel", "todayInTaipei", "unique", "unlistedReleaseNote", "validDate"]);
   const read = name => JSON.parse(fs.readFileSync(path.join(repo, 'tests', 'fixtures', 'site-data', name), 'utf8'));
   const official = read('steam_upcoming.json');
   const preview = read('steam_preview.json');
