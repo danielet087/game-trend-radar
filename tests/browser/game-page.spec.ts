@@ -291,5 +291,9 @@ test('a console version opens the Hong Kong eShop and shows its price and check 
   await expect(row.locator('.game-version-price')).toContainText('預購');
   await expect(row.locator('.game-version-price')).toContainText('-25%，原價 HK$ 298，特價到 1/7 23:59');
   await expect(row.locator('.game-version-store > .game-version-meta')).toHaveText('任天堂 eShop 香港 11/20 08:30 確認');
+  // The narrow store column keeps the sale's end date with its time, and the check time with 確認.
+  const kept = row.locator('.game-version-keep');
+  await expect(kept).toHaveText(['特價到 1/7 23:59', '11/20 08:30 確認']);
+  for (const lines of await kept.evaluateAll(spans => spans.map(span => span.getClientRects().length))) expect(lines).toBe(1);
   expect(failures).toEqual([]);
 });

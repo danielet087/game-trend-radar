@@ -147,6 +147,8 @@ test('a Steam game shows its hero art, media gallery, radar news, heat and the f
   assert.match(price.textContent, /^NT\$ 448/);
   assert.deepEqual(price.children.map(note => note.textContent), ['-20%，原價 NT$ 561，特價到 12/1 02:00']);
   assert.equal(store.children.at(-1).textContent, 'Steam 台灣商店 11/18 19:30 確認');
+  assert.equal(store.children.at(-1).children[0].className, 'game-version-keep');
+  assert.equal(store.children.at(-1).children[0].textContent, '11/18 19:30 確認');
   // Rating and Steam Deck stay game facts.
   assert.equal(facts['分級'], '輔15級（暴力、不當言語）');
   assert.equal(facts['Steam Deck'], '已驗證');
