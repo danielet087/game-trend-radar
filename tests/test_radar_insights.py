@@ -146,6 +146,28 @@ class InsightTests(unittest.TestCase):
         self.assertEqual(next(g for g in growth["games"] if g["appid"] == 2638890)["release_date"], "2026-09-03")
         self.assertEqual(raw, before)
 
+    def test_moving_a_store_day_to_taiwans_day_is_not_a_new_release_date(self):
+        # Steam backend #70: the same release time, now shown on Taiwan's day.
+        legacy = twitch_store_authority()
+        moved = twitch_store_authority(release_start="2026-09-04", release_end="2026-09-04",
+                                       release_date_conflict=False,
+                                       release_date_normalization="steam_release_time_taipei")
+        self.assertEqual(list(M.accepted([moved])), ["2638890"])
+        baseline = M.update(None, catalog(game(), legacy), observed_at="2026-10-03T12:00:00Z")
+        state = M.update(baseline, catalog(game(), moved), observed_at="2026-10-04T12:00:00Z")
+        self.assertEqual(state["events"], [])
+        self.assertEqual(state["records"]["2638890"]["release_date"], "2026-09-04")
+        # A release time that really moves to another Taiwan day is still news.
+        later = {**moved, "release_start": "2026-09-05", "release_end": "2026-09-05",
+                 "release_time_utc": "2026-09-05T00:00:00Z", "release_timestamp_taipei_date": "2026-09-05"}
+        state = M.update(state, catalog(game(), later), observed_at="2026-10-05T12:00:00Z")
+        self.assertEqual([(e["type"], e["previous_date"], e["date"]) for e in state["events"]],
+                         [("release_date", "2026-09-04", "2026-09-05")])
+        # The Store day changing is news too, even on the Taiwan-day basis.
+        shifted = {**later, "release_store_date": "2026-09-05"}
+        state = M.update(baseline, catalog(game(), shifted), observed_at="2026-10-05T12:00:00Z")
+        self.assertEqual([e["type"] for e in state["events"]], ["release_date"])
+
     def test_store_authority_cannot_be_forged_by_missing_proof_or_bad_date_audit(self):
         for fields in [{"release_date_normalization": None}, {"release_display_provider": "Steam Store cc=US"},
                 {"release_date_verified_at": None}, {"release_date_verified_at": "2026-10-03T13:00:00"},

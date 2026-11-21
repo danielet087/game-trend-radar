@@ -75,6 +75,15 @@ def day(value):
         return None
 
 
+def taiwan_day_move(previous, row):
+    """The same Steam release time, now on Taiwan's day instead of the Store's
+    announced day (Steam backend #70): not a new release date."""
+    instant = stamp(row.get("release_time_utc"))
+    return (row.get("release_date_normalization") == "steam_release_time_taipei"
+            and row.get("release_store_date") == previous and instant is not None
+            and instant.astimezone(TAIPEI).date().isoformat() == row.get("release_start"))
+
+
 def accepted(rows):
     result = {}
     for row in rows:
@@ -636,7 +645,7 @@ def update(previous, catalog, *, observed_at, measurements=None, nintendo_catalo
             state["records"][aid] = prior
             if not baseline:
                 event = {"type": "added"}
-        elif prior["release_date"] != row["release_start"]:
+        elif prior["release_date"] != row["release_start"] and not taiwan_day_move(prior["release_date"], row):
             event = {"type": "release_date", "previous_date": prior["release_date"]}
         prior.update(name=name, release_date=row["release_start"], active=True)
         if event:
