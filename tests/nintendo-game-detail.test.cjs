@@ -1152,6 +1152,10 @@ test('a Switch 2 version opens the Hong Kong eShop and shows its HK$ price with 
   assert.match(price.textContent, /^HK\$ 187/);
   assert.deepEqual(price.children.map(note => note.textContent), ['-50%，原價 HK$ 374，特價到 10/10 23:59']);
   assert.equal(store.children.at(-1).textContent, '任天堂 eShop 香港 10/3 08:30 確認');
+  // In the narrow store column a time stays on one line with what it belongs to.
+  const kept = element => element.children.filter(child => child.className === 'game-version-keep').map(child => child.textContent);
+  assert.deepEqual(kept(price.children[0]), ['特價到 10/10 23:59']);
+  assert.deepEqual(kept(store.children.at(-1)), ['10/3 08:30 確認']);
 });
 
 test('a pre-order price says so, and a price that does not hold up is not shown', async () => {

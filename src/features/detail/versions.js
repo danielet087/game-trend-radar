@@ -140,15 +140,34 @@ export function createDetailVersions(ctx, policy) {
     return { code, url, label: D.storeLabel?.(url, code) || (code === 'PS5' ? 'PlayStation 官網' : 'Nintendo 官網') };
   }
 
+  // The store column is narrow: a time stays on one line with the words that go
+  // with it ("11/21 08:31 確認", "特價到 1/7 23:59"), so 確認 or 23:59 is never left alone.
+  const keep = text => node('span', 'game-version-keep', text);
+
+  function discount(price) {
+    const text = discountText(price);
+    if (!text) return null;
+    const line = node('span', 'game-version-meta', text);
+    const ends = price.discountEndsAt ? `特價到 ${taipeiTime(price.discountEndsAt)}` : '';
+    if (ends && text.endsWith(ends)) line.replaceChildren(text.slice(0, -ends.length), keep(ends));
+    return line;
+  }
+
+  function checked(source, at) {
+    const line = node('p', 'game-version-meta', `${source} `);
+    line.append(keep(`${taipeiTime(at)} 確認`));
+    return line;
+  }
+
   // A console price: its store's own check time, like the Steam price.
   function consolePrice(game, code) {
     const price = game.platformPrices?.[code];
     if (!price) return [];
     const row = node('p', 'game-version-price', priceText(price));
     if (price.preorder) row.append(node('span', 'game-version-meta', '預購'));
-    const discount = discountText(price);
-    if (discount) row.append(node('span', 'game-version-meta', discount));
-    return [row, node('p', 'game-version-meta', `${price.source} ${taipeiTime(price.checkedAt)} 確認`)];
+    const sale = discount(price);
+    if (sale) row.append(sale);
+    return [row, checked(price.source, price.checkedAt)];
   }
 
   function storeCell(game, code, store) {
@@ -162,9 +181,9 @@ export function createDetailVersions(ctx, policy) {
     }
     if (code === 'Steam' && store?.price) {
       const price = node('p', 'game-version-price', priceText(store.price));
-      const discount = discountText(store.price);
-      if (discount) price.append(node('span', 'game-version-meta', discount));
-      cell.append(price, node('p', 'game-version-meta', `Steam 台灣商店 ${taipeiTime(store.checkedAt)} 確認`));
+      const sale = discount(store.price);
+      if (sale) price.append(sale);
+      cell.append(price, checked('Steam 台灣商店', store.checkedAt));
     } else if (code !== 'Steam') {
       cell.append(...consolePrice(game, code));
     }
