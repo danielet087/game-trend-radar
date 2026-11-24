@@ -95,7 +95,7 @@ export function renderHeatOverview(root, snapshot) {
     first ? `${time(first.confirmedAt)} · 第三個連續低熱度日結束後確認`
       : minimumHits ? `曾有熱度後，連續 3 個可判定日達標少於 ${minimumHits} 次` : `曾達 ${fmt(threshold)} 人後，連續 3 天低於門檻才確認`);
   card('coverage', '有效觀測', `${fmt(data.coverage.valid)} / ${fmt(data.coverage.total)} 小時`,
-    `${data.coverage.completeDays} 個有效統計日 · 缺測保留空白`);
+    `${data.coverage.completeDays} 個有效統計日 · 缺測不補值`);
   const note = node('p', 'tw-heat-note', `${snapshot.historical ? '已結束追蹤，以最後保存紀錄判定。' : '追蹤中，以已保存紀錄判定。'} 高峰與退燒使用全部歷史，不隨下方日期範圍改變。`);
   const firstDay = data.firstHour && releaseDate ? releaseDayLabel(data.firstHour, releaseDate) : null;
   if (firstDay) note.append(node('span', '', ` 自${firstDay}開始觀測。`));

@@ -113,15 +113,19 @@ function viewerChart(game, typical, region) {
   for (let i = 0; i < DAYS; i++) svg.append(svgNode('text', { x:x(i), y:165, 'text-anchor':'middle' }, `第 ${i + 1} 天`));
   for (const [values, kind] of [[typical, 'peer'], [game, 'game']]) {
     if (!values) continue;
-    let path = '';
+    let path = '', bridge = '', last = null;
     const dots = [];
     values.forEach((value, i) => {
       if (!measured(value)) return;
-      path += `${measured(values[i - 1]) ? 'L' : 'M'}${x(i)} ${y(value)} `;
+      // A missed collection day is drawn as a dashed bridge; the missing day keeps no value.
+      if (last !== null && last < i - 1) bridge += `M${x(last)} ${y(values[last])} L${x(i)} ${y(value)} `;
+      path += `${last === i - 1 ? 'L' : 'M'}${x(i)} ${y(value)} `;
+      last = i;
       const dot = svgNode('circle', { cx:x(i), cy:y(value), r:3.4, class:`tw-launch-${kind}` });
       dot.append(svgNode('title', {}, `第 ${i + 1} 天 ${fmt(value)} 人`));
       dots.push(dot);
     });
+    if (bridge) svg.append(svgNode('path', { d:bridge, class:`tw-launch-${kind} tw-launch-bridge`, fill:'none' }));
     if (path) svg.append(svgNode('path', { d:path, class:`tw-launch-${kind}`, fill:'none' }), ...dots);
   }
   return svg;

@@ -127,13 +127,16 @@ export function createStatistics(root, { idPrefix = '', onViewChange = () => {} 
     return { svg, x, y, bottom: y(0), plotWidth, upper, minX, maxX };
   }
   function empty(text) { chart.replaceChildren(el('p', 'tw-statistics-empty', text)); legend.textContent = ''; }
+  // Consecutive values form the line; a gap in collection is bridged by a dashed segment.
   function line(svg, list, x, y, key, className) {
-    let d = '', previous = false;
+    let d = '', bridge = '', last = null;
     list.forEach((p, index) => {
       const value = p[key];
-      if (typeof value !== 'number' || !Number.isFinite(value)) { previous = false; return; }
-      d += `${previous ? ' L' : ' M'}${x(index)} ${y(value)}`; previous = true;
+      if (typeof value !== 'number' || !Number.isFinite(value)) return;
+      if (last && last.index < index - 1) bridge += ` M${x(last.index)} ${y(last.value)} L${x(index)} ${y(value)}`;
+      d += `${last && last.index === index - 1 ? ' L' : ' M'}${x(index)} ${y(value)}`; last = { index, value };
     });
+    if (bridge) svg.append(svgEl('path', { d: bridge, class: `${className} tw-statistics-bridge`, fill: 'none' }));
     if (d) svg.append(svgEl('path', { d, class: className, fill: 'none' }));
   }
   function distribution(data) {
@@ -174,7 +177,7 @@ export function createStatistics(root, { idPrefix = '', onViewChange = () => {} 
       const dot = svgEl('circle', { cx: b.x(index), cy: b.y(value), r: p.rolling == null ? 2 : 3, class: p.rolling == null ? 'tw-statistics-raw-dot' : 'tw-statistics-dot' });
       point(dot, points[index].text, index); b.svg.append(dot);
     });
-    legend.textContent = '淡線：逐時原值　｜　紫線：完整 24 小時移動中位數　｜　空白：沒有可用資料';
+    legend.textContent = '淡線：逐時原值　｜　紫線：完整 24 小時移動中位數　｜　同色虛線：跨越缺測';
   }
   function persistence(data) {
     const p = data.persistence;
@@ -191,7 +194,7 @@ export function createStatistics(root, { idPrefix = '', onViewChange = () => {} 
       const dot = svgEl('circle', { cx: b.x(index), cy: b.y(v.value), r: v.above ? 3.5 : 2, class: v.above ? 'tw-statistics-warm-dot' : 'tw-statistics-dot' });
       point(dot, points[index].text, index); b.svg.append(dot);
     });
-    legend.textContent = `紫線：總觀眾　｜　橘色虛線：${fmt(p.threshold)} 人門檻　｜　橘點：達標時段`;
+    legend.textContent = `紫線：總觀眾　｜　紫色虛線：跨越缺測　｜　橘色虛線：${fmt(p.threshold)} 人門檻　｜　橘點：達標時段`;
   }
   function supply(data) {
     const s = data.supply, valid = s.points.filter(p => p.viewers != null && p.streamers != null);

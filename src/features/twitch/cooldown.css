@@ -40,6 +40,7 @@
 .tw-cooldown-axis-label { fill:var(--violet-38); }
 .tw-cooldown-raw { stroke:var(--violet-75); stroke-width:1.4; }
 .tw-cooldown-smooth { stroke:var(--violet-39); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+.tw-cooldown-bridge { stroke-dasharray:6 5; opacity:.7; }
 .tw-cooldown-threshold { stroke:var(--orange-59); stroke-width:1.8; stroke-dasharray:6 4; }
 .tw-cooldown-threshold-label { fill:var(--orange-47); font-family:inherit; font-size:var(--text-xs); }
 .tw-cooldown-band { fill:var(--orange-86); opacity:.3; }
