@@ -130,6 +130,16 @@ test('desktop keeps the filters in the page and never shows the sheet parts', as
 });
 
 test('Twitch on phones: region beside search, sources in one row, sort beside the count', async ({ page }) => {
+  // The fixed site data has no Twitch snapshot; a small one fills the list.
+  const generated = frozenAt.toISOString().replace(/\.\d{3}Z$/, 'Z');
+  await page.route('**/data/twitch_live.json', route => route.fulfill({ json: {
+    schema_version: 2, generated_at: generated, min_viewers: 7000, coverage: { collection_complete: true },
+    candidate_games: ['1', '2', '3'].map((id, index) => ({ game_id: id, game_name: `遊戲 ${id}`,
+      viewer_count: 20000 - index * 1000, streamer_count: 4, verification: { status: 'new', observed_at: generated } })),
+  } }));
+  for (const name of ['twitch_tracking', 'twitch_steam_mapping'])
+    await page.route(`**/data/${name}.json`, route => route.fulfill({ json: {
+      schema_version: 1, updated_at: generated, games: {} } }));
   await page.setViewportSize(phone);
   await page.goto('twitch.html');
   await expect(page.locator('.tw-game').first()).toBeVisible();
