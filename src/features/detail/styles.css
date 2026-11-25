@@ -848,6 +848,13 @@ body.motion-on .game-description.is-pending {
   background: transparent;
   color: var(--muted);
 }
+/* Steam Advance Access under the Steam date. */
+.game-version-early {
+  margin-top: 6px;
+  color: var(--game-accent);
+  font-size: var(--text-sm);
+  font-weight: 750;
+}
 .game-version-chips {
   display: flex;
   flex-wrap: wrap;

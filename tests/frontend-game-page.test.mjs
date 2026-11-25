@@ -3,9 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { steamMedia } from '../src/features/detail/media.js';
-import { newsItems, chartModel, followerChanges, weekday } from '../src/features/detail/radar.js';
+import { newsItems, chartModel, followerChanges, prelaunchText, weekday } from '../src/features/detail/radar.js';
 import { highlightTags, playModes } from '../src/features/detail/overview.js';
-import { deckText, discountText, money, priceText, ratingText, storeFacts, taipeiTime } from '../src/features/detail/store.js';
+import { advanceAccessText, deckText, discountText, money, priceText, ratingText, steamReleaseAt, storeFacts, taipeiTime } from '../src/features/detail/store.js';
 import { RadarDiscovery as R } from '../src/features/discovery/index.js';
 
 const fixture = name => JSON.parse(readFileSync(new URL(`./fixtures/site-data/${name}`, import.meta.url), 'utf8'));
@@ -126,4 +126,36 @@ test('store facts keep only valid price, CSRR rating and Steam Deck values for t
   assert.equal(noTime, null);
   assert.equal(money(12345), 'NT$ 123.45');
   assert.equal(taipeiTime(Date.parse('2026-11-18T16:05:00Z')), '11/19 00:05');
+});
+
+test('Steam Advance Access says how many days early, from when, and in the past tense after the release', () => {
+  const doc = { schema_version: 1, games: { 7: { checked_at: '2026-11-25T00:00:00Z',
+    advance_access: { starts_at: '2026-12-01T17:00:00Z', editions: ['Deluxe Edition', ' Deluxe Edition ', '', 3] } } } };
+  const store = storeFacts(doc, 7);
+  assert.deepEqual(store.advanceAccess, { startsAt: Date.parse('2026-12-01T17:00:00Z'), editions: ['Deluxe Edition'] });
+  assert.equal(store.price, null);
+  const game = { releases: [{ platform: 'Steam', date: '2026-12-05', time_utc: '2026-12-04T17:00:00Z' }] };
+  const release = steamReleaseAt(game);
+  assert.equal(release, Date.parse('2026-12-04T17:00:00Z'));
+  assert.equal(steamReleaseAt({ releases: [{ platform: 'Steam', date: '2026-12-05' }] }), Date.parse('2026-12-05T00:00:00+08:00'));
+  assert.equal(steamReleaseAt({ releases: [{ platform: 'NS2', date: '2026-12-05' }] }), null);
+  const at = value => Date.parse(value);
+  assert.equal(advanceAccessText(store.advanceAccess, release, at('2026-11-25T00:00:00Z')), '豪華版可提前 3 天玩（12/2 01:00 起）');
+  assert.equal(advanceAccessText(store.advanceAccess, release, at('2026-12-02T00:00:00Z')), '豪華版已開放提前玩（12/2 01:00 起，比正式上市早 3 天）');
+  assert.equal(advanceAccessText(store.advanceAccess, release, at('2026-12-05T00:00:00Z')), '豪華版曾提前 3 天開放（12/2 01:00 起）');
+  assert.equal(advanceAccessText({ startsAt: at('2026-12-04T12:00:00Z'), editions: [] }, release, at('2026-11-25T00:00:00Z')), '豪華版可提前 5 小時玩（12/4 20:00 起）');
+  assert.equal(advanceAccessText({ startsAt: release, editions: [] }, release), '');
+  assert.equal(advanceAccessText(store.advanceAccess, null), '');
+  assert.equal(storeFacts({ ...doc, games: { 7: { ...doc.games[7], advance_access: { starts_at: 'soon', editions: [] } } } }, 7), null);
+});
+
+test('the Twitch record says when the first stream came before the Steam release', () => {
+  const release = Date.parse('2026-12-04T17:00:00Z');
+  const entry = { first_hour: '2026-11-20T17:00:00Z', first_live_hour: '2026-11-30T02:00:00Z' };
+  assert.equal(prelaunchText(entry, release), '上市前 4 天就有人實況（11/30 10:00 起）。');
+  assert.equal(prelaunchText({ ...entry, first_live_hour: entry.first_hour }, release), '開始記錄時（上市前 14 天）就已經有人實況。');
+  assert.equal(prelaunchText({ ...entry, first_live_hour: '2026-12-04T13:00:00Z' }, release), '上市前 4 小時就有人實況（12/4 21:00 起）。');
+  assert.equal(prelaunchText({ ...entry, first_live_hour: '2026-12-04T17:00:00Z' }, release), '');
+  assert.equal(prelaunchText({ first_hour: entry.first_hour }, release), '');
+  assert.equal(prelaunchText(entry, null), '');
 });
