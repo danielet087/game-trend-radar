@@ -5,6 +5,12 @@ const DAY = 24 * HOUR, TAIPEI_OFFSET = 8 * HOUR;
 const CONFIRM_DAYS = 3, MIN_VALID_HOURS = 12;
 export const CHINESE_DAILY_HEAT_HITS = 4;
 export const cooldownThreshold = region => region === 'zh' ? 100 : 3000;
+// Worldwide, a cooldown is also confirmed relative to the game's own peak:
+// once the highest closed-day median reaches 300, three judgeable days in a
+// row below a quarter of that peak. Either rule confirms a cooldown. In the
+// 11-25 backtest it covered 101 of 250 games (the 3,000 rule 52), 18% came
+// back above within a week, and it called a day and a half earlier.
+export const PEAK_COOLDOWN = Object.freeze({ share: 0.25, minPeak: 300, confirmDays: CONFIRM_DAYS });
 const iso = at => new Date(at).toISOString().replace('.000Z', 'Z');
 const dayStart = at => Math.floor((at + TAIPEI_OFFSET) / DAY) * DAY - TAIPEI_OFFSET;
 const median = sorted => {
@@ -39,6 +45,67 @@ function relativeDecline(days) {
   return { peak: peak ? { date: peak.date, startAt: peak.startAt, median: peak.median } : null, milestones };
 }
 
+// The own-peak rule over the same closed Taipei days; a gap interrupts the
+// count the same way it does for the fixed threshold.
+function peakTracker() {
+  const rule = { status: 'inactive', peak: null, lowDays: 0, active: null, candidate: null,
+    suspended: false, recovered: false, episodes: [] };
+  return {
+    rule,
+    day(day) {
+      if (!day.isClosed) return;
+      if (!day.complete) {
+        rule.lowDays = 0; rule.candidate = null; rule.recovered = false;
+        if (rule.active) { rule.active.interruptedAt ||= day.startAt; rule.suspended = true; }
+        if (rule.peak) rule.status = 'gap';
+      } else {
+        if (!rule.peak || day.median > rule.peak.median) rule.peak = { date: day.date, startAt: day.startAt, median: day.median };
+        const threshold = rule.peak.median * PEAK_COOLDOWN.share;
+        if (rule.peak.median < PEAK_COOLDOWN.minPeak) rule.status = 'inactive';
+        else if (day.median >= threshold) {
+          rule.lowDays = 0; rule.candidate = null;
+          if (rule.active) {
+            rule.active.recoveryAt = day.startAt; rule.active.recoveryConfirmedAt = day.endAt;
+            rule.active = null; rule.suspended = false; rule.recovered = true;
+          }
+          rule.status = rule.recovered ? 'recovered' : 'watching';
+        } else {
+          rule.lowDays++;
+          if (rule.active) {
+            if (!rule.suspended) rule.status = 'cooled';
+            else if (rule.lowDays >= PEAK_COOLDOWN.confirmDays) {
+              rule.active.reconfirmations.push({ confirmedAt: day.endAt });
+              rule.suspended = false; rule.status = 'cooled';
+            } else rule.status = 'suspected';
+          } else {
+            rule.candidate ||= { candidateAt: day.startAt, confirmedAt: null, peak: rule.peak.median, thresholdValue: threshold,
+              recoveryAt: null, recoveryConfirmedAt: null, interruptedAt: null, reconfirmations: [] };
+            rule.status = 'suspected';
+            if (rule.lowDays >= PEAK_COOLDOWN.confirmDays) {
+              rule.candidate.confirmedAt = day.endAt; rule.episodes.push(rule.candidate);
+              rule.active = rule.candidate; rule.candidate = null; rule.recovered = false; rule.status = 'cooled';
+            }
+          }
+        }
+      }
+      day.peakStatus = rule.status; day.peakLowDays = rule.lowDays;
+    },
+    result() {
+      return { ...PEAK_COOLDOWN, status: rule.status, lowDays: rule.lowDays,
+        peak: rule.peak ? { ...rule.peak } : null,
+        thresholdValue: rule.peak ? rule.peak.median * PEAK_COOLDOWN.share : null,
+        episodes: rule.episodes, candidate: rule.candidate };
+    },
+  };
+}
+
+/** Either rule confirms a cooldown: the fixed threshold, or (worldwide) a
+ * quarter of the game's own peak. `basis` names the rule that decided. */
+export function cooldownVerdict(data) {
+  if (data?.status === 'cooled' || data?.peakCooldown?.status !== 'cooled') return { status: data?.status, basis: 'threshold' };
+  return { status: 'cooled', basis: 'peak' };
+}
+
 /** Only closed Taipei days confirm cooldown episodes. Missing slots remain unknown. */
 export function analyzeCooldown(rows, { now = Date.now(), region, releaseDate } = {}) {
   now = typeof now === 'number' && Number.isFinite(now) ? now : Date.now();
@@ -49,6 +116,7 @@ export function analyzeCooldown(rows, { now = Date.now(), region, releaseDate } 
     ...(minimumHits ? { minimumHits } : {}) };
   const slots = normalize(rows, now, dateStart(releaseDate)), points = slots.map(({ hour, raw }) => ({ hour, raw }));
   const byHour = new Map(slots.map(slot => [slot.at, slot.raw]));
+  const peakRule = minimumHits ? null : peakTracker();
   const days = [], episodes = [];
   let status = 'insufficient', candidate = null, active = null, suspended = false;
   let recheckStart = null, lowDays = 0, sawCompleteDay = false, recovered = false;
@@ -73,6 +141,7 @@ export function analyzeCooldown(rows, { now = Date.now(), region, releaseDate } 
     if (!isClosed) {
       day.status = 'open'; days.push(day); continue;
     }
+    peakRule?.day(day);
     if (!complete) {
       if (!minimumHits || missingHours > settings.maxMissingHours) {
         candidate = null; recheckStart = null; lowDays = 0; recovered = false;
@@ -129,6 +198,7 @@ export function analyzeCooldown(rows, { now = Date.now(), region, releaseDate } 
   const pendingRecheck = suspended && active ? { startedAt: recheckStart, days: lowDays,
     requiredDays: CONFIRM_DAYS, thresholdValue: threshold } : null;
   return { settings, status, points, days, episodes, candidate, latest, popularAt, relativeDecline: relativeDecline(days),
+    peakCooldown: peakRule ? peakRule.result() : null,
     coverage: { valid: slots.filter(slot => slot.raw !== null).length, total: slots.length,
       completeDays: days.filter(day => day.complete).length, totalDays: days.length },
     firstHour: points[0]?.hour ?? null, lastHour: last?.hour ?? null, pendingRecheck };

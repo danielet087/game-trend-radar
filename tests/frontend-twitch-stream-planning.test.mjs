@@ -110,7 +110,7 @@ test('the global outlook uses the last completed day before today has closed', (
   assert.equal(result.outlook.latest.median, 4200);
 });
 
-test('Chinese outlook detects falling audiences when both periods reach the same number of hours', () => {
+test('a Chinese fall is listed without a label once both periods reach the same number of hours', () => {
   const rows = Array.from({ length:6 }, (_, i) => daily(`2026-11-${String(i + 5).padStart(2, '0')}`, hour => {
     if (hour === 21) return 10000;
     return [4,7,11].includes(hour) ? i < 3 ? 400 : 200 : 0;
@@ -118,8 +118,9 @@ test('Chinese outlook detects falling audiences when both periods reach the same
   const open = daily('2026-11-11', 9000);
   const selected = heat([...rows, ...open], '2026-11-11');
   assert.equal(selected.signal, 'hot');
-  assert.deepEqual(selected.outlook.comparison, { previous:400, recent:200, change:-50, signal:'falling' });
-  assert.equal(selected.outlook.signal, 'falling');
+  // New games fall anyway: a fall is shown as numbers, never labelled.
+  assert.deepEqual(selected.outlook.comparison, { previous:400, recent:200, change:-50, signal:null });
+  assert.equal(selected.outlook.signal, 'hot');
   assert.equal(selected.outlook.latest.thresholdHits, 4);
   assert.equal(heat([...rows, ...open], '2026-11-09').outlook.comparison, null);
   const mixed = [...rows.slice(0, 72), ...rows.slice(72).map(independentlyMeasured)];
@@ -415,4 +416,35 @@ test('heat files give the planning page the same results as full months', () => 
       [month, heatFile(chunk, HEAT_REGION_FIELDS.filter(name => name !== field))]));
     assert.notDeepEqual(results(without), expected, field);
   }
+});
+
+test('worldwide, a game cooled on its own peak is labelled cooled with that peak, and advice names the peak', () => {
+  // Release 11-05; the peak day 1,200 then three days under 300 confirm on 11-10.
+  const rows = ['2026-11-05', '2026-11-06', '2026-11-07', '2026-11-08', '2026-11-09', '2026-11-10']
+    .map((date, i) => daily(date, [800, 1200, 600, 250, 200, 150][i])).flat();
+  const result = heat(rows, '2026-11-11', { region:'global' });
+  assert.equal(result.outlook.signal, 'cooled');
+  assert.equal(result.outlook.cooledBy, 'peak');
+  assert.equal(result.outlook.peak, 1200);
+  assert.equal(result.outlook.confirmedOn, '2026-11-11');
+  const data = analyzeCooldown(rows, { now, region:'global' });
+  const big = { data, status:'cooled', basis:'peak', historical:false };
+  assert.deepEqual(streamerAdvice(big, now).slice(0, 2), ['考慮收尾或換題',
+    '遊戲已連續 3 個可判定日低於自己高峰（1,200 人）的 25%（300 人）。如果你的同時段平均觀眾也低於平常，可以安排一場收尾或換題。']);
+  // A small game keeps the launch rules' advice; the cooldown shows beside it.
+  const launch = { small:true, stage:'skip', basis:'latest_day', latest:{ index:5, median:150 } };
+  assert.deepEqual(streamerAdvice({ ...big, launch }, now), ['先不用排',
+    '上市第 6 天中位數 150 人，不到 200 人。這類遊戲接下來一週，大多不到 100 人在看。', 'launch']);
+});
+
+test('a rise of half again over three days is still a rise; a fall is never labelled worldwide either', () => {
+  const rising = ['2026-11-05', '2026-11-06', '2026-11-07', '2026-11-08', '2026-11-09', '2026-11-10']
+    .map((date, i) => daily(date, [2000, 2000, 2000, 3500, 3600, 3700][i])).flat();
+  assert.equal(heat(rising, '2026-11-11', { region:'global' }).outlook.signal, 'rising');
+  const falling = ['2026-11-05', '2026-11-06', '2026-11-07', '2026-11-08', '2026-11-09', '2026-11-10']
+    .map((date, i) => daily(date, [8000, 8000, 8000, 4000, 4000, 4000][i])).flat();
+  const result = heat(falling, '2026-11-11', { region:'global' });
+  assert.equal(result.outlook.comparison.signal, null);
+  assert.equal(result.outlook.comparison.change, -50);
+  assert.equal(result.outlook.signal, 'hot');
 });

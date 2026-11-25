@@ -21,6 +21,31 @@ export const LAUNCH_RULES = Object.freeze({
   minHours: 12,
 });
 
+// Same-age launches: each later day's median as a share of the first 24 hours,
+// as [lower quartile, median, upper quartile] by 0-based day index (2026-10/11,
+// 87 launches with at least 50 viewers in the first 24 hours; each column made
+// non-increasing with age). Above the upper quartile a game holds up better
+// than three in four same-age games, below the lower quartile it falls faster.
+// Recompute monthly with scripts/backtest_heat_signals.mjs.
+export const PEER_CURVE = Object.freeze({
+  2: [0.228, 0.363, 0.706], 3: [0.142, 0.290, 0.623], 4: [0.133, 0.256, 0.623], 5: [0.093, 0.246, 0.433],
+  6: [0.091, 0.186, 0.360], 7: [0.063, 0.141, 0.329], 8: [0.052, 0.141, 0.326], 9: [0.050, 0.125, 0.254],
+  10: [0.030, 0.096, 0.254], 11: [0.029, 0.096, 0.220], 12: [0.029, 0.086, 0.202], 13: [0.025, 0.082, 0.202],
+  14: [0.018, 0.070, 0.166], 15: [0.018, 0.065, 0.155], 16: [0.018, 0.065, 0.155], 17: [0.016, 0.054, 0.124],
+  18: [0.016, 0.054, 0.124], 19: [0.014, 0.051, 0.112], 20: [0.013, 0.051, 0.112],
+});
+
+/** How the latest whole day compares with same-age launches (third to 21st day). */
+export function peerComparison(days, first = days?.[0]?.median) {
+  if (!(first >= LAUNCH_RULES.firstDay)) return null;
+  const latest = days.findLast(day => day.median !== null);
+  const curve = latest && PEER_CURVE[latest.index];
+  if (!curve) return null;
+  const ratio = latest.median / first;
+  const verdict = ratio >= curve[2] ? 'outlasting' : ratio <= curve[0] ? 'fading' : 'typical';
+  return { verdict, day: latest.index, ratio, typical: curve[1] };
+}
+
 /** The Steam app a tracked Twitch game is matched to, if any. */
 export function steamAppOf(record) {
   const reference = record?.release_reference?.steam_appid;
@@ -94,7 +119,7 @@ export function launchAdvice({ days = [], releaseAt = null, now, fallback = null
     return { stage: latest.median >= rule.trialDay ? 'trial' : 'skip', basis: 'no_first_day', latest, darkHorse: null };
   }
   const horse = first >= rule.firstDay ? darkHorse(days, first) : null;
-  const base = { first, third, darkHorse: horse };
+  const base = { first, third, darkHorse: horse, peer: peerComparison(days, first) };
   if (first < rule.firstDay) return { ...base, stage: 'skip', basis: 'first_day' };
   if (days.length < 3) return { ...base, stage: 'wait' };
   if (!latest) return { ...base, stage: 'insufficient' };

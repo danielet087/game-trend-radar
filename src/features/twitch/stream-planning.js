@@ -8,7 +8,7 @@ import { filterNames, fmt, node, time } from './presentation.js';
 import { projectRows, regionsFor } from './region-views.js';
 import { dateStart, dayOf, detailHref, fullSeriesRows, heatPath, validChunk, validHeatChunk, validIndex } from './series.js';
 import { analyzeStreamHeat, streamHeatDate, streamHeatThrough, STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS, STREAM_HEAT_WEEK, MIN_PAIRED_HEAT_HOURS } from './stream-heat-model.js';
-import { CHINESE_DAILY_HEAT_HITS, cooldownThreshold } from './cooldown-model.js';
+import { CHINESE_DAILY_HEAT_HITS, PEAK_COOLDOWN, cooldownThreshold } from './cooldown-model.js';
 import { selectObservation } from './selection.js';
 import { createTwitchState, createTwitchURLState, OBSERVATION_PAGE_SIZE } from './state.js';
 import { latestHistorySnapshot } from './history.js';
@@ -16,14 +16,14 @@ import { readCurrentTwitchSnapshot, readPublishedJSON } from './load.js';
 import { normalize } from './snapshot.js';
 import { publicCatalog } from './model.js';
 import { launchAdvice, launchDays, launchInstant, steamAppOf } from './launch-model.js';
-import { LAUNCH_RULE_TEXT, launchAdviceShort, launchFlagShort } from './launch-advice.js';
+import { LAUNCH_RULE_TEXT, PEER_RULE_TEXT, launchAdviceShort, launchFlagShort, launchPeerShort } from './launch-advice.js';
 
 const comparisonRegions = regionsFor('compare');
 const shortDate = date => date.slice(5).replace('-', '/');
 const signalLabels = {
   hot:'有熱度', sporadic:'零星有熱度', low:'熱度偏低',
   cooled:'已退燒', suspected:'降溫觀察', recovered:'熱度回升', insufficient:'資料不足',
-  rising:'熱度上升', falling:'熱度下滑',
+  rising:'回到高檔',
 };
 
 function heatHref(id, date, record) {
@@ -124,10 +124,15 @@ export function initStreamPlanningPage() {
   }
 
   const chineseThreshold = fmt(cooldownThreshold('zh')), hits = CHINESE_DAILY_HEAT_HITS;
-  $('streamTrendRule').textContent = `比較前後各 ${STREAM_HEAT_DAYS} 個已結束日。前期達全球 ${fmt(STREAM_HEAT_FLOORS.global)} 人或中文區 ${fmt(STREAM_HEAT_FLOORS.zh)} 人，且下降至少 25%，標示熱度下滑。`;
+  $('streamTrendRule').textContent = `比較前後各 ${STREAM_HEAT_DAYS} 個已結束日。最近一天和近 ${STREAM_HEAT_DAYS} 日裡至少 2 天，`
+    + `比前 ${STREAM_HEAT_DAYS} 日高 1.5 倍以上（且有全球 ${fmt(STREAM_HEAT_FLOORS.global)} 人或中文區 ${fmt(STREAM_HEAT_FLOORS.zh)} 人），標示「回到高檔」：熱度回來了，但不代表還會繼續漲。`
+    + `近 ${STREAM_HEAT_DAYS} 日的跌幅只列數字、不標示：新遊戲本來就會一直掉，跌了也不代表之後掉得更多。`;
   $('streamDailyRule').textContent = `中文區達 ${chineseThreshold} 人至少 ${hits} 次為「有熱度」，1–${hits - 1} 次為「零星有熱度」，0 次為「熱度偏低」。缺測可能改變是否達到 ${hits} 次時顯示「資料不足」。`;
-  $('streamGlobalRule').textContent = `全球用每日觀眾中位數，熱度門檻為 ${fmt(cooldownThreshold('global'))} 人。中文區趨勢用每日第 ${hits} 高觀眾數。趨勢比較每日至少需 12 筆有效觀測。`;
+  $('streamGlobalRule').textContent = `全球用每日觀眾中位數，熱度門檻為 ${fmt(cooldownThreshold('global'))} 人；`
+    + `高峰到過 ${fmt(PEAK_COOLDOWN.minPeak)} 人的遊戲，連續 ${PEAK_COOLDOWN.confirmDays} 個可判定日低於自己高峰的 ${Math.round(PEAK_COOLDOWN.share * 100)}%，也算已退燒。`
+    + `中文區趨勢用每日第 ${hits} 高觀眾數。趨勢比較每日至少需 12 筆有效觀測。`;
   $('streamLaunchRule').textContent = LAUNCH_RULE_TEXT;
+  $('streamPeerRule').textContent = PEER_RULE_TEXT;
   $('streamWeekRule').textContent = `達標天數取最近 ${STREAM_HEAT_WEEK} 個已結束日，從有觀測的日期起算。今日觀眾與過去 ${STREAM_HEAT_WEEK} 日同時段比較，至少配對 ${MIN_PAIRED_HEAT_HOURS} 個時段才顯示明顯變動。`;
 
   function saveURL() {
@@ -204,8 +209,9 @@ export function initStreamPlanningPage() {
         if (comparison) panel.append(renderMetrics(comparison, key));
         const evidence = day ? dailyEvidence(day, key) : message;
         const confirmed = day?.outlook.confirmedOn;
+        const basis = day?.outlook.cooledBy === 'peak' ? `（低於高峰 ${fmt(day.outlook.peak)} 人的 ${Math.round(PEAK_COOLDOWN.share * 100)}%）` : '';
         if (evidence || confirmed) panel.append(node('p', 'tw-stream-reason',
-          [evidence, confirmed ? `${shortDate(confirmed)} 確認退燒` : ''].filter(Boolean).join(' · ')));
+          [evidence, confirmed ? `${shortDate(confirmed)} 確認退燒${basis}` : ''].filter(Boolean).join(' · ')));
         if (day?.todayChange) {
           const { change, hours } = day.todayChange;
           const movement = node('p', 'tw-stream-movement', `今日較平常 ${change > 0 ? '+' : ''}${fmt(change)} 人`);
@@ -239,11 +245,14 @@ export function initStreamPlanningPage() {
         actions.append(analysis);
       }
     }
-    // Worldwide launch labels: the dark-horse label for any launch, the trial
-    // advice only for games that never reached the popular threshold.
+    // Worldwide launch labels: the dark-horse label for any launch (otherwise
+    // how it holds up against same-age launches), the trial advice only for
+    // games that never reached the popular threshold.
     function renderLaunch(launch) {
       const advice = launch?.small ? launchAdviceShort(launch) : null;
-      const lines = [[launch?.darkHorse?.kind, launchFlagShort(launch?.darkHorse)],
+      const flag = launch?.darkHorse ? [launch.darkHorse.kind, launchFlagShort(launch.darkHorse)]
+        : [`peer-${launch?.peer?.verdict}`, launchPeerShort(launch?.peer)];
+      const lines = [flag,
         [launch?.stage === 'trial' ? `trial-${launch.trend ?? 'plain'}` : launch?.stage, advice]].filter(([, line]) => line);
       launchLines.replaceChildren(...lines.map(([key, { label, text }]) => {
         const line = node('p', 'tw-stream-launch-line');
