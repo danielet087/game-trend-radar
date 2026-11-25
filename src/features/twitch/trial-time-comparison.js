@@ -1,4 +1,4 @@
-import { regionNames, viewOf, VIEWER_TIERS } from './audience-region.js';
+import { channelsAbove, regionNames, tierLayout, viewOf } from './audience-region.js';
 import { fmt, hourLabel, node, time } from './presentation.js';
 import { regionsFor } from './region-views.js';
 import { dateStart, dayOf, monthsFor } from './series.js';
@@ -63,10 +63,10 @@ function renderTierSnapshot({ hour, tiers }, viewers) {
   const summary = node('p', 'tw-trial-coverage');
   const observed = node('time', '', time(hour));
   observed.dateTime = hour;
-  const ahead = tiers[VIEWER_TIERS.indexOf(viewers)];
+  const ahead = channelsAbove(tiers, viewers);
   summary.append(observed, node('span', '', `當次約第 ${fmt(ahead + 1)} 名`));
   const counts = node('dl', 'tw-rank-tiers');
-  for (const [i, threshold] of VIEWER_TIERS.entries()) {
+  for (const [i, threshold] of tierLayout(tiers).entries()) {
     const tier = node('div');
     tier.append(node('dt', '', `超過 ${threshold} 人`), node('dd', '', `${fmt(tiers[i])} 台`));
     counts.append(tier);
@@ -95,7 +95,7 @@ export function createTrialTimeComparison({ $, params, back, onChange }) {
   const rankRegionDefault = viewOf(params.get('summary_region') ?? params.get('region') ?? regionDefault);
   rankHour.value = String(streamHour(params.get('rank_hour') ?? firstDefault));
   const chosenViewers = Number(params.get('rank_viewers'));
-  rankAudience.value = String(VIEWER_TIERS.includes(chosenViewers) ? chosenViewers : 50);
+  rankAudience.value = String([30, 50, 100].includes(chosenViewers) ? chosenViewers : 50);
   rankRegion.value = viewOf(params.get('rank_region') ?? rankRegionDefault);
   let current = null;
 

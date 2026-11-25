@@ -235,6 +235,23 @@ test('viewer tier ranking requires three days and preserves measured zero and ol
   });
 });
 
+test('viewer tiers read the 60-viewer tier from new hours and skip hours that lack it', () => {
+  const period = trialWindow(0, now), hour = 11;
+  const counts = [[[900,10,[200,5]]], [[900,10,[200,5]]], [[900,10,[200,5]]], [[900,10,[200,5]]]];
+  const { index, chunks } = trialFixture(period, [hour], counts, '2026-11-01');
+  const rows = Object.values(chunks['2026-11'].hours);
+  rows[0].streamer_counts_above_viewers = [5, 3, 2];
+  for (const row of rows.slice(1)) row.streamer_counts_above_viewers = [5, 3, 3, 2];
+  const lastHour = iso(period.slots[3] + hour * 3600000);
+  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 60, 'global'), {
+    sampledDays:3, ahead:3, latest:{ hour:lastHour, tiers:[5, 3, 3, 2] },
+  });
+  // Both layouts keep the tiers they share.
+  assert.equal(compareViewerTier(index, chunks, '1', period, hour, 100, 'global').sampledDays, 4);
+  rows[3].streamer_counts_above_viewers = [5, 3, 4, 2];
+  assert.equal(compareViewerTier(index, chunks, '1', period, hour, 60, 'global').sampledDays, 2);
+});
+
 test('viewer tiers use the Chinese collection active at the latest selected hour', () => {
   const period = trialWindow(0, Date.parse('2026-11-16T09:00:00+08:00'));
   const counts = period.slots.map(() => [[900,10,[500,5]], [900,10,[500,5]]]);

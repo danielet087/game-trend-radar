@@ -54,6 +54,10 @@ test('language-filtered Chinese data uses its own counts in live and historical 
   assert.equal(scoped.largest_stream_viewer_count, 100);
   assert.equal(valueOf(scoped, 'median'), 100);
   assert.deepEqual(scoped.streamer_counts_above_viewers, [1, 1, 0]);
+  row.audience_regions.zh.streamer_counts_above_viewers = [1, 1, 1, 0];
+  assert.deepEqual(forRegion(row, 'zh').streamer_counts_above_viewers, [1, 1, 1, 0]);
+  row.audience_regions.zh.streamer_counts_above_viewers = [1, 1];
+  assert.equal(forRegion(row, 'zh').streamer_counts_above_viewers, null);
   assert.equal(forRegion(row, 'global').viewer_count, 50);
   const hour = '2026-11-15T06:00:00Z', generated = '2026-11-15T06:10:00Z';
   const index = { months: { '2026-11': { [hour]: generated } } };
