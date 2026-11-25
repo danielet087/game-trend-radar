@@ -123,3 +123,32 @@ test('a first rise above the trend floor is an ordinary rise, not a separate lab
   assert.equal(result.outlook.comparison.signal, 'rising');
   assert.equal(result.popularAt, null);
 });
+
+test('the latest whole day is compared with same-age launches from the third to the 21st day', async () => {
+  const { peerComparison, PEER_CURVE, launchAdvice } = await import('../src/features/twitch/launch-model.js');
+  const { launchPeerShort, launchPeerText } = await import('../src/features/twitch/launch-advice.js');
+  const days = medians => medians.map((median, index) => ({ index, median }));
+  assert.deepEqual(peerComparison(days([1000, 700, 500, 400, 350, 330, 330, 330])),
+    { verdict: 'outlasting', day: 7, ratio: 0.33, typical: 0.141 });
+  assert.equal(peerComparison(days([1000, 700, 300, 100, 50, 30, 20, 10])).verdict, 'fading');
+  assert.equal(peerComparison(days([1000, 700, 300, 250])).verdict, 'typical');
+  assert.equal(peerComparison(days([299, 700, 300, 250])), null, 'first day under 300');
+  assert.equal(peerComparison(days([1000, 700])), null, 'before the third day');
+  assert.equal(peerComparison(days(Array(22).fill(1000))), null, 'after the 21st day');
+  assert.equal(peerComparison(days([1000, 700, 300, null])).day, 2, 'the latest day with a median');
+  for (const [day, [low, middle, high]] of Object.entries(PEER_CURVE)) {
+    assert.ok(low <= middle && middle <= high, `day ${day}`);
+    if (PEER_CURVE[+day + 1]) assert.ok(PEER_CURVE[+day + 1].every((value, i) => value <= [low, middle, high][i]), `day ${day} never rises`);
+  }
+  const now = Date.parse('2026-11-20T00:00:00Z'), releaseAt = now - 9 * 24 * 3600000;
+  assert.equal(launchAdvice({ days: days([1000, 900, 800, 700, 600, 500, 400, 350, 340]), releaseAt, now }).peer.verdict, 'outlasting');
+  assert.equal(launchPeerText({ verdict: 'outlasting', day: 7, ratio: 0.4, typical: 0.141 }),
+    '比同齡撐得久：上市第 8 天還有首日的 40%，同齡遊戲一般剩 14%。');
+  assert.equal(launchPeerText({ verdict: 'fading', day: 7, ratio: 0.003, typical: 0.141 }, 'zh'),
+    '掉得比同齡快（全球觀眾）：上市第 8 天剩首日的不到 1%，同齡遊戲一般還有 14%。');
+  assert.equal(launchPeerText({ verdict: 'outlasting', day: 3, ratio: 1.3, typical: 0.29 }),
+    '比同齡撐得久：上市第 4 天還有首日的 1.3 倍，同齡遊戲一般剩 29%。');
+  assert.equal(launchPeerText({ verdict: 'typical', day: 3, ratio: 0.3, typical: 0.29 }), null);
+  assert.deepEqual(launchPeerShort({ verdict: 'fading', day: 9, ratio: 0.03, typical: 0.125 }),
+    { label: '掉得比同齡快', text: '第 10 天是首日的 3% · 同齡一般 13%' });
+});

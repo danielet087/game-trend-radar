@@ -36,6 +36,8 @@
 .tw-stream-launch-line:is([data-launch="candidate"],[data-launch="burning"]) strong { color:var(--white); background:var(--violet-42); }
 .tw-stream-launch-line[data-launch^="trial"] strong { color:var(--green-34); background:var(--green-91); }
 .tw-stream-launch-line[data-launch="skip"] strong { color:var(--violet-36); background:var(--violet-90); }
+.tw-stream-launch-line[data-launch="peer-outlasting"] strong { color:var(--green-34); background:var(--green-91); }
+.tw-stream-launch-line[data-launch="peer-fading"] strong { color:var(--orange-35); background:var(--yellow-92); }
 .tw-stream-game-actions { display:flex; flex-wrap:wrap; gap:0 12px; }
 .tw-stream-game-action { display:inline-flex; align-items:center; min-height:32px; color:var(--violet-32); font-size:var(--text-sm); font-weight:700; text-decoration:underline; text-underline-offset:3px; }
 .tw-stream-game-action:hover { color:var(--violet-21); }
@@ -54,7 +56,7 @@
 .tw-stream-signal { padding:2px 7px; border-radius:var(--radius-sm); color:var(--violet-31); background:var(--violet-91); font-size:var(--text-sm); font-weight:750; line-height:1.45; }
 .tw-stream-sample:is([data-signal="hot"],[data-signal="rising"],[data-signal="recovered"]) .tw-stream-signal { color:var(--green-34); background:var(--green-91); }
 .tw-stream-sample[data-signal="cooled"] .tw-stream-signal { color:var(--red-32); background:var(--orange-90); }
-.tw-stream-sample:is([data-signal="sporadic"],[data-signal="falling"],[data-signal="suspected"]) .tw-stream-signal { color:var(--orange-35); background:var(--yellow-92); }
+.tw-stream-sample:is([data-signal="sporadic"],[data-signal="suspected"]) .tw-stream-signal { color:var(--orange-35); background:var(--yellow-92); }
 .tw-stream-sample[data-signal="insufficient"] .tw-stream-signal { color:var(--violet-36); background:var(--violet-90); }
 .tw-stream-reason,.tw-stream-movement { margin:0; color:var(--violet-31); font-size:var(--text-sm); line-height:1.4; overflow-wrap:anywhere; }
 .tw-stream-week { margin:0; color:var(--stream-region-ink); font-size:var(--text-sm); font-weight:700; line-height:1.4; }

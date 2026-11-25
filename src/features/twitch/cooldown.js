@@ -1,4 +1,4 @@
-import { analyzeCooldown, CHINESE_DAILY_HEAT_HITS, cooldownThreshold } from './cooldown-model.js';
+import { analyzeCooldown, CHINESE_DAILY_HEAT_HITS, cooldownThreshold, cooldownVerdict, PEAK_COOLDOWN } from './cooldown-model.js';
 
 const NS = 'http://www.w3.org/2000/svg', HOUR = 3600000;
 const finite = value => typeof value === 'number' && Number.isFinite(value);
@@ -55,11 +55,15 @@ export function cooldownPresentation(data, context = {}, now = Date.now()) {
   const todayHasHeat = Boolean(!stale && context.trackingStatus !== 'ended' && data.settings.minimumHits &&
     latestDay && !latestDay.isClosed && Date.parse(latestDay.startAt) <= now && Date.parse(latestDay.endAt) > now &&
     latestDay.thresholdHits >= data.settings.minimumHits);
-  const status = stale ? 'stale' : todayHasHeat ? 'watching' : data.status;
+  // Either rule confirms a cooldown; `basis` says whether the own peak decided.
+  const verdict = cooldownVerdict(data);
+  const status = stale ? 'stale' : todayHasHeat ? 'watching' : verdict.status;
+  const basis = status === 'cooled' ? verdict.basis : 'threshold';
   const reference = context.releaseReference;
   const recoveryLabel = data.settings.minimumHits ? '已回到每日熱度門檻' : `已回到 ${fmt(data.settings.threshold)} 人門檻`;
-  const label = todayHasHeat ? '今日有熱度' : status === 'recovered' ? recoveryLabel : statuses[status] || statuses.insufficient;
-  return { data, status, label, todayHasHeat,
+  const label = todayHasHeat ? '今日有熱度' : status === 'recovered' ? recoveryLabel
+    : basis === 'peak' ? `已退燒（低於自己高峰的 ${Math.round(PEAK_COOLDOWN.share * 100)}%）` : statuses[status] || statuses.insufficient;
+  return { data, status, basis, label, todayHasHeat,
     releaseDate: reference?.precision === 'day' && calendarDate(reference.date) !== null ? reference.date : null,
     historical: context.trackingStatus === 'ended', scope: context.scope };
 }
@@ -293,10 +297,26 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
     }
     evidence.append(list);
   }
+  // The own-peak cooldown in words: the days behind its current state.
+  function peakRule() {
+    const rule = data.peakCooldown, percent = `${Math.round(PEAK_COOLDOWN.share * 100)}%`;
+    if (!rule?.peak || rule.peak.median < rule.minPeak) return `高峰還不到 ${fmt(PEAK_COOLDOWN.minPeak)} 人，不用自己高峰判斷`;
+    const below = `低於自己高峰（${rule.peak.date.replaceAll('-', '/')} ${fmt(rule.peak.median)} 人）的 ${percent}（${fmt(rule.thresholdValue)} 人）`;
+    if (rule.status === 'cooled') return `已連續 ${rule.lowDays} 個可判定日${below}`;
+    if (rule.status === 'suspected') return `已有 ${rule.lowDays} / ${rule.confirmDays} 個連續可判定日${below}`;
+    if (rule.status === 'gap') return `缺測中斷了連續計數；連續 ${rule.confirmDays} 個可判定日${below}才算退燒`;
+    return `最近一個可判定日不低於自己高峰（${fmt(rule.peak.median)} 人）的 ${percent}（${fmt(rule.thresholdValue)} 人）`;
+  }
   function renderDecline() {
     decline.replaceChildren(el('h3', '', '相對高峰衰退紀錄（輔助提示）'));
     const { peak, milestones } = data.relativeDecline;
     decline.append(el('p', 'tw-cooldown-event-hint', `退燒判定依連續 3 個可判定日${lowRule()}。`));
+    if (data.peakCooldown) {
+      const own = el('p', ''); own.id = uid('cooldownPeakRule');
+      own.append(el('strong', '', '跟自己高峰比：'), document.createTextNode(`${peakRule()}。高峰到過 ${fmt(PEAK_COOLDOWN.minPeak)} 人後，`
+        + `連續 ${PEAK_COOLDOWN.confirmDays} 個可判定日低於高峰的 ${Math.round(PEAK_COOLDOWN.share * 100)}% 也算退燒，兩條規則任一條成立就提示。`));
+      decline.append(own);
+    }
     if (!peak || peak.median <= 0) {
       decline.append(el('p', '', '尚無大於零的有效每日中位數高峰，無法計算比例衰退。')); return;
     }
@@ -332,6 +352,7 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
       const lowDays = data.pendingRecheck?.days ?? data.latest?.lowDays ?? data.candidate?.days ?? 0;
       if (stale) detail = '最新觀測已落後超過 12 小時，保留既有事件與日級計數；目前熱度狀態需等待新資料。';
       else if (presentation.todayHasHeat) detail = `今日已有 ${openDay.thresholdHits} 次達 ${threshold}。`;
+      else if (presentation.basis === 'peak') detail = `${peakRule()}。${fmt(data.settings.threshold)} 人門檻另外判定，見下方。`;
       else if (data.status === 'not_popular') detail = `首次出現${hotRule()}的統計日後，開始檢查退燒。`;
       else if (data.status === 'suspected') detail = data.pendingRecheck
         ? `缺測中斷後重新計數，已有 ${lowDays} / 3 天符合「${lowRule()}」。`

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { analyzeCooldown } from '../src/features/twitch/cooldown-model.js';
+import { analyzeCooldown, cooldownVerdict } from '../src/features/twitch/cooldown-model.js';
 import { cooldownPresentation, releaseDayIndex } from '../src/features/twitch/cooldown.js';
 
 // Taipei 2026-10-01 00:00. Tests freeze the clock instead of depending on today.
@@ -330,3 +330,47 @@ test('release day zero uses Taiwan calendar dates, including pre-release and unc
 
 
 
+
+test('worldwide, three days below a quarter of the own peak cool a game that never reached 3,000', () => {
+  const now = start + 10 * 24 * HOUR;
+  const data = analyze(daily(800, 1200, 600, 250, 200, 150, 400, 100), now);
+  assert.equal(data.status, 'not_popular');
+  assert.deepEqual(data.days.slice(0, 8).map(day => day.peakStatus),
+    ['watching', 'watching', 'watching', 'suspected', 'suspected', 'cooled', 'recovered', 'suspected']);
+  const [episode] = data.peakCooldown.episodes;
+  assert.equal(episode.candidateAt, hour(72));
+  assert.equal(episode.confirmedAt, hour(144));
+  assert.equal(episode.recoveryAt, hour(144));
+  assert.equal(episode.peak, 1200);
+  assert.equal(data.peakCooldown.thresholdValue, 300);
+  // Exactly a quarter of the peak is not below it.
+  assert.deepEqual(cooldownVerdict(analyze(daily(1200, 300, 300, 300), now)), { status: 'not_popular', basis: 'threshold' });
+  const cooled = analyze(daily(800, 1200, 600, 250, 200, 150), now);
+  assert.deepEqual(cooldownVerdict(cooled), { status: 'cooled', basis: 'peak' });
+  const presentation = cooldownPresentation(cooled);
+  assert.equal(presentation.status, 'cooled');
+  assert.equal(presentation.basis, 'peak');
+  assert.equal(presentation.label, '已退燒（低於自己高峰的 25%）');
+});
+
+test('the own-peak rule needs a 300-viewer peak, three judgeable days in a row, and stays out of the Chinese region', () => {
+  const now = start + 10 * 24 * HOUR;
+  assert.equal(analyze(daily(299, 10, 10, 10, 10), now).peakCooldown.status, 'inactive');
+  const gap = omitDayHours(daily(1200, 200, 200, 200, 200), 2, 13);
+  const interrupted = analyze(gap, now);
+  assert.equal(interrupted.days[2].peakStatus, 'gap');
+  assert.equal(interrupted.peakCooldown.status, 'suspected');
+  assert.equal(interrupted.peakCooldown.lowDays, 2);
+  assert.equal(analyzeCooldown(daily(1200, 200, 200, 200, 200), { now, region: 'zh' }).peakCooldown, null);
+});
+
+test('a big game cools on its own peak while still above 3,000; the fixed rule keeps its own basis', () => {
+  const now = start + 10 * 24 * HOUR;
+  const big = analyze(daily(50000, 30000, 12000, 11000, 10000), now);
+  assert.equal(big.status, 'watching');
+  assert.deepEqual(cooldownVerdict(big), { status: 'cooled', basis: 'peak' });
+  const both = analyzeEstablished(daily(2000, 2000, 2000), now);
+  assert.equal(both.status, 'cooled');
+  assert.equal(both.peakCooldown.status, 'cooled');
+  assert.deepEqual(cooldownVerdict(both), { status: 'cooled', basis: 'threshold' });
+});

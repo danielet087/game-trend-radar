@@ -13,6 +13,10 @@ export const LAUNCH_RULE_TEXT = `小遊戲（全球每日觀眾中位數沒到�
   + `上市第 3 天（48～72 小時）不低於首日、最近一天也不低於首日，標「黑馬候選」；一週後仍是首日 ${R.burning} 倍以上，標「延燒中」。`
   + '2026 年 10～11 月 53 款小遊戲回測：兩關都過的 24 款，19 款接下來一週還有 100 人在看；其他 29 款只有 1 款。';
 
+export const PEER_RULE_TEXT = `上市第 3～21 天、首 24 小時有 ${fmt(R.firstDay)} 人以上的遊戲，最近一天跟同齡遊戲比（全球觀眾，從上市時間起每 24 小時算一天）：`
+  + '剩下的觀眾比例比四分之三的同齡遊戲多，標「比同齡撐得久」；比四分之三的同齡遊戲少，標「掉得比同齡快」。'
+  + '2026 年 10～11 月 60 款回測：標「撐得久」的，5 天後 96% 仍高於同齡遊戲的中位數；標「掉得快」的只有 2%。';
+
 /** Title and sentence for the game page's streaming advice; null when the launch rules do not apply. */
 export function launchAdviceText(advice) {
   const { stage, basis, first, third, latest, trend } = advice ?? {};
@@ -61,6 +65,26 @@ export function launchFlagText(flag, region = 'global') {
   const [before, after] = flag.channels ?? [];
   const channels = Number.isFinite(before) && Number.isFinite(after) ? `開台數 ${fmt(before)}→${fmt(after)}。` : '';
   return `黑馬候選${scope}：上市第 3 天（48～72 小時）是首日的 ${times(flag.ratio)}，一般遊戲這時只剩約 ${percent(R.typicalThirdDay)}。${channels}`;
+}
+
+// The share of the first day as a percentage, or as times when it grew.
+const shareOf = ratio => ratio >= 1 ? `的 ${times(ratio)}` : ratio > 0 && ratio < 0.005 ? '的不到 1%' : `的 ${percent(ratio)}`;
+
+/** Same-age line for the game page; none in the middle half or while a dark-horse label shows. */
+export function launchPeerText(peer, region = 'global') {
+  if (!peer || peer.verdict === 'typical') return null;
+  const scope = region === 'global' ? '' : '（全球觀眾）';
+  const day = `上市第 ${peer.day + 1} 天`;
+  return peer.verdict === 'outlasting'
+    ? `比同齡撐得久${scope}：${day}還有首日${shareOf(peer.ratio)}，同齡遊戲一般剩 ${percent(peer.typical)}。`
+    : `掉得比同齡快${scope}：${day}剩首日${shareOf(peer.ratio)}，同齡遊戲一般還有 ${percent(peer.typical)}。`;
+}
+
+/** Same-age label and reason for the planning list. */
+export function launchPeerShort(peer) {
+  if (!peer || peer.verdict === 'typical') return null;
+  return { label: peer.verdict === 'outlasting' ? '比同齡撐得久' : '掉得比同齡快',
+    text: `第 ${peer.day + 1} 天是首日${shareOf(peer.ratio)} · 同齡一般 ${percent(peer.typical)}` };
 }
 
 /** Dark-horse label and reason for the planning list. */

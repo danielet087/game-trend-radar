@@ -1,6 +1,6 @@
 import { count, HOUR } from './metrics.js';
 import { dateStart, dayOf } from './series.js';
-import { analyzeCooldown } from './cooldown-model.js';
+import { analyzeCooldown, cooldownVerdict } from './cooldown-model.js';
 import { quantile } from './statistics-model.js';
 import { isIndependentChineseMeasurement } from './audience-region.js';
 
@@ -26,8 +26,9 @@ function dailySignal(day, open, minimumHits) {
   if (minimumHits && day?.thresholdHits >= minimumHits) return 'hot';
   if (open) return 'pending';
   if (!day?.complete) return 'insufficient';
+  // Either cooldown rule: the fixed threshold, or a quarter of the game's own peak.
+  if (day.status === 'cooled' || day.peakStatus === 'cooled') return 'cooled';
   if (!day.belowThreshold) return 'hot';
-  if (day.status === 'cooled') return 'cooled';
   return minimumHits && day.thresholdHits > 0 ? 'sporadic' : 'low';
 }
 
@@ -51,14 +52,16 @@ function compareHeat(days, recentStart, region, rows) {
   const previous = quantile(previousValues, .5), recent = quantile(recentValues, .5);
   const change = previous > 0 ? (recent - previous) / previous * 100 : null;
   const floor = STREAM_HEAT_FLOORS[region], target = Math.max(floor, previous * 1.5, previous + floor / 2);
-  let signal = null;
-  if (previous >= floor && change <= -25) signal = 'falling';
-  else if (recentValues.at(-1) >= target && recentValues.filter(value => value >= target).length >= 2) signal = 'rising';
+  // A fall over three days is not labelled: new games fall anyway, so it said
+  // nothing about the days after (77% kept falling, 87% without the label).
+  // Launch-age comparisons (launch-model.js) say how a game holds up instead.
+  // A rise is "back at a high level": 44% kept rising, 75% stayed 1.5x above.
+  const signal = recentValues.at(-1) >= target && recentValues.filter(value => value >= target).length >= 2 ? 'rising' : null;
   return { previous, recent, change, signal };
 }
 
 function confirmationDate(data) {
-  const episode = data.episodes.at(-1);
+  const episode = cooldownVerdict(data).basis === 'peak' ? data.peakCooldown.episodes.at(-1) : data.episodes.at(-1);
   const confirmation = episode?.reconfirmations.at(-1)?.confirmedAt ?? episode?.confirmedAt;
   return confirmation ? dayOf(Date.parse(confirmation)) : null;
 }
@@ -183,16 +186,19 @@ export function analyzeStreamHeat(rows, { game, region = 'global', date, now = D
   let outlookSignal = comparison?.signal ?? recentSignal;
   if (recentSignal === 'cooled') outlookSignal = open && signal === 'hot' ? 'recovered' : 'cooled';
   else if (!comparison?.signal) {
-    if (latest?.status === 'recovered') outlookSignal = 'recovered';
+    if (latest?.status === 'recovered' || latest?.peakStatus === 'recovered') outlookSignal = 'recovered';
     else if (signal === 'hot') outlookSignal = 'hot';
-    else if (latest?.status === 'suspected') outlookSignal = 'suspected';
+    else if (latest?.status === 'suspected' || latest?.peakStatus === 'suspected') outlookSignal = 'suspected';
   }
+  // Which rule cooled it, and the peak behind the own-peak rule.
+  const cooledBy = outlookSignal === 'cooled' ? (latest?.status === 'cooled' ? 'threshold' : 'peak') : null;
   return {
     date, signal, threshold, hits, validHours, median: day?.median ?? null, popularAt: data.popularAt,
     week:heatWeek(data.days, through), todayChange:open ? todayChange(available, start, now, region) : null,
     confirmedOn: signal === 'cooled' ? confirmationDate(data) : null,
     concentration: minimumHits && validHours >= MIN_CONCENTRATION_HOURS ? concentration(available, start, end, now) : null,
-    outlook: { signal:outlookSignal, comparison, latest,
+    outlook: { signal:outlookSignal, comparison, latest, cooledBy,
+      peak: cooledBy === 'peak' ? data.peakCooldown.peak.median : null,
       confirmedOn: outlookSignal === 'cooled' ? confirmationDate(data) : null },
   };
 }

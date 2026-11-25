@@ -2,7 +2,13 @@ import { node, fmt, time } from './presentation.js';
 import { releaseDayLabel } from './cooldown.js';
 import { HOUR } from './metrics.js';
 import { MIN_CONCENTRATION_HOURS, MIN_PAIRED_HEAT_HOURS, STREAM_HEAT_WEEK } from './stream-heat-model.js';
-import { LAUNCH_RULE_TEXT, launchAdviceText, launchFlagText } from './launch-advice.js';
+import { LAUNCH_RULE_TEXT, launchAdviceText, launchFlagText, launchPeerText } from './launch-advice.js';
+import { PEAK_COOLDOWN } from './cooldown-model.js';
+
+// "低於自己高峰（12,000 人）的 25%（3,000 人）" for the own-peak cooldown.
+function belowPeak(rule) {
+  return `低於自己高峰（${fmt(rule.peak.median)} 人）的 ${Math.round(PEAK_COOLDOWN.share * 100)}%（${fmt(rule.thresholdValue)} 人）`;
+}
 
 function renderRemainingTrend({ through, rows }) {
   const section = node('section', 'tw-remaining-trend');
@@ -33,7 +39,7 @@ function renderRemainingTrend({ through, rows }) {
 }
 
 // A third element 'launch' marks advice from the small-game launch rules.
-export function streamerAdvice({ data, status, historical, launch }, now = Date.now()) {
+export function streamerAdvice({ data, status, basis, historical, launch }, now = Date.now()) {
   if (historical) return ['先核對近期表現', '這款已結束追蹤。要再排這個主題，可以先看自己近期同時段播這類遊戲的表現。'];
   const last = data.points.findLast(point => Number.isFinite(point.raw));
   if (!last || now - Date.parse(last.hour) > data.settings.maxMissingHours * HOUR ||
@@ -45,8 +51,14 @@ export function streamerAdvice({ data, status, historical, launch }, now = Date.
   const weak = minimumHits ? `達標少於 ${minimumHits} 次` : `低於 ${threshold} 人`;
   const lowDays = data.latest.lowDays;
   switch (status) {
-    case 'cooled':
-      return ['考慮收尾或換題', `遊戲已連續 ${lowDays} 個可判定日${weak}。如果你的同時段平均觀眾也低於平常，可以安排一場收尾或換題。`];
+    case 'cooled': {
+      if (basis !== 'peak') return ['考慮收尾或換題', `遊戲已連續 ${lowDays} 個可判定日${weak}。如果你的同時段平均觀眾也低於平常，可以安排一場收尾或換題。`];
+      // Small games keep the launch rules' advice; the own-peak cooldown shows beside it.
+      const advice = launch?.small ? launchAdviceText(launch) : null;
+      if (advice) return [...advice, 'launch'];
+      const rule = data.peakCooldown;
+      return ['考慮收尾或換題', `遊戲已連續 ${rule.lowDays} 個可判定日${belowPeak(rule)}。如果你的同時段平均觀眾也低於平常，可以安排一場收尾或換題。`];
+    }
     case 'suspected':
       return ['先暫緩加開場次', `目前有 ${lowDays}／${data.settings.confirmDays} 個連續可判定日${weak}。等下一個可判定日，再一起看你最近的開台表現。`];
     case 'recovered':
@@ -80,10 +92,18 @@ export function renderHeatOverview(root, snapshot) {
   const [actionTitle, actionText, basis] = streamerAdvice(snapshot);
   const action = node('section', 'tw-stream-action');
   action.append(node('span', '', '開台建議'), node('h3', '', actionTitle), node('p', '', actionText));
-  const flag = snapshot.historical ? null : launchFlagText(snapshot.launch?.darkHorse, snapshot.region);
-  if (flag) {
-    const line = node('p', 'tw-launch-flag', flag);
-    line.dataset.flag = snapshot.launch.darkHorse.kind;
+  // Beside the advice: a dark-horse label or else how the launch holds up
+  // against same-age launches, and an own-peak cooldown the advice left out.
+  const flags = snapshot.historical ? [] : [
+    snapshot.launch?.darkHorse ? [snapshot.launch.darkHorse.kind, launchFlagText(snapshot.launch.darkHorse, snapshot.region)]
+      : [`peer-${snapshot.launch?.peer?.verdict}`, launchPeerText(snapshot.launch?.peer, snapshot.region)],
+    basis === 'launch' && snapshot.status === 'cooled' && snapshot.basis === 'peak'
+      ? ['peak-cooled', `已退燒：連續 ${data.peakCooldown.lowDays} 個可判定日${belowPeak(data.peakCooldown)}。`] : [],
+  ];
+  for (const [kind, text] of flags) {
+    if (!text) continue;
+    const line = node('p', 'tw-launch-flag', text);
+    line.dataset.flag = kind;
     action.append(line);
   }
   const { minimumHits, threshold } = data.settings;
@@ -100,7 +120,11 @@ export function renderHeatOverview(root, snapshot) {
       ? '這裡依全球觀眾判斷，中文區還沒有自己的標準。' : '') + LAUNCH_RULE_TEXT));
     action.append(rule);
   }
-  const peak = data.relativeDecline.peak, first = data.episodes[0];
+  const peak = data.relativeDecline.peak;
+  // The first cooldown either rule confirmed: the fixed threshold or the own peak.
+  const first = [[data.episodes[0], 'threshold'], [data.peakCooldown?.episodes[0], 'peak']]
+    .filter(([episode]) => episode?.confirmedAt)
+    .sort(([a], [b]) => Date.parse(a.confirmedAt) - Date.parse(b.confirmedAt))[0] ?? null;
   const cards = node('div', 'tw-heat-stats');
   function card(key, label, value, hint) {
     const item = node('div', 'tw-heat-stat'); item.dataset.heat = key;
@@ -109,9 +133,12 @@ export function renderHeatOverview(root, snapshot) {
   }
   card('peak', '觀測高峰', peak ? releaseDayLabel(peak.startAt, releaseDate) || peak.date : '尚無有效統計日',
     peak ? `${peak.date} · 每日總觀眾中位數 ${fmt(peak.median)} 人` : '日期結束且至少有 12 筆有效紀錄後統計');
-  card('cooled', '首次確認退燒', first ? releaseDayLabel(first.confirmedAt, releaseDate) || time(first.confirmedAt) : '尚未確認',
-    first ? `${time(first.confirmedAt)} · 第三個連續低熱度日結束後確認`
-      : minimumHits ? `曾有熱度後，連續 3 個可判定日達標少於 ${minimumHits} 次` : `曾達 ${fmt(threshold)} 人後，連續 3 天低於門檻才確認`);
+  const [episode, rule] = first ?? [];
+  const share = `${Math.round(PEAK_COOLDOWN.share * 100)}%`;
+  card('cooled', '首次確認退燒', episode ? releaseDayLabel(episode.confirmedAt, releaseDate) || time(episode.confirmedAt) : '尚未確認',
+    episode ? `${time(episode.confirmedAt)} · ${rule === 'peak' ? `連續第三天低於自己高峰（${fmt(episode.peak)} 人）的 ${share}` : '第三個連續低熱度日結束後確認'}`
+      : minimumHits ? `曾有熱度後，連續 3 個可判定日達標少於 ${minimumHits} 次`
+        : `曾達 ${fmt(threshold)} 人後連續 3 天低於門檻，或高峰到過 ${fmt(PEAK_COOLDOWN.minPeak)} 人後連續 3 天低於高峰的 ${share}，才確認`);
   card('coverage', '有效觀測', `${fmt(data.coverage.valid)} / ${fmt(data.coverage.total)} 小時`,
     `${data.coverage.completeDays} 個有效統計日 · 缺測不補值`);
   const note = node('p', 'tw-heat-note', `${snapshot.historical ? '已結束追蹤，以最後保存紀錄判定。' : '追蹤中，以已保存紀錄判定。'} 高峰與退燒使用全部歷史，不隨下方日期範圍改變。`);
