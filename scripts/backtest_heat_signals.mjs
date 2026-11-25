@@ -5,15 +5,14 @@
 //     whether a game labelled as holding up or falling faster stays that way.
 //
 // usage: node scripts/backtest_heat_signals.mjs DATA_DIR
-//   DATA_DIR holds twitch_series/index.json, twitch_series/<game>/<month>.json
-//   and catalog.json, laid out like the site's ./data/.
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+//   DATA_DIR holds twitch_series/index.json, twitch_series/<game>/<month>.json,
+//   catalog.json and store_facts.json, laid out like the site's ./data/.
 import { HOUR } from '../src/features/twitch/metrics.js';
-import { dateStart, fullSeriesRows } from '../src/features/twitch/series.js';
+import { dateStart } from '../src/features/twitch/series.js';
 import { analyzeCooldown } from '../src/features/twitch/cooldown-model.js';
-import { LAUNCH_RULES, PEER_CURVE, launchDays, launchInstant, peerComparison, steamAppOf } from '../src/features/twitch/launch-model.js';
+import { LAUNCH_RULES, PEER_CURVE, peerComparison } from '../src/features/twitch/launch-model.js';
 import { quantile } from '../src/features/twitch/statistics-model.js';
+import { readLaunches } from './launch_sample.mjs';
 
 const dir = process.argv[2];
 if (!dir) {
@@ -21,26 +20,8 @@ if (!dir) {
   process.exit(2);
 }
 const DAY = 24 * HOUR;
-const read = path => JSON.parse(readFileSync(join(dir, path), 'utf8'));
-const index = read('twitch_series/index.json');
-const catalog = existsSync(join(dir, 'catalog.json')) ? read('catalog.json') : { games: [] };
-const releaseTimes = new Map((catalog.games || []).map(game => [String(game.appid), game.release_time_utc]));
-const latest = Math.max(...Object.values(index.months).flatMap(hours => Object.keys(hours).map(Date.parse))) + HOUR;
-const dataStart = Math.min(...Object.values(index.games).map(game => Date.parse(game.first_hour)).filter(Number.isFinite));
 const share = (part, whole) => whole ? `${Math.round(part / whole * 100)}%` : '—';
-
-const games = [];
-for (const [id, game] of Object.entries(index.games)) {
-  const chunks = {};
-  for (const month of game.months || []) {
-    const path = `twitch_series/${id}/${month}.json`;
-    if (existsSync(join(dir, path))) chunks[month] = read(path);
-  }
-  let rows;
-  try { rows = fullSeriesRows(index, chunks, id); } catch { continue; }
-  const now = Math.min(Date.parse(game.last_hour) + HOUR, latest);
-  games.push({ id, name: game.display_name || game.name, game, rows, now });
-}
+const { games, launches: allLaunches } = readLaunches(dir);
 
 // Own-peak cooldown beside the 3,000 rule, on the game page's worldwide days.
 const rules = { threshold: { covered: 0, calls: [] }, peak: { covered: 0, calls: [] } };
@@ -77,13 +58,11 @@ if (earlier.length) {
     + ` later in ${later.length}${later.length ? ` (a median ${quantile(later.map(days => -days), .5).toFixed(1)} days later)` : ''}`);
 }
 
-// Same-age comparison: a label on day k (0-based) against day k + 5.
+// Same-age comparison: a label on day k (0-based) against day k + 5. Each
+// launch's days start where the pages start them; a full release counts on its own.
 const outcome = {};
 let launches = 0;
-for (const { game, rows, now } of games) {
-  const releaseAt = launchInstant(game.release_reference, releaseTimes.get(steamAppOf(game) ?? ''));
-  if (!Number.isFinite(releaseAt) || releaseAt < dataStart) continue;
-  const days = launchDays(rows, releaseAt, now);
+for (const { days } of allLaunches) {
   const first = days[0]?.median;
   if (!(first >= LAUNCH_RULES.firstDay)) continue;
   launches++;
@@ -100,3 +79,18 @@ console.log(`\nlaunches with a first day of ${LAUNCH_RULES.firstDay}+: ${launche
 for (const [verdict, { labels, above }] of Object.entries(outcome)) {
   console.log(`${verdict}: ${labels} game-days, ${above} (${share(above, labels)}) above the same-age median 5 days later`);
 }
+
+// The same-age curve itself (PEER_CURVE): each day's median against the first
+// 24 hours, as [lower quartile, median, upper quartile] over launches with at
+// least 50 viewers in their first 24 hours, each column made non-increasing with age.
+const sample = allLaunches.filter(({ days }) => days[0]?.median >= 50);
+const curve = {}, previous = [Infinity, Infinity, Infinity];
+for (let k = 2; k <= 20; k++) {
+  const ratios = sample.map(({ days }) => days[k]?.median == null ? null : days[k].median / days[0].median).filter(value => value !== null);
+  if (ratios.length < 8) break;
+  const row = [.25, .5, .75].map((q, i) => Math.min(previous[i], quantile(ratios, q)));
+  row.forEach((value, i) => { previous[i] = value; });
+  curve[k] = row.map(value => Number(value.toFixed(3)));
+}
+console.log(`\nsame-age curve from ${sample.length} launches (paste into PEER_CURVE when it moves):`);
+console.log(Object.entries(curve).map(([k, row]) => `${k}: [${row.join(', ')}]`).join(', '));

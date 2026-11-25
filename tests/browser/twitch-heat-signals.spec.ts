@@ -77,10 +77,10 @@ test('the planning list marks an own-peak cooldown, a same-age comparison and a 
   await expect(cooled.locator('[data-region="global"] .tw-stream-reason')).toContainText('確認退燒（低於高峰 2,000 人的 25%）');
   const fading = cooled.locator('.tw-stream-launch-line[data-launch="peer-fading"]');
   await expect(fading.locator('strong')).toHaveText('掉得比同齡快');
-  await expect(fading.locator('span')).toHaveText('第 10 天是首日的 4% · 同齡一般 13%');
+  await expect(fading.locator('span')).toHaveText('第 10 天是首日的 4% · 同齡一般 12%');
   const lasting = page.locator('.tw-stream-game[data-game="4"] .tw-stream-launch-line[data-launch="peer-outlasting"]');
   await expect(lasting.locator('strong')).toHaveText('比同齡撐得久');
-  await expect(lasting.locator('span')).toHaveText('第 10 天是首日的 68% · 同齡一般 13%');
+  await expect(lasting.locator('span')).toHaveText('第 10 天是首日的 68% · 同齡一般 12%');
   await expect(page.locator('.tw-stream-game[data-game="5"] [data-region="global"] .tw-stream-signal')).toHaveText('回到高檔');
   // Streamed before its release date: heat from the viewers observed, marked as not yet released.
   const beta = page.locator('.tw-stream-game[data-game="6"]');
@@ -104,7 +104,7 @@ test('the game page keeps the small-game advice and shows the own-peak cooldown 
   await expect(page.locator('#heatOverview-global .tw-heat-status')).toHaveText('已退燒（低於自己高峰的 25%）');
   await expect(action.locator('h3')).toHaveText('先不用排');
   await expect(action.locator('.tw-launch-flag[data-flag="peer-fading"]')).toHaveText(
-    '掉得比同齡快：上市第 10 天剩首日的 4%，同齡遊戲一般還有 13%。');
+    '掉得比同齡快：上市第 10 天剩首日的 4%，同齡遊戲一般還有 12%。');
   await expect(action.locator('.tw-launch-flag[data-flag="peak-cooled"]')).toContainText('已退燒：連續');
   await expect(action.locator('.tw-launch-flag[data-flag="peak-cooled"]')).toContainText('低於自己高峰（2,000 人）的 25%（500 人）');
   await expect(page.locator('#heatOverview-global [data-heat="cooled"] small')).toContainText('連續第三天低於自己高峰（2,000 人）的 25%');
@@ -113,7 +113,7 @@ test('the game page keeps the small-game advice and shows the own-peak cooldown 
   await expect(page.locator('#cooldownPeakRule')).toContainText('跟自己高峰比');
   await page.goto('twitch-game.html?game=4&region=global');
   await expect(page.locator('#heatOverview-global .tw-launch-flag[data-flag="peer-outlasting"]')).toHaveText(
-    '比同齡撐得久：上市第 10 天還有首日的 68%，同齡遊戲一般剩 13%。');
+    '比同齡撐得久：上市第 10 天還有首日的 68%，同齡遊戲一般剩 12%。');
   await expect(page.locator('#heatOverview-global .tw-stream-action h3')).toHaveText('可先續播一場');
   expect(errors).toEqual([]);
 });
@@ -129,7 +129,7 @@ test('an Early Access game counts from its full release and compares the two pea
   await expect(peak.locator('strong')).toHaveText('正式上市新高峰');
   await expect(peak.locator('span')).toHaveText('正式上市後最高 9,000 人，是搶先體驗時最高 3,000 人的 3.0 倍。');
   // Same-age comparison from the full release: its sixth day against its first.
-  await expect(card.locator('.tw-stream-launch-line[data-launch="peer-outlasting"] span')).toHaveText('第 6 天是首日的 67% · 同齡一般 25%');
+  await expect(card.locator('.tw-stream-launch-line[data-launch="peer-outlasting"] span')).toHaveText('第 6 天是首日的 67% · 同齡一般 23%');
   await page.goto('twitch-game.html?game=7&region=global');
   await expect(page.locator('#heatOverview-global .tw-launch-flag[data-flag="full-release-peak"]')).toHaveText(
     '正式上市後最高 9,000 人，是搶先體驗時最高 3,000 人的 3.0 倍。');

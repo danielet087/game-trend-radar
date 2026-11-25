@@ -51,6 +51,9 @@ def _launch_curves(current):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(raw)
             shutil.copyfile(current / "data/catalog.json", data / "catalog.json")
+            # Early Access starts to the hour come from the store facts.
+            if (current / "data/store_facts.json").is_file():
+                shutil.copyfile(current / "data/store_facts.json", data / "store_facts.json")
             subprocess.run([*builder, "--data-dir", str(data)],
                            check=True, timeout=120, capture_output=True, text=True)
             shutil.copyfile(data / "twitch-launch-curves.json", current / "data/twitch-launch-curves.json")

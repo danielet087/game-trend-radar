@@ -22,7 +22,8 @@ def fake_builder(calls):
         data = Path(argv[argv.index("--data-dir") + 1])
         calls.append({"data": data, "series": sorted(p.relative_to(data).as_posix()
                       for p in (data / "twitch_series").rglob("*.json")),
-                      "catalog": (data / "catalog.json").read_bytes()})
+                      "catalog": (data / "catalog.json").read_bytes(),
+                      "facts": (data / "store_facts.json").read_bytes() if (data / "store_facts.json").is_file() else None})
         (data / "twitch-launch-curves.json").write_text('{"built_from": "%s"}' % data.name)
         return subprocess.CompletedProcess(argv, 0, "", "")
     return run
@@ -50,6 +51,7 @@ class LaunchCurvesSourceTests(unittest.TestCase):
         self.assertEqual(calls[0]["data"], self.checkout / "data")
 
     def test_series_only_in_the_database_build_from_its_copy(self):
+        (self.checkout / "data/store_facts.json").write_bytes(b'{"games": {}}')
         database = SqliteClient(self.tmp / "radar.sqlite")
         self.addCleanup(database.close)
         documents.initialize(database)
@@ -61,6 +63,7 @@ class LaunchCurvesSourceTests(unittest.TestCase):
             insights._launch_curves(self.checkout)
         self.assertEqual(calls[0]["series"], ["twitch_series/42/2026-11.json", "twitch_series/index.json"])
         self.assertEqual(calls[0]["catalog"], b'{"games": []}')
+        self.assertEqual(calls[0]["facts"], b'{"games": {}}')
         self.assertEqual(json.loads((self.checkout / "data/twitch-launch-curves.json").read_text())["built_from"], "data")
         self.assertFalse((self.checkout / "data/twitch_series").exists())
 
