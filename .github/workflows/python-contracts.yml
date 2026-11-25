@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
-      - name: Install shared policies and offline test dependencies
-        run: python -m pip install --disable-pip-version-check -r requirements-core.txt 'requests>=2.32,<3' 'opencc-python-reimplemented>=0.1.7,<1'
-      - name: Run Python contract and historical tool regressions without collection
+      - name: Install shared policies
+        run: python -m pip install --disable-pip-version-check -r requirements-core.txt
+      - name: Run Python contract tests without collection
         run: python -m unittest discover -s tests -p 'test_*.py' -q
