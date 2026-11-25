@@ -11,15 +11,14 @@
 //   - all launches (first day 50+) watched for two weeks: the dark-horse rule
 //     against a later day reaching twice the first day.
 import { LAUNCH_RULES } from '../src/features/twitch/launch-model.js';
-import { quantile } from '../src/features/twitch/statistics-model.js';
 import { readLaunches } from './launch_sample.mjs';
+import { darkHorseLaunches, darkHorseOutcome, ruleOutcome, smallLaunches, stillWatched as alive, trialRule as trial } from './rule_checks.mjs';
 
 const dir = process.argv[2];
 if (!dir) {
   console.error('usage: node scripts/backtest_launch_advice.mjs DATA_DIR');
   process.exit(2);
 }
-const median = values => quantile(values, .5);
 const share = (part, whole) => whole ? `${Math.round(part / whole * 100)}%` : '—';
 // Each launch's days start where the pages start them; a full release counts on its own.
 const all = readLaunches(dir).launches;
@@ -28,23 +27,16 @@ console.log(`launches with a known first day: ${launches.length} (${launches.fil
   + ` ${launches.filter(l => l.basis === 'pre_launch').length} starting before the launch)`);
 
 // Small games: the trial rule against the following week.
-const small = launches.filter(l => l.value(0) >= 50 && l.value(0) < LAUNCH_RULES.popular && l.days.length >= 10)
-  .map(l => {
-    const week = [3, 4, 5, 6, 7, 8, 9].map(l.value).filter(value => value !== null);
-    return week.length >= 4 ? { ...l, week: median(week) } : null;
-  }).filter(Boolean);
-const alive = l => l.week >= 100;
+const small = smallLaunches(launches);
 function rule(name, test) {
-  const flagged = small.filter(test), rest = small.filter(l => !test(l));
-  const hits = flagged.filter(alive).length;
-  console.log(`${name}: flagged ${flagged.length}/${small.length}, ${hits} (${share(hits, flagged.length)}) still had 100 next week;`
-    + ` not flagged ${rest.filter(alive).length}/${rest.length}`);
+  const { flagged, held, rest, restHeld } = ruleOutcome(small, test);
+  console.log(`${name}: flagged ${flagged}/${small.length}, ${held} (${share(held, flagged)}) still had 100 next week;`
+    + ` not flagged ${restHeld}/${rest}`);
 }
 console.log(`small games with a known next week: ${small.length}, ${small.filter(alive).length} still had 100`);
 rule('24 h  first day >= 300', l => l.value(0) >= LAUNCH_RULES.firstDay);
 rule('48 h  day 2 >= 200', l => (l.value(1) ?? 0) >= LAUNCH_RULES.trialDay);
 rule('72 h  day 3 >= 200', l => (l.value(2) ?? 0) >= LAUNCH_RULES.trialDay);
-const trial = l => l.value(0) >= LAUNCH_RULES.firstDay && (l.value(2) ?? 0) >= LAUNCH_RULES.trialDay;
 rule('72 h  both (the site rule)', trial);
 for (const [name, test] of [['holding', l => l.value(2) >= l.value(0) * LAUNCH_RULES.holding], ['fading', l => l.value(2) < l.value(0) * LAUNCH_RULES.holding]]) {
   const group = small.filter(l => trial(l) && test(l));
@@ -53,16 +45,11 @@ for (const [name, test] of [['holding', l => l.value(2) >= l.value(0) * LAUNCH_R
 }
 
 // Dark horses: a later day (4th-14th) at twice the first day; the rule fires at 72 hours.
-const watched = launches.filter(l => l.value(0) >= 50 && l.value(2) !== null).map(l => {
-  const later = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].filter(k => l.value(k) !== null);
-  return { ...l, dark: later.some(k => l.value(k) >= 2 * l.value(0)), lasting: later.some(k => k >= 7 && l.value(k) >= 2 * l.value(0)) };
-}).filter(l => l.days.length >= 14 || l.dark);
+const watched = darkHorseLaunches(launches);
 const dark = watched.filter(l => l.dark);
 console.log(`\nlaunches watched two weeks: ${watched.length}; dark horses ${dark.length} (${dark.filter(l => l.lasting).length} still twice a week on)`);
 for (const floor of [50, LAUNCH_RULES.firstDay]) {
-  const flagged = watched.filter(l => l.value(0) >= floor && l.value(2) >= l.value(0) * LAUNCH_RULES.darkHorse);
-  const caught = flagged.filter(l => l.dark);
-  console.log(`day 3 >= first day, first day >= ${floor}: flagged ${flagged.length}, caught ${caught.length}/${dark.filter(l => l.value(0) >= floor).length}`
-    + ` (${caught.filter(l => l.lasting).length} lasting)`);
+  const { flagged, caught, eligible, caughtLasting } = darkHorseOutcome(watched, floor);
+  console.log(`day 3 >= first day, first day >= ${floor}: flagged ${flagged}, caught ${caught}/${eligible} (${caughtLasting} lasting)`);
 }
 for (const l of dark) console.log(`  ${l.name}: first ${Math.round(l.value(0))}, day 3 ×${(l.value(2) / l.value(0)).toFixed(1)}${l.lasting ? ', lasting' : ''}`);

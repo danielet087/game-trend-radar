@@ -1,5 +1,6 @@
 """Launch curves keep refreshing after the Twitch series leave Git."""
 import contextlib
+from datetime import datetime, timezone
 import io
 import json
 import os
@@ -96,6 +97,77 @@ class LaunchCurvesSourceTests(unittest.TestCase):
             insights._launch_curves(self.checkout)
         self.assertEqual(json.loads((self.checkout / "data/twitch-launch-curves.json").read_text()), {"previous": True})
         self.assertIn("preserving the existing projection", errors.getvalue())
+
+
+
+def fake_review(calls, fail=False):
+    """The builder as above, and the monthly review writing what it was given."""
+    builder = fake_builder(calls)
+
+    def run(argv, **kwargs):
+        if argv[0] != "node":
+            return builder(argv, **kwargs)
+        if fail:
+            raise subprocess.CalledProcessError(1, argv)
+        data, out, stamp = Path(argv[2]), Path(argv[3]), argv[4]
+        calls.append({"review": data, "at": stamp, "curves": (data / "twitch-launch-curves.json").is_file()})
+        out.write_text(json.dumps({"schema_version": 1, "generated_at": stamp, "checks": []}))
+        return subprocess.CompletedProcess(argv, 0, "", "")
+    return run
+
+
+class RuleReviewTests(unittest.TestCase):
+    """The monthly rule review rides on the launch curves' data, once per Taiwan month."""
+
+    def setUp(self):
+        self.temporary = TemporaryDirectory()
+        self.checkout = Path(self.temporary.name) / "checkout"
+        for path, raw in SERIES.items():
+            (self.checkout / path).parent.mkdir(parents=True, exist_ok=True)
+            (self.checkout / path).write_bytes(raw)
+        (self.checkout / "data/catalog.json").write_bytes(b'{"games": []}')
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def review(self):
+        return json.loads((self.checkout / insights.REVIEW).read_text())
+
+    def test_the_first_projection_of_a_month_writes_the_review_after_the_curves(self):
+        calls = []
+        with patch.object(insights.subprocess, "run", fake_review(calls)):
+            insights._launch_curves(self.checkout, datetime(2026, 11, 30, 16, 17, tzinfo=timezone.utc))
+        self.assertEqual(calls[1], {"review": self.checkout / "data", "at": "2026-11-30T16:17:00Z", "curves": True})
+        self.assertEqual(self.review()["generated_at"], "2026-11-30T16:17:00Z")
+        self.assertIn(insights.REVIEW, insights.PATHS)
+
+    def test_it_runs_again_only_in_a_new_taiwan_month(self):
+        (self.checkout / insights.REVIEW).write_text(json.dumps({"generated_at": "2026-11-30T16:17:00Z"}))
+        calls = []
+        with patch.object(insights.subprocess, "run", fake_review(calls)):
+            # 2026-12-01 07:59 in Taiwan is still the month of the last review.
+            insights._launch_curves(self.checkout, datetime(2026, 11, 30, 23, 59, tzinfo=timezone.utc))
+            self.assertEqual(len(calls), 1)
+            insights._launch_curves(self.checkout, datetime(2026, 12, 31, 16, 0, tzinfo=timezone.utc))
+        self.assertEqual(len(calls), 3)
+        self.assertEqual(self.review()["generated_at"], "2026-12-31T16:00:00Z")
+
+    def test_a_failed_review_keeps_the_previous_one_and_the_curves(self):
+        previous = {"generated_at": "2026-10-31T16:17:00Z", "checks": ["kept"]}
+        (self.checkout / insights.REVIEW).write_text(json.dumps(previous))
+        errors = io.StringIO()
+        with patch.object(insights.subprocess, "run", fake_review([], fail=True)), contextlib.redirect_stderr(errors):
+            insights._launch_curves(self.checkout, datetime(2026, 11, 30, 16, 17, tzinfo=timezone.utc))
+        self.assertEqual(self.review(), previous)
+        self.assertTrue((self.checkout / "data/twitch-launch-curves.json").is_file())
+        self.assertIn("keeping the previous one", errors.getvalue())
+
+    def test_without_an_observation_time_no_review_runs(self):
+        calls = []
+        with patch.object(insights.subprocess, "run", fake_review(calls)):
+            insights._launch_curves(self.checkout)
+        self.assertEqual(len(calls), 1)
+        self.assertFalse((self.checkout / insights.REVIEW).exists())
 
 
 if __name__ == "__main__":

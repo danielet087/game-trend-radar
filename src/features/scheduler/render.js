@@ -1,6 +1,7 @@
 import { HOUR, DAY, JOBS, num, instant, day, dateLabel, clockLabel, esc, steamUrl } from "./primitives.js";
 import { buildSlots, dashboardState, eventHistory, queueGameState, groupQueueCounts, igdbReceiptSummary } from "./data.js";
 import { freshRepositories } from "./state.js";
+import { reviewNotice, reviewPanel, seenReview } from "./review.js";
 export function createSchedulerRenderer(state, $) {
 const freshRepos = () => freshRepositories(state);
 const badge = (text, kind = "waiting") => `<span class="queue-badge state-${kind}">${esc(text)}</span>`;
@@ -61,6 +62,14 @@ function renderEvents() {
   $("eventTimeline").innerHTML = listed.length ? listed.join("") : '<li class="empty-state">今日執行紀錄尚未取得。原定排程不會被當成實際執行。</li>';
   $("eventTimelineNote").textContent = "由新到舊列出需要注意的事件與手動執行；例行成功依工作收合在最後，點開可看每一次。實際查詢中斷會單獨記錄，即使 Actions 最後顯示成功。";
 }
+function renderReview() {
+  const notice = reviewNotice(state.review, state.reviewSeen ?? seenReview());
+  $("reviewNotice").hidden = !notice;
+  $("reviewNotice").className = "review-notice" + (notice?.watch ? " is-watch" : "");
+  $("reviewNoticeText").textContent = notice?.text ?? "";
+  const panel = reviewPanel(state.review);
+  $("reviewDate").textContent = panel.date; $("reviewNote").textContent = panel.note; $("reviewChecks").innerHTML = panel.items;
+}
 function render() {
   const q = state.queue, fresh = freshRepos(), hero = dashboardState(q, state.runs, fresh);
   $("currentTime").textContent = dateLabel(Date.now());
@@ -92,7 +101,7 @@ function render() {
   }
   sources.push("<p>每個儲存庫讀取今日（台灣時間）建立的 Actions；當天超過 100 筆時，較早的部分最多每 30 分鐘補讀一次，仍未涵蓋的時段保留待確認。官方查詢事件保留最近 100 筆，本頁呈現其中今日事件。</p>");
   $("sourcesDetails").innerHTML = sources.join("");
-  renderQueue(); renderSchedule(); renderEvents();
+  renderQueue(); renderSchedule(); renderEvents(); renderReview();
 }
 return { render, renderQueue };
 }

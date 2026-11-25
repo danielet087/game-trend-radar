@@ -2,6 +2,7 @@ import { JOBS } from "./primitives.js";
 import { createSchedulerState } from "./state.js";
 import { createSchedulerLoader } from "./load.js";
 import { createSchedulerRenderer } from "./render.js";
+import { validateReview, markReviewSeen } from "./review.js";
 export { RadarScheduler } from "./data.js";
 const controllers = new WeakMap();
 const activeControllers = new Set();
@@ -22,12 +23,15 @@ async function refresh() {
   try { await snapshotLoad(); } catch { if (state.disposed) return; $("errorMessage").hidden = false; $("errorMessage").textContent = state.queue ? "佇列更新失敗，目前保留上次快照。" : "佇列暫時無法讀取；待查數量保留未知，稍後可再更新。"; }
   if (state.disposed) return;
   render();
-  const results = await Promise.allSettled([readReceipt("growth.json"), readReceipt("content_refresh_status.json"), readReceipt("twitch_collection_status.json"), readReceipt("nintendo_refresh_status.json"), ...[...new Set(JOBS.map(j => j.repo))].map(readRuns)]);
+  const results = await Promise.allSettled([readReceipt("growth.json"), readReceipt("content_refresh_status.json"), readReceipt("twitch_collection_status.json"), readReceipt("nintendo_refresh_status.json"), readReceipt("rule_review.json"), ...[...new Set(JOBS.map(j => j.repo))].map(readRuns)]);
   if (state.disposed) return;
   for (const [i, key] of ["growth", "content", "twitch", "igdb"].entries()) if (results[i].status === "fulfilled" && results[i].value) state[key] = results[i].value;
+  const review = results[4].status === "fulfilled" ? validateReview(results[4].value) : null;
+  if (review) state.review = review;
   render(); state.busy = false; $("refreshButton").disabled = false;
 }
 on($("refreshButton"), "click", refresh);
+on($("reviewNoticeDismiss"), "click", () => { if (state.review) { state.reviewSeen = state.review.stamp; markReviewSeen(state.review); } $("reviewNotice").hidden = true; });
 on($("queueSearch"), "input", renderQueue); on($("queueFilter"), "change", renderQueue);
 on($("scheduleTimeline"), "click", e => { const button = e.target.closest("[data-slot-note]"); if (button) $("scheduleCaption").textContent = button.dataset.slotNote; });
 const interval = setInterval(() => { if (!document.hidden) refresh(); }, 60000);

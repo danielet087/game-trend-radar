@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
 import os
 from pathlib import Path
@@ -17,8 +17,10 @@ from radar_core.storage import primary
 from radar_core.storage.sql import StorageError
 from scripts import sync_scheduler_queue_status as queue
 
+REVIEW = "data/rule_review.json"
 PATHS = ("data/insights-state.json", "data/activity.json", "data/growth.json", "data/followers.json",
-         "data/scheduler_queue_status.json", "data/twitch-launch-curves.json")
+         "data/scheduler_queue_status.json", "data/twitch-launch-curves.json", REVIEW)
+TAIPEI = timezone(timedelta(hours=8))
 # Heavy Steam jobs can hold the storage lease past one bounded wait. A busy
 # lease fails before any write, so the whole publication can simply run again.
 LEASE_RETRIES = 2
@@ -31,13 +33,41 @@ SERIES_PATH = "data/twitch_series/"
 VIEWS_FLAG = "data/publication/twitch_views.json"
 
 
-def _launch_curves(current):
-    """Refresh the launch curves; preserve the existing projection on failure."""
+def _review_due(current, observed_at):
+    """The monthly rule review runs with the first projection of each Taiwan month, or when it is missing."""
+    try:
+        previous = json.loads((current / REVIEW).read_text(encoding="utf-8"))
+        generated = datetime.fromisoformat(previous["generated_at"].replace("Z", "+00:00"))
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return True
+    if generated.tzinfo is None:
+        return True
+    month = lambda moment: moment.astimezone(TAIPEI).strftime("%Y-%m")
+    return month(generated) != month(observed_at)
+
+
+def _rule_review(current, data, observed_at):
+    """Rerun the checks behind the launch and heat rules once a month (scripts/rule_review.mjs);
+    the previous review stays when it cannot run."""
+    if observed_at is None or not _review_due(current, observed_at):
+        return
+    stamp = observed_at.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    try:
+        subprocess.run(["node", str(current / "scripts/rule_review.mjs"), str(data), str(current / REVIEW), stamp],
+                       check=True, timeout=120, capture_output=True, text=True)
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
+        print("The monthly rule review could not run; keeping the previous one.", file=sys.stderr)
+
+
+def _launch_curves(current, observed_at=None):
+    """Refresh the launch curves (and, once a month, the rule review);
+    preserve the existing projections on failure."""
     builder = [sys.executable, "-B", str(current / "scripts/build_twitch_launch_curves.py")]
     try:
         if not (current / VIEWS_FLAG).is_file() and (current / SERIES_PATH / "index.json").is_file():
             subprocess.run([*builder, "--data-dir", str(current / "data")],
                            check=True, timeout=120, capture_output=True, text=True)
+            _rule_review(current, current / "data", observed_at)
             return
         if not primary.enabled():
             return
@@ -57,6 +87,7 @@ def _launch_curves(current):
             subprocess.run([*builder, "--data-dir", str(data)],
                            check=True, timeout=120, capture_output=True, text=True)
             shutil.copyfile(data / "twitch-launch-curves.json", current / "data/twitch-launch-curves.json")
+            _rule_review(current, data, observed_at)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, StorageError, OSError):
         print("Launch curves could not be refreshed; preserving the existing projection.", file=sys.stderr)
 
@@ -88,7 +119,7 @@ def publish(root, *, observed_at=None, repository=None, queue_snapshot=None):
         subprocess.run([sys.executable, "-B", str(current / "scripts/build_radar_insights.py"),
                         "--data-dir", str(current / "data"), "--observed-at", observation],
                        check=True, timeout=120, capture_output=True, text=True)
-        _launch_curves(current)
+        _launch_curves(current, clock)
         if frozen is not None:
             queue.sync_snapshot(current / "data/scheduler_queue_status.json",
                                 fetcher=lambda: deepcopy(frozen))
