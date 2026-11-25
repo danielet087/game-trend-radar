@@ -93,12 +93,14 @@ test('daily cooldown requires earlier heat and three weak determinate days, paus
   assert.equal(heat([...prior, ...weak, ...longGap], '2026-11-09').signal, 'low');
 });
 
-test('global daily heat uses the selected closed day median and excludes pre-release observations', () => {
+test('global daily heat uses the selected closed day median, before the release date too', () => {
   const date = '2026-11-10';
   const rows = [...daily('2026-11-04', 9000), ...daily(date, 4000)];
-  assert.equal(heat(rows, '2026-11-04', { region:'global' }).signal, 'insufficient');
+  // Viewers before the release (a demo, a beta, early access) are real heat.
+  const before = heat(rows, '2026-11-04', { region:'global' });
+  assert.deepEqual([before.signal, before.median, before.prelaunch], ['hot', 9000, true]);
   const dailyGlobal = heat(rows, date, { region:'global' });
-  assert.deepEqual([dailyGlobal.signal, dailyGlobal.median, dailyGlobal.validHours], ['hot',4000,24]);
+  assert.deepEqual([dailyGlobal.signal, dailyGlobal.median, dailyGlobal.validHours, dailyGlobal.prelaunch], ['hot',4000,24,false]);
 });
 
 test('the global outlook uses the last completed day before today has closed', () => {
@@ -131,14 +133,15 @@ test('a Chinese fall is listed without a label once both periods reach the same 
 
 const independentlyMeasured = row => ({ ...row, audience_regions: { zh: { measurement_source: 'helix_language_filter' } } });
 
-test('weekly heat counts closed post-release days and preserves uncertain and fully missing days', () => {
+test('weekly heat counts closed days, before the release too, and preserves uncertain and fully missing days', () => {
   const rows = [
     ...daily('2026-11-04', 1000), ...daily('2026-11-05', high),
     ...daily('2026-11-06', high, [21]), ...daily('2026-11-07', 0),
     ...daily('2026-11-09', 0), ...daily('2026-11-10', high), ...daily('2026-11-11', 2000),
   ];
-  assert.deepEqual(heat(rows, '2026-11-11').week, { total:6, hot:2, unknown:2 });
-  assert.deepEqual(heat(rows, '2026-11-07').week, { total:3, hot:1, unknown:1 });
+  // 11-04 comes before the 11-05 release and still counts as a hot day.
+  assert.deepEqual(heat(rows, '2026-11-11').week, { total:7, hot:3, unknown:2 });
+  assert.deepEqual(heat(rows, '2026-11-07').week, { total:4, hot:2, unknown:1 });
   assert.equal(heat(daily('2026-11-11', 1000), '2026-11-11').week, null);
 });
 

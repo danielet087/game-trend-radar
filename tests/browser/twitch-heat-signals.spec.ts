@@ -5,11 +5,13 @@ import { test, expect, type Page } from '@playwright/test';
 // up better than same-age launches, and a big game back up over three days.
 const HOUR = 3600000;
 const stamp = (at: number) => new Date(at).toISOString().replace('.000Z', 'Z');
-const games: Record<string, { name: string, appid: number, release: string, daily: number[] }> = {
+const games: Record<string, { name: string, appid: number, release: string, daily: number[], from?: string }> = {
   '3': { name: '退燒小遊戲', appid: 99003, release: '2026-11-01', daily: [2000, 1500, 600, 300, 200, 150, 120, 100, 90, 80, 80] },
   '4': { name: '長青大作', appid: 99004, release: '2026-11-01', daily: [5000, 4500, 4200, 4000, 3900, 3800, 3700, 3600, 3500, 3400, 3400] },
   '5': { name: '回溫大作', appid: 99005, release: '2026-10-21',
     daily: [8000, 6000, 5000, 4200, 4000, 3800, 3600, 3400, 3200, 3100, 3000, 3000, 3000, 3000, 2000, 2000, 2000, 3500, 3600, 3700, 3700] },
+  // A beta streamed for a week before its January release.
+  '6': { name: '測試中大作', appid: 99006, release: '2027-01-20', from: '2026-11-04', daily: [6000, 5000, 4500, 4200, 4000, 4000, 4000, 4000] },
 };
 const releaseAt = (date: string) => Date.parse(`${date}T01:00:00+08:00`);
 
@@ -20,8 +22,9 @@ async function mockSignals(page: Page) {
   const end = Date.parse('2026-11-11T11:00:00+08:00');
   for (const [id, game] of Object.entries(games)) {
     chunks[id] = {};
-    for (let at = releaseAt(game.release); at <= end; at += HOUR) {
-      const hour = stamp(at), generated_at = stamp(at + 600000), day = Math.floor((at - releaseAt(game.release)) / (24 * HOUR));
+    const from = releaseAt(game.from ?? game.release);
+    for (let at = from; at <= end; at += HOUR) {
+      const hour = stamp(at), generated_at = stamp(at + 600000), day = Math.floor((at - from) / (24 * HOUR));
       const month = new Date(at + 8 * HOUR).toISOString().slice(0, 7);
       (months[month] ||= {})[hour] = generated_at;
       (chunks[id][month] ||= {})[hour] = { generated_at, viewer_count: game.daily[day], streamer_count: 20,
@@ -38,7 +41,7 @@ async function mockSignals(page: Page) {
     await page.route(`**/data/${name}.json`, route => route.fulfill({ status: 404, body: '{}' }));
   const time = (game: typeof games[string]) => stamp(releaseAt(game.release));
   await page.route('**/data/catalog.json', route => route.fulfill({ json: {
-    version: 3, generated_at: generated, count: 3, games: Object.values(games).map(game => ({ appid: game.appid, name: game.name,
+    version: 3, generated_at: generated, count: Object.keys(games).length, games: Object.values(games).map(game => ({ appid: game.appid, name: game.name,
       followers: 1000, release_start: game.release, release_time_utc: time(game) })),
   } }));
   for (const game of Object.values(games))
@@ -47,7 +50,7 @@ async function mockSignals(page: Page) {
   await page.route('**/data/twitch_series/index.json', route => route.fulfill({ json: {
     schema_version: 1, timezone: 'Asia/Taipei', generated_at: generated, months,
     games: Object.fromEntries(Object.entries(games).map(([id, game]) => [id, { name: game.name, archive_eligible: true,
-      tracking_status: 'active', months: Object.keys(chunks[id]), first_hour: time(game), last_hour: '2026-11-11T03:00:00Z',
+      tracking_status: 'active', months: Object.keys(chunks[id]), first_hour: stamp(releaseAt(game.from ?? game.release)), last_hour: '2026-11-11T03:00:00Z',
       sample_count: Object.values(chunks[id]).reduce((sum, hours) => sum + Object.keys(hours).length, 0),
       peak_viewer_count: Math.max(...game.daily),
       release_reference: { date: game.release, precision: 'day', source: 'Steam 台灣商店', steam_appid: String(game.appid) } }])),
@@ -74,6 +77,12 @@ test('the planning list marks an own-peak cooldown, a same-age comparison and a 
   await expect(lasting.locator('strong')).toHaveText('比同齡撐得久');
   await expect(lasting.locator('span')).toHaveText('第 10 天是首日的 68% · 同齡一般 13%');
   await expect(page.locator('.tw-stream-game[data-game="5"] [data-region="global"] .tw-stream-signal')).toHaveText('回到高檔');
+  // Streamed before its release date: heat from the viewers observed, marked as not yet released.
+  const beta = page.locator('.tw-stream-game[data-game="6"]');
+  await expect(beta.locator('[data-region="global"] .tw-stream-signal')).toHaveText('有熱度');
+  await expect(beta.locator('[data-region="global"] .tw-stream-reason')).toContainText('11/10 日中位數 4,000 人');
+  await expect(beta.locator('.tw-stream-release')).toHaveText('上市參考 2027/01/20 · 還沒上市');
+  await expect(beta.locator('.tw-stream-launch-line')).toHaveCount(0);
   await page.locator('.tw-stream-method summary').click();
   await expect(page.locator('#streamTrendRule')).toContainText('標示「回到高檔」：熱度回來了，但不代表還會繼續漲');
   await expect(page.locator('#streamGlobalRule')).toContainText('連續 3 個可判定日低於自己高峰的 25%，也算已退燒');

@@ -234,7 +234,9 @@ export function initStreamPlanningPage() {
     function renderHistory(record, date) {
       const reference = record?.release_reference;
       if (reference?.precision === 'day' && Number.isFinite(dateStart(reference.date))) {
-        const release = node('time', 'tw-stream-release', `上市參考 ${reference.date.replaceAll('-', '/')}`);
+        // Before the release the heat still follows the viewers observed.
+        const before = dateStart(date) < dateStart(reference.date) ? ' · 還沒上市' : '';
+        const release = node('time', 'tw-stream-release', `上市參考 ${reference.date.replaceAll('-', '/')}${before}`);
         release.dateTime = reference.date;
         if (reference.source) release.title = reference.source;
         copy.insertBefore(release, launchLines);

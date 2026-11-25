@@ -338,7 +338,7 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
   function render() {
     if (disposed || root.hidden || !rows) return;
     try {
-      data = analyzeCooldown(rows, { region:context.region, releaseDate:usesHits() ? releaseDate() : null });
+      data = analyzeCooldown(rows, { region:context.region });
       const presentation = cooldownPresentation(data, context);
       const displayStatus = presentation.status, stale = displayStatus === 'stale';
       root.dataset.cooldownStatus = displayStatus; root.dataset.cooldownModelStatus = data.status;
