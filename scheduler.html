@@ -9,13 +9,13 @@
     <meta name="description" content="Game Trend Radar 排程觀測：依台灣時間查看處理順序、執行紀錄與 Steam 待查佇列。" />
     <title>排程觀測｜Game Trend Radar</title>
     <link rel="icon" id="siteFavicon" type="image/svg+xml" />
-  <script type="module" crossorigin src="/game-trend-radar/assets/app/scheduler-D2LIE-wc.js"></script>
+  <script type="module" crossorigin src="/game-trend-radar/assets/app/scheduler-BfZEtFDv.js"></script>
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/rolldown-runtime-DK3Fl9T5.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/contracts-CXfvy2kB.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/storage-BxRXCfxq.js">
-  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-Cyf3pP2l.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-8H8UCLYx.js">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/bootstrap-oTuMO7h7.css">
-  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/scheduler-LGuz7Ddv.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/scheduler-_yrkbgiw.css">
 </head>
   <body data-page="scheduler">
     <a class="skip-link" href="#mainContent">跳到排程觀測</a>
@@ -44,6 +44,10 @@
       </div>
       <div class="error-message" id="errorMessage" role="alert" hidden></div>
       <noscript><div class="error-message">請啟用 JavaScript，以讀取排程紀錄與待查佇列。</div></noscript>
+      <div class="review-notice" id="reviewNotice" role="status" hidden>
+        <p id="reviewNoticeText"></p>
+        <div class="review-notice-actions"><a href="#reviewTitle">看重算結果 <span aria-hidden="true">↓</span></a><button type="button" id="reviewNoticeDismiss">知道了</button></div>
+      </div>
 
       <section class="queue-overview" aria-labelledby="statusHeadline">
         <div class="overview-current">
@@ -104,8 +108,15 @@
         <div class="paused-queue" id="pausedQueue"><p class="loading-state">正在讀取暫停原因…</p></div>
       </section>
 
+      <section class="panel review-panel" aria-labelledby="reviewTitle">
+        <div class="section-heading"><div><p class="section-kicker">05 / 每月重算</p><h2 id="reviewTitle">Twitch 新作的判斷規則還準嗎？</h2></div><span class="date-pill" id="reviewDate">—</span></div>
+        <p class="section-description">每月第一次整理動態時，用最新資料重跑開台建議、退燒、同齡比較與上市後預估的回測，跟 11-25 驗證時的結果並排。網站不會自己改門檻；標「要注意」的規則，要用回測腳本重看一次再決定要不要改。</p>
+        <p class="review-note" id="reviewNote">正在讀取每月重算…</p>
+        <ul class="review-checks" id="reviewChecks"><li class="loading-state">正在讀取每月重算…</li></ul>
+      </section>
+
       <section class="panel all-queue-panel" aria-labelledby="allQueueTitle">
-        <div class="section-heading"><div><p class="section-kicker">05 / 完整待查清單</p><h2 id="allQueueTitle">每一款，都有自己的位置</h2></div><span class="queue-count" id="queueCount" aria-live="polite">—</span></div>
+        <div class="section-heading"><div><p class="section-kicker">06 / 完整待查清單</p><h2 id="allQueueTitle">每一款，都有自己的位置</h2></div><span class="queue-count" id="queueCount" aria-live="polite">—</span></div>
         <div class="queue-controls">
           <label class="queue-search" for="queueSearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg><span class="sr-only">搜尋遊戲名稱或 Steam App ID</span><input id="queueSearch" type="search" placeholder="搜尋遊戲名稱或 App ID" autocomplete="off" /></label>
           <label class="queue-filter" for="queueFilter"><span class="sr-only">依佇列類別篩選</span><select id="queueFilter"><option value="all">全部待查</option><option value="twitch">Twitch 優先</option><option value="ordinary">一般 Steam</option><option value="paused">暫停處理</option></select></label>

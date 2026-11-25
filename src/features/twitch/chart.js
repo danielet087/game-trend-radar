@@ -1,3 +1,4 @@
+import { formatCount } from "./number-format.js";
 const NS = "http://www.w3.org/2000/svg";
 const METRICS = {
   viewers: { label: "總觀眾", key: "viewer_count", unit: "人" },
@@ -5,12 +6,12 @@ const METRICS = {
   median: { label: "單台觀眾中位數", unit: "人／台" },
 };
 const numeric = value => typeof value === "number" && Number.isFinite(value) && value >= 0;
-const numberFormat = new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 10 });
 const timeOptions = { timeZone:"Asia/Taipei", month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit", hourCycle:"h23" };
 const bucketTime = new Intl.DateTimeFormat("zh-TW", timeOptions);
 const snapshotTime = new Intl.DateTimeFormat("zh-TW", { ...timeOptions,second:"2-digit" });
 const tickFormat = new Intl.DateTimeFormat("zh-TW", { timeZone:"Asia/Taipei", month:"numeric", day:"numeric", hour:"2-digit", hourCycle:"h23" });
-const number = value => numberFormat.format(value);
+// Whole numbers from 100 up, one decimal below (a median of 2,488.5 people reads 2,489).
+const number = value => formatCount(value);
 const validTime = value => typeof value === "string" && Number.isFinite(Date.parse(value));
 function time(value, seconds) {
   if (!validTime(value)) return "時間未提供";
