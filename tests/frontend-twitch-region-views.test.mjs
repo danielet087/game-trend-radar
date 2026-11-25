@@ -1,21 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blockScopes, writeBlockScopes, regionsFor, projectRows } from '../src/features/twitch/region-views.js';
+import { regionsFor, projectRows } from '../src/features/twitch/region-views.js';
 import { detailHref } from '../src/features/twitch/series.js';
 
-test('each block round-trips independently even when the return page has a different region', () => {
-  const params = new URLSearchParams({ back: 'view=archive&archive_region=zh', region: 'zh' });
-  const scopes = blockScopes(params);
-  assert.deepEqual(scopes, { summary: 'zh', history: 'zh', cooldown: 'zh', statistics: 'zh' });
-  scopes.summary = 'compare'; scopes.history = 'global'; scopes.cooldown = 'global';
-  writeBlockScopes(params, scopes);
-  assert.deepEqual(blockScopes(params), scopes);
-  assert.equal(params.has('region'), false);
-  assert.equal(new URLSearchParams(params.get('back')).get('archive_region'), 'zh');
-  for (const key of Object.keys(scopes)) scopes[key] = 'global';
-  writeBlockScopes(params, scopes);
-  assert.deepEqual(blockScopes(params), scopes);
-});
 test('comparison never projects the Chinese subset as global and never fills missing Chinese history', () => {
   const rows = [{ hour: '2026-10-31T00:00:00Z', status: 'observed', viewer_count: 20000, streamer_count: 4 },
     { hour: '2026-10-31T01:00:00Z', status: 'observed', viewer_count: 10000, streamer_count: 4,

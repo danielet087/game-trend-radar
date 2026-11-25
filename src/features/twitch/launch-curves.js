@@ -213,14 +213,13 @@ function compactTable({ launch, typicalDay }) {
   return table;
 }
 
-export function createLaunchCurves({ $, params, onChange }) {
+export function createLaunchCurves({ $, params, onChange, region: regionOfPage = () => 'global', onShow = () => {} }) {
   const section = $('launchCurves'), genre = $('launchCurveGenre'), status = $('launchCurveStatus');
-  const results = $('launchCurveResults'), scope = $('launchCurveRegion');
-  scope.value = regionOf(params.get('launch_region'));
-  let pending, game, gameId, cutoff, kind, token = 0;
+  const results = $('launchCurveResults');
+  let pending, game, gameId, cutoff, kind, token = 0, names = {};
 
   function render(data, id) {
-    const region = scope.value;
+    const region = regionOf(regionOfPage());
     const comparison = launchComparison(data, id, genre.value, cutoff, region, kind);
     const { launch, peers, typicalDay, gameRemaining, remainingOnDay7 } = comparison;
     status.textContent = launchStatus(launch, region, comparison.measurementSource);
@@ -236,15 +235,15 @@ export function createLaunchCurves({ $, params, onChange }) {
     }
   }
 
+  const rerender = () => {
+    if (pending) pending.then(data => { if (data && !section.hidden && data.games[gameId]) render(data, gameId); });
+  };
   genre.addEventListener('change', () => {
-    params.set('launch_genre', genre.value); onChange();
-    if (pending) pending.then(data => { if (data && !section.hidden && data.games[gameId]) render(data, gameId); });
-  });
-  scope.addEventListener('change', () => {
-    params.set('launch_region', scope.value); onChange();
-    if (pending) pending.then(data => { if (data && !section.hidden && data.games[gameId]) render(data, gameId); });
+    params.set('launch_genre', genre.value); onChange(); rerender();
+    onShow(true, names[genre.value]);
   });
   return {
+    render: rerender,
     // Days hide after the end of the selected range; the current launch decides
     // which of an Early Access game's two launches is shown.
     async update(id, selectedGame, selectedEnd, refresh) {
@@ -252,7 +251,7 @@ export function createLaunchCurves({ $, params, onChange }) {
       if (!refresh && game === selectedGame && cutoff === until) return;
       const request = ++token;
       game = selectedGame; gameId = id; cutoff = until; kind = currentLaunch(selectedGame, until)?.kind ?? null;
-      section.hidden = true;
+      section.hidden = true; onShow(false);
       const reference = selectedGame.release_reference;
       if (!reference?.steam_appid || reference.precision !== 'day') return;
       if (refresh) pending = null;
@@ -267,9 +266,11 @@ export function createLaunchCurves({ $, params, onChange }) {
         const option = node('option', '', data.genres[key]); option.value = key; return option;
       }));
       genre.value = entry.genres.includes(choice) ? choice : entry.genres[0];
+      names = data.genres;
       render(data, id);
       section.hidden = false;
+      onShow(true, data.genres[genre.value]);
     },
-    reset() { token++; game = null; gameId = null; section.hidden = true; },
+    reset() { token++; game = null; gameId = null; section.hidden = true; onShow(false); },
   };
 }

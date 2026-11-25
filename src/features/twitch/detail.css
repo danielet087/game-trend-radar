@@ -1,43 +1,6 @@
 body[data-page="twitch-game"] { --page-wash:var(--violet-88); --page-wash-soft:var(--purple-92); --page-orbit:var(--violet-76c); --page-orbit-line:var(--violet-61); }
-.tw-heat-overview { margin:0 0 25px; padding:22px 25px; border:1px solid var(--violet-81); border-radius:var(--radius-lg); background:var(--white); }
-.tw-heat-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
-.tw-heat-heading h2 { margin:0; font-size:var(--text-lg); color:var(--violet-29); }
-.tw-heat-heading > span { color:var(--violet-46); font-size:var(--text-xs); }
-.tw-heat-status { margin:13px 0 16px; color:var(--violet-32); font-size:var(--text-lg); font-weight:700; }
-.tw-heat-overview[data-status="cooled"] .tw-heat-status,.tw-heat-overview[data-status="suspected"] .tw-heat-status { color:var(--orange-42); }
-.tw-stream-action { margin:0 0 15px; padding:14px 16px; border:1px solid var(--green-88); border-radius:var(--radius-md); background:var(--gray-97); }
-.tw-stream-action > span { display:block; color:var(--teal-36); font-size:var(--text-xs); font-weight:700; }
-.tw-stream-action h3 { margin:3px 0 4px; color:var(--teal-29); font-size:var(--text-md); }
-.tw-stream-action p { margin:0; color:var(--green-33); font-size:var(--text-sm); line-height:1.7; }
-.tw-stream-action small { display:block; margin-top:7px; color:var(--green-39b); font-size:var(--text-xs); }
-.tw-stream-action .tw-launch-flag { margin-top:8px; padding:6px 10px; border-radius:var(--radius-sm); color:var(--white); background:var(--violet-42); font-weight:650; }
-.tw-stream-action .tw-launch-flag[data-flag="peer-outlasting"] { color:var(--green-34); background:var(--green-91); }
-.tw-stream-action .tw-launch-flag:is([data-flag="peer-fading"],[data-flag="peak-cooled"]) { color:var(--orange-35); background:var(--yellow-92); }
-.tw-stream-action .tw-launch-flag[data-flag="launch-start"] { color:var(--violet-32); background:var(--violet-96); font-weight:500; }
-.tw-launch-forecast { margin:0 0 15px; padding:14px 16px; border:1px solid var(--violet-81); border-radius:var(--radius-md); background:var(--violet-96); }
-.tw-launch-forecast > span { display:block; color:var(--violet-46); font-size:var(--text-xs); font-weight:700; }
-.tw-launch-forecast h3 { margin:3px 0 4px; color:var(--violet-29); font-size:var(--text-md); }
-.tw-launch-forecast > p { margin:0; color:var(--violet-32); font-size:var(--text-sm); line-height:1.7; }
-.tw-launch-forecast > .tw-forecast-caption { margin:10px 0 0; color:var(--violet-46); font-size:var(--text-xs); }
-.tw-forecast-chances { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:6px 0 0; }
-.tw-forecast-chances > div { min-width:0; padding:8px 10px; border-radius:var(--radius-sm); background:var(--white); }
-.tw-forecast-chances dt { color:var(--violet-46); font-size:var(--text-xs); }
-.tw-forecast-chances dd { margin:2px 0 0; color:var(--violet-29); font-size:var(--text-md); font-weight:700; font-variant-numeric:tabular-nums; }
-.tw-launch-forecast .tw-launch-rule { color:var(--violet-32); }
-.tw-launch-forecast .tw-launch-rule p { margin:0; font-size:var(--text-xs); line-height:1.65; }
-.tw-launch-rule { margin-top:6px; color:var(--green-33); font-size:var(--text-xs); }
-.tw-launch-rule summary { width:max-content; min-height:32px; padding:6px 0; cursor:pointer; font-weight:650; }
-.tw-stream-action .tw-launch-rule p { font-size:var(--text-xs); line-height:1.65; }
-.tw-heat-overview:is([data-status="cooled"],[data-status="suspected"]) .tw-stream-action { border-color:var(--yellow-81); background:var(--paper); }
-.tw-heat-overview:is([data-status="cooled"],[data-status="suspected"]) .tw-stream-action h3 { color:var(--orange-35); }
-.tw-heat-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
-.tw-heat-stat { display:grid; align-content:start; gap:8px; min-width:0; padding:14px; border-radius:var(--radius-md); background:var(--violet-96); overflow-wrap:anywhere; }
-.tw-heat-stat > span { color:var(--violet-46); font-size:var(--text-xs); }
-.tw-heat-stat strong { color:var(--violet-29); font-size:clamp(17px,2vw,24px); line-height:1.6; font-variant-numeric:tabular-nums; }
-.tw-heat-stat small,.tw-heat-note { color:var(--violet-46); font-size:var(--text-xs); line-height:1.8; }
-.tw-heat-note { margin:15px 0 9px; }
-.tw-heat-overview > a { color:var(--violet-39); font-size:var(--text-xs); text-decoration:underline; text-underline-offset:4px; }
-.tw-remaining-trend { margin-top:20px; }
+.tw-remaining-trend { margin:20px 25px 25px; }
+.tw-heat-note { margin:4px 0 9px; color:var(--violet-46); font-size:var(--text-xs); line-height:1.8; }
 .tw-remaining-trend h3 { margin:0; color:var(--violet-26); font-size:var(--text-md); }
 .tw-remaining-trend .tw-heat-note { margin-top:4px; }
 .tw-history-resolution { display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin:0 25px 12px; }
@@ -49,9 +12,6 @@ body[data-page="twitch-game"] { --page-wash:var(--violet-88); --page-wash-soft:v
 .tw-chart-threshold-label { fill:var(--orange-42); font-size:var(--text-xs); }
 .tw-back { display:inline-flex; align-items:center; min-height:44px; color:var(--violet-39); margin:0 0 12px; font-size:var(--text-sm); font-weight:650; text-underline-offset:4px; }
 .tw-back:hover { text-decoration:underline; }
-.tw-detail-shell .tw-heading { align-items:flex-end; }
-.tw-detail-shell .tw-heading h1 { font-size:clamp(28px,4vw,44px); max-width:900px; overflow-wrap:anywhere; }
-.tw-history-updated { display:grid; gap:10px; justify-items:end; flex-shrink:0; color:var(--violet-46); font-size:var(--text-xs); }
 .tw-detail-shell button,.tw-history-dates input,.tw-hourly select { border:1px solid var(--violet-81); border-radius:var(--radius-md); background:var(--white); color:var(--violet-32); padding:9px 13px; font-family:inherit; font-size:var(--text-xs); font-weight:600; line-height:1.5; }
 .tw-detail-shell button { cursor:pointer; min-height:40px; }
 .tw-detail-shell button:hover { background:var(--violet-92); }
@@ -74,25 +34,12 @@ body[data-page="twitch-game"] { --page-wash:var(--violet-88); --page-wash-soft:v
 .tw-history-stat strong { font-size:clamp(20px,2.4vw,29px); letter-spacing:-.04em; font-variant-numeric:tabular-nums; color:var(--violet-29); }
 .tw-history-stat small { font-size:var(--text-xs); color:var(--violet-52b); }
 .tw-detail-chart { margin:0 25px; }
-.tw-region-note { margin:0 0 22px; color:var(--violet-46); font-size:var(--text-xs); line-height:1.9; }
 .tw-scope-section { margin:0 0 26px; min-width:0; scroll-margin-top:110px; }
-.tw-scope-toolbar { position:sticky; top:86px; z-index:7; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:14px 20px; border:1px solid var(--violet-86); border-radius:var(--radius-md); background:var(--violet-96); margin:0 0 12px; }
-.tw-scope-toolbar h2 { margin:0; color:var(--violet-32); font-size:var(--text-lg); }
-.tw-scope-actions { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
 .tw-local-region { display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:var(--text-xs); color:var(--violet-46); }
 .tw-local-region select { font:inherit; color:var(--violet-32); background:var(--white); border:1px solid var(--violet-81); border-radius:var(--radius-md); min-height:42px; padding:8px 28px 8px 10px; max-width:100%; }
-.tw-region-compare { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; align-items:start; }
 .tw-region-panel { min-width:0; }
 .tw-region-caption { margin:0 0 10px; color:var(--violet-32); font-size:var(--text-md); }
 .tw-region-panel .tw-workspace { margin-top:0; }
-.tw-region-panel .tw-heat-overview { margin-bottom:0; }
-.tw-region-compare .tw-heat-stats,.tw-region-compare .tw-cooldown-summary,.tw-region-compare .tw-statistics-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
-.tw-region-compare .tw-heat-stat:last-child { grid-column:1 / -1; }
-.tw-region-compare .tw-chart-inspector { grid-template-columns:1fr; }
-.tw-region-compare .tw-chart-reading { grid-row:auto; }
-.tw-region-compare .tw-chart-status,.tw-region-compare .tw-chart-observed { text-align:left; }
-.tw-region-compare .tw-chart-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; }
-.tw-region-compare .tw-chart-metric:last-child { grid-column:1 / -1; }
 .tw-compare-table { border-collapse:collapse; width:100%; grid-column:1 / -1; font-size:var(--text-xs); font-variant-numeric:tabular-nums; }
 .tw-compare-table :is(th,td) { padding:12px 10px; text-align:right; border-bottom:1px solid var(--violet-92); overflow-wrap:anywhere; }
 .tw-compare-table th:first-child { text-align:left; }
@@ -102,16 +49,7 @@ body[data-page="twitch-game"] { --page-wash:var(--violet-88); --page-wash-soft:v
 .tw-trial-status { margin:0; padding:5px 25px 10px; color:var(--violet-40); font-size:var(--text-xs); line-height:1.7; }
 .tw-trial-results { padding:0 25px 15px; }
 .tw-trial-results:empty { padding-bottom:0; }
-.tw-trial-region { padding:14px 16px; border:1px solid var(--violet-86); border-radius:var(--radius-md); background:var(--white); min-width:0; }
-.tw-trial-region[data-region="zh"] { border-color:var(--teal-90); }
-.tw-trial-region .tw-region-caption { margin-bottom:5px; }
-.tw-trial-action { margin:0; color:var(--violet-29); font-size:var(--text-md); font-weight:700; }
-.tw-trial-reason { margin:4px 0 10px; color:var(--violet-36); font-size:var(--text-sm); line-height:1.65; }
 .tw-trial-coverage { display:flex; flex-wrap:wrap; gap:4px 10px; margin:10px 0 0; color:var(--violet-40); font-size:var(--text-xs); }
-.tw-rank-snapshot { margin-top:12px; border-top:1px solid var(--violet-92); }
-.tw-rank-tiers { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0 0; }
-.tw-rank-tiers dt { color:var(--violet-40); font-size:var(--text-xs); }
-.tw-rank-tiers dd { margin:3px 0 0; color:var(--violet-29); font-size:var(--text-md); font-weight:700; font-variant-numeric:tabular-nums; }
 #launchCurveStatus { padding-top:14px; }
 #launchCurveResults svg { display:block; width:100%; max-width:650px; margin:0 auto 12px; }
 #launchCurveResults svg text { font-size:var(--text-xs); fill:var(--violet-40); }
@@ -153,21 +91,12 @@ circle.tw-launch-peer { fill:var(--teal-45); }
 .tw-history-pagination { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:20px 25px; color:var(--violet-52b); font-size:var(--text-xs); }
 .tw-detail-method { margin:25px 4px; font-size:var(--text-xs); color:var(--violet-46); line-height:1.9; }
 @media(max-width:760px) {
-  .tw-scope-toolbar { top:124px; padding:12px 15px; }
-  .tw-region-compare { grid-template-columns:1fr; }
   .tw-trial-controls,.tw-trial-status,.tw-trial-results { padding-left:16px; padding-right:16px; }
   .tw-scope-section { scroll-margin-top:155px; }
-  .tw-scope-actions { width:100%; }
-  .tw-heat-overview { padding:18px 16px; }
-  .tw-heat-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .tw-heat-stat:last-child { grid-column:1 / -1; }
-  .tw-heat-stat strong { font-size:var(--text-lg); }
   .tw-history-resolution { margin-left:16px; margin-right:16px; }
   .tw-detail-chart .tw-chart-metrics { display:grid; width:100%; grid-template-columns:repeat(2,minmax(0,1fr)); }
   .tw-detail-chart .tw-chart-metric { font-size:var(--text-xs); min-height:44px; padding:8px 7px; }
   .tw-detail-chart .tw-chart-metric:last-child { grid-column:1 / -1; }
-  .tw-detail-shell .tw-heading { display:block; }
-  .tw-history-updated { display:flex; align-items:center; justify-content:space-between; margin-top:20px; }
   .tw-history-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .tw-history-controls { display:block; }
   .tw-history-dates { margin-top:16px; }

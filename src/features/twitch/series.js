@@ -74,20 +74,20 @@ export function overviewQuery(search) {
   const q = input.get('q')?.slice(0, 160);
   if (q) output.set('q', q);
   if (['signals', 'twitch_new', 'steam_recent', 'igdb', 'all'].includes(input.get('state'))) output.set('state', input.get('state'));
-  if (['median', 'viewers', 'streamers'].includes(input.get('sort'))) output.set('sort', input.get('sort'));
+  // The planning list sorts by advice, viewers or the recent change; the
+  // observation list by median, viewers or channels.
+  const sorts = input.get('view') === 'streamer' ? ['advice', 'viewers', 'change'] : ['median', 'viewers', 'streamers'];
+  if (sorts.includes(input.get('sort'))) output.set('sort', input.get('sort'));
   if (['global', 'zh', 'compare'].includes(input.get('region'))) output.set('region', input.get('region'));
   if (['global', 'zh', 'compare'].includes(input.get('archive_region'))) output.set('archive_region', input.get('archive_region'));
   const view = input.get('view');
   if (['archive', 'streamer'].includes(view)) output.set('view', view);
   if (view === 'streamer') {
-    const hour = input.get('stream_hour'), query = input.get('stream_q')?.slice(0, 160);
-    const date = input.get('stream_date');
-    const limit = Number(input.get('stream_limit'));
-    if (/^(?:[01]?\d|2[0-3])$/.test(hour || '')) output.set('stream_hour', hour);
+    const query = input.get('stream_q')?.slice(0, 160), date = input.get('stream_date'), group = input.get('group');
     if (Number.isFinite(dateStart(date))) output.set('stream_date', date);
-    if (Number.isSafeInteger(limit) && limit > 0) output.set('stream_limit', String(limit));
-    if (!output.has('region') && ['global', 'zh', 'compare'].includes(input.get('stream_region'))) output.set('region', input.get('stream_region'));
-    if (query) output.set('stream_q', query);
+    if (['hot', 'trial', 'horse', 'cooled', 'skip'].includes(group)) output.set('group', group);
+    if (!output.has('region') && ['global', 'zh'].includes(input.get('stream_region'))) output.set('region', input.get('stream_region'));
+    if (query && !output.has('q')) output.set('q', query);
   }
   if (['active', 'ended'].includes(input.get('archive_state'))) output.set('archive_state', input.get('archive_state'));
   if (['peak', 'records', 'name'].includes(input.get('archive_sort'))) output.set('archive_sort', input.get('archive_sort'));

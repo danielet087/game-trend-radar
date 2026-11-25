@@ -4,114 +4,128 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#e4dcf7">
-  <meta name="description" content="查看單款遊戲的 Twitch 歷史觀眾、開台數與篩選中位數，自訂日期、操作逐時趨勢並下載明細。">
-  <title>Twitch 歷史趨勢｜Game Trend Radar</title>
+  <meta name="description" content="單款遊戲現在還值不值得播：全球和中文區的建議、上市後每天的觀眾、接下來的預估，以及什麼時段開、大概排第幾。">
+  <title>Twitch 遊戲頁｜Game Trend Radar</title>
   <link rel="icon" id="siteFavicon" type="image/svg+xml">
   <link rel="preconnect" href="https://static-cdn.jtvnw.net">
-  <script type="module" crossorigin src="/game-trend-radar/assets/app/twitch-game-Bb1vFS2W.js"></script>
+  <script type="module" crossorigin src="/game-trend-radar/assets/app/twitch-game-CYflh6iH.js"></script>
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/rolldown-runtime-DK3Fl9T5.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/contracts-CXfvy2kB.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/storage-BxRXCfxq.js">
-  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-5M1ArWrM.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-Ck_7iuNE.js">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/bootstrap-oTuMO7h7.css">
-  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/twitch-game-DRUcfkMD.css">
-  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-CqaOuTaR.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/twitch-game-BkK768I4.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-DD39h6jP.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/styles-B-3qoBmv.css">
 </head>
 <body data-page="twitch-game">
   <a class="skip-link" href="#mainContent">跳到主要內容</a>
   <div id="siteHeader"></div>
-  <main class="page-shell twitch-shell tw-detail-shell" id="mainContent">
-    <a class="tw-back" id="historyBack" href="./twitch.html">← Twitch 新作觀測</a>
-    <section class="tw-heading" aria-labelledby="pageTitle">
-      <div>
-        <p class="tw-eyebrow">THE OBSERVATION ROOM / HISTORY</p>
-        <h1 id="pageTitle">遊戲歷史趨勢</h1>
-        <p class="tw-intro" id="historyCategory">全球直播熱度 · 逐時觀測</p>
-        <p class="tw-intro" id="historySpan">選擇時間範圍，追蹤一款遊戲被看見的過程。</p>
-        <a class="tw-statistics-jump" id="trialTimesJump" href="#trialTimes" hidden>比較試播時段 ↓</a>
-        <a class="tw-statistics-jump" id="historyCooldownJump" href="#historyCooldown" hidden>查看熱度退潮點 ↓</a>
-        <a class="tw-statistics-jump" id="historyStatisticsJump" href="#historyStatistics" hidden>查看統計分析 ↓</a>
+  <main class="page-shell twitch-shell tw-detail-shell tw-game" id="mainContent">
+    <header class="tw-game-head">
+      <div class="tw-game-title">
+        <a class="tw-back" id="historyBack" href="./twitch.html">← Twitch 新作觀測</a>
+        <h1 id="pageTitle">Twitch 遊戲頁</h1>
+        <p class="tw-game-meta" id="gameMeta"></p>
       </div>
-      <div class="tw-history-updated"><span id="historyUpdated"></span><button id="historyRefresh" type="button">重新載入 ↻</button></div>
-    </section>
-    <p class="tw-region-note">各區塊可獨立切換範圍；全球包含中文區。兩區比較會同時顯示數據，中文區未收集的時段保留空白。</p>
-    <section class="tw-scope-section" id="historyOverview" aria-labelledby="heatOverviewTitle" hidden>
-      <div class="tw-scope-toolbar"><h2 id="heatOverviewTitle">熱度摘要</h2><label class="tw-local-region">熱度摘要範圍 <select id="summaryRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label></div>
-      <div id="heatOverviewPanels"></div>
-    </section>
-    <section class="tw-scope-section" id="viewerRank" aria-labelledby="viewerRankTitle" hidden>
-      <div class="tw-scope-toolbar"><h2 id="viewerRankTitle">我大概排第幾？</h2><label class="tw-local-region">觀看範圍 <select id="viewerRankRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label></div>
-      <div class="tw-workspace tw-trial-workspace">
-        <div class="tw-trial-controls">
-          <label class="tw-local-region">平常同時觀眾 <select id="viewerRankAudience"><option value="30">30 人</option><option value="50" selected>50 人</option><option value="100">100 人</option></select></label>
-          <label class="tw-local-region">試播時段（台灣） <select id="viewerRankHour"></select></label>
+      <div class="tw-game-controls">
+        <div class="tw-region-toggle" id="pageRegion" role="group" aria-label="整頁的地區">
+          <button type="button" data-region="global" aria-pressed="true">全球</button>
+          <button type="button" data-region="zh" aria-pressed="false">中文區</button>
         </div>
-        <p class="tw-trial-status" id="viewerRankStatus" role="status"></p>
-        <div class="tw-trial-results" id="viewerRankResults" aria-live="polite"></div>
+        <button id="historyRefresh" type="button" class="tw-game-refresh">重新載入</button>
+        <span class="tw-game-updated" id="historyUpdated"></span>
       </div>
-    </section>
-    <section class="tw-scope-section" id="launchCurves" aria-labelledby="launchCurveTitle" hidden>
-      <div class="tw-scope-toolbar"><h2 id="launchCurveTitle">同類新作的上市曲線</h2><label class="tw-local-region">曲線範圍 <select id="launchCurveRegion"><option value="global">全球</option><option value="zh">中文區</option></select></label><label class="tw-local-region">遊戲類型 <select id="launchCurveGenre"></select></label></div>
-      <div class="tw-workspace tw-trial-workspace">
-        <p class="tw-trial-status" id="launchCurveStatus" role="status"></p>
-        <div class="tw-trial-results" id="launchCurveResults" aria-live="polite"></div>
-        <details class="tw-method"><summary>比較方式 <span aria-hidden="true">＋</span></summary><div><p>從上市時間起每 24 小時算一天，第 1 天是上市後 0～24 小時；上市前就已經有上市後首 24 小時中位數四分之一以上（至少 300 人）的觀眾、而且一路播到上市的（例如豪華版提前玩），從那時候起算。每日至少有 12 筆有效觀測才計算中位數。缺測日會中斷連續達標天數。門檻在圖內時以橘色虛線標示。</p><p>同類曲線採用本作開始前已量完首週、Steam 類型相同的作品。搶先體驗跟搶先體驗比；上市與結束搶先體驗的正式上市一起比。搶先體驗的遊戲正式上市後，改看正式上市這一次。</p></div></details>
-      </div>
-    </section>
-    <section class="tw-scope-section" id="trialTimes" aria-labelledby="trialTimeTitle" hidden>
-      <div class="tw-scope-toolbar"><h2 id="trialTimeTitle">比較試播時段</h2><label class="tw-local-region">試播時段範圍 <select id="trialRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label></div>
-      <div class="tw-workspace tw-trial-workspace">
-        <div class="tw-trial-controls">
-          <label class="tw-local-region">第一個時段 <select id="trialHourA"></select></label>
-          <label class="tw-local-region">第二個時段 <select id="trialHourB"></select></label>
+    </header>
+    <p class="tw-detail-status tw-game-status" id="gameStatus" role="status" aria-live="polite">正在讀取…</p>
+    <div class="tw-game-row">
+      <section class="tw-game-card tw-verdict" id="verdictPanel" aria-labelledby="verdictInfoTitle" hidden></section>
+      <section class="tw-game-card tw-daily" id="dailyPanel" aria-labelledby="dailyInfoTitle" hidden></section>
+    </div>
+    <div class="tw-game-row tw-game-pair">
+      <section class="tw-game-card tw-next" id="nextPanel" aria-labelledby="nextInfoTitle" hidden></section>
+      <section class="tw-game-card tw-slots" id="slotPanel" aria-labelledby="slotInfoTitle" hidden>
+        <div class="tw-info-anchor tw-game-card-head">
+          <h2 id="slotInfoTitle">什麼時候開</h2>
+          <button type="button" class="tw-info" aria-label="時段數字怎麼來" aria-expanded="false" aria-controls="slotInfo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5.5"></path><path d="M12 7.6v.1"></path></svg></button>
+          <div class="tw-info-note" id="slotInfo" role="note" hidden></div>
         </div>
-        <p class="tw-trial-status" id="trialTimeStatus" role="status"></p>
-        <div class="tw-trial-results" id="trialTimeResults" aria-live="polite"></div>
-        <details class="tw-method"><summary>比較方式 <span aria-hidden="true">＋</span></summary><div><p>使用最近 7 個完整台灣日，至少要有 3 天兩個時段都量到總觀眾與同時開台數。兩項數字各取這些日期的中位數，全球與中文區各自配對。缺測留空，實測 0 保留。有上市參考日時，從上市當天開始計算。</p><p>優先試播的時段需有觀眾，且常見觀眾較多或同時開台較少，另一項持平或較有利。配對日期中也要有過半數同時符合這些條件。</p></div></details>
-      </div>
-    </section>
-    <section class="tw-workspace" id="historyPanel" aria-labelledby="historyTitle" aria-busy="true">
-      <div class="tw-workspace-head tw-scope-toolbar"><div><span class="tw-section-no" aria-hidden="true">01</span><h2 id="historyTitle">歷史趨勢</h2></div><div class="tw-scope-actions"><label class="tw-local-region">歷史趨勢範圍 <select id="audienceRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label><button id="historyExport" type="button" disabled>下載此區間 CSV ↓</button></div></div>
-      <div class="tw-history-controls">
-        <div class="tw-history-presets" role="group" aria-label="歷史時間範圍">
-          <button type="button" data-history-range="24h" aria-pressed="false">24 小時</button>
-          <button type="button" data-history-range="7d" aria-pressed="true">7 天</button>
-          <button type="button" data-history-range="30d" aria-pressed="false">30 天</button>
+        <div class="tw-slot-controls">
+          <label>平常同時觀眾<select id="slotViewers"></select></label>
+          <label>開台時段<select id="slotStart" aria-label="開始"></select><span aria-hidden="true">～</span><select id="slotEnd" aria-label="結束"></select></label>
+          <label>比較<select id="slotCompare"></select></label>
         </div>
-        <form id="historyDates" class="tw-history-dates">
-          <label>開始日期<input id="historyStart" type="date" required></label>
-          <span aria-hidden="true">—</span>
-          <label>結束日期<input id="historyEnd" type="date" required></label>
-          <button type="submit">套用日期</button>
-        </form>
-      </div>
-      <p id="historyStatus" class="tw-detail-status" role="status" aria-live="polite">正在讀取逐時歷史…</p>
-      <div id="historyContent" hidden>
-        <p id="historyRangeLabel" class="tw-history-range-label"></p>
-        <div id="historyResolution" class="tw-history-resolution" role="group" aria-label="圖表粒度" hidden>
-          <span>總觀眾趨勢</span><button type="button" data-history-resolution="daily" aria-pressed="true">每日中位數</button><button type="button" data-history-resolution="hourly" aria-pressed="false">逐時數值</button>
-        </div>
-        <div id="historyChart" class="tw-detail-chart"></div>
-        <p id="historyChartNote" class="tw-detail-note"></p>
-        <div id="historySummary" class="tw-history-stats" aria-label="所選指標的逐時區間統計"></div>
-        <p class="tw-detail-note">平均值僅計有效時段。無收集紀錄、未列入觀測與中位數待補均保留空白；未列入不代表觀眾為 0。自訂日期最多 31 天，可查詢更早的已保存紀錄。</p>
-        <details class="tw-hourly">
-          <summary>逐時明細 <span>查看數值與缺測狀態</span></summary>
-          <div class="tw-hourly-tools"><p>點選時間可在圖表查看該時段。</p><label>時間排序 <select id="historyOrder"><option value="desc">由新到舊</option><option value="asc">由舊到新</option></select></label></div>
-          <div class="tw-hourly-scroll" tabindex="0" role="region" aria-label="可橫向捲動的逐時明細表">
-            <table><thead><tr><th scope="col">時段（台灣）</th><th scope="col">總觀眾</th><th scope="col">開台數</th><th scope="col">單台觀眾中位數</th><th scope="col">目前指標狀態</th></tr></thead><tbody id="historyTableBody"></tbody></table>
-          </div>
-          <div class="tw-history-pagination"><button id="historyPrevious" type="button">← 上一頁</button><span id="historyPagination"></span><button id="historyNext" type="button">下一頁 →</button></div>
+        <div class="tw-slot-tiles" id="slotTiles"></div>
+        <p class="tw-slot-rank" id="slotRank" aria-live="polite"></p>
+        <p class="tw-slot-status" id="slotStatus" role="status"></p>
+      </section>
+    </div>
+    <section class="tw-game-more" aria-labelledby="moreTitle">
+      <h2 id="moreTitle">詳細數據</h2>
+      <div class="tw-more-grid">
+        <details class="tw-more" id="moreHistory">
+          <summary><strong>每天與每小時的走勢</strong><span>24 小時、7 天、30 天，可下載 CSV</span></summary>
+          <section class="tw-workspace" id="historyPanel" aria-labelledby="historyTitle" aria-busy="true">
+            <div class="tw-workspace-head"><h3 id="historyTitle">走勢</h3><button id="historyExport" type="button" disabled>下載此區間 CSV ↓</button></div>
+            <div class="tw-history-controls">
+              <div class="tw-history-presets" role="group" aria-label="歷史時間範圍">
+                <button type="button" data-history-range="24h" aria-pressed="false">24 小時</button>
+                <button type="button" data-history-range="7d" aria-pressed="true">7 天</button>
+                <button type="button" data-history-range="30d" aria-pressed="false">30 天</button>
+              </div>
+              <form id="historyDates" class="tw-history-dates">
+                <label>開始日期<input id="historyStart" type="date" required></label>
+                <span aria-hidden="true">—</span>
+                <label>結束日期<input id="historyEnd" type="date" required></label>
+                <button type="submit">套用日期</button>
+              </form>
+            </div>
+            <p id="historyStatus" class="tw-detail-status" role="status" aria-live="polite">正在讀取逐時歷史…</p>
+            <div id="historyContent" hidden>
+              <p id="historyRangeLabel" class="tw-history-range-label"></p>
+              <div id="historyResolution" class="tw-history-resolution" role="group" aria-label="圖表粒度" hidden>
+                <span>總觀眾趨勢</span><button type="button" data-history-resolution="daily" aria-pressed="true">每天</button><button type="button" data-history-resolution="hourly" aria-pressed="false">每小時</button>
+              </div>
+              <div id="historyChart" class="tw-detail-chart"></div>
+              <p id="historyChartNote" class="tw-detail-note"></p>
+              <div id="historySummary" class="tw-history-stats" aria-label="所選指標的逐時區間統計"></div>
+              <p class="tw-detail-note">平均只算有紀錄的小時。沒收集、沒列入觀測和待補的小時留空；沒列入不代表 0 人。自訂日期最多 31 天。</p>
+              <details class="tw-hourly">
+                <summary>每小時明細 <span>數字與缺資料的小時</span></summary>
+                <div class="tw-hourly-tools"><p>點時間可在圖上看那個小時。</p><label>時間排序 <select id="historyOrder"><option value="desc">由新到舊</option><option value="asc">由舊到新</option></select></label></div>
+                <div class="tw-hourly-scroll" tabindex="0" role="region" aria-label="可橫向捲動的逐時明細表">
+                  <table><thead><tr><th scope="col">時段（台灣）</th><th scope="col">總觀眾</th><th scope="col">開台數</th><th scope="col">單台觀眾中位數</th><th scope="col">目前指標狀態</th></tr></thead><tbody id="historyTableBody"></tbody></table>
+                </div>
+                <div class="tw-history-pagination"><button id="historyPrevious" type="button">← 上一頁</button><span id="historyPagination"></span><button id="historyNext" type="button">下一頁 →</button></div>
+              </details>
+              <div id="remainingTrend"></div>
+            </div>
+          </section>
+        </details>
+        <details class="tw-more" id="moreCooldown">
+          <summary><strong>退燒怎麼判定的</strong><span>每天有沒有過熱門線、高峰後掉了多少</span></summary>
+          <section class="tw-scope-section" id="historyCooldown" aria-label="熱度退潮時間點" hidden><div id="cooldownPanels"></div></section>
+        </details>
+        <details class="tw-more" id="moreStatistics">
+          <summary><strong>統計分析</strong><span>常見熱度、熱門時段、觀看與開台</span></summary>
+          <section class="tw-scope-section" id="historyStatistics" aria-label="補充統計分析" hidden><div id="statisticsPanels"></div></section>
+        </details>
+        <details class="tw-more" id="moreCurves" hidden>
+          <summary><strong id="launchCurveTitle">同類新作的上市曲線</strong><span>首週每天跟同類比</span></summary>
+          <section class="tw-scope-section" id="launchCurves" aria-labelledby="launchCurveTitle" hidden>
+            <div class="tw-workspace tw-trial-workspace">
+              <div class="tw-trial-controls"><label class="tw-local-region">遊戲類型 <select id="launchCurveGenre"></select></label></div>
+              <p class="tw-trial-status" id="launchCurveStatus" role="status"></p>
+              <div class="tw-trial-results" id="launchCurveResults" aria-live="polite"></div>
+              <details class="tw-method"><summary>比較方式 <span aria-hidden="true">＋</span></summary><div><p>從上市時間起每 24 小時算一天，第 1 天是上市後 0～24 小時；上市前就已經有上市後首 24 小時中位數四分之一以上（至少 300 人）的觀眾、而且一路播到上市的（例如豪華版提前玩），從那時候起算。每日至少有 12 筆有效觀測才計算中位數。缺測日會中斷連續達標天數。門檻在圖內時以橘色虛線標示。</p><p>同類曲線採用本作開始前已量完首週、Steam 類型相同的作品。搶先體驗跟搶先體驗比；上市與結束搶先體驗的正式上市一起比。搶先體驗的遊戲正式上市後，改看正式上市這一次。</p></div></details>
+            </div>
+          </section>
         </details>
       </div>
     </section>
-    <section class="tw-scope-section" id="historyCooldown" aria-label="熱度退潮時間點" hidden><div class="tw-scope-toolbar"><h2>退燒與高峰衰退</h2><label class="tw-local-region">退燒判定範圍 <select id="cooldownRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label></div><div id="cooldownPanels"></div></section>
-    <section class="tw-scope-section" id="historyStatistics" aria-label="補充統計分析" hidden><div class="tw-scope-toolbar"><h2>統計分析</h2><label class="tw-local-region">統計分析範圍 <select id="statisticsRegion"><option value="global">全球</option><option value="zh">中文區</option><option value="compare">兩區比較</option></select></label></div><p class="tw-detail-note" id="statisticsCompareNote" hidden>比較模式會同步分析方式、指標與門檻；各區統計圖依自己的資料設定刻度，請配合軸上數值閱讀。</p><div id="statisticsPanels"></div></section>
-    <p class="tw-detail-method">總觀眾與開台數涵蓋所選語言區域的全部頻道。篩選中位數只計免費追隨者 &gt; 1,000 且觀眾 ≥ 10 的頻道；追隨數待查時不顯示中位數，舊紀錄不回算新規則。所有時間以台灣時間顯示。</p>
-    <noscript>請啟用 JavaScript 以查看和操作歷史資料。</noscript>
+    <p class="tw-detail-method">總觀眾與開台數涵蓋所選地區的全部頻道。單台觀眾中位數只算免費追隨者超過 1,000、觀眾 10 人以上的頻道。時間都是台灣時間。</p>
+    <noscript>請啟用 JavaScript 以查看這款遊戲的資料。</noscript>
   </main>
   <div id="siteFooter"></div>
 </body>
 </html>
-

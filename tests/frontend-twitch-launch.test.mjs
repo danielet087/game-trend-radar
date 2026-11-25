@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { dateStart } from '../src/features/twitch/series.js';
 import { LAUNCH_RULES, launchAdvice, launchDays, launchInstant, steamAppOf } from '../src/features/twitch/launch-model.js';
 import { launchAdviceShort, launchAdviceText, launchFlagShort, launchFlagText } from '../src/features/twitch/launch-advice.js';
-import { streamerAdvice } from '../src/features/twitch/heat-overview.js';
+import { globalVerdict } from '../src/features/twitch/trend-verdict.js';
 import { analyzeStreamHeat } from '../src/features/twitch/stream-heat-model.js';
 
 const HOUR = 3600000, DAY = 24 * HOUR;
@@ -101,15 +101,14 @@ test('advice and labels read in Traditional Chinese with 1-based launch days', (
   assert.deepEqual(launchFlagShort({ kind: 'burning', ratio: 11.5, day: 7 }), { label: '延燒中', text: '第 8 天是首日 11.5 倍' });
 });
 
-test('the game page uses the launch rules only for games never popular worldwide', () => {
-  const now = Date.parse('2026-11-08T12:00:00+08:00');
-  const data = { points: [{ hour: iso(now - HOUR), raw: 120 }], settings: { maxMissingHours: 12, threshold: 3000, confirmDays: 3 },
-    latest: { lowDays: 0 } };
+test('the verdicts use the launch rules only for games never popular worldwide', () => {
+  const days = [{ complete: true }];
   const launch = { stage: 'trial', basis: 'latest_day', first: 400, third: 250, trend: 'holding', latest: { index: 2, median: 250 }, darkHorse: null };
-  assert.deepEqual(streamerAdvice({ data, status: 'not_popular', launch: { ...launch, small: true } }, now),
-    ['值得試播一場', '上市第 3 天中位數 250 人；第 3 天還有首日的 63%，觀眾還在。', 'launch']);
-  assert.equal(streamerAdvice({ data, status: 'not_popular', launch: { ...launch, small: false } }, now)[0], '先試播一場');
-  assert.equal(streamerAdvice({ data, status: 'not_popular' }, now)[0], '先試播一場');
+  const small = { popularAt: null, days, outlook: { signal: 'low', comparison: null, latest: { date: '2026-11-07', median: 250 } } };
+  assert.deepEqual(globalVerdict(small, { ...launch, small: true }), { group: 'trial', label: '值得試播', headline: '值得試播一場',
+    reason: '上市第 3 天約 250 人，第 3 天還有首日的 63%，觀眾還在。' });
+  const popular = { ...small, popularAt: '2026-11-05T16:00:00Z', outlook: { ...small.outlook, signal: 'hot', latest: { date: '2026-11-07', median: 4000 } } };
+  assert.equal(globalVerdict(popular, { ...launch, small: false }).label, '還很熱');
 });
 
 test('a first rise above the trend floor is an ordinary rise, not a separate label', () => {

@@ -1,85 +1,55 @@
 import { RadarStorage } from '../../data/storage.ts';
 import { RadarData } from '../../domain/index.mjs';
 import { archiveGames, selectArchive } from './archive-model.js';
-import { regionNames, regionOf } from './audience-region.js';
+import { regionOf } from './audience-region.js';
 import { steamStoreLinks } from './identity.js';
 import { canonicalID, HOUR } from './metrics.js';
-import { filterNames, fmt, node, time } from './presentation.js';
-import { projectRows, regionsFor } from './region-views.js';
+import { node } from './presentation.js';
+import { projectRows } from './region-views.js';
 import { dateStart, dayOf, detailHref, fullSeriesRows, heatPath, validChunk, validHeatChunk, validIndex } from './series.js';
-import { analyzeStreamHeat, streamHeatDate, streamHeatThrough, STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS, STREAM_HEAT_WEEK, MIN_PAIRED_HEAT_HOURS } from './stream-heat-model.js';
+import { analyzeStreamHeat, streamHeatDate, streamHeatThrough, STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS } from './stream-heat-model.js';
 import { CHINESE_DAILY_HEAT_HITS, PEAK_COOLDOWN, cooldownThreshold } from './cooldown-model.js';
-import { selectObservation } from './selection.js';
-import { createTwitchState, createTwitchURLState, OBSERVATION_PAGE_SIZE } from './state.js';
+import { select } from './selection.js';
 import { latestHistorySnapshot } from './history.js';
 import { readCurrentTwitchSnapshot, readPublishedJSON } from './load.js';
 import { normalize } from './snapshot.js';
 import { publicCatalog } from './model.js';
 import { forecastModel, launchAdvice, launchAnchor, launchDays, launchForecast, steamAppOf } from './launch-model.js';
-import { launchLine, launchPeakText, launchPeaks } from './launches.js';
-import { LAUNCH_RULE_TEXT, PEER_RULE_TEXT, forecastRuleText, launchAdviceShort, launchFlagShort, launchForecastShort, launchPeerShort } from './launch-advice.js';
+import { launchPeaks } from './launches.js';
+import { LAUNCH_RULE_TEXT, PEER_RULE_TEXT, forecastRuleText } from './launch-advice.js';
 import { validCurves } from './launch-curves.js';
+import { formatCount as fmt } from './number-format.js';
+import { bindInfoNotes, infoHeading } from './info-notes.js';
+import { GROUP_ORDER, VERDICT_GROUPS, chineseVerdict, combineVerdicts, extraLines, globalVerdict, launchMeta, regionChipText, regionTile,
+  shortDate, sortEntries } from './trend-verdict.js';
 
-const comparisonRegions = regionsFor('compare');
-const shortDate = date => date.slice(5).replace('-', '/');
-const signalLabels = {
-  hot:'有熱度', sporadic:'零星有熱度', low:'熱度偏低',
-  cooled:'已退燒', suspected:'降溫觀察', recovered:'熱度回升', insufficient:'資料不足',
-  rising:'回到高檔',
+const REGIONS = ['global', 'zh'];
+const REGION_NAMES = { global: '全球', zh: '中文區' };
+const SORTS = ['advice', 'viewers', 'change'];
+const SOURCES = ['signals', 'twitch_new', 'steam_recent', 'igdb', 'all'];
+const CONCURRENCY = 6;
+// A group shows its first cards; the rest open with a button.
+const GROUP_PREVIEW = 6;
+const clock = new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+const updatedAt = value => Number.isFinite(Date.parse(value)) ? clock.format(new Date(value)).replace(/\s+/, ' ') : '';
+const hot = fmt(cooldownThreshold('global')), zhLine = fmt(cooldownThreshold('zh')), hours = CHINESE_DAILY_HEAT_HITS;
+const GROUP_INFO = {
+  hot: [`全球：每天 ${hot} 人以上，還沒退燒。`, `中文區：一天裡至少 ${hours} 個小時有 ${zhLine} 人以上在看。`],
+  trial: [`小遊戲（每天沒到過 ${hot} 人）看全球觀眾：首 24 小時 300 人以上、最近一天還有 200 人以上。`,
+    '還沒滿 3 天的新遊戲先放這裡，等第 3 天再確認。'],
+  horse: ['小遊戲上市第 3 天（48～72 小時）不比首日少、最近一天也不比首日少；一週後還是首日的 2 倍以上叫「延燒中」。'],
+  cooled: [`到過每天 ${hot} 人後，連續 3 天低於 ${hot} 人；或高峰到過 ${fmt(PEAK_COOLDOWN.minPeak)} 人後，連續 3 天低於自己高峰的 ${Math.round(PEAK_COOLDOWN.share * 100)}%。`,
+    `中文區的熱門線是「一天裡有 ${hours} 個小時 ${zhLine} 人以上」。`],
+  skip: ['小遊戲首 24 小時不到 300 人，或最近一天不到 200 人。', `中文區：最近一天不到 ${hours} 個小時過 ${zhLine} 人。`],
+};
+const REST = {
+  skip: { title: '先不用排', reason: { global: '首日不到 300 人或最近一天不到 200 人。', zh: `中文區最近一天不到 ${hours} 個小時過 ${zhLine} 人。` } },
+  unknown: { title: '還不能判斷', reason: { global: '剛開始記錄或最近缺資料，滿一天後再看。', zh: '中文區剛開始記錄或最近缺資料，滿一天後再看。' } },
+  none: { title: '沒有每小時紀錄', reason: { global: '只有目前的觀眾，不列入建議。', zh: '只有目前的觀眾，不列入建議。' } },
 };
 
-function heatHref(id, date, record) {
-  const back = new URLSearchParams(location.search);
-  back.set('view', 'streamer');
-  const url = new URL(detailHref(id, back), location.href);
-  url.searchParams.set('region', 'compare');
-  const start = dateStart(date);
-  if (Date.parse(record?.first_hour) < start + 24 * HOUR && Date.parse(record?.last_hour) >= start) {
-    url.searchParams.set('range', 'custom');
-    url.searchParams.set('start', date);
-    url.searchParams.set('end', date);
-  }
-  return url.href;
-}
-
-function renderMetrics({ previous, recent, change }, region) {
-  const metrics = node('dl', 'tw-stream-metrics');
-  const absolute = change === null || (region === 'zh' && previous < STREAM_HEAT_FLOORS.zh);
-  const delta = Math.round((absolute ? recent - previous : change) * 10) / 10 || 0;
-  const rows = [
-    [`前 ${STREAM_HEAT_DAYS} 日`, `${fmt(previous)} 人`],
-    [`近 ${STREAM_HEAT_DAYS} 日`, `${fmt(recent)} 人`],
-    ['變化', `${delta > 0 ? '+' : ''}${fmt(delta)}${absolute ? ' 人' : '%'}`],
-  ];
-  for (const [label, value] of rows) {
-    const metric = node('div');
-    if (label === '變化') metric.dataset.direction = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
-    metric.append(node('dt', '', label), node('dd', '', value));
-    metrics.append(metric);
-  }
-  return metrics;
-}
-
-function dailyEvidence(day, region) {
-  const latest = day.outlook.latest;
-  if (region === 'global') {
-    if (latest) return `${shortDate(latest.date)} 日中位數 ${fmt(latest.median)} 人 · 有效 ${latest.validHours}/24`;
-    return day.validHours ? `${shortDate(day.date)} · 有效 ${day.validHours}/24` : '';
-  }
-  const sample = day.validHours || !latest ? day : {
-    date:latest.date, hits:latest.thresholdHits, validHours:latest.validHours,
-  };
-  const gap = sample.signal === 'insufficient' ? ' · 資料不足' : '';
-  return `${shortDate(sample.date)} · ${sample.hits} 次達 ${fmt(day.threshold)} 人 · 有效 ${sample.validHours}/24${gap}`;
-}
-
-function weeklyEvidence({ total, hot, unknown }) {
-  if (unknown === total) return `近 ${total} 日無可判定資料`;
-  return `近 ${total} 日有 ${hot} 天達標${unknown ? ` · ${unknown} 天不明` : ''}`;
-}
-
 async function read(path, validate, force) {
-  const result = await RadarStorage.readJSONResult(path, validate, { force, allowStale:false });
+  const result = await RadarStorage.readJSONResult(path, validate, { force, allowStale: false });
   if (!result.data) throw new Error('觀測資料暫時無法讀取');
   return result.data;
 }
@@ -101,20 +71,63 @@ async function readHistoricalPlanningSnapshot(date) {
     readPublishedJSON('./data/catalog.json', true).catch(() => null),
   ]);
   if (!latest) return null;
-  const snapshot = normalize({ ...latest, schema_version:2, candidate_games:latest.games });
+  const snapshot = normalize({ ...latest, schema_version: 2, candidate_games: latest.games });
   // The current catalog only resolves links to game pages.
-  return { ...snapshot, public_catalog:publicCatalog(catalog) };
+  return { ...snapshot, public_catalog: publicCatalog(catalog) };
+}
+
+function initials(name) {
+  const text = String(name || '').trim();
+  if (/^[㐀-鿿]/.test(text)) return text[0];
+  return text.split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0].toUpperCase()).join('') || '?';
+}
+
+function cover(game) {
+  if (game.box_art_url) {
+    const image = node('img', 'tw-plan-cover');
+    image.src = game.box_art_url; image.alt = ''; image.width = 44; image.height = 58;
+    image.loading = 'lazy'; image.decoding = 'async';
+    return image;
+  }
+  const box = node('div', 'tw-plan-cover', initials(game.game_name));
+  box.setAttribute('aria-hidden', 'true');
+  return box;
+}
+
+function chip(verdict, label = verdict.label, className = '') {
+  const element = node('span', `tw-verdict-chip ${className}`.trim(), label);
+  element.dataset.group = verdict.group;
+  return element;
+}
+
+function tile(region, value) {
+  const box = node('div', 'tw-plan-tile');
+  box.dataset.region = region;
+  box.append(node('span', 'tw-plan-tile-label', `${REGION_NAMES[region]}・每天`), node('strong', '', value?.value ?? '—'));
+  const trend = node('span', 'tw-plan-trend', value?.trend ?? '');
+  if (value?.direction) trend.dataset.direction = value.direction;
+  box.append(trend);
+  if (value?.spark) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 120 32'); svg.setAttribute('aria-hidden', 'true'); svg.classList.add('tw-spark');
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    line.setAttribute('points', value.spark);
+    svg.append(line); box.append(svg);
+  }
+  return box;
 }
 
 export function initStreamPlanningPage() {
   const $ = id => document.getElementById(id);
   const events = new AbortController(), { signal } = events;
-  const state = createTwitchState(), { urlState, syncURL } = createTwitchURLState(state, $);
-  const query = $('streamGameSearch'), dateInput = $('streamDate');
-  const status = $('streamPlanStatus'), results = $('streamTrendResults'), matches = $('streamGameMatches');
-  const refresh = $('streamRefresh'), more = $('streamLoadMore');
-  const sort = $('gameSort'), region = $('audienceRegion'), sources = $('streamSource'), search = $('gameSearch');
-  let loaded = null, source = null, snapshot = null, request = 0, selectedDate = null, searchTimer;
+  const status = $('streamPlanStatus'), results = $('streamTrendResults'), dateInput = $('streamDate');
+  const search = $('gameSearch'), sortSelect = $('gameSort'), regionSelect = $('audienceRegion'), sourceSelect = $('streamSource');
+  const refresh = $('streamRefresh'), filters = $('planFilters'), filterToggle = $('planFilterToggle');
+  const archiveBox = $('streamArchiveMatches'), archiveMatches = $('streamGameMatches');
+  let source = null, snapshot = null, request = 0, selectedDate = null, searchTimer, frame = 0;
+  let entries = [], loaded = null, data = null, group = 'all', done = 0;
+  const expanded = new Set();
+  bindInfoNotes($('streamPlanning'), signal);
 
   function getSnapshot(date, today, force) {
     if (!force && snapshot?.date === date) return snapshot.promise;
@@ -125,161 +138,194 @@ export function initStreamPlanningPage() {
     return promise;
   }
 
-  const chineseThreshold = fmt(cooldownThreshold('zh')), hits = CHINESE_DAILY_HEAT_HITS;
   $('streamTrendRule').textContent = `比較前後各 ${STREAM_HEAT_DAYS} 個已結束日。最近一天和近 ${STREAM_HEAT_DAYS} 日裡至少 2 天，`
     + `比前 ${STREAM_HEAT_DAYS} 日高 1.5 倍以上（且有全球 ${fmt(STREAM_HEAT_FLOORS.global)} 人或中文區 ${fmt(STREAM_HEAT_FLOORS.zh)} 人），標示「回到高檔」：熱度回來了，但不代表還會繼續漲。`
     + `近 ${STREAM_HEAT_DAYS} 日的跌幅只列數字、不標示：新遊戲本來就會一直掉，跌了也不代表之後掉得更多。`;
-  $('streamDailyRule').textContent = `中文區達 ${chineseThreshold} 人至少 ${hits} 次為「有熱度」，1–${hits - 1} 次為「零星有熱度」，0 次為「熱度偏低」。缺測可能改變是否達到 ${hits} 次時顯示「資料不足」。`;
-  $('streamGlobalRule').textContent = `全球用每日觀眾中位數，熱度門檻為 ${fmt(cooldownThreshold('global'))} 人；`
-    + `高峰到過 ${fmt(PEAK_COOLDOWN.minPeak)} 人的遊戲，連續 ${PEAK_COOLDOWN.confirmDays} 個可判定日低於自己高峰的 ${Math.round(PEAK_COOLDOWN.share * 100)}%，也算已退燒。`
-    + `中文區趨勢用每日第 ${hits} 高觀眾數。趨勢比較每日至少需 12 筆有效觀測。`;
+  $('streamDailyRule').textContent = `中文區一天裡有 ${hours} 個小時達 ${zhLine} 人為「有熱度」，1–${hours - 1} 個小時為「零星有熱度」，0 個小時為「熱度偏低」。缺資料可能改變是否達到 ${hours} 個小時時，先不判斷。`;
+  $('streamGlobalRule').textContent = `全球用每天每小時觀眾的中間值，熱門線 ${hot} 人；`
+    + `高峰到過 ${fmt(PEAK_COOLDOWN.minPeak)} 人的遊戲，連續 ${PEAK_COOLDOWN.confirmDays} 個完整日低於自己高峰的 ${Math.round(PEAK_COOLDOWN.share * 100)}%，也算已退燒。`
+    + `中文區每天的數字取一天裡第 ${hours} 多人的那一小時。每天至少要有 12 個小時的紀錄才算數。`;
   $('streamLaunchRule').textContent = LAUNCH_RULE_TEXT;
   $('streamPeerRule').textContent = PEER_RULE_TEXT;
-  $('streamWeekRule').textContent = `達標天數取最近 ${STREAM_HEAT_WEEK} 個已結束日，從有觀測的日期起算。今日觀眾與過去 ${STREAM_HEAT_WEEK} 日同時段比較，至少配對 ${MIN_PAIRED_HEAT_HOURS} 個時段才顯示明顯變動。`;
+
+  function heatHref(id, date, record) {
+    const back = new URLSearchParams(location.search);
+    back.set('view', 'streamer');
+    const url = new URL(detailHref(id, back), location.href);
+    url.searchParams.set('region', regionSelect.value);
+    const start = dateStart(date);
+    if (Date.parse(record?.first_hour) < start + 24 * HOUR && Date.parse(record?.last_hour) >= start) {
+      url.searchParams.set('range', 'custom');
+      url.searchParams.set('start', date);
+      url.searchParams.set('end', date);
+    }
+    return url.href;
+  }
 
   function saveURL() {
     const url = new URL(location.href);
-    const term = query.value.trim();
-    if (term) url.searchParams.set('stream_q', term);
-    else url.searchParams.delete('stream_q');
-    if (selectedDate) url.searchParams.set('stream_date', selectedDate);
-    else url.searchParams.delete('stream_date');
-    if (state.limit > OBSERVATION_PAGE_SIZE) url.searchParams.set('stream_limit', String(state.limit));
-    else url.searchParams.delete('stream_limit');
+    for (const [key, value, fallback] of [['q', search.value.trim(), ''], ['state', sourceSelect.value, 'signals'],
+      ['sort', sortSelect.value, 'advice'], ['region', regionSelect.value, 'global'], ['group', group, 'all']]) {
+      if (value === fallback) url.searchParams.delete(key); else url.searchParams.set(key, value);
+    }
+    for (const key of ['stream_q', 'stream_limit', 'stream_hour', 'stream_region']) url.searchParams.delete(key);
+    if (selectedDate) url.searchParams.set('stream_date', selectedDate); else url.searchParams.delete('stream_date');
     history.replaceState(null, '', url);
   }
 
-  function renderSearch() {
-    const term = query.value.trim();
-    if (!term) {
-      matches.replaceChildren();
-      return;
+  function buildCard(entry, region) {
+    const { game } = entry, combined = combineVerdicts(entry.verdicts, region), main = combined.main;
+    const card = node('article', 'tw-plan-card');
+    card.dataset.game = game.game_id; card.dataset.group = main.group; card.dataset.split = String(combined.split);
+    const head = node('div', 'tw-plan-game'), name = node('div', 'tw-plan-name'), titleRow = node('div', 'tw-plan-title-row');
+    titleRow.append(node('h3', '', game.game_name));
+    titleRow.append(combined.split ? node('span', 'tw-split-chip', '兩區不同') : chip(main, main.label, 'tw-chip-inline'));
+    name.append(titleRow);
+    if (entry.meta) name.append(node('span', 'tw-plan-meta', entry.meta));
+    head.append(cover(game), name);
+    const advice = node('div', 'tw-plan-advice');
+    if (combined.split) {
+      advice.append(node('span', 'tw-split-label', '兩區建議不同'));
+      for (const key of [region, REGIONS.find(other => other !== region)]) {
+        const verdict = entry.verdicts[key], row = node('div', 'tw-plan-region');
+        row.dataset.region = key;
+        row.append(node('span', 'tw-plan-region-name', REGION_NAMES[key]), chip(verdict, regionChipText(verdict)),
+          node('p', 'tw-plan-why', verdict.reason));
+        advice.append(row);
+      }
+    } else {
+      advice.append(chip(main, main.label, 'tw-chip-advice'), node('p', 'tw-plan-reason', combined.reason));
     }
-    if (!loaded) {
-      matches.replaceChildren(node('p', 'tw-stream-muted', '歷史搜尋暫無資料，可重新讀取。'));
-      return;
+    if (entry.extras.length) {
+      const extra = node('div', 'tw-plan-extra');
+      extra.append(...entry.extras.map(line => node('p', '', line)));
+      advice.append(extra);
     }
-    const games = selectArchive(loaded.games, { query:term, filter:'all', sort:'recent' }).slice(0, 6);
-    if (!games.length) {
-      matches.replaceChildren(node('p', 'tw-stream-muted', '找不到遊戲，試試英文名稱或遊戲 ID。'));
-      return;
+    const links = node('div', 'tw-plan-links');
+    const profile = profileLink(entry);
+    if (profile) links.append(profile);
+    if (entry.href) {
+      const analysis = node('a', 'tw-plan-action', '詳細分析');
+      analysis.href = entry.href;
+      analysis.setAttribute('aria-label', `詳細分析（${game.game_name}）`);
+      links.append(analysis);
     }
-    matches.replaceChildren(...games.map(game => {
-      const link = node('a', 'tw-stream-match');
+    card.append(head, advice, tile('global', entry.tiles.global), tile('zh', entry.tiles.zh), links);
+    return card;
+  }
+
+  function cardFor(entry, region) {
+    entry.cards ||= {};
+    if (!entry.cards[region]) entry.cards[region] = buildCard(entry, region);
+    return entry.cards[region];
+  }
+
+  function plainRow(entry) {
+    const row = node('article', 'tw-plan-card tw-plan-plain');
+    row.dataset.game = entry.game.game_id; row.dataset.group = entry.state;
+    const head = node('div', 'tw-plan-game'), name = node('div', 'tw-plan-name');
+    name.append(node('h3', '', entry.game.game_name), node('span', 'tw-plan-meta', entry.state === 'loading' ? '判斷中…' : entry.message ?? ''));
+    head.append(cover(entry.game), name);
+    row.append(head);
+    const profile = profileLink(entry);
+    if (profile) {
+      const links = node('div', 'tw-plan-links');
+      links.append(profile);
+      row.append(links);
+    }
+    return row;
+  }
+
+  function groupSection(key, list, region) {
+    const section = node('section', 'tw-plan-group');
+    section.dataset.group = key;
+    const { wrap, heading } = infoHeading('h2', VERDICT_GROUPS[key], { id: `group-${key}-info`, label: `${VERDICT_GROUPS[key]}的標準`,
+      lines: GROUP_INFO[key], className: 'tw-plan-group-head' });
+    section.setAttribute('aria-labelledby', heading.id);
+    const open = expanded.has(key) || group !== 'all', shown = open ? list : list.slice(0, GROUP_PREVIEW);
+    section.append(wrap, ...shown.map(entry => cardFor(entry, region)));
+    if (shown.length < list.length) {
+      const more = node('button', 'tw-plan-show', `再看 ${list.length - shown.length} 款${VERDICT_GROUPS[key]} ↓`);
+      more.type = 'button';
+      more.addEventListener('click', () => { expanded.add(key); render(); });
+      section.append(more);
+    }
+    return section;
+  }
+
+  function restBox(key, list, region) {
+    const box = node('details', 'tw-plan-more');
+    box.dataset.group = key;
+    const summary = node('summary'), names = list.slice(0, 3).map(entry => entry.game.game_name).join('、');
+    summary.append(node('strong', '', REST[key].title),
+      node('span', '', `${names}${list.length > 3 ? ` 等 ${list.length} 款` : ''}：${REST[key].reason[region]}`));
+    box.append(summary, ...list.map(entry => key === 'none' ? plainRow(entry) : cardFor(entry, region)));
+    return box;
+  }
+
+  function visibleIds() {
+    if (!data) return new Set();
+    return new Set(select(data.games, { query: search.value, filter: sourceSelect.value, sort: 'viewers' }).map(game => game.game_id));
+  }
+
+  function renderArchive(shown) {
+    const term = search.value.trim();
+    if (!term || !loaded) { archiveBox.hidden = true; archiveMatches.replaceChildren(); return; }
+    const games = selectArchive(loaded.games, { query: term, filter: 'all', sort: 'recent' }).filter(game => !shown.has(game.id)).slice(0, 6);
+    archiveBox.hidden = !games.length;
+    archiveMatches.replaceChildren(...games.map(game => {
+      const link = node('a', 'tw-plan-match');
       link.href = heatHref(game.id);
-      link.append(node('strong', '', game.displayName), node('span', '', game.status === 'ended' ? '回看歷史判定 →' : '查看續播建議 →'));
+      link.append(node('strong', '', game.displayName), node('span', '', game.status === 'ended' ? '回看歷史判定 →' : '查看詳細分析 →'));
       return link;
     }));
   }
 
-  function row(game, steamPages) {
-    const card = node('article', 'tw-stream-game'); card.dataset.game = game.game_id;
-    const gameInfo = node('div', 'tw-stream-game-info');
-    if (game.box_art_url) {
-      const image = node('img'); image.src = game.box_art_url; image.alt = ''; image.width = 44; image.height = 59;
-      image.loading = 'lazy'; image.decoding = 'async'; gameInfo.append(image);
+  function render() {
+    frame = 0;
+    const region = regionSelect.value, sort = sortSelect.value, ids = visibleIds();
+    const shown = entries.filter(entry => ids.has(entry.game.game_id));
+    const buckets = Object.fromEntries([...GROUP_ORDER, 'unknown', 'none', 'loading'].map(key => [key, []]));
+    for (const entry of shown) {
+      if (entry.state !== 'ready') buckets[entry.state === 'loading' ? 'loading' : 'none'].push(entry);
+      else buckets[combineVerdicts(entry.verdicts, region).main.group].push(entry);
     }
-    const copy = node('div', 'tw-stream-game-copy');
-    const title = node('h3', 'tw-stream-game-title', game.game_name);
-    const actions = node('div', 'tw-stream-game-actions');
-    const steamPage = steamStoreLinks(game).map(link => steamPages.get(link.steam_appid)).find(Boolean);
-    function linkProfile(href) {
-      const profile = node('a', 'tw-stream-game-action', '遊戲頁');
-      profile.href = href;
-      profile.setAttribute('aria-label', `遊戲頁（${game.game_name}）`);
-      actions.prepend(profile);
+    for (const key of [...GROUP_ORDER, 'unknown']) buckets[key] = sortEntries(buckets[key], sort, region);
+    const parts = [];
+    if (group === 'all') {
+      for (const key of ['hot', 'trial', 'horse', 'cooled']) if (buckets[key].length) parts.push(groupSection(key, buckets[key], region));
+      const rest = ['skip', 'unknown', 'none'].filter(key => buckets[key].length).map(key => restBox(key, buckets[key], region));
+      if (rest.length) { const box = node('div', 'tw-plan-rest'); box.append(...rest); parts.push(box); }
+    } else if (buckets[group].length) parts.push(groupSection(group, buckets[group], region));
+    else if (!buckets.loading.length) parts.push(node('p', 'tw-plan-empty', `目前沒有「${VERDICT_GROUPS[group]}」的遊戲。`));
+    if (buckets.loading.length) {
+      const box = node('section', 'tw-plan-group tw-plan-loading');
+      box.dataset.group = 'loading';
+      box.append(node('h2', '', '判斷中'), ...buckets.loading.map(plainRow));
+      parts.push(box);
     }
-    if (steamPage) linkProfile(steamPage);
-    const launchLines = node('div', 'tw-stream-launch'); launchLines.hidden = true;
-    copy.append(title, launchLines, actions);
-    gameInfo.append(copy);
-    const comparisons = node('div', 'tw-stream-comparisons');
-    function renderHeat(days, message) {
-      comparisons.replaceChildren(...comparisonRegions.map(key => {
-        const day = days?.[key];
-        const signal = day?.outlook.signal ?? (message ? 'insufficient' : 'loading');
-        const panel = node('div', 'tw-stream-sample');
-        panel.dataset.region = key;
-        panel.dataset.signal = signal;
-        const head = node('div', 'tw-stream-sample-head');
-        head.append(node('span', 'tw-stream-scope', regionNames[key]));
-        const label = signalLabels[signal];
-        if (label) head.append(node('strong', 'tw-stream-signal', label));
-        panel.append(head);
-        if (day?.week) panel.append(node('p', 'tw-stream-week', weeklyEvidence(day.week)));
-        const comparison = day?.outlook.comparison;
-        if (comparison) panel.append(renderMetrics(comparison, key));
-        const evidence = day ? dailyEvidence(day, key) : message;
-        const confirmed = day?.outlook.confirmedOn;
-        const basis = day?.outlook.cooledBy === 'peak' ? `（低於高峰 ${fmt(day.outlook.peak)} 人的 ${Math.round(PEAK_COOLDOWN.share * 100)}%）` : '';
-        if (evidence || confirmed) panel.append(node('p', 'tw-stream-reason',
-          [evidence, confirmed ? `${shortDate(confirmed)} 確認退燒${basis}` : ''].filter(Boolean).join(' · ')));
-        if (day?.todayChange) {
-          const { change, hours } = day.todayChange;
-          const movement = node('p', 'tw-stream-movement', `今日較平常 ${change > 0 ? '+' : ''}${fmt(change)} 人`);
-          movement.title = `對照過去 ${STREAM_HEAT_WEEK} 日同時段 · ${hours} 個配對時段`;
-          panel.append(movement);
-        }
-        const concentration = day?.concentration;
-        if (concentration) {
-          const metrics = node('p', 'tw-stream-concentration');
-          metrics.append(
-            node('span', '', `最大台占比 ${fmt(concentration.share)}%`),
-            node('span', '', `其餘台 ${fmt(concentration.remaining)} 人`),
-          );
-          metrics.title = '當日有效逐時觀測的中位數';
-          panel.append(metrics);
-        }
-        return panel;
-      }));
-    }
-    function renderHistory(record, date) {
-      const reference = record?.release_reference, twoLaunches = launchLine(record, date);
-      if (twoLaunches) {
-        // Early Access and the full release are two launches.
-        const release = node('p', 'tw-stream-release', twoLaunches);
-        release.dataset.launches = 'two';
-        copy.insertBefore(release, launchLines);
-      } else if (reference?.precision === 'day' && Number.isFinite(dateStart(reference.date))) {
-        // Before the release the heat still follows the viewers observed.
-        const before = dateStart(date) < dateStart(reference.date) ? ' · 還沒上市' : '';
-        const release = node('time', 'tw-stream-release', `上市參考 ${reference.date.replaceAll('-', '/')}${before}`);
-        release.dateTime = reference.date;
-        if (reference.source) release.title = reference.source;
-        copy.insertBefore(release, launchLines);
-      }
-      if (record?.archive_eligible === true && Array.isArray(record.months) && record.months.length) {
-        const analysis = node('a', 'tw-stream-game-action', '詳細分析');
-        analysis.href = heatHref(game.game_id, date, record);
-        actions.append(analysis);
-      }
-    }
-    // Worldwide launch labels: the dark-horse label for any launch (otherwise
-    // how it holds up against same-age launches), the trial advice only for
-    // games that never reached the popular threshold.
-    function renderLaunch(launch) {
-      const advice = launch?.small ? launchAdviceShort(launch) : null;
-      const flag = launch?.darkHorse ? [launch.darkHorse.kind, launchFlagShort(launch.darkHorse)]
-        : [`peer-${launch?.peer?.verdict}`, launchPeerShort(launch?.peer)];
-      const lines = [flag,
-        [launch?.stage === 'trial' ? `trial-${launch.trend ?? 'plain'}` : launch?.stage, advice],
-        ['full-release-peak', launchPeakText(launch?.peaks)], ['forecast', launchForecastShort(launch?.forecast)]].filter(([, line]) => line);
-      launchLines.replaceChildren(...lines.map(([key, { label, text }]) => {
-        const line = node('p', 'tw-stream-launch-line');
-        line.dataset.launch = key;
-        line.append(node('strong', '', label), node('span', '', text));
-        return line;
-      }));
-      launchLines.hidden = !lines.length;
-    }
-    card.append(gameInfo, comparisons);
-    renderHeat();
-    return { card, consoleId: steamPage ? null : canonicalID(game.igdb_id), linkProfile, renderHistory, renderHeat, renderLaunch };
+    if (data && !shown.length) parts.push(node('p', 'tw-plan-empty', search.value.trim() ? '找不到遊戲，試試英文名稱或遊戲 ID。' : '這個條件下沒有符合的遊戲。'));
+    results.replaceChildren(...parts);
+    renderArchive(new Set(shown.map(entry => entry.game.game_id)));
+    $('planInfoGrouping').textContent = `依現在還值不值得播分組；分組照${REGION_NAMES[region]}的建議，篩選裡可改成照${REGION_NAMES[region === 'zh' ? 'global' : 'zh']}。`;
+    for (const button of document.querySelectorAll('#verdictFilters [data-group]')) button.setAttribute('aria-pressed', String(button.dataset.group === group));
+    writeStatus(shown.length);
+  }
+
+  const schedule = () => { if (!frame) frame = requestAnimationFrame(render); };
+
+  function writeStatus(count) {
+    if (!data) return;
+    const pending = entries.filter(entry => entry.state === 'loading').length;
+    const today = dayOf(Date.now()) === data.date;
+    const when = today ? `${updatedAt(data.generated_at)} 更新` : `${updatedAt(data.generated_at)} 的觀測`;
+    status.textContent = pending ? `${when}・正在判斷 ${fmt(done)}／${fmt(entries.length)} 款…`
+      : `${when}・${fmt(count)} 款・趨勢算到 ${shortDate(data.through)}`;
   }
 
   async function observeGame(id, record, archive, date, now, releaseTimes, model) {
-    if (!archive) return { message:'逐時資料暫時無法讀取' };
-    if (!Array.isArray(record?.months) || !record.months.length) return { message:'尚無逐時紀錄' };
+    if (!archive) return { message: '逐時資料暫時無法讀取' };
+    if (!Array.isArray(record?.months) || !record.months.length) return { message: '尚無逐時紀錄' };
     try {
       const chunks = Object.fromEntries(await Promise.all(record.months.map(async month => {
         if (!Object.hasOwn(archive.index.months, month)) throw new Error('觀測月份無法確認');
@@ -295,18 +341,26 @@ export function initStreamPlanningPage() {
         return [month, await archive.chunks.get(key)];
       })));
       const rows = fullSeriesRows(archive.index, chunks, id);
-      const days = Object.fromEntries(comparisonRegions.map(region => [region,
-        analyzeStreamHeat(region === 'global' ? rows : projectRows(rows, region), { game:record, region, date, now })]));
+      const days = Object.fromEntries(REGIONS.map(region => [region,
+        analyzeStreamHeat(region === 'global' ? rows : projectRows(rows, region), { game: record, region, date, now })]));
       // As of the end of the chosen day, so a past date replays what was known then.
       const asOf = Math.min(now, dateStart(date) + 24 * HOUR), latest = days.global?.outlook.latest;
       // An Early Access game's full release is a launch of its own; streams at
       // launch level just before a launch move where its days start.
       const anchor = launchAnchor(record, rows, asOf, releaseTimes.get(steamAppOf(record) ?? '')), startAt = anchor?.startAt ?? null;
-      const launch = { ...launchAdvice({ days:launchDays(rows, startAt, asOf), releaseAt:startAt, now:asOf,
-        fallback:latest ? { date:latest.date, median:latest.median } : null }), small:!days.global?.popularAt,
-        peaks:launchPeaks(rows, record, asOf), anchor, forecast:launchForecast(rows, startAt, asOf, model) };
+      const launch = { ...launchAdvice({ days: launchDays(rows, startAt, asOf), releaseAt: startAt, now: asOf,
+        fallback: latest ? { date: latest.date, median: latest.median } : null }), small: !days.global?.popularAt,
+        peaks: launchPeaks(rows, record, asOf), anchor, forecast: launchForecast(rows, startAt, asOf, model) };
       return { days, launch };
-    } catch { return { message:'逐時資料暫時無法讀取' }; }
+    } catch { return { message: '逐時資料暫時無法讀取' }; }
+  }
+
+  function profileLink(entry) {
+    if (!entry.profileHref) return null;
+    const link = node('a', 'tw-plan-action', '遊戲頁');
+    link.href = entry.profileHref;
+    link.setAttribute('aria-label', `遊戲頁（${entry.game.game_name}）`);
+    return link;
   }
 
   async function load(force = false) {
@@ -317,99 +371,116 @@ export function initStreamPlanningPage() {
     const token = ++request;
     const active = () => token === request && !signal.aborted;
     status.textContent = '正在讀取選題清單…';
+    entries = []; data = null; done = 0;
     results.replaceChildren();
-    results.setAttribute('aria-busy', 'true'); refresh.disabled = more.disabled = true;
+    results.setAttribute('aria-busy', 'true'); refresh.disabled = true;
     if (!source || force) {
       const pending = read('./data/twitch_series/index.json', validIndex, force)
-        .then(index => ({ index, games:archiveGames(index), chunks:new Map(), force }))
+        .then(index => ({ index, games: archiveGames(index), chunks: new Map(), force }))
         .catch(() => { if (source === pending) source = null; return null; });
       source = pending;
     }
     try {
-      const [data, archive, curves] = await Promise.all([getSnapshot(date, today, force), source,
+      const [snapshotData, archive, curves] = await Promise.all([getSnapshot(date, today, force), source,
         read('./data/twitch-launch-curves.json', validCurves, force).catch(() => null)]);
       const model = forecastModel(curves?.forecast);
-      $('streamForecastRule').textContent = forecastRuleText(model && { checkpoint:48, backtest:model.backtest?.['48'] });
+      $('streamForecastRule').textContent = forecastRuleText(model && { checkpoint: 48, backtest: model.backtest?.['48'] });
       if (!active()) return;
       loaded = archive;
-      renderSearch();
-      if (!data) {
+      if (!snapshotData) {
         status.textContent = `${shortDate(date)} 沒有已發布的觀測快照。`;
-        more.hidden = true;
+        renderArchive(new Set());
         return;
       }
-      const { visible } = selectObservation({ ...state, data });
-      const games = visible.slice(0, state.limit);
-      const scope = `${time(data.generated_at)} 快照 · ${visible.length} 款 · ${filterNames[state.filter]}${state.query ? ` · 搜尋「${state.query}」` : ''}`;
-      status.textContent = `${scope} · 讀取熱度資料…`;
-      more.hidden = games.length === visible.length;
-      more.textContent = `再看 ${Math.min(OBSERVATION_PAGE_SIZE, visible.length - games.length)} 款 ↓`;
-      const steamPages = new Map((data.public_catalog?.games || []).flatMap(raw => {
+      data = { games: snapshotData.games, generated_at: snapshotData.generated_at, date, through: streamHeatThrough(date, now) };
+      const games = snapshotData.legacy ? [] : select(snapshotData.games, { filter: 'all', sort: 'viewers' });
+      const steamPages = new Map((snapshotData.public_catalog?.games || []).flatMap(raw => {
         const profile = RadarData.normalize(raw, true);
         return profile ? [[String(profile.appid), RadarData.detailURL(profile)]] : [];
       }));
-      const releaseTimes = new Map((data.public_catalog?.games || []).map(raw => [String(raw.appid), raw.release_time_utc]));
-      const rows = games.map(game => row(game, steamPages));
-      results.replaceChildren(...rows.map(entry => entry.card));
-      const consoleRows = rows.filter(entry => entry.consoleId);
-      if (consoleRows.length) {
-        RadarStorage.loadNintendo({ force, allowStale:false }).then(catalog => {
+      const releaseTimes = new Map((snapshotData.public_catalog?.games || []).map(raw => [String(raw.appid), raw.release_time_utc]));
+      entries = games.map(game => {
+        const record = archive?.index.games[game.game_id];
+        const profileHref = steamStoreLinks(game).map(item => steamPages.get(item.steam_appid)).find(Boolean) ?? null;
+        return { game, record, state: 'loading', profileHref, consoleId: profileHref ? null : canonicalID(game.igdb_id),
+          href: record?.archive_eligible === true && Array.isArray(record.months) && record.months.length ? heatHref(game.game_id, date, record) : null };
+      });
+      render();
+      const consoles = entries.filter(entry => entry.consoleId);
+      if (consoles.length) {
+        RadarStorage.loadNintendo({ force, allowStale: false }).then(catalog => {
           if (!active()) return;
           const pages = new Map();
           for (const profile of RadarData.nintendoGames(catalog)) {
             const id = String(profile.igdbId);
             if (!pages.has(id)) pages.set(id, RadarData.detailURL(profile));
           }
-          for (const entry of consoleRows) {
+          for (const entry of consoles) {
             const href = pages.get(entry.consoleId);
-            if (href) entry.linkProfile(href);
+            if (href) { entry.profileHref = href; entry.cards = null; }
           }
+          schedule();
         }).catch(() => { /* Console profiles are independent of the observation list. */ });
       }
-      await Promise.all(games.map(async (game, index) => {
-        const id = game.game_id, record = archive?.index.games[id];
-        rows[index].renderHistory(record, date);
-        const { days, message, launch } = await observeGame(id, record, archive, date, now, releaseTimes, model);
-        if (active()) { rows[index].renderHeat(days, message); rows[index].renderLaunch(launch); }
-      }));
+      // The visible games first, a few at a time.
+      const first = visibleIds();
+      const order = [...entries].sort((a, b) => Number(first.has(b.game.game_id)) - Number(first.has(a.game.game_id)));
+      let next = 0;
+      const worker = async () => {
+        while (next < order.length && active()) {
+          const entry = order[next++];
+          const result = await observeGame(entry.game.game_id, entry.record, archive, date, now, releaseTimes, model);
+          if (!active()) return;
+          done++;
+          if (result.days) {
+            Object.assign(entry, { state: 'ready', days: result.days, launch: result.launch,
+              verdicts: { global: globalVerdict(result.days.global, result.launch), zh: chineseVerdict(result.days.zh) },
+              tiles: { global: regionTile(result.days.global, 'global'), zh: regionTile(result.days.zh, 'zh') },
+              meta: launchMeta(entry.record, date) });
+            entry.extras = extraLines(result.launch, entry.verdicts.global);
+          } else Object.assign(entry, { state: 'none', message: result.message });
+          schedule();
+        }
+      };
+      await Promise.all(Array.from({ length: CONCURRENCY }, worker));
       if (!active()) return;
-      status.textContent = `${scope} · 趨勢截至 ${shortDate(streamHeatThrough(date, now))}`;
-      if (!games.length) results.append(node('p', 'tw-stream-muted', '這個條件下沒有符合的遊戲。'));
+      if (frame) cancelAnimationFrame(frame);
+      render();
     } catch {
       if (!active()) return;
       status.textContent = '觀測資料暫時無法讀取。請按重新讀取。';
-      more.hidden = true;
       results.replaceChildren();
     } finally {
-      if (active()) { results.setAttribute('aria-busy', 'false'); refresh.disabled = more.disabled = false; }
+      if (active()) { results.setAttribute('aria-busy', 'false'); refresh.disabled = false; }
     }
   }
 
-  query.addEventListener('input', () => { saveURL(); renderSearch(); }, { signal });
+  const rerender = () => { saveURL(); render(); };
   dateInput.addEventListener('change', () => {
     const now = Date.now(), date = streamHeatDate(dateInput.value, now);
     selectedDate = date === dayOf(now) ? null : date;
-    state.limit = OBSERVATION_PAGE_SIZE;
     load();
   }, { signal });
   refresh.addEventListener('click', () => load(true), { signal });
-  more.addEventListener('click', () => { state.limit += OBSERVATION_PAGE_SIZE; load(); }, { signal });
-  function updateFilters() {
-    clearTimeout(searchTimer);
-    state.query = search.value;
-    state.sort = sort.value;
-    state.region = region.value;
-    state.filter = sources.value;
-    state.limit = OBSERVATION_PAGE_SIZE;
-    syncURL();
-    load();
-  }
-  for (const control of [sort, region, sources]) control.addEventListener('change', updateFilters, { signal });
+  sourceSelect.addEventListener('change', rerender, { signal });
+  regionSelect.addEventListener('change', rerender, { signal });
+  sortSelect.addEventListener('change', rerender, { signal });
   search.addEventListener('input', event => {
     clearTimeout(searchTimer);
-    if (!event.isComposing) searchTimer = setTimeout(updateFilters, 140);
+    if (!event.isComposing) searchTimer = setTimeout(rerender, 140);
   }, { signal });
-  search.addEventListener('compositionend', updateFilters, { signal });
+  search.addEventListener('compositionend', rerender, { signal });
+  $('verdictFilters').addEventListener('click', event => {
+    const button = event.target.closest('[data-group]');
+    if (!button) return;
+    group = button.dataset.group;
+    rerender();
+  }, { signal });
+  filterToggle.addEventListener('click', () => {
+    const open = filterToggle.getAttribute('aria-expanded') !== 'true';
+    filterToggle.setAttribute('aria-expanded', String(open));
+    filters.classList.toggle('is-open', open);
+  }, { signal });
   document.addEventListener('keydown', event => {
     if (event.key === '/' && !event.isComposing && !event.ctrlKey && !event.metaKey && !event.altKey &&
         !event.target.closest?.('input,textarea,select,[contenteditable]')) {
@@ -418,15 +489,14 @@ export function initStreamPlanningPage() {
     }
   }, { signal });
 
-  urlState();
-  region.value = state.region = regionOf(state.region);
-  sources.value = state.filter;
   const params = new URLSearchParams(location.search);
-  query.value = (params.get('stream_q') || '').slice(0, 160);
+  search.value = (params.get('q') || params.get('stream_q') || '').slice(0, 160);
+  sourceSelect.value = SOURCES.includes(params.get('state')) ? params.get('state') : 'signals';
+  sortSelect.value = SORTS.includes(params.get('sort')) ? params.get('sort') : 'advice';
+  regionSelect.value = regionOf(params.get('region') ?? params.get('stream_region'));
+  group = ['all', ...GROUP_ORDER].includes(params.get('group')) ? params.get('group') : 'all';
   const now = Date.now(), date = streamHeatDate(params.get('stream_date'), now);
   selectedDate = date === dayOf(now) ? null : date;
-  const limit = Number(params.get('stream_limit'));
-  if (Number.isSafeInteger(limit) && limit > state.limit) state.limit = limit;
   load();
-  return { destroy() { events.abort(); clearTimeout(searchTimer); } };
+  return { destroy() { events.abort(); clearTimeout(searchTimer); if (frame) cancelAnimationFrame(frame); } };
 }

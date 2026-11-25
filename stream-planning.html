@@ -5,71 +5,79 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#e4dcf7">
-  <meta name="description" content="根據 Twitch 全球與中文區的熱度和觀看分布挑選開台遊戲。">
+  <meta name="description" content="依現在還值不值得播，把 Twitch 上的新遊戲分成值得開、值得試播、黑馬候選、已退燒和先不用排，全球和中文區分開看。">
   <title>開台選題｜Game Trend Radar</title>
   <link rel="icon" id="siteFavicon" type="image/svg+xml">
   <link rel="preconnect" href="https://static-cdn.jtvnw.net">
-  <script type="module" crossorigin src="/game-trend-radar/assets/app/stream-planning-D_VKRiin.js"></script>
+  <script type="module" crossorigin src="/game-trend-radar/assets/app/stream-planning-3mgzy_fI.js"></script>
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/rolldown-runtime-DK3Fl9T5.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/contracts-CXfvy2kB.js">
   <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/storage-BxRXCfxq.js">
-  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-5M1ArWrM.js">
+  <link rel="modulepreload" crossorigin href="/game-trend-radar/assets/app/bootstrap-Ck_7iuNE.js">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/bootstrap-oTuMO7h7.css">
-  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/stream-planning-CG_R6PuM.css">
-  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-CqaOuTaR.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/stream-planning-DKLyopfj.css">
+  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/play-DD39h6jP.css">
   <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/styles-B-3qoBmv.css">
-  <link rel="stylesheet" crossorigin href="/game-trend-radar/assets/app/archive-DB5P8JAh.css">
 </head>
 <body data-page="stream-planning">
   <a class="skip-link" href="#mainContent">跳到主要內容</a>
   <div id="siteHeader"></div>
-  <main class="page-shell twitch-shell" id="mainContent">
-    <section class="tw-heading" aria-labelledby="pageTitle">
-      <h1 id="pageTitle">開台選題</h1>
-    </section>
-
-    <div id="streamPlanning" class="tw-stream-view">
-      <section class="tw-workspace" aria-labelledby="streamPlanTitle">
-        <div class="tw-workspace-head tw-stream-head">
-          <h2 id="streamPlanTitle">選題清單</h2>
-          <div class="tw-stream-links">
-            <a class="tw-stream-link" href="./growth.html?period=future">找待上市遊戲 →</a>
-            <a class="tw-stream-link" href="#streamCheck">查續播建議 ↓</a>
-            <button id="streamRefresh" type="button" class="tw-archive-refresh">重新讀取</button>
+  <main class="page-shell twitch-shell tw-plan-shell" id="mainContent">
+    <div id="streamPlanning" class="tw-plan">
+      <header class="tw-plan-head">
+        <div class="tw-info-anchor tw-plan-title">
+          <h1 id="pageTitle">開台選題</h1>
+          <button type="button" class="tw-info" id="planInfoButton" aria-label="這頁怎麼看" aria-expanded="false" aria-controls="planInfo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5.5"></path><path d="M12 7.6v.1"></path></svg></button>
+          <div class="tw-info-note" id="planInfo" role="note" hidden>
+            <p id="planInfoGrouping">依現在還值不值得播分組；分組照全球的建議，篩選裡可改成照中文區。</p>
+            <p><strong>全球・每天</strong>：一天裡每小時同時觀看人數的中間值；線是最近 7 天。</p>
+            <p><strong>中文區・每天</strong>：只算中文直播，取一天裡第 4 多人的那一小時（至少 4 個小時有這麼多人）。</p>
+            <p>兩區建議不同時，卡片上分開標出。</p>
+            <details class="tw-info-more">
+              <summary>完整判斷方式</summary>
+              <div>
+                <p id="streamTrendRule"></p>
+                <p id="streamDailyRule"></p>
+                <p id="streamGlobalRule"></p>
+                <p id="streamLaunchRule"></p>
+                <p id="streamPeerRule"></p>
+                <p id="streamForecastRule"></p>
+              </div>
+            </details>
           </div>
         </div>
-        <div class="tw-stream-summary">
-          <label class="tw-stream-date">觀測日期（台灣）<input id="streamDate" type="date"></label>
-          <p id="streamPlanStatus" class="tw-stream-status" role="status"></p>
-          <details class="tw-stream-method">
-            <summary>判讀方式</summary>
-            <div>
-              <p id="streamTrendRule"></p>
-              <p id="streamDailyRule"></p>
-              <p id="streamGlobalRule"></p>
-              <p id="streamWeekRule"></p>
-              <p id="streamLaunchRule"></p>
-              <p id="streamPeerRule"></p>
-              <p id="streamForecastRule"></p>
-              <p>曾有熱度後連續 3 個可判定日轉弱，確認已退燒。</p>
-            </div>
-          </details>
+        <p class="tw-plan-status" id="streamPlanStatus" role="status"></p>
+      </header>
+      <div class="tw-plan-tools">
+        <label class="tw-plan-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+          <input id="gameSearch" type="search" placeholder="搜尋遊戲" aria-label="搜尋遊戲" maxlength="160" autocomplete="off">
+        </label>
+        <button type="button" class="tw-plan-filter-toggle" id="planFilterToggle" aria-expanded="false" aria-controls="planFilters">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"></path></svg>篩選
+        </button>
+        <div class="tw-plan-filters" id="planFilters">
+          <label>地區<select id="audienceRegion"><option value="global">全球優先</option><option value="zh">中文區優先</option></select></label>
+          <label>排序<select id="gameSort"><option value="advice">建議優先</option><option value="viewers">人數多到少</option><option value="change">最近變多</option></select></label>
+          <label>來源<select id="streamSource"><option value="signals">全部追蹤</option><option value="twitch_new">Twitch 熱門新作</option><option value="steam_recent">Steam 近期上市</option><option value="igdb">IGDB 推算命中</option><option value="all">所有觀測</option></select></label>
+          <label>日期<input id="streamDate" type="date" aria-label="觀測日期（台灣）"></label>
+          <button id="streamRefresh" type="button" class="tw-plan-refresh">重新讀取</button>
+          <a class="tw-plan-link" href="./growth.html?period=future">找待上市遊戲 →</a>
         </div>
-        <div class="tw-tools tw-planning-filters">
-          <label class="tw-search"><span class="sr-only">搜尋選題清單</span><input id="gameSearch" type="search" placeholder="搜尋選題清單…" maxlength="160" autocomplete="off"></label>
-          <label class="tw-sort">來源<select id="streamSource"><option value="signals">全部追蹤</option><option value="twitch_new">Twitch 熱門新作</option><option value="steam_recent">Steam 近期上市</option><option value="igdb">IGDB 推算命中</option><option value="all">所有觀測</option></select></label>
-          <label class="tw-sort">排序語言區<select id="audienceRegion"><option value="global">全球</option><option value="zh">中文區</option></select></label>
-          <label class="tw-sort">排序<select id="gameSort"><option value="median">篩選後中位數</option><option value="viewers">觀眾人數最多</option><option value="streamers">開台數最多</option></select></label>
-        </div>
-        <div id="streamTrendResults" class="tw-stream-results" aria-busy="false"></div>
-        <div class="tw-load-more"><button id="streamLoadMore" type="button" hidden>再看 24 款 ↓</button></div>
-      </section>
-      <section id="streamCheck" class="tw-workspace" aria-labelledby="streamCheckTitle">
-        <div class="tw-workspace-head"><h2 id="streamCheckTitle">這款還值得繼續播嗎？</h2></div>
-        <div class="tw-stream-search">
-          <label class="tw-search"><span class="sr-only">搜尋正在播的遊戲</span><input id="streamGameSearch" type="search" placeholder="輸入正在播的遊戲名稱…" maxlength="160" autocomplete="off"></label>
-          <div id="streamGameMatches" class="tw-stream-matches"></div>
-        </div>
+      </div>
+      <nav class="tw-plan-chips" id="verdictFilters" aria-label="依建議篩選">
+        <button type="button" data-group="all" aria-pressed="true">全部</button>
+        <button type="button" data-group="hot" aria-pressed="false">值得開</button>
+        <button type="button" data-group="trial" aria-pressed="false">值得試播</button>
+        <button type="button" data-group="horse" aria-pressed="false">黑馬候選</button>
+        <button type="button" data-group="cooled" aria-pressed="false">已退燒</button>
+        <button type="button" data-group="skip" aria-pressed="false">先不用排</button>
+      </nav>
+      <div class="tw-plan-columns" aria-hidden="true"><span>遊戲</span><span>建議與理由</span><span>全球・每天</span><span>中文區・每天</span></div>
+      <div id="streamTrendResults" class="tw-plan-results" aria-busy="false"></div>
+      <section id="streamArchiveMatches" class="tw-plan-archive" aria-labelledby="streamArchiveTitle" hidden>
+        <h2 id="streamArchiveTitle">其他遊戲</h2>
+        <div id="streamGameMatches"></div>
       </section>
     </div>
     <noscript><p class="tw-notice">請啟用 JavaScript 以讀取選題清單。</p></noscript>
