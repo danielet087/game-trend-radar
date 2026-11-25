@@ -2,6 +2,7 @@
 // Nothing here invents a measurement: missing history stays missing.
 import { RadarInsights as I } from '../insights/metrics.js';
 import { dailyFollowerPoints, followerDay } from '../../domain/followers.mjs';
+import { leadText, steamReleaseAt, taipeiTime } from './store.js';
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 const CHART_DAYS = 120;
@@ -10,6 +11,15 @@ const DAY = 86400000;
 const dayTime = day => Date.parse(`${day}T12:00:00Z`);
 export const weekday = day => WEEKDAYS[new Date(dayTime(day)).getUTCDay()];
 const signed = (number, value) => `${value > 0 ? '+' : value < 0 ? '−' : '±'}${number.format(Math.abs(value))}`;
+
+// Streams before the Steam release: the first hour anyone was live, when the
+// Twitch record began before the release.
+export function prelaunchText(entry, releaseAt) {
+  const live = Date.parse(entry?.first_live_hour), first = Date.parse(entry?.first_hour);
+  if (!Number.isFinite(live) || !Number.isFinite(releaseAt) || live >= releaseAt) return '';
+  const lead = leadText(releaseAt - live);
+  return live === first ? `開始記錄時（上市前 ${lead}）就已經有人實況。` : `上市前 ${lead}就有人實況（${taipeiTime(live)} 起）。`;
+}
 
 export function followerChanges(history, today) {
   return [7, 30].map(span => ({ span, metric: I.metric(history, span, today) }))
@@ -212,9 +222,9 @@ export function createDetailRadar(ctx) {
       const { id, entry } = match;
       const peak = Number.isSafeInteger(entry.peak_viewer_count) ? number.format(entry.peak_viewer_count) : null;
       const last = followerDay(entry.last_hour), first = followerDay(entry.first_hour);
-      $('gameTwitchText').textContent = peak
+      $('gameTwitchText').textContent = (peak
         ? `雷達記錄到的最高觀看是 ${peak} 人${first && last ? `（${first.replaceAll('-', '/')}～${last.replaceAll('-', '/')}，${number.format(entry.sample_count || 0)} 個小時）` : ''}。`
-        : '雷達有這款遊戲的 Twitch 每小時紀錄。';
+        : '雷達有這款遊戲的 Twitch 每小時紀錄。') + prelaunchText(entry, isNativeConsole(game) ? null : steamReleaseAt(game));
       status.textContent = entry.tracking_status === 'active' ? '目前：每小時記錄中' : '目前：已停止記錄';
       status.dataset.state = entry.tracking_status === 'active' ? 'active' : 'ended';
       link.href = `./twitch-game.html?game=${id}`;
@@ -223,7 +233,7 @@ export function createDetailRadar(ctx) {
     }
     $('gameTwitchText').textContent = isNativeConsole(game)
       ? 'Twitch 觀看人數達到 7,000 人、而且確認是新作的遊戲，會開始每小時記錄觀看人數與實況主數。'
-      : 'Steam 上市後 30 天內，或 Twitch 觀看人數達到 7,000 人的新作，會開始每小時記錄觀看人數與實況主數。';
+      : 'Steam 上市前 14 天到上市後 30 天，或 Twitch 觀看人數達到 7,000 人的新作，會每小時記錄觀看人數與實況主數。';
     status.textContent = twitchIndex === null ? '目前：Twitch 資料暫時讀不到' : twitchIndex ? '目前：還沒有紀錄' : '正在讀取 Twitch 紀錄…';
     status.dataset.state = 'waiting';
   }

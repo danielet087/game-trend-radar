@@ -297,3 +297,25 @@ test('a console version opens the Hong Kong eShop and shows its price and check 
   for (const lines of await kept.evaluateAll(spans => spans.map(span => span.getClientRects().length))) expect(lines).toBe(1);
   expect(failures).toEqual([]);
 });
+
+test('the Steam version says when a deluxe edition played early, and the Twitch record when streams began', async ({ page }) => {
+  // Warhammer Survivors: released 2026-11-10 17:51 Taiwan time, before the frozen clock.
+  const appid = 3669620;
+  const facts = readData('store_facts.json');
+  facts.games[String(appid)].advance_access = { starts_at: '2026-11-07T09:51:02Z', editions: ['Warhammer Survivors - Deluxe Edition'] };
+  await page.route('**/data/store_facts.json', route => route.fulfill({ json: facts }));
+  await page.route('**/data/twitch_series/index.json', route => route.fulfill({ json: {
+    schema_version: 1, timezone: 'Asia/Taipei', generated_at: '2026-11-18T10:00:00Z', months: {},
+    games: { 9001: { name: 'Warhammer Survivors', months: [], archive_eligible: true, tracking_status: 'active',
+      steam_appids: [String(appid)], first_hour: '2026-10-27T10:00:00Z', first_live_hour: '2026-11-06T13:00:00Z',
+      last_hour: '2026-11-18T09:00:00Z', sample_count: 528, peak_viewer_count: 4321 } } } }));
+  await page.goto(`game.html?appid=${appid}`);
+  const steam = page.locator('#gameVersionRows tr[data-platform="Steam"]');
+  await expect(steam.locator('.game-version-early')).toHaveText('豪華版曾提前 3 天開放（11/7 17:51 起）');
+  await expect(steam.locator('.game-version-dates .game-version-meta')).toHaveText('適用：Warhammer Survivors - Deluxe Edition');
+  await expect(page.locator('#gameVersionSourceList')).toContainText('Steam 版提前玩：來源 Steam 台灣商店的 Advance Access');
+  await page.locator('#gameHeat').scrollIntoViewIfNeeded();
+  await expect(page.locator('#gameTwitchText')).toHaveText(
+    '雷達記錄到的最高觀看是 4,321 人（2026/10/27～2026/11/18，528 個小時）。上市前 3 天就有人實況（11/6 21:00 起）。');
+  await expect(page.locator('#gameTwitchStatus')).toHaveText('目前：每小時記錄中');
+});
