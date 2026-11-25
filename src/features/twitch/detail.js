@@ -13,6 +13,7 @@ import { renderHeatOverview } from './heat-overview.js';
 import { remainingAudienceTrend } from './stream-heat-model.js';
 import { createTrialTimeComparison } from './trial-time-comparison.js';
 import { createLaunchCurves } from './launch-curves.js';
+import { launchAdvice, launchDays, launchInstant, steamAppOf } from './launch-model.js';
 
 export function initTwitchDetail() {
   const $ = id => document.getElementById(id);
@@ -24,6 +25,7 @@ export function initTwitchDetail() {
   const launchCurves = createLaunchCurves({ $, params, onChange: syncURL });
   let index, game, window, rows = [], fullHistoryLoader, page = 0, descending = true, request = 0, summaryRequest = 0;
   let charts = [], statsMode = '', cooldownMode = '', stats = new Map(), cooldowns = new Map(), disposed = false;
+  let releaseTime = null;
   const controls = { summary: 'summaryRegion', history: 'audienceRegion', cooldown: 'cooldownRegion', statistics: 'statisticsRegion' };
   for (const block of Object.keys(scopeKeys)) $(controls[block]).value = scopes[block];
   const backView = new URLSearchParams(back).get('view');
@@ -48,6 +50,17 @@ export function initTwitchDetail() {
     return { gameName: (game.display_name || game.name) + ' · ' + regionNames[region], region, scope: regionNames[region],
       trackingStatus: game.tracking_status, lastHour: game.last_hour, latestHour: new Date(window.latest).toISOString(),
       generatedAt: index.generated_at, releaseReference: game.release_reference };
+  }
+  // Steam's release time to the hour lives in the game's own file; without it
+  // the launch rules count from 00:00 Taiwan time of the release date.
+  async function releaseInstant() {
+    const reference = game.release_reference, appid = steamAppOf(game);
+    if (reference?.precision !== 'day') return null;
+    if (appid && releaseTime?.appid !== appid) {
+      const file = await RadarStorage.loadGame(appid, { allowStale: false }).catch(() => null);
+      releaseTime = { appid, value: file?.release_time_utc ?? null };
+    }
+    return launchInstant(reference, appid ? releaseTime.value : null);
   }
   function panels(container, mode, kind) {
     container.replaceChildren(); container.classList.toggle('tw-region-compare', mode === 'compare');
@@ -164,14 +177,20 @@ export function initTwitchDetail() {
     const roots = panels($('heatOverviewPanels'), mode, 'heatOverview');
     roots.forEach((root, region) => { root.className = 'tw-heat-overview'; renderHeatOverview(root, { status: 'loading', label: '正在整理全期熱度…', scope: regionNames[region] }); });
     try {
-      const full = await fullHistoryLoader();
+      const [full, releaseAt] = await Promise.all([fullHistoryLoader(), releaseInstant().catch(() => null)]);
       if (disposed || token !== summaryRequest || version !== request) return;
+      // Launch advice and dark-horse labels always read worldwide viewers.
+      const globalRows = projectRows(full, 'global'), now = Date.now();
+      const globalData = analyzeCooldown(globalRows, { region: 'global', now });
+      const fallback = globalData.latest.complete ? { date: globalData.latest.day, median: globalData.latest.median } : null;
+      const launch = { ...launchAdvice({ days: launchDays(globalRows, releaseAt, now), releaseAt, now, fallback }),
+        small: !globalData.popularAt };
       roots.forEach((root, region) => {
         const reference = game.release_reference;
         const releaseDate = region === 'zh' && reference?.precision === 'day' ? reference.date : null;
         const scoped = projectRows(full, region);
         const data = analyzeCooldown(scoped, { region, releaseDate });
-        const snapshot = cooldownPresentation(data, context(region));
+        const snapshot = { ...cooldownPresentation(data, context(region)), region, launch };
         if (region === 'zh') {
           const through = dayOf(window.end);
           snapshot.remainingTrend = { through, rows:remainingAudienceTrend(scoped, { releaseDate, date:through }) };

@@ -2,6 +2,7 @@ import { node, fmt, time } from './presentation.js';
 import { releaseDayLabel } from './cooldown.js';
 import { HOUR } from './metrics.js';
 import { MIN_CONCENTRATION_HOURS, MIN_PAIRED_HEAT_HOURS, STREAM_HEAT_WEEK } from './stream-heat-model.js';
+import { LAUNCH_RULE_TEXT, launchAdviceText, launchFlagText } from './launch-advice.js';
 
 function renderRemainingTrend({ through, rows }) {
   const section = node('section', 'tw-remaining-trend');
@@ -31,7 +32,8 @@ function renderRemainingTrend({ through, rows }) {
   return section;
 }
 
-export function streamerAdvice({ data, status, historical }, now = Date.now()) {
+// A third element 'launch' marks advice from the small-game launch rules.
+export function streamerAdvice({ data, status, historical, launch }, now = Date.now()) {
   if (historical) return ['先核對近期表現', '這款已結束追蹤。要再排這個主題，可以先看自己近期同時段播這類遊戲的表現。'];
   const last = data.points.findLast(point => Number.isFinite(point.raw));
   if (!last || now - Date.parse(last.hour) > data.settings.maxMissingHours * HOUR ||
@@ -49,8 +51,12 @@ export function streamerAdvice({ data, status, historical }, now = Date.now()) {
       return ['先暫緩加開場次', `目前有 ${lowDays}／${data.settings.confirmDays} 個連續可判定日${weak}。等下一個可判定日，再一起看你最近的開台表現。`];
     case 'recovered':
       return ['可安排一場回訪', `最新有效日已回到${minimumHits ? '每日熱度門檻' : ` ${threshold} 人門檻`}。先試一場，和你以往同時段的平均觀眾比較。`];
-    case 'not_popular':
-      return ['先試播一場', '目前尚未達熱門門檻。若題材適合你的頻道，可先用一場測試觀眾反應。'];
+    case 'not_popular': {
+      // Small games (never popular worldwide) follow the launch rules; a game
+      // popular worldwide but not in this region keeps the plain suggestion.
+      const advice = launch?.small ? launchAdviceText(launch) : null;
+      return advice ? [...advice, 'launch'] : ['先試播一場', '目前尚未達熱門門檻。若題材適合你的頻道，可先用一場測試觀眾反應。'];
+    }
     case 'watching':
       return ['可先續播一場', '目前仍有觀看需求。開完後比較你的同時段平均觀眾，再決定是否加場。'];
     default:
@@ -71,9 +77,15 @@ export function renderHeatOverview(root, snapshot) {
   root.replaceChildren(head, state);
   if (!snapshot.data) return;
   const { data, releaseDate } = snapshot;
-  const [actionTitle, actionText] = streamerAdvice(snapshot);
+  const [actionTitle, actionText, basis] = streamerAdvice(snapshot);
   const action = node('section', 'tw-stream-action');
   action.append(node('span', '', '開台建議'), node('h3', '', actionTitle), node('p', '', actionText));
+  const flag = snapshot.historical ? null : launchFlagText(snapshot.launch?.darkHorse, snapshot.region);
+  if (flag) {
+    const line = node('p', 'tw-launch-flag', flag);
+    line.dataset.flag = snapshot.launch.darkHorse.kind;
+    action.append(line);
+  }
   const { minimumHits, threshold } = data.settings;
   if (minimumHits && snapshot.todayHasHeat) {
     const today = data.days.at(-1);
@@ -81,6 +93,12 @@ export function renderHeatOverview(root, snapshot) {
   } else if (data.latest.complete) {
     const value = minimumHits ? `${data.latest.thresholdHits} 次達 ${fmt(threshold)} 人` : `每日總觀眾中位數 ${fmt(data.latest.median)} 人`;
     action.append(node('small', '', `${data.latest.day} · ${value} · ${data.latest.validHours}／24 筆有效觀測`));
+  }
+  if (basis === 'launch') {
+    const rule = node('details', 'tw-launch-rule');
+    rule.append(node('summary', '', '判斷方式'), node('p', '', (snapshot.region && snapshot.region !== 'global'
+      ? '這裡依全球觀眾判斷，中文區還沒有自己的標準。' : '') + LAUNCH_RULE_TEXT));
+    action.append(rule);
   }
   const peak = data.relativeDecline.peak, first = data.episodes[0];
   const cards = node('div', 'tw-heat-stats');
