@@ -132,6 +132,11 @@ export function createDetailRadar(ctx) {
     const plot = $('gameHeatPlot');
     const svg = svgNode(document, 'svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'none', class: 'game-heat-svg', 'aria-hidden': 'true' });
     for (const level of [0, 50, 100]) svg.append(svgNode(document, 'line', { x1: 0, x2: 100, y1: level, y2: level, class: 'game-heat-grid' }));
+    // A long gap in measurement is bridged by a dashed line; the missing days keep no value.
+    model.segments.slice(1).forEach((segment, index) => {
+      const from = model.segments[index].at(-1), to = segment[0];
+      svg.append(svgNode(document, 'polyline', { class: 'game-heat-bridge', points: `${from.x.toFixed(2)},${from.y.toFixed(2)} ${to.x.toFixed(2)},${to.y.toFixed(2)}` }));
+    });
     for (const segment of model.segments) {
       if (segment.length > 1) {
         const line = segment.map(point => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ');
@@ -166,7 +171,7 @@ export function createDetailRadar(ctx) {
     plot.setAttribute('aria-label', `關注數折線圖：${model.first.day.replaceAll('-', '/')} ${number.format(model.first.followers)} 人，` +
       `到 ${model.latest.day.replaceAll('-', '/')} ${number.format(model.latest.followers)} 人；共 ${model.points.length} 次量測` +
       (model.gaps ? `，其中 ${model.gaps} 段超過 ${CHART_GAP_DAYS} 天沒有量測` : ''));
-    $('gameHeatCaption').textContent = `每個點都是一次實際量測（台灣日期）。超過 ${CHART_GAP_DAYS} 天沒有量測的地方不連線，也不補數字。`;
+    $('gameHeatCaption').textContent = `每個點都是一次實際量測（台灣日期）。超過 ${CHART_GAP_DAYS} 天沒有量測的地方用虛線連起來，不補數字。`;
   }
 
   function renderChanges(game, history) {

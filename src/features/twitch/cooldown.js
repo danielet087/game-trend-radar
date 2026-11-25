@@ -187,14 +187,17 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
   on(decline, 'click', event => { const button = event.target?.closest?.('button[data-cooldown-hour]'); if (button) chooseAt(button.getAttribute('data-cooldown-hour')); });
   on(retry, 'click', () => load(true));
 
+  // Consecutive records form the line; a missed collection is bridged by a dashed segment.
   function path(points, key, x, y, interval = HOUR) {
-    let output = '', previous = null;
+    let line = '', bridge = '', last = null;
     for (const point of points) {
       const value = point[key], time = Date.parse(point.hour);
-      if (!finite(value)) { previous = null; continue; }
-      output += `${previous !== null && time - previous === interval ? ' L' : ' M'}${x(time)} ${y(value)}`; previous = time;
+      if (!finite(value)) continue;
+      if (last && time - last.time > interval) bridge += ` M${x(last.time)} ${y(last.value)} L${x(time)} ${y(value)}`;
+      line += `${last && time - last.time === interval ? ' L' : ' M'}${x(time)} ${y(value)}`;
+      last = { time, value };
     }
-    return output;
+    return { line, bridge };
   }
   function draw() {
     const points = data?.points || [], valid = points.filter(point => finite(point.raw)); geometry = null;
@@ -238,9 +241,10 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
     });
     svg.append(svgEl('text', { x: left, y: 14, class: 'tw-cooldown-axis-label' }, '總觀眾（人）'),
       svgEl('text', { x: (left + w - right) / 2, y: h - 4, 'text-anchor': 'middle', class: 'tw-cooldown-axis-label' }, releaseDate() ? '上市日 Day 0 對齊 · 台灣觀測日期' : '全期觀測時間（台灣）'));
-    const rawPath = path(points, 'raw', x, y), dailyPath = path(dailyPoints, 'median', x, y, 24 * HOUR);
-    if (rawPath) svg.append(svgEl('path', { d: rawPath, class: 'tw-cooldown-raw', fill: 'none' }));
-    if (dailyPath) svg.append(svgEl('path', { d: dailyPath, class: 'tw-cooldown-smooth', fill: 'none' }));
+    for (const [lines, className] of [[path(points, 'raw', x, y), 'tw-cooldown-raw'], [path(dailyPoints, 'median', x, y, 24 * HOUR), 'tw-cooldown-smooth']]) {
+      if (lines.bridge) svg.append(svgEl('path', { d: lines.bridge, class: `${className} tw-cooldown-bridge`, fill: 'none' }));
+      if (lines.line) svg.append(svgEl('path', { d: lines.line, class: className, fill: 'none' }));
+    }
     svg.append(svgEl('line', { x1: left, x2: w - right, y1: y(data.settings.threshold), y2: y(data.settings.threshold), class: 'tw-cooldown-threshold' }),
       svgEl('text', { x: w - right, y: y(data.settings.threshold) - 6, 'text-anchor': 'end', class: 'tw-cooldown-threshold-label' }, `${thresholdLabel()}門檻`));
     const marks = [];
@@ -395,7 +399,7 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
       const threshold = thresholdLabel();
       intro.textContent = `曾有熱度後，連續 3 個可判定日符合「${lowRule()}」，即確認退燒。`;
       rule.textContent = usesHits() ? `單日熱度 · ${hotRule()}` : `每日中位數門檻 ${threshold} · 連續低於門檻 3 天 · 每日至少 12 小時量測`;
-      legend.textContent = `淡紫線 逐時總觀眾　｜　紫線 每日中位數　｜　橘色虛線 ${threshold}門檻　｜　橘色區間 已確認的低熱度觀測`;
+      legend.textContent = `淡紫線 逐時總觀眾　｜　紫線 每日中位數　｜　同色虛線 跨越缺測　｜　橘色虛線 ${threshold}門檻　｜　橘色區間 已確認的低熱度觀測`;
       load();
     },
     hide() { request++; root.hidden = true; },

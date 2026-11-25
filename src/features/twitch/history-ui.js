@@ -25,13 +25,13 @@ export function createTwitchHistory({ state, historyCache, chartDisposers, signa
         const panel = node('section', 'tw-inline-region-panel'); panel.dataset.region = group.region;
         const chartRoot = node('div', 'tw-history-chart'); panel.append(node('h4', '', regionNames[group.region]), chartRoot); grid.append(panel);
         const chart = RadarTwitchChart.mount(chartRoot, { rows: group.rows, gameName: g.game_name + ' · ' + regionNames[group.region],
-          initialRange: range, initialMetric: metric, domainMaximum: maximum, connectGaps: false,
+          initialRange: range, initialMetric: metric, domainMaximum: maximum,
           onMetricChange(value) { metric = value; draw(); },
           onRangeChange(value) { range = value; draw(); },
           onSelect(index) { charts.forEach(other => { if (other !== chart) other.select(index, false); }); } });
         charts.push(chart); chartDisposers.add(chart);
       }
-      content.append(grid, node('p', 'tw-history-note', regionNames[mode] + ' · 台灣時間 · 截至 ' + time(state.data.generated_at) + '。缺測保留空白。' + (mode === 'compare' ? '兩圖時間、刻度與資料點同步。' : '')));
+      content.append(grid, node('p', 'tw-history-note', regionNames[mode] + ' · 台灣時間 · 截至 ' + time(state.data.generated_at) + '。虛線跨越缺測。' + (mode === 'compare' ? '兩圖時間、刻度與資料點同步。' : '')));
     }
     async function load() {
       const token = ++request, snapshot = state.data;

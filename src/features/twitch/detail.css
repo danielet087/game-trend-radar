@@ -102,6 +102,7 @@ body[data-page="twitch-game"] { --page-wash:var(--violet-88); --page-wash-soft:v
 .tw-launch-peer { stroke:var(--teal-45); }
 #launchCurveResults svg path { stroke-width:2.7; }
 #launchCurveResults svg path.tw-launch-peer { stroke-dasharray:5 3; }
+#launchCurveResults svg path.tw-launch-bridge { stroke-width:1.6; stroke-dasharray:2 4; opacity:.7; }
 circle.tw-launch-game { fill:var(--violet-39); }
 circle.tw-launch-peer { fill:var(--teal-45); }
 .tw-launch-legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin:0; color:var(--violet-40); font-size:var(--text-xs); }
