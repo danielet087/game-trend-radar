@@ -4,17 +4,31 @@ export const DEFAULT_REGION = 'global';
 export const regionNames = { zh: '中文區', global: '全球', compare: '兩區比較' };
 export const regionOf = value => ['global', 'zh'].includes(value) ? value : DEFAULT_REGION;
 export const viewOf = value => ['global', 'zh', 'compare'].includes(value) ? value : DEFAULT_REGION;
-export const VIEWER_TIERS = [30, 50, 100];
+// Channels with more viewers than each tier, counted every hour. Hours
+// collected before 2026-11-26 have three tiers; the 60-viewer tier came then.
+export const VIEWER_TIERS = [30, 50, 60, 100];
+const LEGACY_VIEWER_TIERS = [30, 50, 100];
 export const CHINESE_MEASUREMENT_CHANGE_AT = '2026-11-15T08:00:00Z';
 export const isIndependentChineseMeasurement = row => row?.audience_regions?.zh?.measurement_source === 'helix_language_filter';
 const validCount = value => Number.isSafeInteger(value) && value >= 0;
 
+/** The tiers a list of counts was collected with, or null. */
+export function tierLayout(counts) {
+  if (!Array.isArray(counts)) return null;
+  return [VIEWER_TIERS, LEGACY_VIEWER_TIERS].find(tiers => tiers.length === counts.length) ?? null;
+}
+
+/** Channels with more than `viewers` viewers, or null when that tier was not counted. */
+export function channelsAbove(counts, viewers) {
+  const layout = tierLayout(counts), i = layout ? layout.indexOf(viewers) : -1;
+  return i < 0 ? null : counts[i];
+}
+
 function viewerTiers(sample) {
-  const counts = sample?.streamer_counts_above_viewers;
-  if (!Array.isArray(counts) || counts.length !== VIEWER_TIERS.length ||
-      !validCount(sample.viewer_count) || !validCount(sample.streamer_count) ||
+  const counts = sample?.streamer_counts_above_viewers, layout = tierLayout(counts);
+  if (!layout || !validCount(sample.viewer_count) || !validCount(sample.streamer_count) ||
       counts.some((count, i) => !validCount(count) || count > (i ? counts[i - 1] : sample.streamer_count))) return null;
-  const minimum = counts.reduce((sum, count, i) => sum + count * (VIEWER_TIERS[i] - (VIEWER_TIERS[i - 1] ?? -1)), 0);
+  const minimum = counts.reduce((sum, count, i) => sum + count * (layout[i] - (layout[i - 1] ?? -1)), 0);
   return minimum <= sample.viewer_count ? counts : null;
 }
 

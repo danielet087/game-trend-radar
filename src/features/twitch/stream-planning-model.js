@@ -1,7 +1,7 @@
 import { HOUR } from './metrics.js';
 import { dateStart, dayOf, seriesRows } from './series.js';
 import { quantile } from './statistics-model.js';
-import { CHINESE_MEASUREMENT_CHANGE_AT, VIEWER_TIERS, isIndependentChineseMeasurement } from './audience-region.js';
+import { CHINESE_MEASUREMENT_CHANGE_AT, channelsAbove, isIndependentChineseMeasurement } from './audience-region.js';
 
 export const TRIAL_MIN_DAYS = 3;
 const DAY = 24 * HOUR;
@@ -61,7 +61,6 @@ export function compareTrialTimes(index, chunks, gameId, period, hours, region) 
 }
 
 export function compareViewerTier(index, chunks, gameId, period, hour, viewers, region) {
-  const tier = VIEWER_TIERS.indexOf(viewers);
   const reference = index.games[gameId].release_reference;
   const released = reference?.precision === 'day' ? dateStart(reference.date) : NaN;
   const changeAt = Date.parse(CHINESE_MEASUREMENT_CHANGE_AT);
@@ -73,10 +72,10 @@ export function compareViewerTier(index, chunks, gameId, period, hour, viewers, 
     if (at < released) continue;
     if (region === 'zh' && (at >= changeAt) !== independent) continue;
     const row = seriesRows(index, chunks, gameId, at, at, region)[0];
-    const tiers = row.streamer_counts_above_viewers;
-    if (row.status !== 'observed' || !Number.isSafeInteger(tiers?.[tier]) || !(Date.parse(row.generated_at) <= period.now)) continue;
+    const tiers = row.streamer_counts_above_viewers, ahead = channelsAbove(tiers, viewers);
+    if (row.status !== 'observed' || !Number.isSafeInteger(ahead) || !(Date.parse(row.generated_at) <= period.now)) continue;
     if (region === 'zh' && isIndependentChineseMeasurement(row) !== independent) continue;
-    samples.push(tiers[tier]);
+    samples.push(ahead);
     latest = { hour:row.hour, tiers };
   }
   return { sampledDays:samples.length, ahead:samples.length >= TRIAL_MIN_DAYS
