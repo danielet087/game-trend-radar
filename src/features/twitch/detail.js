@@ -186,14 +186,13 @@ export function initTwitchDetail() {
       const launch = { ...launchAdvice({ days: launchDays(globalRows, releaseAt, now), releaseAt, now, fallback }),
         small: !globalData.popularAt };
       roots.forEach((root, region) => {
-        const reference = game.release_reference;
-        const releaseDate = region === 'zh' && reference?.precision === 'day' ? reference.date : null;
+        // Every region judges heat on the viewers actually observed, before the release too.
         const scoped = projectRows(full, region);
-        const data = analyzeCooldown(scoped, { region, releaseDate });
+        const data = analyzeCooldown(scoped, { region });
         const snapshot = { ...cooldownPresentation(data, context(region)), region, launch };
         if (region === 'zh') {
           const through = dayOf(window.end);
-          snapshot.remainingTrend = { through, rows:remainingAudienceTrend(scoped, { releaseDate, date:through }) };
+          snapshot.remainingTrend = { through, rows:remainingAudienceTrend(scoped, { date:through }) };
         }
         renderHeatOverview(root, snapshot);
       });

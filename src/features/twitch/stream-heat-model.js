@@ -171,8 +171,11 @@ export function analyzeStreamHeat(rows, { game, region = 'global', date, now = D
   const start = dateStart(date), end = start + DAY, open = now < end;
   const reference = game.release_reference;
   const releaseDate = reference?.precision === 'day' ? reference.date : null;
-  const released = dateStart(releaseDate);
-  const available = rows.filter(row => !(Date.parse(row.generated_at) > now) && !(Date.parse(row.hour) < released));
+  // Heat follows the viewers actually observed, before the release date too
+  // (demos, betas, early access, a region launching first); only the launch
+  // rules count from the release.
+  const prelaunch = start < dateStart(releaseDate);
+  const available = rows.filter(row => !(Date.parse(row.generated_at) > now));
   const data = analyzeCooldown(available, { region, now: Math.min(now, end) });
   const day = data.days.find(item => Date.parse(item.startAt) === start);
   const { threshold, minimumHits } = data.settings;
@@ -193,7 +196,7 @@ export function analyzeStreamHeat(rows, { game, region = 'global', date, now = D
   // Which rule cooled it, and the peak behind the own-peak rule.
   const cooledBy = outlookSignal === 'cooled' ? (latest?.status === 'cooled' ? 'threshold' : 'peak') : null;
   return {
-    date, signal, threshold, hits, validHours, median: day?.median ?? null, popularAt: data.popularAt,
+    date, prelaunch, signal, threshold, hits, validHours, median: day?.median ?? null, popularAt: data.popularAt,
     week:heatWeek(data.days, through), todayChange:open ? todayChange(available, start, now, region) : null,
     confirmedOn: signal === 'cooled' ? confirmationDate(data) : null,
     concentration: minimumHits && validHours >= MIN_CONCENTRATION_HOURS ? concentration(available, start, end, now) : null,
