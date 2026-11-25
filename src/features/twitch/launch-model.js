@@ -81,6 +81,21 @@ export function launchInstant(reference, releaseTimeUtc) {
 // hours are known; a full release after Early Access never moves.
 export const START_RULES = Object.freeze({ share: 0.25, floor: 300, gap: 12, density: 0.5, days: 14 });
 
+// A start moved by less than this (streams that go live just before the
+// unlock) keeps its computed days but is not called out on the pages.
+export const START_NOTE_HOURS = 3;
+
+/** Hours between the start and the launch when that is worth saying, else null. */
+export function startLead(launchAt, startAt) {
+  const hours = Math.round((launchAt - startAt) / HOUR);
+  return hours >= START_NOTE_HOURS ? hours : null;
+}
+
+/** "5 天" from two days on, otherwise "5 小時". */
+export function leadText(hours) {
+  return hours >= 48 ? `${Math.round(hours / 24)} 天` : `${hours} 小時`;
+}
+
 /** "10/01 23:00" in Taiwan time. */
 export function taipeiHour(at) {
   const text = new Date(at + 8 * HOUR).toISOString();
@@ -137,20 +152,55 @@ export function launchAnchor(record, rows, now, releaseTimeUtc) {
 }
 
 // The week-later forecast. A launch's level over its first 24 (later 48)
-// hours times each past launch's ratio of days 7-9 (hours 144-216 after the
+// hours times past launches' ratios of days 7-9 (hours 144-216 after the
 // start) to the same hours: the median ratio gives the estimate, the 10th and
-// 90th percentiles the 80% range, and the share of past ratios that would take
-// this launch to 100 / 1,000 / 3,000 viewers the chance of still having them.
-// The ratios come from twitch-launch-curves.json, refitted every day from the
-// launches whose days 7-9 had ended (scripts/build_twitch_launch_curves.py).
-export const FORECAST_RULES = Object.freeze({ floor: 50, minLaunches: 20, from: 144, to: 216, thresholds: [100, 1000, 3000] });
+// 90th percentiles the 80% range, and the share of ratios that would take this
+// launch to 100 / 1,000 / 3,000 viewers the chance of still having them. Only
+// the past launches closest in size (the median of those same first hours) are
+// used: the closer half, at least 40. Small launches can lose every viewer by
+// days 7-9 while big ones never did, so a big launch must not inherit a small
+// one's drop to zero. The ratios and sizes come from twitch-launch-curves.json,
+// refitted every day from the launches whose days 7-9 had ended; the builder
+// (scripts/build_twitch_launch_curves.py) picks them the same way, both checked
+// against tests/fixtures/launch-forecast-cases.json.
+export const FORECAST_RULES = Object.freeze({
+  floor: 50, minLaunches: 20, from: 144, to: 216, thresholds: [100, 1000, 3000], share: 0.5, neighbours: 40,
+});
 
-/** A published forecast model, or null when it is missing or malformed. */
+/** A published forecast model, or null when it is missing or malformed. Sizes
+ * beside the ratios are optional: without them every past launch is used. */
 export function forecastModel(value) {
   const ratios = list => Array.isArray(list) && list.every(ratio => Number.isFinite(ratio) && ratio >= 0) ? list : null;
+  const sized = list => Array.isArray(list) && list.length > 0 && list.every(pair => Array.isArray(pair) && pair.length === 2
+    && Number.isFinite(pair[0]) && pair[0] > 0 && Number.isFinite(pair[1]) && pair[1] >= 0) ? list : null;
   if (!value || typeof value !== 'object' || !Number.isFinite(Date.parse(value.trained_through))) return null;
   const checkpoints = { 24: ratios(value.checkpoints?.['24']), 48: ratios(value.checkpoints?.['48']) };
-  return checkpoints[24] && checkpoints[48] ? { ...value, checkpoints } : null;
+  if (!checkpoints[24] || !checkpoints[48]) return null;
+  const samples = { 24: sized(value.samples?.['24']), 48: sized(value.samples?.['48']) };
+  return { ...value, checkpoints, samples: samples[24] && samples[48] ? samples : null };
+}
+
+/** The past launches ([size, ratio]) closest in size to `base`: the closer half,
+ * at least 40. Size is compared as a multiple (100 is as close to 50 as to 200);
+ * ties go to the smaller launch, then the lower ratio. */
+export function closestLaunches(samples, base) {
+  const count = Math.max(FORECAST_RULES.neighbours, Math.ceil(samples.length * FORECAST_RULES.share));
+  if (count >= samples.length) return [...samples];
+  const distance = size => Math.max(size, base) / Math.min(size, base);
+  return [...samples].sort((a, b) => distance(a[0]) - distance(b[0]) || a[0] - b[0] || a[1] - b[1]).slice(0, count);
+}
+
+/** Days 7-9 for a launch whose first hours had median `base`, from the past
+ * launches closest in size (or all of them when their sizes are unknown). */
+export function forecastFrom(samples, base, { bySize = true } = {}) {
+  const ratios = (bySize ? closestLaunches(samples, base) : samples).map(([, ratio]) => ratio);
+  const share = q => quantile(ratios, q);
+  return {
+    launches: ratios.length, pool: samples.length, ratio: share(.5), range: [share(.1), share(.9)],
+    median: base * share(.5), low: base * share(.1), high: base * share(.9),
+    probabilities: Object.fromEntries(FORECAST_RULES.thresholds.map(threshold =>
+      [threshold, ratios.filter(ratio => base * ratio >= threshold).length / ratios.length])),
+  };
 }
 
 function windowMedian(rows, startAt, hours, now) {
@@ -170,15 +220,14 @@ export function launchForecast(rows, startAt, now, model) {
   if (first === null || first < rule.floor) return null;
   const second = now >= startAt + 2 * DAY ? windowMedian(rows, startAt, 48, now) : null;
   const checkpoint = second === null ? 24 : 48, base = second ?? first;
-  const ratios = model.checkpoints[checkpoint];
-  if (ratios.length < rule.minLaunches) return null;
-  const share = q => quantile(ratios, q);
+  if (!(base > 0)) return null;
+  // Older files have only the ratios: every past launch is then used.
+  const sized = model.samples?.[checkpoint] ?? null;
+  const samples = sized ?? model.checkpoints[checkpoint].map(ratio => [null, ratio]);
+  if (samples.length < rule.minLaunches) return null;
   return {
-    checkpoint, base, first, launches: ratios.length, trainedThrough: model.trained_through,
-    ratio: share(.5), range: [share(.1), share(.9)],
-    median: base * share(.5), low: base * share(.1), high: base * share(.9),
-    probabilities: Object.fromEntries(rule.thresholds.map(threshold =>
-      [threshold, ratios.filter(ratio => base * ratio >= threshold).length / ratios.length])),
+    checkpoint, base, first, trainedThrough: model.trained_through,
+    ...forecastFrom(samples, base, { bySize: sized !== null }),
     backtest: model.backtest?.[checkpoint] ?? null,
   };
 }

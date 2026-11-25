@@ -302,6 +302,7 @@ test('a full release is its own launch, compared with releases, and its start ca
   assert.equal(launchStatus({ ...moved, start_at:'2026-10-06T11:00:00Z' }, 'zh', 'mixed'),
     '2026-10-07 · Steam 商店上市 · 上市前 5 小時就有人實況，從 10/06 19:00 起算 · 中文區 Twitch · 首週量測方式曾切換');
   assert.equal(launchStatus(full, 'global'), '2026-11-01 · Steam 正式上市（結束搶先體驗） · 全球 Twitch');
+  assert.equal(launchStatus({ ...moved, start_at:'2026-10-06T15:00:00Z' }, 'global'), '2026-10-07 · Steam 商店上市 · 全球 Twitch');
 });
 
 test('the launch curves file must be schema 2 with valid launches', () => {

@@ -11,9 +11,14 @@ against tests/fixtures/launch-start-cases.json.
 The forecast keeps, for every launch whose days 7-9 (hours 144-216 after the
 start) ended before today (00:00 Taiwan time), the ratio of those days' median
 to the median of its first 24 and 48 hours, so it is refitted once a day as
-launches complete their first week. The backtest beside it predicts each of
-those launches only from the launches that had completed by its own 24th or
-48th hour.
+launches complete their first week. Each launch is compared with the past
+launches closest to it in size (the median of those same first hours): the
+closer half, at least 40. Small launches can lose every viewer by days 7-9,
+big ones never did, so a big launch no longer inherits a small one's drop to
+zero. The site picks them the same way (src/features/twitch/launch-model.js);
+both are checked against tests/fixtures/launch-forecast-cases.json. The
+backtest beside it predicts each of those launches only from the launches that
+had completed by its own 24th or 48th hour.
 """
 from __future__ import annotations
 
@@ -52,6 +57,8 @@ FORECAST_CHECKPOINTS = (24, 48)
 FORECAST_TARGET = (144, 216)   # days 7-9 (1-based) after the start
 FORECAST_TARGET_HOURS = 36     # observed hours needed in the target days
 FORECAST_MIN_LAUNCHES = 20
+FORECAST_SHARE = 0.5           # compared with the closer half of past launches by size,
+FORECAST_NEIGHBOURS = 40       # and at least this many (all of them while there are fewer)
 THRESHOLDS = (100, 1000, 3000)
 
 
@@ -234,25 +241,46 @@ def game_hours(root, game_id, game, slots):
     return hours, chinese
 
 
+def closest(samples, base):
+    """The past launches (size, ratio) closest in size to ``base``: the closer half, at
+    least FORECAST_NEIGHBOURS. Size is compared as a multiple (100 is as close to 50 as
+    to 200); ties go to the smaller launch, then the lower ratio."""
+    count = max(FORECAST_NEIGHBOURS, math.ceil(len(samples) * FORECAST_SHARE))
+    if count >= len(samples):
+        return list(samples)
+    return sorted(samples, key=lambda sample: (max(sample[0], base) / min(sample[0], base), sample[0], sample[1]))[:count]
+
+
+def predict(samples, base):
+    """Days 7-9 for a launch whose first 24 or 48 hours had median ``base``: the median,
+    the 80% range and the chance of each threshold from the closest past launches."""
+    ratios = sorted(ratio for _, ratio in closest(samples, base))
+    return {"launches": len(ratios), "ratio": quantile(ratios, 0.5),
+            "median": base * quantile(ratios, 0.5), "low": base * quantile(ratios, 0.1),
+            "high": base * quantile(ratios, 0.9),
+            "chances": {threshold: sum(base * ratio >= threshold for ratio in ratios) / len(ratios)
+                        for threshold in THRESHOLDS}}
+
+
 def forecast(observations, trained_through):
-    """Ratios of days 7-9 to the first 24 and 48 hours, and how a rolling refit would have done."""
+    """Ratios of days 7-9 to the first 24 and 48 hours with each launch's size, and how
+    a rolling refit would have done."""
     known = [item for item in observations if item["target_end"] <= trained_through]
-    model = {"trained_through": iso(trained_through), "launches": len(known), "checkpoints": {}, "backtest": {}}
+    model = {"trained_through": iso(trained_through), "launches": len(known), "checkpoints": {},
+             "samples": {}, "backtest": {}}
     for checkpoint in FORECAST_CHECKPOINTS:
         usable = sorted((item for item in known if item[checkpoint]), key=lambda item: item["start"])
         model["checkpoints"][str(checkpoint)] = sorted(round(item["target"] / item[checkpoint], 4) for item in usable)
+        model["samples"][str(checkpoint)] = sorted([round(item[checkpoint], 1), round(item["target"] / item[checkpoint], 4)]
+                                                  for item in usable)
         cases = []
         for item in usable:
-            ratios = [other["target"] / other[checkpoint] for other in usable
-                      if other is not item and other["target_end"] <= item["start"] + checkpoint * HOUR]
-            if len(ratios) < FORECAST_MIN_LAUNCHES:
+            prior = [(other[checkpoint], other["target"] / other[checkpoint]) for other in usable
+                     if other is not item and other["target_end"] <= item["start"] + checkpoint * HOUR]
+            if len(prior) < FORECAST_MIN_LAUNCHES:
                 continue
-            ratios.sort()
-            estimate, actual = item[checkpoint] * median(ratios), item["target"]
-            low, high = (item[checkpoint] * quantile(ratios, share) for share in (0.1, 0.9))
-            chances = {threshold: sum(item[checkpoint] * ratio >= threshold for ratio in ratios) / len(ratios)
-                       for threshold in THRESHOLDS}
-            cases.append((estimate, actual, low, high, chances))
+            guess = predict(prior, item[checkpoint])
+            cases.append((guess["median"], item["target"], guess["low"], guess["high"], guess["chances"]))
         if not cases:
             continue
         misses = sorted(abs(math.log10((estimate + 1) / (actual + 1))) for estimate, actual, *_ in cases)

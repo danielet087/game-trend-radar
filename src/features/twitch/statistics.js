@@ -1,4 +1,5 @@
 import { analyzeStatistics } from './statistics-model.js';
+import { formatCount } from './number-format.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const modes = {
@@ -7,11 +8,10 @@ const modes = {
 };
 const metrics = { viewers: '總觀眾', streamers: '開台數', median: '合格頻道中位數' };
 const units = { viewers: '人', streamers: '台', median: '人／台' };
-const number = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 1 });
 const date = new Intl.DateTimeFormat('zh-TW', {
   timeZone: 'Asia/Taipei', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
 });
-const fmt = value => typeof value === 'number' && Number.isFinite(value) ? number.format(value) : '—';
+const fmt = value => typeof value === 'number' && Number.isFinite(value) ? formatCount(value) : '—';
 const pct = value => typeof value === 'number' && Number.isFinite(value) ? `${fmt(value * 100)}%` : '—';
 const at = hour => hour && Number.isFinite(Date.parse(hour)) ? date.format(new Date(hour)) : '—';
 const compact = value => value >= 10000 ? `${fmt(value / 10000)}萬` : fmt(value);

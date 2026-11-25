@@ -1,12 +1,12 @@
 import { analyzeCooldown, CHINESE_DAILY_HEAT_HITS, cooldownThreshold, cooldownVerdict, PEAK_COOLDOWN } from './cooldown-model.js';
 import { launchLine } from './launches.js';
+import { formatCount } from './number-format.js';
 
 const NS = 'http://www.w3.org/2000/svg', HOUR = 3600000;
 const finite = value => typeof value === 'number' && Number.isFinite(value);
-const number = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 1 });
 const clock = new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 const shortClock = new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' });
-const fmt = value => finite(value) ? number.format(value) : '—';
+const fmt = value => finite(value) ? formatCount(value) : '—';
 const at = value => value && Number.isFinite(Date.parse(value)) ? clock.format(new Date(value)) : '—';
 const shortAt = value => value && Number.isFinite(Date.parse(value)) ? shortClock.format(new Date(value)) : '—';
 const compact = value => value >= 10000 ? `${fmt(value / 10000)}萬` : fmt(value);

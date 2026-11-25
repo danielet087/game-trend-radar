@@ -1,0 +1,1 @@
+var e=new Intl.NumberFormat(`zh-TW`,{maximumFractionDigits:1}),t=new Intl.NumberFormat(`zh-TW`,{maximumFractionDigits:0});function n(n){return Math.abs(n)>=100?t.format(n):e.format(n)}export{n as t};

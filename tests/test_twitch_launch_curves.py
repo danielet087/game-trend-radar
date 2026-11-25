@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from scripts.build_twitch_launch_curves import build, launch_start
+from scripts.build_twitch_launch_curves import build, closest, launch_start, predict
 
 ROOT = Path(__file__).resolve().parents[1]
 HOUR = 3600
@@ -35,6 +35,28 @@ class LaunchStartCasesTests(unittest.TestCase):
                                          0 if status == "missing" else moment + 600)
                 result = launch_start(hours, launch, launch + case["now"] * HOUR, walk_back=case["walk_back"])
                 self.assertEqual(result, (launch + case["start"] * HOUR, case["basis"]))
+
+
+class LaunchForecastCasesTests(unittest.TestCase):
+    """The site (src/features/twitch/launch-model.js) runs the same cases."""
+
+    def test_shared_cases(self):
+        fixture = json.loads((ROOT / "tests/fixtures/launch-forecast-cases.json").read_text(encoding="utf-8"))
+        for case in fixture["cases"]:
+            with self.subTest(case["name"]):
+                samples = [tuple(sample) for sample in case["samples"]]
+                self.assertEqual(sorted(list(sample) for sample in closest(samples, case["base"])), case["chosen"])
+                guess = predict(samples, case["base"])
+                self.assertEqual(guess["launches"], case["launches"])
+                for key in ("ratio", "median", "low", "high"):
+                    self.assertAlmostEqual(guess[key], case[key], delta=1e-12 * max(1, abs(case[key])))
+                self.assertEqual({str(key): value for key, value in guess["chances"].items()}, case["chances"])
+
+    def test_a_big_launch_is_compared_with_big_launches(self):
+        samples = [(50 + n, 0.0) for n in range(20)] + [(1000 * (n + 1), 0.2) for n in range(60)]
+        guess = predict(samples, 100000)
+        self.assertEqual((guess["launches"], guess["chances"][3000]), (40, 1.0))
+        self.assertEqual(predict(samples[:40], 100000)["launches"], 40)
 
 
 class Series:
@@ -153,6 +175,10 @@ class LaunchCurvesTests(unittest.TestCase):
             self.assertEqual(forecast["checkpoints"]["24"].count(0.2), 40)
             self.assertEqual(sorted(set(forecast["checkpoints"]["24"])), [0.2, 0.3, 0.625])
             self.assertEqual(forecast["launches"], len(forecast["checkpoints"]["24"]))
+            # Each ratio is published beside the size it came from (the first 24 or 48 hours' median).
+            self.assertEqual(sorted(ratio for _, ratio in forecast["samples"]["24"]), forecast["checkpoints"]["24"])
+            self.assertEqual(forecast["samples"]["24"].count([1000, 0.2]), 40)
+            self.assertEqual(forecast["samples"]["48"].count([1000, 0.2]), 40)
             backtest = forecast["backtest"]["48"]
             self.assertGreater(backtest["launches"], 0)
             self.assertEqual(set(backtest["thresholds"]), {"100", "1000", "3000"})

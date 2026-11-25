@@ -1,12 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { FORECAST_RULES, START_RULES, forecastModel, launchAnchor, launchForecast, launchStart } from '../src/features/twitch/launch-model.js';
+import { FORECAST_RULES, START_RULES, closestLaunches, forecastFrom, forecastModel, launchAnchor, launchForecast, launchStart } from '../src/features/twitch/launch-model.js';
 
 const HOUR = 3600000, DAY = 24 * HOUR;
 const iso = at => new Date(at).toISOString().replace('.000Z', 'Z');
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/launch-start-cases.json', import.meta.url), 'utf8'));
 const launchAt = Date.parse(fixture.launch_at);
+const forecastCases = JSON.parse(readFileSync(new URL('./fixtures/launch-forecast-cases.json', import.meta.url), 'utf8'));
 
 // Rows like fullSeriesRows: one per tracked hour, later runs override earlier ones.
 function rowsFrom(runs, base = launchAt) {
@@ -82,6 +83,37 @@ test('the forecast uses 24 hours first, then 48, and stops when days 7-9 end', (
   assert.equal(launchForecast(rows, launchAt, launchAt + FORECAST_RULES.to * HOUR, model), null);
 });
 
+const close = (actual, expected) => Math.abs(actual - expected) <= 1e-12 * Math.max(1, Math.abs(expected));
+const bySize = (a, b) => a[0] - b[0] || a[1] - b[1];
+
+for (const item of forecastCases.cases) {
+  test(`forecast from the closest past launches (shared with the builder): ${item.name}`, () => {
+    assert.deepEqual(closestLaunches(item.samples, item.base).sort(bySize), item.chosen);
+    const result = forecastFrom(item.samples, item.base);
+    assert.equal(result.launches, item.launches);
+    assert.equal(result.pool, item.samples.length);
+    for (const key of ['ratio', 'median', 'low', 'high']) assert.ok(close(result[key], item[key]), `${key}: ${result[key]} vs ${item[key]}`);
+    assert.deepEqual(Object.fromEntries(Object.entries(result.probabilities).map(([key, value]) => [String(key), value])), item.chances);
+  });
+}
+
+test('with sizes a big launch is compared with big launches only; without them every launch counts', () => {
+  assert.deepEqual({ share: FORECAST_RULES.share, neighbours: FORECAST_RULES.neighbours }, { share: 0.5, neighbours: 40 });
+  // Twenty small launches lost every viewer; sixty bigger ones kept a fifth.
+  const sizes = [...Array.from({ length: 20 }, (_, i) => [50 + i, 0]), ...Array.from({ length: 60 }, (_, i) => [1000 * (i + 1), 0.2])];
+  const sized = forecastModel({ trained_through: '2026-11-24T16:00:00Z', checkpoints: { 24: sizes.map(([, r]) => r), 48: sizes.map(([, r]) => r) },
+    samples: { 24: sizes, 48: sizes } });
+  const rows = rowsFrom([[0, 30, 'observed', 100000]]);
+  const big = launchForecast(rows, launchAt, launchAt + 30 * HOUR, sized);
+  assert.deepEqual([big.launches, big.pool, big.probabilities[3000]], [40, 80, 1]);
+  assert.ok(close(big.median, 20000));
+  const pooled = launchForecast(rows, launchAt, launchAt + 30 * HOUR, { ...sized, samples: null });
+  assert.deepEqual([pooled.launches, pooled.pool, pooled.probabilities[3000]], [80, 80, 0.75]);
+  // Malformed sizes fall back to every launch.
+  const broken = forecastModel({ trained_through: '2026-11-24T16:00:00Z', checkpoints: { 24: [0.2], 48: [0.2] }, samples: { 24: [[0, 0.2]], 48: [[10, 0.2]] } });
+  assert.equal(broken.samples, null);
+});
+
 test('no forecast below 50 viewers in the first 24 hours, without enough hours or past launches', () => {
   const quiet = rowsFrom([[0, 48, 'observed', 49]]);
   assert.equal(launchForecast(quiet, launchAt, launchAt + 30 * HOUR, model), null);
@@ -104,6 +136,10 @@ test('forecast wording rounds to two figures, writes out the ends of the chances
     '上市前 5 天就已經有上市水準的實況，天數從 10/31 07:00 起算。');
   assert.equal(launchStartText({ basis:'pre_launch', launchAt, startAt:launchAt - 5 * HOUR }),
     '上市前 5 小時就已經有上市水準的實況，天數從 11/05 03:00 起算。');
+  // Streams that go live just before the unlock keep the start but are not called out.
+  assert.equal(launchStartText({ basis:'pre_launch', launchAt, startAt:launchAt - 2 * HOUR }), null);
+  assert.equal(launchStartText({ basis:'pre_launch', launchAt, startAt:launchAt - 3 * HOUR }),
+    '上市前 3 小時就已經有上市水準的實況，天數從 11/05 05:00 起算。');
   const rows = rowsFrom([[0, 30, 'observed', 1000]]);
   const early = launchForecast(rows, launchAt, launchAt + 30 * HOUR, model);
   const text = launchForecastText(early, 'zh');

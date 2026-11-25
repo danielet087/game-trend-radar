@@ -1,5 +1,5 @@
 import { fmt } from './presentation.js';
-import { FORECAST_RULES as F, LAUNCH_RULES as R, START_RULES as S, taipeiHour } from './launch-model.js';
+import { FORECAST_RULES as F, LAUNCH_RULES as R, START_RULES as S, leadText, startLead, taipeiHour } from './launch-model.js';
 
 // Days are counted every 24 hours from release, 1-based like the launch curves:
 // 上市第 1 天 is the first 24 hours, 上市第 3 天 is hours 48-72.
@@ -116,12 +116,12 @@ export function chance(probability) {
   return `${Math.round(probability * 20) * 5}%`;
 }
 
-/** Why the days start before the launch, or null when they start at the launch. */
+/** Why the days start before the launch, or null when they start at the launch
+ * or only a couple of hours before it. */
 export function launchStartText(anchor) {
-  if (anchor?.basis !== 'pre_launch') return null;
-  const hours = Math.round((anchor.launchAt - anchor.startAt) / 3600000);
-  const before = hours >= 48 ? `${Math.round(hours / 24)} 天` : `${hours} 小時`;
-  return `上市前 ${before}就已經有上市水準的實況，天數從 ${taipeiHour(anchor.startAt)} 起算。`;
+  const hours = anchor?.basis === 'pre_launch' ? startLead(anchor.launchAt, anchor.startAt) : null;
+  if (hours === null) return null;
+  return `上市前 ${leadText(hours)}就已經有上市水準的實況，天數從 ${taipeiHour(anchor.startAt)} 起算。`;
 }
 
 /** Title, explanation and the three chances for the game page's forecast. */
@@ -130,9 +130,11 @@ export function launchForecastText(forecast, region = 'global') {
   const scope = region === 'global' ? '' : '（全球觀眾）';
   const hours = forecast.checkpoint;
   const later = hours === 24 ? `；滿 48 小時後改用前 48 小時再算一次` : '';
+  const peers = forecast.launches < forecast.pool ? `首 ${hours} 小時人數最接近的 ${fmt(forecast.launches)} 款新作`
+    : `過去 ${fmt(forecast.launches)} 款新作`;
   return {
     title: `上市第 7～9 天約 ${about(forecast.median)} 人`,
-    text: `首 ${hours} 小時中位數 ${fmt(Math.round(forecast.base))} 人${scope}。照過去 ${fmt(forecast.launches)} 款新作，`
+    text: `首 ${hours} 小時中位數 ${fmt(Math.round(forecast.base))} 人${scope}。照${peers}，`
       + `第 7～9 天大約是首 ${hours} 小時的 ${Math.round(forecast.ratio * 100)}%；換成這款，中間八成落在 ${about(forecast.low)}～${about(forecast.high)} 人${later}。`,
     chances: F.thresholds.map(threshold => [threshold, chance(forecast.probabilities[threshold])]),
   };
@@ -141,8 +143,10 @@ export function launchForecastText(forecast, region = 'global') {
 /** The method behind the forecast, with how the published backtest did. */
 export function forecastRuleText(forecast) {
   const parts = [`上市後預估：${START_RULE_TEXT}首 24 小時中位數不到 ${fmt(F.floor)} 人的不預估。`
-    + `上市滿 24 小時用首 24 小時、滿 48 小時改用首 48 小時，乘上過去新作「第 7～9 天」跟同一段時間的比例；`
-    + `「還有 N 人的機率」是過去新作裡，照它的比例這款會到 N 人的比例。比例每天用已經看得到第 7～9 天的新作重算。`];
+    + `上市滿 24 小時用首 24 小時、滿 48 小時改用首 48 小時，乘上過去新作「第 7～9 天」跟同一段時間的比例。`
+    + `只拿同一段時間人數跟這款最接近的一半新作（至少 ${fmt(F.neighbours)} 款）來比，小遊戲跟小遊戲比、大遊戲跟大遊戲比`
+    + `（小遊戲到第 7～9 天可能一個人都沒有，大遊戲不會）。`
+    + `「還有 N 人的機率」是這些新作裡，照它的比例這款會到 N 人的比例。比例每天用已經看得到第 7～9 天的新作重算。`];
   const test = forecast?.backtest;
   if (test?.launches) {
     const likely = test.thresholds?.['1000'];
