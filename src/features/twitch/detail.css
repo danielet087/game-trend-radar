@@ -10,6 +10,10 @@ body[data-page="twitch-game"] { --page-wash:var(--violet-88); --page-wash-soft:v
 .tw-stream-action h3 { margin:3px 0 4px; color:var(--teal-29); font-size:var(--text-md); }
 .tw-stream-action p { margin:0; color:var(--green-33); font-size:var(--text-sm); line-height:1.7; }
 .tw-stream-action small { display:block; margin-top:7px; color:var(--green-39b); font-size:var(--text-xs); }
+.tw-stream-action .tw-launch-flag { margin-top:8px; padding:6px 10px; border-radius:var(--radius-sm); color:var(--white); background:var(--violet-42); font-weight:650; }
+.tw-launch-rule { margin-top:6px; color:var(--green-33); font-size:var(--text-xs); }
+.tw-launch-rule summary { width:max-content; min-height:32px; padding:6px 0; cursor:pointer; font-weight:650; }
+.tw-stream-action .tw-launch-rule p { font-size:var(--text-xs); line-height:1.65; }
 .tw-heat-overview:is([data-status="cooled"],[data-status="suspected"]) .tw-stream-action { border-color:var(--yellow-81); background:var(--paper); }
 .tw-heat-overview:is([data-status="cooled"],[data-status="suspected"]) .tw-stream-action h3 { color:var(--orange-35); }
 .tw-heat-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }

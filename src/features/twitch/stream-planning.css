@@ -29,6 +29,13 @@
 .tw-stream-game-copy { min-width:0; }
 .tw-stream-game-title { margin:0; color:var(--violet-17); font-size:var(--text-md); font-weight:750; line-height:1.35; overflow-wrap:anywhere; }
 .tw-stream-release { display:block; margin-top:3px; color:var(--violet-36); font-size:var(--text-xs); }
+.tw-stream-launch { display:grid; gap:3px; margin-top:5px; }
+.tw-stream-launch[hidden] { display:none; }
+.tw-stream-launch-line { display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 6px; margin:0; color:var(--violet-31); font-size:var(--text-xs); line-height:1.45; overflow-wrap:anywhere; }
+.tw-stream-launch-line strong { padding:1px 6px; border-radius:var(--radius-sm); color:var(--violet-31); background:var(--violet-91); font-weight:750; }
+.tw-stream-launch-line:is([data-launch="candidate"],[data-launch="burning"]) strong { color:var(--white); background:var(--violet-42); }
+.tw-stream-launch-line[data-launch^="trial"] strong { color:var(--green-34); background:var(--green-91); }
+.tw-stream-launch-line[data-launch="skip"] strong { color:var(--violet-36); background:var(--violet-90); }
 .tw-stream-game-actions { display:flex; flex-wrap:wrap; gap:0 12px; }
 .tw-stream-game-action { display:inline-flex; align-items:center; min-height:32px; color:var(--violet-32); font-size:var(--text-sm); font-weight:700; text-decoration:underline; text-underline-offset:3px; }
 .tw-stream-game-action:hover { color:var(--violet-21); }
@@ -45,7 +52,7 @@
 .tw-stream-sample-head { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:2px 5px; }
 .tw-stream-scope { display:inline-flex; align-items:baseline; flex-wrap:wrap; gap:0 6px; color:var(--stream-region-ink); font-size:var(--text-sm); font-weight:750; }
 .tw-stream-signal { padding:2px 7px; border-radius:var(--radius-sm); color:var(--violet-31); background:var(--violet-91); font-size:var(--text-sm); font-weight:750; line-height:1.45; }
-.tw-stream-sample:is([data-signal="hot"],[data-signal="rising"],[data-signal="breakout"],[data-signal="recovered"]) .tw-stream-signal { color:var(--green-34); background:var(--green-91); }
+.tw-stream-sample:is([data-signal="hot"],[data-signal="rising"],[data-signal="recovered"]) .tw-stream-signal { color:var(--green-34); background:var(--green-91); }
 .tw-stream-sample[data-signal="cooled"] .tw-stream-signal { color:var(--red-32); background:var(--orange-90); }
 .tw-stream-sample:is([data-signal="sporadic"],[data-signal="falling"],[data-signal="suspected"]) .tw-stream-signal { color:var(--orange-35); background:var(--yellow-92); }
 .tw-stream-sample[data-signal="insufficient"] .tw-stream-signal { color:var(--violet-36); background:var(--violet-90); }

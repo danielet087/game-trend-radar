@@ -53,9 +53,7 @@ function compareHeat(days, recentStart, region, rows) {
   const floor = STREAM_HEAT_FLOORS[region], target = Math.max(floor, previous * 1.5, previous + floor / 2);
   let signal = null;
   if (previous >= floor && change <= -25) signal = 'falling';
-  else if (recentValues.at(-1) >= target && recentValues.filter(value => value >= target).length >= 2) {
-    signal = observed.some(day => day.start < recentStart && day.value >= floor) ? 'rising' : 'breakout';
-  }
+  else if (recentValues.at(-1) >= target && recentValues.filter(value => value >= target).length >= 2) signal = 'rising';
   return { previous, recent, change, signal };
 }
 
@@ -190,7 +188,7 @@ export function analyzeStreamHeat(rows, { game, region = 'global', date, now = D
     else if (latest?.status === 'suspected') outlookSignal = 'suspected';
   }
   return {
-    date, signal, threshold, hits, validHours, median: day?.median ?? null,
+    date, signal, threshold, hits, validHours, median: day?.median ?? null, popularAt: data.popularAt,
     week:heatWeek(data.days, through), todayChange:open ? todayChange(available, start, now, region) : null,
     confirmedOn: signal === 'cooled' ? confirmationDate(data) : null,
     concentration: minimumHits && validHours >= MIN_CONCENTRATION_HOURS ? concentration(available, start, end, now) : null,

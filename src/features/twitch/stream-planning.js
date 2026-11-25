@@ -15,13 +15,15 @@ import { latestHistorySnapshot } from './history.js';
 import { readCurrentTwitchSnapshot, readPublishedJSON } from './load.js';
 import { normalize } from './snapshot.js';
 import { publicCatalog } from './model.js';
+import { launchAdvice, launchDays, launchInstant, steamAppOf } from './launch-model.js';
+import { LAUNCH_RULE_TEXT, launchAdviceShort, launchFlagShort } from './launch-advice.js';
 
 const comparisonRegions = regionsFor('compare');
 const shortDate = date => date.slice(5).replace('-', '/');
 const signalLabels = {
   hot:'有熱度', sporadic:'零星有熱度', low:'熱度偏低',
   cooled:'已退燒', suspected:'降溫觀察', recovered:'熱度回升', insufficient:'資料不足',
-  rising:'熱度上升', falling:'熱度下滑', breakout:'黑馬竄起',
+  rising:'熱度上升', falling:'熱度下滑',
 };
 
 function heatHref(id, date, record) {
@@ -125,6 +127,7 @@ export function initStreamPlanningPage() {
   $('streamTrendRule').textContent = `比較前後各 ${STREAM_HEAT_DAYS} 個已結束日。前期達全球 ${fmt(STREAM_HEAT_FLOORS.global)} 人或中文區 ${fmt(STREAM_HEAT_FLOORS.zh)} 人，且下降至少 25%，標示熱度下滑。`;
   $('streamDailyRule').textContent = `中文區達 ${chineseThreshold} 人至少 ${hits} 次為「有熱度」，1–${hits - 1} 次為「零星有熱度」，0 次為「熱度偏低」。缺測可能改變是否達到 ${hits} 次時顯示「資料不足」。`;
   $('streamGlobalRule').textContent = `全球用每日觀眾中位數，熱度門檻為 ${fmt(cooldownThreshold('global'))} 人。中文區趨勢用每日第 ${hits} 高觀眾數。趨勢比較每日至少需 12 筆有效觀測。`;
+  $('streamLaunchRule').textContent = LAUNCH_RULE_TEXT;
   $('streamWeekRule').textContent = `達標天數取最近 ${STREAM_HEAT_WEEK} 個已結束日，從有觀測的日期起算。今日觀眾與過去 ${STREAM_HEAT_WEEK} 日同時段比較，至少配對 ${MIN_PAIRED_HEAT_HOURS} 個時段才顯示明顯變動。`;
 
   function saveURL() {
@@ -180,7 +183,8 @@ export function initStreamPlanningPage() {
       actions.prepend(profile);
     }
     if (steamPage) linkProfile(steamPage);
-    copy.append(title, actions);
+    const launchLines = node('div', 'tw-stream-launch'); launchLines.hidden = true;
+    copy.append(title, launchLines, actions);
     gameInfo.append(copy);
     const comparisons = node('div', 'tw-stream-comparisons');
     function renderHeat(days, message) {
@@ -227,7 +231,7 @@ export function initStreamPlanningPage() {
         const release = node('time', 'tw-stream-release', `上市參考 ${reference.date.replaceAll('-', '/')}`);
         release.dateTime = reference.date;
         if (reference.source) release.title = reference.source;
-        copy.insertBefore(release, actions);
+        copy.insertBefore(release, launchLines);
       }
       if (record?.archive_eligible === true && Array.isArray(record.months) && record.months.length) {
         const analysis = node('a', 'tw-stream-game-action', '詳細分析');
@@ -235,12 +239,26 @@ export function initStreamPlanningPage() {
         actions.append(analysis);
       }
     }
+    // Worldwide launch labels: the dark-horse label for any launch, the trial
+    // advice only for games that never reached the popular threshold.
+    function renderLaunch(launch) {
+      const advice = launch?.small ? launchAdviceShort(launch) : null;
+      const lines = [[launch?.darkHorse?.kind, launchFlagShort(launch?.darkHorse)],
+        [launch?.stage === 'trial' ? `trial-${launch.trend ?? 'plain'}` : launch?.stage, advice]].filter(([, line]) => line);
+      launchLines.replaceChildren(...lines.map(([key, { label, text }]) => {
+        const line = node('p', 'tw-stream-launch-line');
+        line.dataset.launch = key;
+        line.append(node('strong', '', label), node('span', '', text));
+        return line;
+      }));
+      launchLines.hidden = !lines.length;
+    }
     card.append(gameInfo, comparisons);
     renderHeat();
-    return { card, consoleId: steamPage ? null : canonicalID(game.igdb_id), linkProfile, renderHistory, renderHeat };
+    return { card, consoleId: steamPage ? null : canonicalID(game.igdb_id), linkProfile, renderHistory, renderHeat, renderLaunch };
   }
 
-  async function observeGame(id, record, archive, date, now) {
+  async function observeGame(id, record, archive, date, now, releaseTimes) {
     if (!archive) return { message:'逐時資料暫時無法讀取' };
     if (!Array.isArray(record?.months) || !record.months.length) return { message:'尚無逐時紀錄' };
     try {
@@ -258,9 +276,14 @@ export function initStreamPlanningPage() {
         return [month, await archive.chunks.get(key)];
       })));
       const rows = fullSeriesRows(archive.index, chunks, id);
-      const days = comparisonRegions.map(region => [region,
-        analyzeStreamHeat(region === 'global' ? rows : projectRows(rows, region), { game:record, region, date, now })]);
-      return { days:Object.fromEntries(days) };
+      const days = Object.fromEntries(comparisonRegions.map(region => [region,
+        analyzeStreamHeat(region === 'global' ? rows : projectRows(rows, region), { game:record, region, date, now })]));
+      // As of the end of the chosen day, so a past date replays what was known then.
+      const asOf = Math.min(now, dateStart(date) + 24 * HOUR), latest = days.global?.outlook.latest;
+      const releaseAt = launchInstant(record.release_reference, releaseTimes.get(steamAppOf(record) ?? ''));
+      const launch = { ...launchAdvice({ days:launchDays(rows, releaseAt, asOf), releaseAt, now:asOf,
+        fallback:latest ? { date:latest.date, median:latest.median } : null }), small:!days.global?.popularAt };
+      return { days, launch };
     } catch { return { message:'逐時資料暫時無法讀取' }; }
   }
 
@@ -300,6 +323,7 @@ export function initStreamPlanningPage() {
         const profile = RadarData.normalize(raw, true);
         return profile ? [[String(profile.appid), RadarData.detailURL(profile)]] : [];
       }));
+      const releaseTimes = new Map((data.public_catalog?.games || []).map(raw => [String(raw.appid), raw.release_time_utc]));
       const rows = games.map(game => row(game, steamPages));
       results.replaceChildren(...rows.map(entry => entry.card));
       const consoleRows = rows.filter(entry => entry.consoleId);
@@ -320,8 +344,8 @@ export function initStreamPlanningPage() {
       await Promise.all(games.map(async (game, index) => {
         const id = game.game_id, record = archive?.index.games[id];
         rows[index].renderHistory(record, date);
-        const { days, message } = await observeGame(id, record, archive, date, now);
-        if (active()) rows[index].renderHeat(days, message);
+        const { days, message, launch } = await observeGame(id, record, archive, date, now, releaseTimes);
+        if (active()) { rows[index].renderHeat(days, message); rows[index].renderLaunch(launch); }
       }));
       if (!active()) return;
       status.textContent = `${scope} · 趨勢截至 ${shortDate(streamHeatThrough(date, now))}`;
