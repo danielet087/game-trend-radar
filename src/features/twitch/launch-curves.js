@@ -2,14 +2,17 @@ import { RadarStorage } from '../../data/storage.ts';
 import { CHINESE_DAILY_HEAT_HITS, cooldownThreshold } from './cooldown-model.js';
 import { regionNames, regionOf } from './audience-region.js';
 import { fmt, node } from './presentation.js';
-import { dateStart, dayOf } from './series.js';
+import { dateStart } from './series.js';
 import { quantile } from './statistics-model.js';
 import { HOUR, timestamp } from './metrics.js';
+import { currentLaunch } from './launches.js';
+import { taipeiHour } from './launch-model.js';
 
 const DAYS = 7;
 const DAY = 24 * HOUR;
 const MIN_PEERS = 5;
 const NS = 'http://www.w3.org/2000/svg';
+export const LAUNCH_KINDS = Object.freeze({ release:'Steam 商店上市', early_access:'Steam 搶先體驗', full_release:'Steam 正式上市（結束搶先體驗）' });
 const measured = value => Number.isFinite(value) && value >= 0;
 const threshold = cooldownThreshold('global');
 const validDaily = values => Array.isArray(values) && values.length === DAYS && values.every(value => value === null || measured(value));
@@ -17,14 +20,27 @@ const validChinese = value => value === undefined || value && validDaily(value.d
   Array.isArray(value.heat) && value.heat.length === DAYS && value.heat.every(on => on === null || typeof on === 'boolean') &&
   Array.isArray(value.measurement_sources) && value.measurement_sources.length === DAYS &&
   value.measurement_sources.every(source => [null, 'global_census', 'helix_language_filter', 'mixed'].includes(source));
+const validLaunch = launch => Object.hasOwn(LAUNCH_KINDS, launch?.kind) && Number.isFinite(dateStart(launch.date)) &&
+  Boolean(timestamp(launch.launch_at)) && Boolean(timestamp(launch.start_at)) && ['launch', 'pre_launch'].includes(launch.start_basis) &&
+  Date.parse(launch.start_at) <= Date.parse(launch.launch_at) && validDaily(launch.daily) && validChinese(launch.audience_regions?.zh);
 
-function validCurves(data) {
-  return data?.schema_version === 1 && Boolean(timestamp(data.generated_at)) && data.genres && typeof data.genres === 'object' &&
+// schema 2 (scripts/build_twitch_launch_curves.py): every launch of a game,
+// its days counted every 24 hours from its start, and the forecast's ratios.
+export function validCurves(data) {
+  return data?.schema_version === 2 && Boolean(timestamp(data.generated_at)) && data.genres && typeof data.genres === 'object' &&
     data.games && typeof data.games === 'object' && !Array.isArray(data.games) &&
-    Object.values(data.games).every(game => Number.isFinite(dateStart(game.date)) &&
-      ['early_access', 'standard_store_date'].includes(game.edition) && Array.isArray(game.genres) &&
-      game.genres.every(genre => typeof data.genres[genre] === 'string') &&
-      validDaily(game.daily) && validChinese(game.audience_regions?.zh));
+    Object.values(data.games).every(game => Array.isArray(game?.genres) && game.genres.every(genre => typeof data.genres[genre] === 'string') &&
+      Array.isArray(game.launches) && game.launches.length > 0 && game.launches.every(validLaunch));
+}
+
+// Early Access launches compare with Early Access launches; releases and full releases with each other.
+const group = kind => kind === 'early_access' ? 'early_access' : 'release';
+
+/** The game's entry for a launch kind: its full release, or else its first launch. */
+export function launchEntry(game, kind) {
+  const launches = game?.launches ?? [];
+  return kind === 'full_release' ? launches.find(launch => launch.kind === 'full_release') ?? null
+    : launches.find(launch => launch.kind !== 'full_release') ?? null;
 }
 
 function launchHeat(days) {
@@ -51,33 +67,41 @@ function launchHeat(days) {
   return { hot, observed, longest, firstHot, firstDrop, returnDay };
 }
 
-function scopedCurve(game, region) {
-  if (region === 'zh') return game.audience_regions?.zh;
-  return { daily: game.daily, heat: game.daily.map(value => measured(value) ? value >= threshold : null) };
+function scopedCurve(launch, region) {
+  if (region === 'zh') return launch.audience_regions?.zh;
+  return { daily: launch.daily, heat: launch.daily.map(value => measured(value) ? value >= threshold : null) };
 }
 
-export function launchComparison(data, id, genre, until = Infinity, region = 'global') {
-  const game = data.games[id];
-  const release = dateStart(game.date);
+/**
+ * This launch's first week against same-genre launches of the same group that
+ * had finished their first week before it started. Days end every 24 hours
+ * from the start; `until` hides days that ended later.
+ */
+export function launchComparison(data, id, genre, until = Infinity, region = 'global', kind = null) {
+  const launch = launchEntry(data.games[id], kind);
+  const start = Date.parse(launch.start_at);
   const published = Date.parse(data.generated_at);
   const cutoff = Number.isFinite(published) ? Math.min(until, published) : until;
-  const closedDays = Math.min(DAYS, Math.max(0, Math.floor((cutoff - release) / DAY) - 1));
-  const curve = scopedCurve(game, region);
+  const closedDays = Math.min(DAYS, Math.max(0, Math.floor((cutoff - start) / DAY)));
+  const curve = scopedCurve(launch, region);
   const methods = new Set(curve?.measurement_sources?.slice(0, closedDays).filter(Boolean));
   const measurementSource = methods.size > 1 ? 'mixed' : methods.values().next().value;
   const daily = Array.from({ length: DAYS }, (_, i) => i < closedDays ? curve?.daily[i] ?? null : null);
   const peers = Object.entries(data.games).flatMap(([otherId, other]) => {
-    if (otherId === id || other.edition !== game.edition || !other.genres.includes(genre) ||
-        dateStart(other.date) + (DAYS + 1) * DAY > Math.min(cutoff, release)) return [];
-    const peer = scopedCurve(other, region);
-    if (!peer || !peer.daily.every(measured)) return [];
-    if (region === 'zh' && (!measurementSource || measurementSource === 'mixed' ||
-        !peer.measurement_sources.every(source => source === measurementSource) || peer.heat.includes(null))) return [];
-    return [peer];
+    if (otherId === id || !other.genres.includes(genre)) return [];
+    return other.launches.flatMap(candidate => {
+      if (group(candidate.kind) !== group(launch.kind) ||
+          Date.parse(candidate.start_at) + DAYS * DAY > Math.min(cutoff, start)) return [];
+      const peer = scopedCurve(candidate, region);
+      if (!peer || !peer.daily.every(measured)) return [];
+      if (region === 'zh' && (!measurementSource || measurementSource === 'mixed' ||
+          !peer.measurement_sources.every(source => source === measurementSource) || peer.heat.includes(null))) return [];
+      return [peer];
+    });
   });
   const enoughPeers = peers.length >= MIN_PEERS;
   const typicalDay = enoughPeers ? daily.map((_, i) => quantile(peers.map(peer => peer.daily[i]), .5)) : null;
-  const retained = (value, start) => measured(value) && start > 0 ? value / start * 100 : null;
+  const retained = (value, first) => measured(value) && first > 0 ? value / first * 100 : null;
   const remainingOnDay7 = enoughPeers
     ? quantile(peers.map(peer => retained(peer.daily.at(-1), peer.daily[0])), .5) : null;
   const peerRuns = enoughPeers && closedDays ? peers.map(peer => launchHeat(peer.heat.slice(0, closedDays)).longest)
@@ -86,9 +110,18 @@ export function launchComparison(data, id, genre, until = Infinity, region = 'gl
     hot:peerRuns.length, longest:peerRuns.length >= MIN_PEERS ? quantile(peerRuns, .5) : null,
   } : null;
   const gameRemaining = measurementSource === 'mixed' ? null : retained(daily.at(-1), daily[0]);
-  return { game: { ...game, daily }, peers: peers.length, typicalDay, gameRemaining,
+  return { launch: { ...launch, daily }, peers: peers.length, typicalDay, gameRemaining,
     remainingOnDay7, closedDays, heat:launchHeat(curve?.heat.slice(0, closedDays) ?? []), peerHeat,
     region, measurementSource };
+}
+
+/** The status line: launch day, kind, where the days start, and the scope. */
+export function launchStatus(launch, region, measurementSource) {
+  const start = Date.parse(launch.start_at), before = Math.round((Date.parse(launch.launch_at) - start) / HOUR);
+  const moved = launch.start_basis === 'pre_launch'
+    ? ` · 上市前 ${before >= 48 ? `${Math.round(before / 24)} 天` : `${before} 小時`}就有人實況，從 ${taipeiHour(start)} 起算` : '';
+  const source = measurementSource === 'mixed' ? ' · 首週量測方式曾切換' : '';
+  return `${launch.date} · ${LAUNCH_KINDS[launch.kind]}${moved} · ${regionNames[region]} Twitch${source}`;
 }
 
 function svgNode(tag, attrs, value) {
@@ -161,7 +194,7 @@ function heatSummary({ closedDays, heat, peerHeat, peers, region }) {
   return summary;
 }
 
-function compactTable({ game, typicalDay }) {
+function compactTable({ launch, typicalDay }) {
   const table = node('table', 'tw-compare-table');
   const head = table.createTHead().insertRow();
   const labels = ['每日觀眾', '第 1 天', '第 3 天', '第 7 天'];
@@ -169,7 +202,7 @@ function compactTable({ game, typicalDay }) {
     const cell = node('th', '', label); cell.scope = 'col'; head.append(cell);
   }
   const body = table.createTBody();
-  for (const [label, values] of [['這款遊戲', game.daily], ['同類中位數', typicalDay]]) {
+  for (const [label, values] of [['這款遊戲', launch.daily], ['同類中位數', typicalDay]]) {
     if (!values) continue;
     const row = body.insertRow(), cell = node('th', '', label); cell.scope = 'row'; row.append(cell);
     for (const day of [1, 3, 7]) {
@@ -184,20 +217,18 @@ export function createLaunchCurves({ $, params, onChange }) {
   const section = $('launchCurves'), genre = $('launchCurveGenre'), status = $('launchCurveStatus');
   const results = $('launchCurveResults'), scope = $('launchCurveRegion');
   scope.value = regionOf(params.get('launch_region'));
-  let pending, game, gameId, cutoff, token = 0;
+  let pending, game, gameId, cutoff, kind, token = 0;
 
   function render(data, id) {
     const region = scope.value;
-    const comparison = launchComparison(data, id, genre.value, cutoff, region);
-    const { game, peers, typicalDay, gameRemaining, remainingOnDay7 } = comparison;
-    const releaseType = game.edition === 'early_access' ? 'Steam 搶先體驗' : 'Steam 商店上市';
-    const source = comparison.measurementSource === 'mixed' ? ' · 首週量測方式曾切換' : '';
-    status.textContent = `${game.date} · ${releaseType} · ${regionNames[region]} Twitch${source}`;
+    const comparison = launchComparison(data, id, genre.value, cutoff, region, kind);
+    const { launch, peers, typicalDay, gameRemaining, remainingOnDay7 } = comparison;
+    status.textContent = launchStatus(launch, region, comparison.measurementSource);
     results.replaceChildren();
     const legend = node('p', 'tw-launch-legend');
     legend.append(node('span', 'tw-launch-key tw-launch-key-game', '這款遊戲'));
     if (typicalDay) legend.append(node('span', 'tw-launch-key tw-launch-key-peer', `同類中位數 · ${fmt(peers)} 款`));
-    results.append(heatSummary(comparison), legend, viewerChart(game.daily, typicalDay, region), compactTable(comparison));
+    results.append(heatSummary(comparison), legend, viewerChart(launch.daily, typicalDay, region), compactTable(comparison));
     if (!typicalDay) results.append(node('p', 'tw-trial-coverage', `同類有 ${fmt(peers)} 款首週資料齊全。至少需要 ${MIN_PEERS} 款才顯示比較線。`));
     if (gameRemaining !== null || remainingOnDay7 !== null) {
       const format = value => value === null ? '—' : `${fmt(value)}%`;
@@ -214,11 +245,13 @@ export function createLaunchCurves({ $, params, onChange }) {
     if (pending) pending.then(data => { if (data && !section.hidden && data.games[gameId]) render(data, gameId); });
   });
   return {
+    // Days hide after the end of the selected range; the current launch decides
+    // which of an Early Access game's two launches is shown.
     async update(id, selectedGame, selectedEnd, refresh) {
-      const until = Math.min(dateStart(dayOf(Date.now())), dateStart(dayOf(selectedEnd)) + DAY);
+      const until = Math.min(Date.now(), selectedEnd + HOUR);
       if (!refresh && game === selectedGame && cutoff === until) return;
       const request = ++token;
-      game = selectedGame; gameId = id; cutoff = until;
+      game = selectedGame; gameId = id; cutoff = until; kind = currentLaunch(selectedGame, until)?.kind ?? null;
       section.hidden = true;
       const reference = selectedGame.release_reference;
       if (!reference?.steam_appid || reference.precision !== 'day') return;
@@ -228,7 +261,7 @@ export function createLaunchCurves({ $, params, onChange }) {
       if (request !== token) return;
       if (!data) { pending = null; game = null; return; }
       const entry = data.games[id];
-      if (!entry || entry.date !== reference.date || !entry.genres.length) return;
+      if (!entry || !launchEntry(entry, kind) || !entry.genres.length) return;
       const choice = params.get('launch_genre');
       genre.replaceChildren(...entry.genres.map(key => {
         const option = node('option', '', data.genres[key]); option.value = key; return option;

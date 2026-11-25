@@ -95,7 +95,7 @@ test('advice and labels read in Traditional Chinese with 1-based launch days', (
   assert.deepEqual(launchAdviceShort(advise([299, 900, 900])), { label: '先不用排', text: '首日 299 人' });
   assert.equal(launchAdviceShort({ stage: 'prelaunch' }), null);
   const flag = advise([600, 700, 900, 800], 4, { channels: day => [44, 50, 60][day] ?? 60 }).darkHorse;
-  assert.equal(launchFlagText(flag), '黑馬候選：上市第 3 天（48～72 小時）是首日的 1.5 倍，一般遊戲這時只剩約 36%。開台數 44→60。');
+  assert.equal(launchFlagText(flag), '黑馬候選：上市第 3 天（48～72 小時）是首日的 1.5 倍，一般遊戲這時只剩約 34%。開台數 44→60。');
   assert.match(launchFlagText(flag, 'zh'), /^黑馬候選（全球觀眾）：/);
   assert.deepEqual(launchFlagShort(flag), { label: '黑馬候選', text: '第 3 天是首日 1.5 倍 · 開台 44→60' });
   assert.deepEqual(launchFlagShort({ kind: 'burning', ratio: 11.5, day: 7 }), { label: '延燒中', text: '第 8 天是首日 11.5 倍' });
@@ -129,7 +129,7 @@ test('the latest whole day is compared with same-age launches from the third to 
   const { launchPeerShort, launchPeerText } = await import('../src/features/twitch/launch-advice.js');
   const days = medians => medians.map((median, index) => ({ index, median }));
   assert.deepEqual(peerComparison(days([1000, 700, 500, 400, 350, 330, 330, 330])),
-    { verdict: 'outlasting', day: 7, ratio: 0.33, typical: 0.141 });
+    { verdict: 'outlasting', day: 7, ratio: 0.33, typical: 0.129 });
   assert.equal(peerComparison(days([1000, 700, 300, 100, 50, 30, 20, 10])).verdict, 'fading');
   assert.equal(peerComparison(days([1000, 700, 300, 250])).verdict, 'typical');
   assert.equal(peerComparison(days([299, 700, 300, 250])), null, 'first day under 300');

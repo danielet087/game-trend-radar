@@ -88,7 +88,44 @@ test('the game page explains the trial advice and the dark-horse label', async (
   await page.goto('twitch-game.html?game=2');
   const flag = page.locator('#heatOverview-global .tw-launch-flag');
   await expect(flag).toHaveAttribute('data-flag', 'candidate');
-  await expect(flag).toHaveText('黑馬候選：上市第 3 天（48～72 小時）是首日的 2.3 倍，一般遊戲這時只剩約 36%。開台數 40→60。');
+  await expect(flag).toHaveText('黑馬候選：上市第 3 天（48～72 小時）是首日的 2.3 倍，一般遊戲這時只剩約 34%。開台數 40→60。');
   await expect(page.locator('#heatOverview-global .tw-stream-action h3')).not.toHaveText('值得試播一場');
+  expect(errors).toEqual([]);
+});
+
+test('the planning list and the game page forecast days 7-9 from the first 48 hours', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await mockLaunches(page);
+  // Forty past launches whose days 7-9 were 1% to 40% of their first hours.
+  const ratios = Array.from({ length: 40 }, (_, i) => (i + 1) / 100);
+  await page.route('**/data/twitch-launch-curves.json', route => route.fulfill({ json: {
+    schema_version: 2, generated_at: '2026-11-11T03:00:00Z', genres: { Action: '動作' }, games: {},
+    forecast: { trained_through: '2026-11-10T16:00:00Z', launches: 40, checkpoints: { 24: ratios, 48: ratios },
+      backtest: { 48: { launches: 30, median_miss: 2.8, within_range: 0.66, thresholds: {
+        100: { reached: 15, likely: 16, likely_reached: 12 }, 1000: { reached: 6, likely: 7, likely_reached: 6 },
+        3000: { reached: 3, likely: 2, likely_reached: 2 } } } } },
+  } }));
+  await page.goto('stream-planning.html?sort=viewers');
+  await page.locator('#streamSource').selectOption('twitch_new');
+  const horse = page.locator('.tw-stream-game[data-game="2"] .tw-stream-launch-line[data-launch="forecast"]');
+  await expect(horse.locator('strong')).toHaveText('第 7～9 天預估');
+  await expect(horse.locator('span')).toHaveText('約 1,000 人（100 人 超過 95% · 1,000 人 55% · 3,000 人 不到 5%）');
+  const small = page.locator('.tw-stream-game[data-game="1"] .tw-stream-launch-line[data-launch="forecast"] span');
+  await expect(small).toHaveText('約 72 人（100 人 30% · 1,000 人 不到 5% · 3,000 人 不到 5%）');
+  await page.locator('.tw-stream-method summary').click();
+  await expect(page.locator('#streamForecastRule')).toContainText('首 48 小時版 30 款');
+  await expect(page.locator('#streamForecastRule')).toContainText('說「還有 1,000 人」機率過半的 7 款，6 款真的有');
+  await page.goto('twitch-game.html?game=2');
+  const forecast = page.locator('#heatOverview-global .tw-launch-forecast');
+  await expect(forecast.locator('h3')).toHaveText('上市第 7～9 天約 1,000 人');
+  await expect(forecast.locator('p').first()).toHaveText(
+    '首 48 小時中位數 5,000 人。照過去 40 款新作，第 7～9 天大約是首 48 小時的 21%；換成這款，中間八成落在 250～1,800 人。');
+  await expect(forecast.locator('.tw-forecast-caption')).toHaveText('第 7～9 天還有這麼多人的機率');
+  await expect(forecast.locator('dt')).toHaveText(['100 人', '1,000 人', '3,000 人']);
+  await expect(forecast.locator('dd')).toHaveText(['超過 95%', '55%', '不到 5%']);
+  await forecast.locator('.tw-launch-rule summary').click();
+  await expect(forecast.locator('.tw-launch-rule p')).toContainText('落在中間八成範圍內的 66%');
+  await expect(page.locator('#heatOverview-global [data-flag="launch-start"]')).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   expect(errors).toEqual([]);
 });

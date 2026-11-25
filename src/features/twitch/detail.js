@@ -12,8 +12,8 @@ import { dailyRows } from './daily-series.js';
 import { renderHeatOverview } from './heat-overview.js';
 import { remainingAudienceTrend } from './stream-heat-model.js';
 import { createTrialTimeComparison } from './trial-time-comparison.js';
-import { createLaunchCurves } from './launch-curves.js';
-import { launchAdvice, launchDays, launchInstant, steamAppOf } from './launch-model.js';
+import { createLaunchCurves, validCurves } from './launch-curves.js';
+import { forecastModel, launchAdvice, launchAnchor, launchDays, launchForecast, steamAppOf } from './launch-model.js';
 import { currentLaunch, launchPeaks, waitingText } from './launches.js';
 
 export function initTwitchDetail() {
@@ -54,14 +54,19 @@ export function initTwitchDetail() {
   }
   // Steam's release time to the hour lives in the game's own file; without it
   // the launch rules count from 00:00 Taiwan time of the release date.
-  async function releaseInstant() {
-    const reference = currentLaunch(game, Date.now()), appid = steamAppOf(game);
-    if (reference?.precision !== 'day') return null;
-    if (appid && releaseTime?.appid !== appid) {
+  async function steamReleaseTime() {
+    const appid = steamAppOf(game);
+    if (!appid) return null;
+    if (releaseTime?.appid !== appid) {
       const file = await RadarStorage.loadGame(appid, { allowStale: false }).catch(() => null);
       releaseTime = { appid, value: file?.release_time_utc ?? null };
     }
-    return launchInstant(reference, appid ? releaseTime.value : null);
+    return releaseTime.value;
+  }
+  // The forecast's ratios ride along with the launch curves.
+  async function forecastRatios() {
+    const data = await RadarStorage.readJSON('./data/twitch-launch-curves.json', validCurves, { allowStale: false });
+    return forecastModel(data?.forecast);
   }
   function panels(container, mode, kind) {
     container.replaceChildren(); container.classList.toggle('tw-region-compare', mode === 'compare');
@@ -178,14 +183,17 @@ export function initTwitchDetail() {
     const roots = panels($('heatOverviewPanels'), mode, 'heatOverview');
     roots.forEach((root, region) => { root.className = 'tw-heat-overview'; renderHeatOverview(root, { status: 'loading', label: '正在整理全期熱度…', scope: regionNames[region] }); });
     try {
-      const [full, releaseAt] = await Promise.all([fullHistoryLoader(), releaseInstant().catch(() => null)]);
+      const [full, releaseTimeUtc, model] = await Promise.all([fullHistoryLoader(), steamReleaseTime().catch(() => null),
+        forecastRatios().catch(() => null)]);
       if (disposed || token !== summaryRequest || version !== request) return;
-      // Launch advice and dark-horse labels always read worldwide viewers.
+      // Launch advice, dark-horse labels and the forecast always read worldwide viewers.
       const globalRows = projectRows(full, 'global'), now = Date.now();
       const globalData = analyzeCooldown(globalRows, { region: 'global', now });
       const fallback = globalData.latest.complete ? { date: globalData.latest.day, median: globalData.latest.median } : null;
-      const launch = { ...launchAdvice({ days: launchDays(globalRows, releaseAt, now), releaseAt, now, fallback }),
-        small: !globalData.popularAt, peaks: launchPeaks(globalRows, game, now) };
+      const anchor = launchAnchor(game, globalRows, now, releaseTimeUtc), startAt = anchor?.startAt ?? null;
+      const launch = { ...launchAdvice({ days: launchDays(globalRows, startAt, now), releaseAt: startAt, now, fallback }),
+        small: !globalData.popularAt, peaks: launchPeaks(globalRows, game, now), anchor,
+        forecast: launchForecast(globalRows, startAt, now, model) };
       roots.forEach((root, region) => {
         // Every region judges heat on the viewers actually observed, before the release too.
         const scoped = projectRows(full, region);

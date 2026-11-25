@@ -15,9 +15,10 @@ import { latestHistorySnapshot } from './history.js';
 import { readCurrentTwitchSnapshot, readPublishedJSON } from './load.js';
 import { normalize } from './snapshot.js';
 import { publicCatalog } from './model.js';
-import { launchAdvice, launchDays, launchInstant, steamAppOf } from './launch-model.js';
-import { currentLaunch, launchLine, launchPeakText, launchPeaks } from './launches.js';
-import { LAUNCH_RULE_TEXT, PEER_RULE_TEXT, launchAdviceShort, launchFlagShort, launchPeerShort } from './launch-advice.js';
+import { forecastModel, launchAdvice, launchAnchor, launchDays, launchForecast, steamAppOf } from './launch-model.js';
+import { launchLine, launchPeakText, launchPeaks } from './launches.js';
+import { LAUNCH_RULE_TEXT, PEER_RULE_TEXT, forecastRuleText, launchAdviceShort, launchFlagShort, launchForecastShort, launchPeerShort } from './launch-advice.js';
+import { validCurves } from './launch-curves.js';
 
 const comparisonRegions = regionsFor('compare');
 const shortDate = date => date.slice(5).replace('-', '/');
@@ -262,7 +263,7 @@ export function initStreamPlanningPage() {
         : [`peer-${launch?.peer?.verdict}`, launchPeerShort(launch?.peer)];
       const lines = [flag,
         [launch?.stage === 'trial' ? `trial-${launch.trend ?? 'plain'}` : launch?.stage, advice],
-        ['full-release-peak', launchPeakText(launch?.peaks)]].filter(([, line]) => line);
+        ['full-release-peak', launchPeakText(launch?.peaks)], ['forecast', launchForecastShort(launch?.forecast)]].filter(([, line]) => line);
       launchLines.replaceChildren(...lines.map(([key, { label, text }]) => {
         const line = node('p', 'tw-stream-launch-line');
         line.dataset.launch = key;
@@ -276,7 +277,7 @@ export function initStreamPlanningPage() {
     return { card, consoleId: steamPage ? null : canonicalID(game.igdb_id), linkProfile, renderHistory, renderHeat, renderLaunch };
   }
 
-  async function observeGame(id, record, archive, date, now, releaseTimes) {
+  async function observeGame(id, record, archive, date, now, releaseTimes, model) {
     if (!archive) return { message:'逐時資料暫時無法讀取' };
     if (!Array.isArray(record?.months) || !record.months.length) return { message:'尚無逐時紀錄' };
     try {
@@ -298,11 +299,12 @@ export function initStreamPlanningPage() {
         analyzeStreamHeat(region === 'global' ? rows : projectRows(rows, region), { game:record, region, date, now })]));
       // As of the end of the chosen day, so a past date replays what was known then.
       const asOf = Math.min(now, dateStart(date) + 24 * HOUR), latest = days.global?.outlook.latest;
-      // An Early Access game's full release is a launch of its own.
-      const releaseAt = launchInstant(currentLaunch(record, asOf), releaseTimes.get(steamAppOf(record) ?? ''));
-      const launch = { ...launchAdvice({ days:launchDays(rows, releaseAt, asOf), releaseAt, now:asOf,
+      // An Early Access game's full release is a launch of its own; streams at
+      // launch level just before a launch move where its days start.
+      const anchor = launchAnchor(record, rows, asOf, releaseTimes.get(steamAppOf(record) ?? '')), startAt = anchor?.startAt ?? null;
+      const launch = { ...launchAdvice({ days:launchDays(rows, startAt, asOf), releaseAt:startAt, now:asOf,
         fallback:latest ? { date:latest.date, median:latest.median } : null }), small:!days.global?.popularAt,
-        peaks:launchPeaks(rows, record, asOf) };
+        peaks:launchPeaks(rows, record, asOf), anchor, forecast:launchForecast(rows, startAt, asOf, model) };
       return { days, launch };
     } catch { return { message:'逐時資料暫時無法讀取' }; }
   }
@@ -324,7 +326,10 @@ export function initStreamPlanningPage() {
       source = pending;
     }
     try {
-      const [data, archive] = await Promise.all([getSnapshot(date, today, force), source]);
+      const [data, archive, curves] = await Promise.all([getSnapshot(date, today, force), source,
+        read('./data/twitch-launch-curves.json', validCurves, force).catch(() => null)]);
+      const model = forecastModel(curves?.forecast);
+      $('streamForecastRule').textContent = forecastRuleText(model && { checkpoint:48, backtest:model.backtest?.['48'] });
       if (!active()) return;
       loaded = archive;
       renderSearch();
@@ -364,7 +369,7 @@ export function initStreamPlanningPage() {
       await Promise.all(games.map(async (game, index) => {
         const id = game.game_id, record = archive?.index.games[id];
         rows[index].renderHistory(record, date);
-        const { days, message, launch } = await observeGame(id, record, archive, date, now, releaseTimes);
+        const { days, message, launch } = await observeGame(id, record, archive, date, now, releaseTimes, model);
         if (active()) { rows[index].renderHeat(days, message); rows[index].renderLaunch(launch); }
       }));
       if (!active()) return;

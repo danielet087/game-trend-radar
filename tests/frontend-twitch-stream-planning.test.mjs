@@ -5,7 +5,7 @@ import { projectRows } from '../src/features/twitch/region-views.js';
 import { CHINESE_MEASUREMENT_CHANGE_AT } from '../src/features/twitch/audience-region.js';
 import { latestHistorySnapshot } from '../src/features/twitch/history.js';
 import { compareTrialTimes, compareViewerTier, trialWindow } from '../src/features/twitch/stream-planning-model.js';
-import { launchComparison } from '../src/features/twitch/launch-curves.js';
+import { launchComparison, launchEntry, launchStatus, validCurves } from '../src/features/twitch/launch-curves.js';
 import { analyzeStreamHeat, remainingAudienceTrend, streamHeatDate } from '../src/features/twitch/stream-heat-model.js';
 import { analyzeCooldown } from '../src/features/twitch/cooldown-model.js';
 import { streamerAdvice } from '../src/features/twitch/heat-overview.js';
@@ -258,44 +258,82 @@ test('viewer tiers use the Chinese collection active at the latest selected hour
   });
 });
 
-test('launch curves use complete older peers in the same edition and hide values after the selected date', () => {
-  const row = { date:'2026-10-01', edition:'standard_store_date', genres:['Action'], daily:[100,90,80,70,60,50,40] };
-  const game = { ...row, date:'2026-11-01', daily:[200,200,160,150,130,110,80] };
-  const games = Object.fromEntries([1,2,3,4,5].map(id => [String(id), row]));
-  const payload = { games:{ ...games, '6':game,
-    '7':{ ...row, edition:'early_access' }, '8':{ ...row, date:'2026-10-29' },
-    '9':{ ...row, daily:[100,null,80,70,60,50,40] } } };
-  const selected = launchComparison(payload, '6', 'Action', dateStart('2026-11-05'));
+// A launch entry of twitch-launch-curves.json (schema 2): days every 24 hours from its start.
+const curveLaunch = (date, daily, extra = {}) => ({ kind:'release', date, launch_at:iso(dateStart(date)),
+  start_at:iso(dateStart(date)), start_basis:'launch', daily, ...extra });
+const curveGame = (launches, genres = ['Action']) => ({ genres, launches });
+
+test('launch curves use complete older peers in the same group and hide days that end after the selected time', () => {
+  const peer = curveLaunch('2026-10-01', [100,90,80,70,60,50,40]);
+  const games = Object.fromEntries([1,2,3,4,5].map(id => [String(id), curveGame([peer])]));
+  const payload = { games:{ ...games, '6':curveGame([curveLaunch('2026-11-01', [200,200,160,150,130,110,80])]),
+    '7':curveGame([{ ...peer, kind:'early_access' }]), '8':curveGame([curveLaunch('2026-10-29', peer.daily)]),
+    '9':curveGame([curveLaunch('2026-10-01', [100,null,80,70,60,50,40])]),
+    '10':curveGame([peer], ['Strategy']) } };
+  const selected = launchComparison(payload, '6', 'Action', dateStart('2026-11-04'));
   assert.equal(selected.peers, 5);
-  assert.deepEqual(selected.typicalDay, row.daily);
-  assert.deepEqual(selected.game.daily, [200,200,160,null,null,null,null]);
+  assert.deepEqual(selected.typicalDay, peer.daily);
+  assert.deepEqual(selected.launch.daily, [200,200,160,null,null,null,null]);
   assert.equal(selected.gameRemaining, null);
   assert.equal(selected.remainingOnDay7, 40);
   assert.equal(selected.closedDays, 3);
   assert.deepEqual(selected.heat, { hot:0, observed:3, longest:0, firstHot:null, firstDrop:null, returnDay:null });
   assert.deepEqual(selected.peerHeat, { hot:0, longest:null });
+  // An hour short of the third day's end keeps it hidden.
+  assert.equal(launchComparison(payload, '6', 'Action', dateStart('2026-11-04') - 3600000).closedDays, 2);
+});
+
+test('a full release is its own launch, compared with releases, and its start can come before the launch', () => {
+  const peer = curveLaunch('2026-10-01', [100,90,80,70,60,50,40]);
+  const games = Object.fromEntries([1,2,3,4,5].map(id => [String(id), curveGame([{ ...peer, kind:id === 1 ? 'full_release' : 'release' }])]));
+  const early = { ...curveLaunch('2025-03-01', [50,40,30,30,20,20,20]), kind:'early_access' };
+  const full = { ...curveLaunch('2026-11-01', [900,600,500,400,300,300,200]), kind:'full_release' };
+  games['6'] = curveGame([early, full]);
+  assert.equal(launchEntry(games['6'], 'full_release'), full);
+  assert.equal(launchEntry(games['6'], 'early_access'), early);
+  assert.equal(launchEntry(curveGame([early]), 'full_release'), null);
+  const comparison = launchComparison({ games }, '6', 'Action', Infinity, 'global', 'full_release');
+  assert.equal(comparison.launch.kind, 'full_release');
+  assert.equal(comparison.peers, 5);
+  assert.deepEqual(comparison.launch.daily, full.daily);
+  assert.equal(launchComparison({ games }, '6', 'Action', Infinity, 'global', 'early_access').peers, 0);
+  const moved = { ...curveLaunch('2026-10-07', Array(7).fill(5000)), launch_at:'2026-10-06T16:00:00Z', start_at:'2026-10-01T15:00:00Z', start_basis:'pre_launch' };
+  assert.equal(launchStatus(moved, 'global'), '2026-10-07 · Steam 商店上市 · 上市前 5 天就有人實況，從 10/01 23:00 起算 · 全球 Twitch');
+  assert.equal(launchStatus({ ...moved, start_at:'2026-10-06T11:00:00Z' }, 'zh', 'mixed'),
+    '2026-10-07 · Steam 商店上市 · 上市前 5 小時就有人實況，從 10/06 19:00 起算 · 中文區 Twitch · 首週量測方式曾切換');
+  assert.equal(launchStatus(full, 'global'), '2026-11-01 · Steam 正式上市（結束搶先體驗） · 全球 Twitch');
+});
+
+test('the launch curves file must be schema 2 with valid launches', () => {
+  const data = { schema_version:2, generated_at:'2026-11-10T00:00:00Z', genres:{ Action:'動作' },
+    games:{ '1':curveGame([curveLaunch('2026-11-01', Array(7).fill(null))]) }, forecast:null };
+  assert.equal(validCurves(data), true);
+  assert.equal(validCurves({ ...data, schema_version:1 }), false);
+  assert.equal(validCurves({ ...data, games:{ '1':curveGame([]) } }), false);
+  const late = { ...curveLaunch('2026-11-01', Array(7).fill(null)), start_at:'2026-11-02T00:00:00Z' };
+  assert.equal(validCurves({ ...data, games:{ '1':curveGame([late]) } }), false);
+  assert.equal(validCurves({ ...data, games:{ '1':curveGame([{ ...late, start_at:late.launch_at, kind:'beta' }]) } }), false);
 });
 
 test('launch heat counts runs and visible re-entry using the same number of days for peers', () => {
-  const date = '2026-11-01', edition = 'standard_store_date', genres = ['Action'];
-  const peer = { date:'2026-10-15', edition, genres, daily:[4000,3000,2400,2500,3000,3000,3000] };
-  const games = Object.fromEntries([1,2,3,4,5].map(id => [String(id), peer]));
-  games['6'] = { date, edition, genres, daily:[3000,5000,2500,2400,2500,3600,3700] };
+  const peer = curveLaunch('2026-10-15', [4000,3000,2400,2500,3000,3000,3000]);
+  const games = Object.fromEntries([1,2,3,4,5].map(id => [String(id), curveGame([peer])]));
+  games['6'] = curveGame([curveLaunch('2026-11-01', [3000,5000,2500,2400,2500,3600,3700])]);
   const data = { generated_at:'2026-11-10T00:00:00+08:00', games };
   const full = launchComparison(data, '6', 'Action');
   assert.deepEqual(full.heat, { hot:4, observed:7, longest:2, firstHot:1, firstDrop:3, returnDay:6 });
   assert.deepEqual(full.peerHeat, { hot:5, longest:3 });
-  const early = launchComparison(data, '6', 'Action', dateStart('2026-11-06'));
+  const early = launchComparison(data, '6', 'Action', dateStart('2026-11-05'));
   assert.deepEqual(early.heat, { hot:2, observed:4, longest:2, firstHot:1, firstDrop:3, returnDay:null });
   assert.deepEqual(early.peerHeat, { hot:5, longest:2 });
 });
 
 test('launch heat stops at the published day and does not infer a change across missing days', () => {
-  const games = { '1':{ date:'2026-11-01', edition:'early_access', genres:['Action'], daily:[3000,null,0,4500,6000,7000,7500] } };
-  const data = { generated_at:'2026-11-06T00:00:00+08:00', games };
+  const games = { '1':curveGame([{ ...curveLaunch('2026-11-01', [3000,null,0,4500,6000,7000,7500]), kind:'early_access' }]) };
+  const data = { generated_at:'2026-11-05T00:00:00+08:00', games };
   const result = launchComparison(data, '1', 'Action');
   assert.equal(result.closedDays, 4);
-  assert.deepEqual(result.game.daily, [3000,null,0,4500,null,null,null]);
+  assert.deepEqual(result.launch.daily, [3000,null,0,4500,null,null,null]);
   assert.deepEqual(result.heat, { hot:2, observed:3, longest:1, firstHot:1, firstDrop:null, returnDay:null });
   assert.equal(result.peerHeat, null);
 });
@@ -304,15 +342,13 @@ test('Chinese launch heat retains exact hourly threshold decisions and matches p
   const legacy = 'global_census', independent = 'helix_language_filter';
   const curve = { daily:[80,90,12,30,50,70,80], heat:[true,true,false,false,false,true,true],
     measurement_sources:Array(7).fill(legacy) };
-  const candidate = { date:'2026-10-01', edition:'standard_store_date', genres:['Action'], daily:Array(7).fill(200),
-    audience_regions:{ zh:curve } };
-  const game = { ...candidate, date:'2026-11-01', audience_regions:{ zh:{ ...curve,
-    measurement_sources:[legacy,legacy,legacy,legacy,legacy,independent,independent] } } };
-  const games = Object.fromEntries([1,2,3,4,5].map(id => [String(id), candidate]));
-  games['6'] = { ...candidate, audience_regions:{ zh:{ ...curve, measurement_sources:Array(7).fill(independent) } } };
-  games['7'] = game;
+  const candidate = curveLaunch('2026-10-01', Array(7).fill(200), { audience_regions:{ zh:curve } });
+  const games = Object.fromEntries([1,2,3,4,5].map(id => [String(id), curveGame([candidate])]));
+  games['6'] = curveGame([{ ...candidate, audience_regions:{ zh:{ ...curve, measurement_sources:Array(7).fill(independent) } } }]);
+  games['7'] = curveGame([curveLaunch('2026-11-01', Array(7).fill(200), { audience_regions:{ zh:{ ...curve,
+    measurement_sources:[legacy,legacy,legacy,legacy,legacy,independent,independent] } } })]);
   const data = { games };
-  const early = launchComparison(data, '7', 'Action', dateStart('2026-11-06'), 'zh');
+  const early = launchComparison(data, '7', 'Action', dateStart('2026-11-05'), 'zh');
   assert.equal(early.peers, 5);
   assert.equal(early.measurementSource, legacy);
   assert.deepEqual(early.heat, { hot:2, observed:4, longest:2, firstHot:1, firstDrop:3, returnDay:null });

@@ -2,7 +2,7 @@ import { node, fmt, time } from './presentation.js';
 import { releaseDayLabel } from './cooldown.js';
 import { HOUR } from './metrics.js';
 import { MIN_CONCENTRATION_HOURS, MIN_PAIRED_HEAT_HOURS, STREAM_HEAT_WEEK } from './stream-heat-model.js';
-import { LAUNCH_RULE_TEXT, launchAdviceText, launchFlagText, launchPeerText } from './launch-advice.js';
+import { LAUNCH_RULE_TEXT, forecastRuleText, launchAdviceText, launchFlagText, launchForecastText, launchPeerText, launchStartText } from './launch-advice.js';
 import { PEAK_COOLDOWN } from './cooldown-model.js';
 import { launchPeakText } from './launches.js';
 
@@ -77,6 +77,26 @@ export function streamerAdvice({ data, status, basis, historical, launch }, now 
   }
 }
 
+// The week-later forecast from the first 24 or 48 hours (worldwide viewers).
+function renderForecast(snapshot) {
+  const forecast = snapshot.launch?.forecast, text = launchForecastText(forecast, snapshot.region);
+  if (!text) return null;
+  const section = node('section', 'tw-launch-forecast');
+  section.dataset.checkpoint = String(forecast.checkpoint);
+  section.append(node('span', '', '上市後預估'), node('h3', '', text.title), node('p', '', text.text));
+  const chances = node('dl', 'tw-forecast-chances');
+  for (const [threshold, value] of text.chances) {
+    const item = node('div');
+    item.dataset.threshold = String(threshold);
+    item.append(node('dt', '', `${fmt(threshold)} 人`), node('dd', '', value));
+    chances.append(item);
+  }
+  const rule = node('details', 'tw-launch-rule');
+  rule.append(node('summary', '', '判斷方式'), node('p', '', forecastRuleText(forecast)));
+  section.append(node('p', 'tw-forecast-caption', '第 7～9 天還有這麼多人的機率'), chances, rule);
+  return section;
+}
+
 export function renderHeatOverview(root, snapshot) {
   if (!root) return;
   root.hidden = false;
@@ -102,6 +122,8 @@ export function renderHeatOverview(root, snapshot) {
       ? ['peak-cooled', `已退燒：連續 ${data.peakCooldown.lowDays} 個可判定日${belowPeak(data.peakCooldown)}。`] : [],
     // After an Early Access game's full release: did it make a new peak?
     ['full-release-peak', launchPeakText(snapshot.launch?.peaks)?.text],
+    // Streams at launch level before the launch move where its days start.
+    ['launch-start', launchStartText(snapshot.launch?.anchor)],
   ];
   for (const [kind, text] of flags) {
     if (!text) continue;
@@ -123,6 +145,7 @@ export function renderHeatOverview(root, snapshot) {
       ? '這裡依全球觀眾判斷，中文區還沒有自己的標準。' : '') + LAUNCH_RULE_TEXT));
     action.append(rule);
   }
+  const forecast = snapshot.historical ? null : renderForecast(snapshot);
   const peak = data.relativeDecline.peak;
   // The first cooldown either rule confirmed: the fixed threshold or the own peak.
   const first = [[data.episodes[0], 'threshold'], [data.peakCooldown?.episodes[0], 'peak']]
@@ -149,6 +172,6 @@ export function renderHeatOverview(root, snapshot) {
   if (firstDay) note.append(node('span', '', ` 自${firstDay}開始觀測。`));
   else note.append(node('span', '', ' 上市日尚未確認時顯示觀測日期。'));
   const link = node('a', '', '查看判定依據與高峰衰退紀錄 ↓'); link.href = '#historyCooldown';
-  root.append(action, cards, note, link);
+  root.append(action, ...(forecast ? [forecast] : []), cards, note, link);
   if (snapshot.remainingTrend) root.append(renderRemainingTrend(snapshot.remainingTrend));
 }
