@@ -1,5 +1,6 @@
 import { count } from './metrics.js';
 import { dateStart } from './series.js';
+import { formatCount as fmt } from './number-format.js';
 
 // A game can launch twice: Early Access, when everyone can already play, and
 // the full release, which may come years later. The Twitch backend publishes
@@ -71,8 +72,6 @@ export function launchPeaks(rows, record, asOf) {
   return { earlyAccess, fullRelease, ratio: earlyAccess > 0 ? fullRelease / earlyAccess : null,
     newPeak: fullRelease > earlyAccess };
 }
-
-const fmt = value => new Intl.NumberFormat('zh-TW').format(value);
 
 /** One line for the full release's peak against Early Access. */
 export function launchPeakText(peaks) {

@@ -1,5 +1,5 @@
 import { RadarTwitch as D } from "./data.js";
-const number = new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 1 });
+import { formatCount } from "./number-format.js";
 const dateTime = new Intl.DateTimeFormat("zh-TW", { timeZone:"Asia/Taipei", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hourCycle:"h23" });
 const filterNames = { signals:"全部追蹤", twitch_new:"Twitch 熱門新作", steam_recent:"Steam 近期上市", all:"所有觀測", igdb:"IGDB 推算命中" };
 const IGDB_SOURCE = "igdb_first_release_date";
@@ -9,7 +9,7 @@ function node(tag, className, text) {
   if (text != null) el.textContent = text;
   return el;
 }
-function fmt(value) { return value === null || value === undefined ? "—" : number.format(value); }
+function fmt(value) { return value === null || value === undefined ? "—" : formatCount(value); }
 export const hourLabel = hour => String(hour).padStart(2, '0') + ':00';
 function legacyRecovery(g) { return g.tracking?.enrollment?.source === "user_requested_legacy_recovery"; }
 function pendingLegacyMeasurement(g) { return legacyRecovery(g) && g.observation_status === "retained" && g.viewer_count == null && g.streamer_count == null; }

@@ -6,7 +6,7 @@ import { dateStart } from './series.js';
 import { quantile } from './statistics-model.js';
 import { HOUR, timestamp } from './metrics.js';
 import { currentLaunch } from './launches.js';
-import { taipeiHour } from './launch-model.js';
+import { leadText, startLead, taipeiHour } from './launch-model.js';
 
 const DAYS = 7;
 const DAY = 24 * HOUR;
@@ -117,9 +117,9 @@ export function launchComparison(data, id, genre, until = Infinity, region = 'gl
 
 /** The status line: launch day, kind, where the days start, and the scope. */
 export function launchStatus(launch, region, measurementSource) {
-  const start = Date.parse(launch.start_at), before = Math.round((Date.parse(launch.launch_at) - start) / HOUR);
-  const moved = launch.start_basis === 'pre_launch'
-    ? ` · 上市前 ${before >= 48 ? `${Math.round(before / 24)} 天` : `${before} 小時`}就有人實況，從 ${taipeiHour(start)} 起算` : '';
+  const start = Date.parse(launch.start_at);
+  const lead = launch.start_basis === 'pre_launch' ? startLead(Date.parse(launch.launch_at), start) : null;
+  const moved = lead === null ? '' : ` · 上市前 ${leadText(lead)}就有人實況，從 ${taipeiHour(start)} 起算`;
   const source = measurementSource === 'mixed' ? ' · 首週量測方式曾切換' : '';
   return `${launch.date} · ${LAUNCH_KINDS[launch.kind]}${moved} · ${regionNames[region]} Twitch${source}`;
 }
