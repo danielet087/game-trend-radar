@@ -33,17 +33,18 @@ test('history ranges, metrics, selected hour, export and return filters work tog
   page.on('pageerror', error => failures.push(error.message));
   await page.goto('twitch-game.html?region=global&game=42&back=q%3DTest%26sort%3Dviewers');
   await expect(page.locator('#pageTitle')).toHaveText('測試遊戲');
-  await expect(page.locator('#historyStatus')).toContainText('168 個時段');
+  await page.locator('#moreHistory > summary').click();
+  await expect(page.locator('#historyStatus')).toContainText('168 個小時');
   await expect(page.locator('#historyBack')).toHaveAttribute('href', './twitch.html?q=Test&sort=viewers');
   await expect(page.locator('.tw-chart')).toHaveAttribute('data-range', '168');
   await expect(page.locator('.tw-chart')).toHaveAttribute('data-aggregation', 'daily');
   await expect(page.locator('.tw-hourly')).not.toHaveAttribute('open', '');
   await expect(page.locator('.tw-chart-threshold-label')).toHaveText('3,000 人門檻');
-  await page.getByRole('button', { name: '逐時數值', exact: true }).click();
+  await page.getByRole('button', { name: '每小時', exact: true }).click();
   await expect(page.locator('.tw-chart')).toHaveAttribute('data-aggregation', 'hourly');
-  await page.getByRole('button', { name: '每日中位數', exact: true }).click();
+  await page.getByRole('button', { name: '每天', exact: true }).click();
   await page.getByRole('button', { name: '30 天', exact: true }).click();
-  await expect(page.locator('#historyStatus')).toContainText('720 個時段');
+  await expect(page.locator('#historyStatus')).toContainText('720 個小時');
   await page.getByRole('button', { name: '24 小時', exact: true }).click();
   await expect(page.locator('.tw-chart')).toHaveAttribute('data-range', '24');
   await page.getByRole('button', { name: '單台觀眾中位數', exact: true }).click();
@@ -61,6 +62,7 @@ test('history ranges, metrics, selected hour, export and return filters work tog
   await page.getByRole('button', { name: '下載此區間 CSV' }).click();
   await expect((await download).suggestedFilename()).toBe('twitch-42-2026-10-21-2026-10-21.csv');
   await page.reload();
+  await page.locator('#moreHistory > summary').click();
   await expect(page.locator('.tw-chart')).toHaveAttribute('data-metric', 'median');
   await expect(page.locator('#historyStart')).toHaveValue('2026-10-21');
   expect(failures).toEqual([]);
@@ -69,6 +71,7 @@ test('history ranges, metrics, selected hour, export and return filters work tog
 test('mobile history fits the viewport and the chart supports keyboard selection', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('twitch-game.html?region=global&game=42&range=24h');
+  await page.locator('#moreHistory > summary').click();
   await expect(page.locator('#historyContent')).toBeVisible();
   await page.locator('.tw-chart-scrubber').focus();
   await page.keyboard.press('ArrowLeft');
@@ -78,6 +81,7 @@ test('mobile history fits the viewport and the chart supports keyboard selection
 
 test('choosing an hourly table record switches the daily chart to the exact original hour', async ({ page }) => {
   await page.goto('twitch-game.html?game=42');
+  await page.locator('#moreHistory > summary').click();
   await expect(page.locator('.tw-chart')).toHaveAttribute('data-aggregation', 'daily');
   await page.locator('.tw-hourly > summary').click();
   await page.locator('#historyTableBody tr').first().getByRole('button').click();
@@ -90,7 +94,9 @@ test('choosing an hourly table record switches the daily chart to the exact orig
 test('failed monthly data can be retried without displaying it as zero', async ({ page }) => {
   await page.route('**/data/twitch_series/42/2026-10.json', route => route.fulfill({ status: 503, body: 'Unavailable' }));
   await page.goto('twitch-game.html?region=global&game=42');
+  await page.locator('#moreHistory > summary').click();
   await expect(page.locator('#historyStatus')).toContainText('暫時無法取得');
+  await expect(page.locator('#gameStatus')).toContainText('重新載入');
   await expect(page.locator('#historyContent')).toBeHidden();
   await expect(page.locator('#historyExport')).toBeDisabled();
   await page.unroute('**/data/twitch_series/42/2026-10.json');

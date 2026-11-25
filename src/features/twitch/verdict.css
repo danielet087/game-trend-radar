@@ -1,0 +1,35 @@
+/* Shared by 開台選題 and the Twitch game page: verdict colors by group,
+   the verdict chips and the ⓘ notes beside headings. */
+:is(.tw-plan,.tw-game) {
+  --plan-hot-ink:var(--blue-27b); --plan-hot-bg:var(--blue-91); --plan-hot-edge:var(--blue-84);
+  --plan-trial-ink:var(--violet-29); --plan-trial-bg:var(--violet-91c); --plan-trial-edge:var(--violet-85);
+  --plan-horse-ink:var(--orange-39); --plan-horse-bg:var(--yellow-95); --plan-horse-edge:var(--yellow-85);
+  --plan-cooled-ink:var(--red-32); --plan-cooled-bg:var(--orange-90); --plan-cooled-edge:var(--red-82);
+  --plan-skip-ink:var(--blue-34); --plan-skip-bg:var(--gray-90); --plan-skip-edge:var(--slate-88);
+}
+:is(.tw-plan,.tw-game) :is(a,button,summary,select,input):focus-visible { outline:2px solid var(--violet-42); outline-offset:3px; }
+[data-group="hot"] { --chip-ink:var(--plan-hot-ink); --chip-bg:var(--plan-hot-bg); --chip-edge:var(--plan-hot-edge); }
+[data-group="trial"] { --chip-ink:var(--plan-trial-ink); --chip-bg:var(--plan-trial-bg); --chip-edge:var(--plan-trial-edge); }
+[data-group="horse"] { --chip-ink:var(--plan-horse-ink); --chip-bg:var(--plan-horse-bg); --chip-edge:var(--plan-horse-edge); }
+[data-group="cooled"] { --chip-ink:var(--plan-cooled-ink); --chip-bg:var(--plan-cooled-bg); --chip-edge:var(--plan-cooled-edge); }
+:is([data-group="skip"],[data-group="unknown"]) { --chip-ink:var(--plan-skip-ink); --chip-bg:var(--plan-skip-bg); --chip-edge:var(--plan-skip-edge); }
+.tw-verdict-chip { flex:none; display:inline-flex; align-items:center; width:fit-content; padding:3px 10px; border-radius:var(--radius-pill);
+  background:var(--chip-bg); color:var(--chip-ink); font-size:var(--text-xs); font-weight:700; line-height:1.5; white-space:nowrap; }
+.tw-split-chip { flex:none; padding:2px 9px; border:1px solid var(--sand-78); border-radius:var(--radius-pill); background:var(--white);
+  color:var(--blue-34); font-size:var(--text-xs); font-weight:700; line-height:1.5; white-space:nowrap; }
+
+/* ⓘ: a 44px target around an 18px icon; the note opens under the heading. */
+.tw-info-anchor { position:relative; display:flex; align-items:center; gap:2px; min-width:0; }
+.tw-info { flex:none; display:grid; place-items:center; width:44px; height:44px; margin:-10px -10px -10px -4px; padding:0; border:0;
+  border-radius:var(--radius-pill); background:transparent; color:var(--muted); cursor:pointer; }
+.tw-info:hover,.tw-info[aria-expanded="true"] { color:var(--ink); background:var(--ink-a05); }
+.tw-info svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; }
+.tw-info-note { position:absolute; top:calc(100% + 6px); left:0; z-index:20; box-sizing:border-box; width:min(460px,calc(100vw - 64px));
+  padding:12px 14px; border:1px solid var(--sand-85); border-radius:var(--radius-md); background:var(--white); box-shadow:var(--shadow-md);
+  color:var(--ink); font-size:var(--text-sm); font-weight:400; line-height:1.65; white-space:normal; }
+.tw-info-note[hidden] { display:none; }
+.tw-info-note p { margin:0; }
+.tw-info-note p + p { margin-top:6px; }
+.tw-info-more { margin-top:8px; color:var(--blue-34); }
+.tw-info-more summary { display:flex; align-items:center; min-height:32px; cursor:pointer; font-weight:700; }
+.tw-info-more > div { display:grid; gap:6px; margin-top:4px; }

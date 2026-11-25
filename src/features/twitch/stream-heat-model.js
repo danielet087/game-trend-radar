@@ -199,6 +199,8 @@ export function analyzeStreamHeat(rows, { game, region = 'global', date, now = D
   const cooledBy = outlookSignal === 'cooled' ? (latest?.status === 'cooled' ? 'threshold' : 'peak') : null;
   return {
     date, prelaunch, signal, threshold, hits, validHours, median: day?.median ?? null, popularAt: data.popularAt,
+    // Every Taipei day of the history and the last closed day the trend reaches.
+    days: data.days, through: dayOf(through),
     week:heatWeek(data.days, through), todayChange:open ? todayChange(available, start, now, region) : null,
     confirmedOn: signal === 'cooled' ? confirmationDate(data) : null,
     concentration: minimumHits && validHours >= MIN_CONCENTRATION_HOURS ? concentration(available, start, end, now) : null,

@@ -1,53 +1,72 @@
 import { RadarStorage } from '../../data/storage.ts';
-import { canonicalID } from './metrics.js';
+import { canonicalID, HOUR } from './metrics.js';
 import { mount, valueOf, statusOf } from './chart.js';
 import { node, fmt, time } from './presentation.js';
 import { validIndex, validChunk, windowFor, monthsFor, seriesRows, fullSeriesRows, overviewQuery, streamPlanningHref, dayOf, metrics, csvRows } from './series.js';
-import { createStatistics } from './statistics.js';
-import { createCooldown, cooldownPresentation } from './cooldown.js';
-import { analyzeCooldown, cooldownThreshold } from './cooldown-model.js';
-import { CHINESE_MEASUREMENT_CHANGE_AT, regionNames, viewOf } from './audience-region.js';
-import { blockScopes, scopeKeys, regionsFor, projectRows, writeBlockScopes } from './region-views.js';
+import { cooldownThreshold } from './cooldown-model.js';
+import { CHINESE_MEASUREMENT_CHANGE_AT, regionNames, regionOf } from './audience-region.js';
+import { projectRows } from './region-views.js';
 import { dailyRows } from './daily-series.js';
-import { renderHeatOverview } from './heat-overview.js';
-import { remainingAudienceTrend } from './stream-heat-model.js';
-import { createTrialTimeComparison } from './trial-time-comparison.js';
+import { analyzeStreamHeat, remainingAudienceTrend } from './stream-heat-model.js';
 import { createLaunchCurves, validCurves } from './launch-curves.js';
 import { forecastModel, launchAdvice, launchAnchor, launchDays, launchForecast, steamAppOf } from './launch-model.js';
 import { currentLaunch, launchPeaks, waitingText } from './launches.js';
+import { bindInfoNotes } from './info-notes.js';
+import { createGameVerdict } from './game-verdict.js';
+import { createStreamSlots } from './stream-slots.js';
+import { renderRemainingTrend } from './remaining-trend.js';
+import { gameMeta } from './trend-verdict.js';
+
+// Older links named a region per block (summary_region, history_region…) or
+// "compare"; the page now has one region for everything.
+const LEGACY_SCOPES = ['summary_region', 'history_region', 'cooldown_region', 'statistics_region', 'trial_region', 'rank_region', 'launch_region'];
+// The folded sections load their code when first opened.
+let statisticsModule, cooldownModule;
+const loadStatistics = () => statisticsModule ||= import('./statistics.js');
+const loadCooldown = () => cooldownModule ||= import('./cooldown.js');
 
 export function initTwitchDetail() {
   const $ = id => document.getElementById(id);
-  const params = new URLSearchParams(location.search), scopes = blockScopes(params);
+  const params = new URLSearchParams(location.search), events = new AbortController();
   let metric = Object.hasOwn(metrics, params.get('metric')) ? params.get('metric') : 'viewers';
   let resolution = ['daily', 'hourly'].includes(params.get('resolution')) ? params.get('resolution') : '';
   const id = canonicalID(params.get('game')), cache = new Map(), back = overviewQuery(params.get('back') || '');
-  const trialTimes = createTrialTimeComparison({ $, params, back, onChange: syncURL });
-  const launchCurves = createLaunchCurves({ $, params, onChange: syncURL });
+  let region = regionOf(params.get('region') ?? LEGACY_SCOPES.map(key => params.get(key)).find(value => value === 'zh'));
+  const verdict = createGameVerdict({ $, signal: events.signal,
+    onOpenRecord() { const more = $('moreCooldown'); more.open = true; more.scrollIntoView({ block: 'start' }); } });
+  const slots = createStreamSlots({ $, params, onChange: syncURL, onRank: value => verdict.setRank(value) });
+  let metaLine = '';
+  const launchCurves = createLaunchCurves({ $, params, onChange: syncURL, region: () => region,
+    onShow(shown, genre) {
+      $('moreCurves').hidden = !shown;
+      $('launchCurveTitle').textContent = shown && genre ? `同類${genre}新作的上市曲線` : '同類新作的上市曲線';
+      $('gameMeta').textContent = [metaLine, shown ? genre : null].filter(Boolean).join('・');
+    } });
   let index, game, window, rows = [], fullHistoryLoader, page = 0, descending = true, request = 0, summaryRequest = 0;
-  let charts = [], statsMode = '', cooldownMode = '', stats = new Map(), cooldowns = new Map(), disposed = false;
-  let releaseTime = null;
-  const controls = { summary: 'summaryRegion', history: 'audienceRegion', cooldown: 'cooldownRegion', statistics: 'statisticsRegion' };
-  for (const block of Object.keys(scopeKeys)) $(controls[block]).value = scopes[block];
+  let charts = [], statsRegion = '', cooldownRegion = '', stats = null, cooldown = null, disposed = false;
+  let releaseTime = null, heat = null;
+  bindInfoNotes($('mainContent'), events.signal);
   const backView = new URLSearchParams(back).get('view');
   $('historyBack').href = backView === 'streamer' ? streamPlanningHref(back) : './twitch.html' + (back ? '?' + back : '');
   if (backView === 'archive') $('historyBack').textContent = '← 歷史資料庫';
   if (backView === 'streamer') $('historyBack').textContent = '← 開台選題';
   function syncURL() {
-    params.set('game', id); params.set('metric', metric); writeBlockScopes(params, scopes);
+    params.set('game', id); params.set('metric', metric);
+    for (const key of LEGACY_SCOPES) params.delete(key);
+    if (region === 'global') params.delete('region'); else params.set('region', region);
     if (resolution) params.set('resolution', resolution); else params.delete('resolution');
-    const p = new URLSearchParams(back);
-    const next = p.toString();
+    const next = new URLSearchParams(back).toString();
     if (next) params.set('back', next); else params.delete('back');
     history.replaceState(null, '', location.pathname + '?' + params + location.hash);
   }
   function message(text, error = false) { $('historyStatus').textContent = text; $('historyStatus').dataset.error = String(error); }
+  function pageStatus(text, error = false) { $('gameStatus').textContent = text; $('gameStatus').dataset.error = String(error); $('gameStatus').hidden = !text; }
   async function read(path, contract) {
     const result = await RadarStorage.readJSONResult(path, contract, { force: true, allowStale: false });
     if (!result.data) throw new Error('暫時無法取得歷史資料，請稍後重新載入。');
     return result.data;
   }
-  function context(region) {
+  function context() {
     return { gameName: (game.display_name || game.name) + ' · ' + regionNames[region], region, scope: regionNames[region],
       trackingStatus: game.tracking_status, lastHour: game.last_hour, latestHour: new Date(window.latest).toISOString(),
       generatedAt: index.generated_at, releaseReference: currentLaunch(game, Date.now()), launchRecord: game };
@@ -68,15 +87,12 @@ export function initTwitchDetail() {
     const data = await RadarStorage.readJSON('./data/twitch-launch-curves.json', validCurves, { allowStale: false });
     return forecastModel(data?.forecast);
   }
-  function panels(container, mode, kind) {
-    container.replaceChildren(); container.classList.toggle('tw-region-compare', mode === 'compare');
-    return new Map(regionsFor(mode).map(region => {
-      const panel = node('section', 'tw-region-panel'); panel.dataset.region = region;
-      const title = node('h3', 'tw-region-caption', regionNames[region]);
-      const body = node('div'); body.id = kind + '-' + region;
-      panel.append(title, body); container.append(panel);
-      return [region, body];
-    }));
+  function panel(container, kind) {
+    container.replaceChildren();
+    const box = node('section', 'tw-region-panel'); box.dataset.region = region;
+    const body = node('div'); body.id = kind + '-' + region;
+    box.append(node('h3', 'tw-region-caption', regionNames[region]), body); container.append(box);
+    return body;
   }
   function summaryValues(data) {
     const valid = data.map(row => valueOf(row, metric)).filter(value => value !== null);
@@ -85,65 +101,37 @@ export function initTwitchDetail() {
       valid.at(-1), valid.length + ' / ' + data.length];
   }
   function renderSummary() {
-    const container = $('historySummary'), labels = ['逐時區間最高', '有效時段平均', '區間最後有效值', '有效時段'];
-    if (scopes.history === 'compare') {
-      container.replaceChildren(); const table = node('table', 'tw-compare-table');
-      const head = node('thead'), tr = node('tr');
-      ['逐時區間統計', '全球', '中文區'].forEach(label => tr.append(node('th', '', label))); head.append(tr);
-      const body = node('tbody'), global = summaryValues(projectRows(rows, 'global')), zh = summaryValues(projectRows(rows, 'zh'));
-      labels.forEach((label, i) => { const row = node('tr'); row.append(node('th', '', label),
-        node('td', '', typeof global[i] === 'string' ? global[i] : fmt(global[i])),
-        node('td', '', typeof zh[i] === 'string' ? zh[i] : fmt(zh[i]))); body.append(row); });
-      table.append(head, body); container.append(table);
-    } else {
-      const values = summaryValues(projectRows(rows, scopes.history));
-      container.replaceChildren(...labels.map((label, i) => {
-        const card = node('div', 'tw-history-stat');
-        card.append(node('span', '', label), node('strong', '', typeof values[i] === 'string' ? values[i] : fmt(values[i])),
-          node('small', '', i === 3 ? '缺測與未列入不當成 0' : metrics[metric] + ' · ' + (metric === 'streamers' ? '台' : metric === 'median' ? '人／台' : '人')));
-        return card;
-      }));
-    }
+    const labels = ['區間最高', '有紀錄時的平均', '區間最後一筆', '有紀錄的小時'];
+    const values = summaryValues(projectRows(rows, region));
+    $('historySummary').replaceChildren(...labels.map((label, i) => {
+      const card = node('div', 'tw-history-stat');
+      card.append(node('span', '', label), node('strong', '', typeof values[i] === 'string' ? values[i] : fmt(values[i])),
+        node('small', '', i === 3 ? '缺資料不當成 0' : metrics[metric] + ' · ' + (metric === 'streamers' ? '台' : metric === 'median' ? '人／台' : '人')));
+      return card;
+    }));
   }
   function renderChart() {
     charts.forEach(dispose => dispose()); charts = [];
     const daily = metric === 'viewers' && rows.length > 24 && resolution !== 'hourly';
     $('historyResolution').hidden = metric !== 'viewers' || rows.length <= 24;
     document.querySelectorAll('[data-history-resolution]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.historyResolution === (daily ? 'daily' : 'hourly'))));
-    const scoped = regionsFor(scopes.history).map(region => {
-      const data = projectRows(rows, region); return { region, data: daily ? dailyRows(data, { region }) : data };
-    });
-    const max = scopes.history === 'compare'
-      ? Math.max(daily ? cooldownThreshold('global') : 0, ...scoped.flatMap(group => group.data.map(row => valueOf(row, metric) || 0))) : 0;
-    const roots = panels($('historyChart'), scopes.history, 'historyChart');
-    for (const group of scoped) {
-      const chart = mount(roots.get(group.region), { rows: group.data, gameName: (game.display_name || game.name) + ' · ' + regionNames[group.region],
-        rangeOptions: [], initialRange: daily ? Number.MAX_SAFE_INTEGER : rows.length, rangeHours: rows.length,
-        initialMetric: metric, granularity: daily ? 'daily' : 'hourly', domainMaximum: max,
-        ...(group.region === 'zh' ? { measurementChangeAt: CHINESE_MEASUREMENT_CHANGE_AT } : {}),
-        ...(daily && group.region === 'global' ? { referenceValue: cooldownThreshold(group.region) } : {}),
-        onSelect(i) { charts.forEach(other => { if (other !== chart) other.select(i, false); }); },
-        onMetricChange(value) {
-          metric = value; syncURL(); renderHistory();
-          $('historyChart').querySelector('[data-region="' + group.region + '"] .tw-chart-metric[data-metric="' + value + '"]')?.focus({ preventScroll: true });
-        } });
-      charts.push(chart);
-    }
-    if (scopes.history === 'compare') {
-      let selected = scoped[0].data.findLastIndex(row => valueOf(row, metric) !== null);
-      if (selected < 0) selected = scoped[0].data.length - 1;
-      charts.forEach(chart => chart.select(selected, false));
-    }
-    $('historyChartNote').textContent = (scopes.history === 'compare' ? '全球包含中文區；兩圖使用相同時間與縱軸刻度，資料點與時間軸同步定位。' : '') +
-      (daily ? '每日總觀眾中位數以已結束的台灣日期統計。' + (scopes.history === 'zh' ? '' : '虛線標示全球每日門檻。')
-        : '逐時數值保留原始紀錄。單台觀眾中位數與每日總觀眾中位數為不同指標。');
+    const data = projectRows(rows, region);
+    const root = panel($('historyChart'), 'historyChart');
+    charts.push(mount(root, { rows: daily ? dailyRows(data, { region }) : data, gameName: (game.display_name || game.name) + ' · ' + regionNames[region],
+      rangeOptions: [], initialRange: daily ? Number.MAX_SAFE_INTEGER : rows.length, rangeHours: rows.length,
+      initialMetric: metric, granularity: daily ? 'daily' : 'hourly', domainMaximum: 0,
+      ...(region === 'zh' ? { measurementChangeAt: CHINESE_MEASUREMENT_CHANGE_AT } : {}),
+      ...(daily && region === 'global' ? { referenceValue: cooldownThreshold(region) } : {}),
+      onMetricChange(value) {
+        metric = value; syncURL(); renderHistory();
+        $('historyChart').querySelector('.tw-chart-metric[data-metric="' + value + '"]')?.focus({ preventScroll: true });
+      } }));
+    $('historyChartNote').textContent = daily ? '每天的總觀眾取一天裡每小時的中間值，只算已結束的日子。' + (region === 'zh' ? '' : '虛線是全球熱門線。')
+      : '每小時的數字是原始紀錄。單台觀眾中位數和每天的總觀眾是不同的數字。';
   }
   function table() {
-    const regions = regionsFor(scopes.history), data = regions.map(region => projectRows(rows, region));
-    const headers = ['時段（台灣）'];
-    for (const key of ['viewers', 'streamers', 'median']) for (const region of regions)
-      headers.push(metrics[key] + (regions.length > 1 ? '・' + regionNames[region] : ''));
-    headers.push('目前指標狀態');
+    const data = projectRows(rows, region);
+    const headers = ['時段（台灣）', ...['viewers', 'streamers', 'median'].map(key => metrics[key]), '目前指標狀態'];
     const head = $('historyTableBody').closest('table').querySelector('thead tr');
     head.replaceChildren(...headers.map(label => { const th = node('th', '', label); th.scope = 'col'; return th; }));
     const ordered = rows.map((row, i) => ({ row, i })); if (descending) ordered.reverse();
@@ -156,113 +144,104 @@ export function initTwitchDetail() {
         $('historyChart').scrollIntoView({ block: 'nearest' });
       });
       at.append(select); tr.append(at);
-      for (const key of ['viewers', 'streamers', 'median']) data.forEach(group => {
-        const td = node('td', key === metric ? 'tw-selected-column' : '', fmt(valueOf(group[i], key)));
-        td.title = statusOf(group[i], key); tr.append(td);
-      });
-      const label = r => r.audience_region_status === 'unavailable' ? '未收集中文區' : r.status === 'missing' ? '無收集紀錄'
-        : r.status === 'absent' ? '未列入觀測' : valueOf(r, metric) === null ? '此指標待補' : '已觀測';
-      const status = node('td', '', data.map((group, n) => (regions.length > 1 ? regionNames[regions[n]] + '：' : '') + label(group[i])).join('／'));
-      status.title = data.map(group => statusOf(group[i], metric)).join('／'); tr.append(status); return tr;
+      for (const key of ['viewers', 'streamers', 'median']) {
+        const td = node('td', key === metric ? 'tw-selected-column' : '', fmt(valueOf(data[i], key)));
+        td.title = statusOf(data[i], key); tr.append(td);
+      }
+      const scoped = data[i];
+      const label = scoped.audience_region_status === 'unavailable' ? '未收集中文區' : scoped.status === 'missing' ? '無收集紀錄'
+        : scoped.status === 'absent' ? '未列入觀測' : valueOf(scoped, metric) === null ? '此指標待補' : '已觀測';
+      const status = node('td', '', label);
+      status.title = statusOf(scoped, metric); tr.append(status); return tr;
     }));
     $('historyPagination').textContent = '第 ' + (page + 1) + ' / ' + pages + ' 頁 · 共 ' + rows.length + ' 個時段';
     $('historyPrevious').disabled = page === 0; $('historyNext').disabled = page === pages - 1;
   }
-  function renderHistory() {
-    renderChart(); renderSummary(); table();
-    const counts = regionsFor(scopes.history).map(region => {
-      const count = projectRows(rows, region).filter(row => row.status === 'observed' && row.audience_region_status !== 'unavailable').length;
-      return regionNames[region] + '有效 ' + count + ' / ' + rows.length + ' 個時段';
-    });
-    message(regionNames[scopes.history] + ' · 已載入 ' + rows.length + ' 個時段 · ' + counts.join('；') + '。');
-    $('historyExport').textContent = scopes.history === 'compare' ? '下載兩區 CSV ↓' : '下載此區間 CSV ↓';
+  function renderRemaining() {
+    const box = $('remainingTrend');
+    if (region !== 'zh' || !heat?.full) { box.replaceChildren(); return; }
+    const through = dayOf(window.end);
+    box.replaceChildren(renderRemainingTrend({ through, rows: remainingAudienceTrend(projectRows(heat.full, 'zh'), { date: through }) }));
   }
-  async function renderOverview() {
-    const token = ++summaryRequest, version = request, mode = scopes.summary;
-    $('historyOverview').hidden = false;
-    const roots = panels($('heatOverviewPanels'), mode, 'heatOverview');
-    roots.forEach((root, region) => { root.className = 'tw-heat-overview'; renderHeatOverview(root, { status: 'loading', label: '正在整理全期熱度…', scope: regionNames[region] }); });
+  function renderHistory() {
+    renderChart(); renderSummary(); table(); renderRemaining();
+    const count = projectRows(rows, region).filter(row => row.status === 'observed' && row.audience_region_status !== 'unavailable').length;
+    message(regionNames[region] + ' · ' + rows.length + ' 個小時，' + count + ' 個小時有紀錄。');
+  }
+  async function renderVerdict() {
+    const token = ++summaryRequest, version = request;
     try {
       const [full, releaseTimeUtc, model] = await Promise.all([fullHistoryLoader(), steamReleaseTime().catch(() => null),
         forecastRatios().catch(() => null)]);
       if (disposed || token !== summaryRequest || version !== request) return;
-      // Launch advice, dark-horse labels and the forecast always read worldwide viewers.
-      const globalRows = projectRows(full, 'global'), now = Date.now();
-      const globalData = analyzeCooldown(globalRows, { region: 'global', now });
-      const fallback = globalData.latest.complete ? { date: globalData.latest.day, median: globalData.latest.median } : null;
+      // Launch advice, dark-horse labels and the forecast always read worldwide
+      // viewers. A game no longer tracked replays its last tracked day.
+      const last = Date.parse(game.last_hour);
+      const now = game.tracking_status === 'ended' && Number.isFinite(last) ? Math.min(Date.now(), last + HOUR) : Date.now();
+      const date = dayOf(now), globalRows = projectRows(full, 'global');
+      const days = { global: analyzeStreamHeat(globalRows, { game, region: 'global', date, now }),
+        zh: analyzeStreamHeat(projectRows(full, 'zh'), { game, region: 'zh', date, now }) };
+      const latest = days.global.outlook.latest;
       const anchor = launchAnchor(game, globalRows, now, releaseTimeUtc), startAt = anchor?.startAt ?? null;
-      const launch = { ...launchAdvice({ days: launchDays(globalRows, startAt, now), releaseAt: startAt, now, fallback }),
-        small: !globalData.popularAt, peaks: launchPeaks(globalRows, game, now), anchor,
-        forecast: launchForecast(globalRows, startAt, now, model) };
-      roots.forEach((root, region) => {
-        // Every region judges heat on the viewers actually observed, before the release too.
-        const scoped = projectRows(full, region);
-        const data = analyzeCooldown(scoped, { region });
-        const snapshot = { ...cooldownPresentation(data, context(region)), region, launch };
-        if (region === 'zh') {
-          const through = dayOf(window.end);
-          snapshot.remainingTrend = { through, rows:remainingAudienceTrend(scoped, { date:through }) };
-        }
-        renderHeatOverview(root, snapshot);
-      });
+      const launch = { ...launchAdvice({ days: launchDays(globalRows, startAt, now), releaseAt: startAt, now,
+        fallback: latest ? { date: latest.date, median: latest.median } : null }), small: !days.global.popularAt,
+        peaks: launchPeaks(globalRows, game, now), anchor, forecast: launchForecast(globalRows, startAt, now, model) };
+      heat = { full, days, launch };
+      verdict.update({ days, launch, record: game, now });
+      renderRemaining();
+      pageStatus('');
     } catch {
       if (disposed || token !== summaryRequest || version !== request) return;
-      roots.forEach((root, region) => renderHeatOverview(root, { status: 'unavailable', label: '全期摘要暫時無法讀取，請重新載入。', scope: regionNames[region] }));
+      pageStatus('全期資料暫時無法讀取，請按重新載入。', true);
     }
   }
-  function renderStatistics() {
-    $('historyStatistics').hidden = false; $('historyStatisticsJump').hidden = false;
-    if (statsMode !== scopes.statistics) {
-      const view = stats.values().next().value?.view(); stats.forEach(controller => controller.destroy()); stats = new Map();
-      const roots = panels($('statisticsPanels'), scopes.statistics, 'statisticsPanel'); statsMode = scopes.statistics;
-      roots.forEach((root, region) => {
-        root.className = 'tw-workspace tw-statistics';
-        const controller = createStatistics(root, { idPrefix: statsMode === 'compare' ? region + '-' : '',
-          onViewChange(next) {
-            $('historyStatistics').dataset.statisticsMode = next.mode;
-            stats.forEach(other => { if (other !== controller) other.setView(next); });
-          } });
-        stats.set(region, controller); if (view) controller.setView(view);
-      });
+  async function renderStatistics() {
+    if (!$('moreStatistics').open || !game || $('historyContent').hidden) return;
+    const version = request, { createStatistics } = await loadStatistics();
+    if (disposed || version !== request) return;
+    $('historyStatistics').hidden = false;
+    if (statsRegion !== region) {
+      const view = stats?.view(); stats?.destroy();
+      const root = panel($('statisticsPanels'), 'statisticsPanel'); statsRegion = region;
+      root.className = 'tw-workspace tw-statistics';
+      stats = createStatistics(root, { onViewChange(next) { $('historyStatistics').dataset.statisticsMode = next.mode; } });
+      if (view) stats.setView(view);
     }
-    stats.forEach((controller, region) => controller.update(projectRows(rows, region), {
-      gameName: (game.display_name || game.name) + ' · ' + regionNames[region], rangeLabel: $('historyRangeLabel').textContent }));
-    $('historyStatistics').dataset.statisticsMode = stats.values().next().value.view().mode;
-    $('statisticsCompareNote').hidden = scopes.statistics !== 'compare';
+    stats.update(projectRows(rows, region), { gameName: (game.display_name || game.name) + ' · ' + regionNames[region], rangeLabel: $('historyRangeLabel').textContent });
+    $('historyStatistics').dataset.statisticsMode = stats.view().mode;
   }
-  function renderCooldown() {
-    $('historyCooldown').hidden = false; $('historyCooldownJump').hidden = false;
-    if (cooldownMode !== scopes.cooldown) {
-      cooldowns.forEach(controller => controller.destroy()); cooldowns = new Map();
-      const roots = panels($('cooldownPanels'), scopes.cooldown, 'cooldownPanel'); cooldownMode = scopes.cooldown;
-      roots.forEach((root, region) => {
-        root.className = 'tw-workspace tw-cooldown';
-        cooldowns.set(region, createCooldown(root, { idPrefix: cooldownMode === 'compare' ? region + '-' : '',
-          onSummary(result) {
-            if (cooldownMode !== 'compare') {
-              $('historyCooldown').dataset.cooldownStatus = result.status;
-              $('historyCooldown').dataset.cooldownModelStatus = result.data?.status || 'unavailable';
-            }
-          } }));
-      });
+  async function renderCooldown() {
+    if (!$('moreCooldown').open || !game || $('historyContent').hidden) return;
+    const version = request, { createCooldown } = await loadCooldown();
+    if (disposed || version !== request) return;
+    $('historyCooldown').hidden = false;
+    if (cooldownRegion !== region) {
+      cooldown?.destroy();
+      const root = panel($('cooldownPanels'), 'cooldownPanel'); cooldownRegion = region;
+      root.className = 'tw-workspace tw-cooldown';
+      cooldown = createCooldown(root, { onSummary(result) {
+        $('historyCooldown').dataset.cooldownStatus = result.status;
+        $('historyCooldown').dataset.cooldownModelStatus = result.data?.status || 'unavailable';
+      } });
     }
-    if (cooldownMode === 'compare') $('historyCooldown').dataset.cooldownStatus = 'compare';
-    cooldowns.forEach((controller, region) => {
-      const next = context(region);
-      next.loadHistory = async () => {
-        const full = await fullHistoryLoader();
-        if (scopes.cooldown === 'compare') next.domainMaximum = Math.max(cooldownThreshold('global'), ...full.map(row => row.viewer_count || 0));
-        return projectRows(full, region);
-      };
-      controller.update(next);
-    });
+    const next = context();
+    next.loadHistory = async () => projectRows(await fullHistoryLoader(), region);
+    cooldown.update(next);
+  }
+  function setRegion(value) {
+    region = regionOf(value); syncURL();
+    document.querySelectorAll('#pageRegion [data-region]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.region === region)));
+    verdict.setRegion(region); slots.setRegion(region); launchCurves.render();
+    if (!game || !window || $('historyContent').hidden) return;
+    renderHistory(); renderStatistics(); renderCooldown();
   }
   async function load(refresh = false) {
     const token = ++request; summaryRequest++;
-    if (refresh) { trialTimes.reset(); launchCurves.reset(); }
-    for (const key of ['historyOverview', 'historyCooldown', 'historyStatistics', 'historyContent', 'historyCooldownJump', 'historyStatisticsJump']) $(key).hidden = true;
-    stats.forEach(controller => controller.hide()); cooldowns.forEach(controller => controller.hide());
+    if (refresh) { slots.reset(); launchCurves.reset(); }
+    for (const key of ['historyCooldown', 'historyStatistics', 'historyContent']) $(key).hidden = true;
+    stats?.hide(); cooldown?.hide();
     $('historyPanel').setAttribute('aria-busy', 'true'); $('historyExport').disabled = true; message('正在讀取逐時歷史…');
+    pageStatus('正在讀取…');
     try {
       if (!id) throw new Error('缺少有效的遊戲 ID，請返回 Twitch 新作觀測選擇遊戲。');
       if (!index || refresh) { fullHistoryLoader = null; cache.clear(); const next = await read('./data/twitch_series/index.json', validIndex); if (token !== request || disposed) return; index = next; }
@@ -286,38 +265,32 @@ export function initTwitchDetail() {
         })().catch(error => { pending = null; throw error; });
       }
       window = windowFor(params, index, game);
+      const name = game.display_name || game.name;
+      document.title = name + '｜Twitch 遊戲頁｜Game Trend Radar'; $('pageTitle').textContent = name;
+      const waiting = game.tracking_status === 'ended' ? waitingText(game) : null;
+      metaLine = [gameMeta(game, dayOf(Date.now())), game.tracking_status === 'ended' ? (waiting || '已結束追蹤') : null].filter(Boolean).join('・');
+      $('gameMeta').textContent = metaLine;
+      $('historyUpdated').textContent = time(index.generated_at).slice(5) + ' 更新';
+      const verdictLoad = renderVerdict();
+      slots.update(index, id, chunksFor);
+      launchCurves.update(id, game, window.end, refresh);
       const chunks = await chunksFor(monthsFor(window.start, window.end).filter(month => game.months.includes(month)));
       if (token !== request || disposed) return;
       rows = seriesRows(index, chunks, id, window.start, window.end, 'global'); page = 0;
-      const name = game.display_name || game.name;
-      document.title = name + ' · Twitch 歷史趨勢｜Game Trend Radar'; $('pageTitle').textContent = name;
-      $('historyCategory').textContent = 'TWITCH CATEGORY ' + id + ' · 各區塊可獨立比較全球與中文區';
-      const waiting = game.tracking_status === 'ended' ? waitingText(game) : null;
-      $('historySpan').textContent = (game.tracking_status === 'ended' ? (waiting ? `${waiting} · ` : '已結束追蹤 · ') : '') + '已保存 ' + time(game.first_hour) + ' 至 ' + time(game.last_hour) + ' 的觀測紀錄（台灣時間）';
-      $('historyUpdated').textContent = '資料更新 ' + time(index.generated_at) + '（台灣）';
       $('historyStart').value = dayOf(window.start); $('historyEnd').value = dayOf(window.end);
       $('historyStart').max = $('historyEnd').max = dayOf(window.latest);
       document.querySelectorAll('[data-history-range]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.historyRange === window.range)));
-      $('historyRangeLabel').textContent = time(new Date(window.start).toISOString()) + ' — ' + time(new Date(window.end).toISOString()) + ' · 台灣時間' + (window.range !== 'custom' ? ' · 以本遊戲最後觀測時段為基準' : '');
+      $('historyRangeLabel').textContent = time(new Date(window.start).toISOString()) + ' — ' + time(new Date(window.end).toISOString()) + ' · 台灣時間' + (window.range !== 'custom' ? ' · 以這款最後一筆紀錄為準' : '');
       $('historyContent').hidden = false;
       renderHistory(); renderStatistics(); renderCooldown();
-      const alignTrialTimes = $('trialTimes').hidden && location.hash === '#trialTimes';
-      const overview = renderOverview();
-      const comparison = trialTimes.update(index, id, chunksFor, window.end);
-      launchCurves.update(id, game, window.end, refresh);
-      if (alignTrialTimes) Promise.all([overview, comparison]).then(() => {
-        if (token === request && !disposed && location.hash === '#trialTimes') $('trialTimes').scrollIntoView();
-      });
+      await verdictLoad;
       syncURL();
       $('historyExport').disabled = false;
-    } catch (error) { if (token === request && !disposed) message(error.message || '歷史資料暫時無法載入。', true); }
-    finally { if (token === request) $('historyPanel').setAttribute('aria-busy', 'false'); }
+    } catch (error) {
+      if (token === request && !disposed) { message(error.message || '歷史資料暫時無法載入。', true); pageStatus(error.message || '歷史資料暫時無法載入。', true); }
+    } finally { if (token === request) $('historyPanel').setAttribute('aria-busy', 'false'); }
   }
-  for (const [block, control] of Object.entries(controls)) $(control).addEventListener('change', () => {
-    scopes[block] = viewOf($(control).value); syncURL();
-    if (!game || !window || $('historyContent').hidden) return;
-    ({ summary: renderOverview, history: renderHistory, cooldown: renderCooldown, statistics: renderStatistics })[block]();
-  });
+  document.querySelectorAll('#pageRegion [data-region]').forEach(button => button.addEventListener('click', () => setRegion(button.dataset.region)));
   document.querySelectorAll('[data-history-resolution]').forEach(button => button.addEventListener('click', () => { resolution = button.dataset.historyResolution; syncURL(); renderHistory(); }));
   document.querySelectorAll('[data-history-range]').forEach(button => button.addEventListener('click', () => { params.set('range', button.dataset.historyRange); params.delete('start'); params.delete('end'); load(); }));
   $('historyDates').addEventListener('submit', event => { event.preventDefault(); params.set('range', 'custom'); params.set('start', $('historyStart').value); params.set('end', $('historyEnd').value); load(); });
@@ -326,13 +299,16 @@ export function initTwitchDetail() {
   $('historyOrder').addEventListener('change', () => { descending = $('historyOrder').value === 'desc'; page = 0; table(); });
   $('historyExport').addEventListener('click', () => {
     if (!rows.length) return;
-    const regions = regionsFor(scopes.history), groups = regions.map(region => projectRows(rows, region));
-    const exported = rows.flatMap((row, i) => groups.map(group => group[i]));
-    const url = URL.createObjectURL(new Blob([csvRows(exported)], { type: 'text/csv;charset=utf-8' }));
+    const url = URL.createObjectURL(new Blob([csvRows(projectRows(rows, region))], { type: 'text/csv;charset=utf-8' }));
     const link = node('a'); link.href = url;
-    link.download = 'twitch-' + id + (scopes.history === 'global' ? '' : '-' + scopes.history) + '-' + dayOf(window.start) + '-' + dayOf(window.end) + '.csv';
+    link.download = 'twitch-' + id + (region === 'global' ? '' : '-' + region) + '-' + dayOf(window.start) + '-' + dayOf(window.end) + '.csv';
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
+  $('moreCooldown').addEventListener('toggle', renderCooldown);
+  $('moreStatistics').addEventListener('toggle', renderStatistics);
+  if (location.hash === '#historyCooldown') $('moreCooldown').open = true;
+  if (location.hash === '#historyStatistics') $('moreStatistics').open = true;
+  setRegion(region);
   load();
-  return () => { disposed = true; request++; summaryRequest++; trialTimes.reset(); launchCurves.reset(); charts.forEach(dispose => dispose()); stats.forEach(c => c.destroy()); cooldowns.forEach(c => c.destroy()); };
+  return () => { disposed = true; request++; summaryRequest++; events.abort(); slots.reset(); launchCurves.reset(); charts.forEach(dispose => dispose()); stats?.destroy(); cooldown?.destroy(); };
 }

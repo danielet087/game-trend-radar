@@ -58,10 +58,12 @@ test('overview defaults to global, switches sorting and metrics, and carries sco
   await expect(page.locator('.tw-game').first()).toHaveAttribute('data-game-id', '1');
   await expect(page.locator('.tw-game').first().locator('[data-kind="viewers"] strong')).toHaveText('20,000');
   await page.locator('.tw-game').first().locator('.tw-detail-link').click();
-  await expect(page.locator('#historyCategory')).toContainText('全球');
+  await expect(page.locator('#pageRegion [data-region="global"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('#moreHistory > summary').click();
   await expect(page.locator('#historyTableBody tr').first().locator('td').nth(1)).toHaveText('20,000');
-  await page.locator('#audienceRegion').selectOption('zh');
-  await expect(page.locator('#historyCategory')).toContainText('中文區');
+  await page.locator('#pageRegion [data-region="zh"]').click();
+  await expect(page).toHaveURL(/region=zh/);
+  await expect(page.locator('#historyChart [data-region="zh"]')).toHaveCount(1);
   await expect(page.locator('#historyTableBody tr').first().locator('td').nth(1)).toHaveText('300');
   await expect(page.locator('#historyTableBody tr').nth(1).locator('td').nth(1)).toHaveText('—');
   await expect(page.locator('#historyTableBody tr').nth(1).locator('td').nth(1)).toHaveAttribute('title', /未收集中文區/);
@@ -69,7 +71,7 @@ test('overview defaults to global, switches sorting and metrics, and carries sco
   const download = page.waitForEvent('download');
   await page.locator('#historyExport').click();
   expect((await download).suggestedFilename()).toContain('-zh-');
-  await page.reload(); await expect(page.locator('#audienceRegion')).toHaveValue('zh');
+  await page.reload(); await expect(page.locator('#pageRegion [data-region="zh"]')).toHaveAttribute('aria-pressed', 'true');
   expect(errors).toEqual([]);
 });
 
@@ -84,7 +86,7 @@ test('archive preserves its query when changing region and uses regional peaks o
   await expect(page).toHaveURL(/region=zh/);
   await expect(page.locator('.tw-archive-card')).toContainText('300');
   await page.locator('.tw-archive-card').click();
-  await expect(page.locator('#audienceRegion')).toHaveValue('zh');
+  await expect(page.locator('#pageRegion [data-region="zh"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#historyBack')).toHaveAttribute('href', /region=zh/);
   await page.locator('#historyBack').click();
   await expect(page.locator('#archiveRegion')).toHaveValue('zh');
@@ -93,40 +95,29 @@ test('archive preserves its query when changing region and uses regional peaks o
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 });
 
-test('detail blocks compare independently, synchronize time and preserve missing Chinese data', async ({ page }) => {
+test('the game page has one region switch for every section and keeps missing Chinese data blank', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
-  await page.goto('twitch-game.html?game=1&range=24h');
-  await expect(page.locator('#historyContent')).toBeVisible();
-  await page.locator('#summaryRegion').selectOption('compare');
-  await expect(page.locator('#heatOverviewPanels > section')).toHaveCount(2);
-  await expect(page.locator('#audienceRegion')).toHaveValue('global');
-  await expect(page.locator('#cooldownRegion')).toHaveValue('global');
-  await expect(page.locator('#statisticsRegion')).toHaveValue('global');
-  await page.locator('#audienceRegion').selectOption('compare');
-  const global = page.locator('#historyChart [data-region="global"]');
+  // An older link that compared the regions per block opens on the worldwide view.
+  await page.goto('twitch-game.html?game=1&range=24h&summary_region=compare&history_region=compare');
+  await expect(page.locator('#pageRegion [data-region="global"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page).not.toHaveURL(/summary_region|history_region/);
+  await expect(page.locator('select:is(#summaryRegion,#audienceRegion,#cooldownRegion,#statisticsRegion,#trialRegion)')).toHaveCount(0);
+  for (const id of ['moreHistory', 'moreCooldown', 'moreStatistics']) await page.locator(`#${id} > summary`).click();
+  await expect(page.locator('#historyChart [data-region="global"] .tw-chart-value')).toHaveText('20,000');
+  await expect(page.locator('#cooldownPanels [data-region="global"]')).toHaveCount(1);
+  await expect(page.locator('#statisticsPanels [data-region="global"]')).toHaveCount(1);
+  await page.locator('#pageRegion [data-region="zh"]').click();
   const chinese = page.locator('#historyChart [data-region="zh"]');
-  await expect(global.locator('.tw-chart-value')).toHaveText('20,000');
   await expect(chinese.locator('.tw-chart-value')).toHaveText('300');
-  expect(await global.locator('.tw-chart-axis').allTextContents()).toEqual(await chinese.locator('.tw-chart-axis').allTextContents());
-  await global.locator('.tw-chart-scrubber').focus(); await page.keyboard.press('ArrowLeft');
-  await expect(global.locator('.tw-chart-value')).toHaveText('12,000');
+  await chinese.locator('.tw-chart-scrubber').focus(); await page.keyboard.press('ArrowLeft');
   await expect(chinese.locator('.tw-chart-value')).toHaveText('—');
   await expect(chinese.locator('.tw-chart-status')).toContainText('未收集中文區');
-  expect(await global.locator('.tw-chart-time').textContent()).toBe(await chinese.locator('.tw-chart-time').textContent());
-  await page.locator('#cooldownRegion').selectOption('compare');
-  await expect(page.locator('#cooldownPanels [data-region]')).toHaveCount(2);
-  await expect(page.locator('#global-cooldownStatus')).toBeVisible();
-  await expect(page.locator('#zh-cooldownStatus')).toBeVisible();
-  await page.locator('#statisticsRegion').selectOption('compare');
-  const globalStats = page.locator('#statisticsPanels [data-region="global"]');
-  const chineseStats = page.locator('#statisticsPanels [data-region="zh"]');
-  await globalStats.getByRole('button', { name: '觀看與開台', exact: true }).click();
-  await expect(globalStats.locator('.tw-statistics')).toHaveAttribute('data-statistics-mode', 'supply');
-  await expect(chineseStats.locator('.tw-statistics')).toHaveAttribute('data-statistics-mode', 'supply');
+  await expect(page.locator('#cooldownPanels [data-region="zh"]')).toHaveCount(1);
+  await expect(page.locator('#statisticsPanels [data-region="zh"]')).toHaveCount(1);
   const download = page.waitForEvent('download'); await page.locator('#historyExport').click();
-  expect((await download).suggestedFilename()).toContain('-compare-');
+  expect((await download).suggestedFilename()).toContain('-zh-');
   await page.reload();
-  for (const id of ['summaryRegion', 'audienceRegion', 'cooldownRegion', 'statisticsRegion']) await expect(page.locator('#' + id)).toHaveValue('compare');
+  await expect(page.locator('#pageRegion [data-region="zh"]')).toHaveAttribute('aria-pressed', 'true');
   const duplicates = await page.evaluate(() => {
     const ids = [...document.querySelectorAll('[id]')].map(el => el.id);
     return ids.filter((id, i) => ids.indexOf(id) !== i);

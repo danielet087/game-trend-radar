@@ -53,23 +53,26 @@ async function mockLaunches(page: Page) {
   }
 }
 
-test('the planning list marks a small game worth a trial and a dark-horse candidate', async ({ page }) => {
+test('the planning list marks a small game worth a trial and a popular dark horse', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await mockLaunches(page);
-  await page.goto('stream-planning.html?sort=viewers');
   // Only the two Twitch launches; the fixture's Steam games have no hourly records.
-  await page.locator('#streamSource').selectOption('twitch_new');
-  const small = page.locator('.tw-stream-game[data-game="1"] .tw-stream-launch-line');
-  await expect(small).toHaveCount(1);
-  await expect(small).toHaveAttribute('data-launch', 'trial-holding');
-  await expect(small.locator('strong')).toHaveText('值得試播');
-  await expect(small.locator('span')).toHaveText('第 3 天 250 人 · 觀眾還在');
-  const horse = page.locator('.tw-stream-game[data-game="2"] .tw-stream-launch-line');
-  await expect(horse).toHaveCount(1);
-  await expect(horse).toHaveAttribute('data-launch', 'candidate');
-  await expect(horse.locator('strong')).toHaveText('黑馬候選');
-  await expect(horse.locator('span')).toHaveText('第 3 天是首日 2.3 倍 · 開台 40→60');
-  await page.locator('.tw-stream-method summary').click();
+  await page.goto('stream-planning.html?state=twitch_new');
+  const small = page.locator('.tw-plan-card[data-game="1"]');
+  await expect(small).toHaveAttribute('data-group', 'trial');
+  // Twenty Chinese viewers: the two regions differ.
+  await expect(small).toHaveAttribute('data-split', 'true');
+  const global = small.locator('.tw-plan-region[data-region="global"]');
+  await expect(global.locator('.tw-verdict-chip')).toHaveText('值得試播');
+  await expect(global.locator('.tw-plan-why')).toHaveText('上市第 3 天約 250 人，第 3 天還有首日的 63%，觀眾還在。');
+  await expect(small.locator('.tw-plan-region[data-region="zh"] .tw-verdict-chip')).toHaveText('先不用排');
+  // A dark horse past 3,000 a day is worth streaming; the label rides along.
+  const horse = page.locator('.tw-plan-card[data-game="2"]');
+  await expect(horse).toHaveAttribute('data-group', 'hot');
+  await expect(horse.locator('.tw-plan-extra p')).toHaveText(['比同齡撐得久：上市第 3 天還有首日的 2.3 倍，同齡遊戲一般剩 34%。',
+    '黑馬候選：上市第 3 天（48～72 小時）是首日的 2.3 倍，一般遊戲這時只剩約 34%。開台數 40→60。']);
+  await page.locator('#planInfoButton').click();
+  await page.locator('#planInfo .tw-info-more summary').click();
   await expect(page.locator('#streamLaunchRule')).toContainText('首 24 小時有 300 人、最近一天有 200 人以上');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   expect(errors).toEqual([]);
@@ -78,18 +81,18 @@ test('the planning list marks a small game worth a trial and a dark-horse candid
 test('the game page explains the trial advice and the dark-horse label', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await mockLaunches(page);
-  await page.goto('twitch-game.html?game=1&region=compare');
-  const global = page.locator('#heatOverview-global .tw-stream-action');
-  await expect(global.locator('h3')).toHaveText('值得試播一場');
-  await expect(global.locator('p').first()).toHaveText('上市第 3 天中位數 250 人；第 3 天還有首日的 63%，觀眾還在。');
-  await global.locator('.tw-launch-rule summary').click();
-  await expect(global.locator('.tw-launch-rule p')).toContainText('兩關都過的 24 款');
-  await expect(page.locator('#heatOverview-zh .tw-launch-rule p')).toContainText('這裡依全球觀眾判斷');
+  await page.goto('twitch-game.html?game=1');
+  const global = page.locator('#verdictPanel .tw-verdict-region[data-region="global"]');
+  await expect(global.locator('.tw-verdict-chip')).toHaveText('值得試播');
+  await expect(global.locator('strong')).toHaveText('值得試播一場');
+  await expect(global.locator('p')).toHaveText('上市第 3 天約 250 人，第 3 天還有首日的 63%，觀眾還在。');
+  await expect(page.locator('#verdictPanel .tw-verdict-region[data-region="zh"] strong')).toHaveText('中文台先不用排');
+  await page.locator('#verdictPanel .tw-info').click();
+  await page.locator('#verdictInfo .tw-info-more summary').click();
+  await expect(page.locator('#verdictInfo .tw-info-more')).toContainText('兩關都過的 24 款');
   await page.goto('twitch-game.html?game=2');
-  const flag = page.locator('#heatOverview-global .tw-launch-flag');
-  await expect(flag).toHaveAttribute('data-flag', 'candidate');
-  await expect(flag).toHaveText('黑馬候選：上市第 3 天（48～72 小時）是首日的 2.3 倍，一般遊戲這時只剩約 34%。開台數 40→60。');
-  await expect(page.locator('#heatOverview-global .tw-stream-action h3')).not.toHaveText('值得試播一場');
+  await expect(page.locator('#nextPanel .tw-next-line')).toHaveText(['黑馬候選：上市第 3 天（48～72 小時）是首日的 2.3 倍，一般遊戲這時只剩約 34%。開台數 40→60。']);
+  await expect(page.locator('#verdictPanel .tw-verdict-region[data-region="global"] strong')).toHaveText('可以繼續播');
   expect(errors).toEqual([]);
 });
 
@@ -105,27 +108,19 @@ test('the planning list and the game page forecast days 7-9 from the first 48 ho
         100: { reached: 15, likely: 16, likely_reached: 12 }, 1000: { reached: 6, likely: 7, likely_reached: 6 },
         3000: { reached: 3, likely: 2, likely_reached: 2 } } } } },
   } }));
-  await page.goto('stream-planning.html?sort=viewers');
-  await page.locator('#streamSource').selectOption('twitch_new');
-  const horse = page.locator('.tw-stream-game[data-game="2"] .tw-stream-launch-line[data-launch="forecast"]');
-  await expect(horse.locator('strong')).toHaveText('第 7～9 天預估');
-  await expect(horse.locator('span')).toHaveText('約 1,000 人（100 人 超過 95% · 1,000 人 55% · 3,000 人 不到 5%）');
-  const small = page.locator('.tw-stream-game[data-game="1"] .tw-stream-launch-line[data-launch="forecast"] span');
-  await expect(small).toHaveText('約 72 人（100 人 30% · 1,000 人 不到 5% · 3,000 人 不到 5%）');
-  await page.locator('.tw-stream-method summary').click();
+  await page.goto('stream-planning.html?state=twitch_new');
+  await expect(page.locator('.tw-plan-card[data-game="2"] .tw-plan-extra p').first()).toHaveText('第 7～9 天預估約 1,000 人；還有 1,000 人以上的機率 55%。');
+  await expect(page.locator('.tw-plan-card[data-game="1"] .tw-plan-extra p').first()).toHaveText('第 7～9 天預估約 72 人；還有 100 人以上的機率 30%。');
   await expect(page.locator('#streamForecastRule')).toContainText('首 48 小時版 30 款');
   await expect(page.locator('#streamForecastRule')).toContainText('說「還有 1,000 人」機率過半的 7 款，6 款真的有');
   await page.goto('twitch-game.html?game=2');
-  const forecast = page.locator('#heatOverview-global .tw-launch-forecast');
-  await expect(forecast.locator('h3')).toHaveText('上市第 7～9 天約 1,000 人');
-  await expect(forecast.locator('p').first()).toHaveText(
-    '首 48 小時中位數 5,000 人。照過去 40 款新作，第 7～9 天大約是首 48 小時的 21%；換成這款，中間八成落在 250～1,800 人。');
-  await expect(forecast.locator('.tw-forecast-caption')).toHaveText('第 7～9 天還有這麼多人的機率');
-  await expect(forecast.locator('dt')).toHaveText(['100 人', '1,000 人', '3,000 人']);
-  await expect(forecast.locator('dd')).toHaveText(['超過 95%', '55%', '不到 5%']);
-  await forecast.locator('.tw-launch-rule summary').click();
-  await expect(forecast.locator('.tw-launch-rule p')).toContainText('落在中間八成範圍內的 66%');
-  await expect(page.locator('#heatOverview-global [data-flag="launch-start"]')).toHaveCount(0);
+  const forecast = page.locator('#nextPanel .tw-forecast');
+  await expect(forecast.locator('p')).toHaveText(/^第 7～9 天（11\/17 01:00 結束）預估約 1,000 人，八成落在 250～1,800 人；目前實際每天約 .+ 人。$/);
+  await expect(forecast.locator('.tw-forecast-label')).toHaveText(['100 人', '1,000 人', '3,000 人']);
+  await expect(forecast.locator('.tw-forecast-chance')).toHaveText(['超過 95%', '55%', '不到 5%']);
+  await page.locator('#nextPanel .tw-info').click();
+  await page.locator('#nextInfo .tw-info-more summary').click();
+  await expect(page.locator('#nextInfo .tw-info-more')).toContainText('落在中間八成範圍內的 66%');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   expect(errors).toEqual([]);
 });

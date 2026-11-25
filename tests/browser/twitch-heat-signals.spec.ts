@@ -67,72 +67,110 @@ async function mockSignals(page: Page) {
   }
 }
 
-test('the planning list marks an own-peak cooldown, a same-age comparison and a rise back to a high level', async ({ page }) => {
+test('the planning list groups an own-peak cooldown, a game holding up and a rise back to a high level', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await mockSignals(page);
-  await page.goto('stream-planning.html?sort=viewers');
-  await page.locator('#streamSource').selectOption('twitch_new');
-  const cooled = page.locator('.tw-stream-game[data-game="3"]');
-  await expect(cooled.locator('[data-region="global"] .tw-stream-signal')).toHaveText('已退燒');
-  await expect(cooled.locator('[data-region="global"] .tw-stream-reason')).toContainText('確認退燒（低於高峰 2,000 人的 25%）');
-  const fading = cooled.locator('.tw-stream-launch-line[data-launch="peer-fading"]');
-  await expect(fading.locator('strong')).toHaveText('掉得比同齡快');
-  await expect(fading.locator('span')).toHaveText('第 10 天是首日的 4% · 同齡一般 12%');
-  const lasting = page.locator('.tw-stream-game[data-game="4"] .tw-stream-launch-line[data-launch="peer-outlasting"]');
-  await expect(lasting.locator('strong')).toHaveText('比同齡撐得久');
-  await expect(lasting.locator('span')).toHaveText('第 10 天是首日的 68% · 同齡一般 12%');
-  await expect(page.locator('.tw-stream-game[data-game="5"] [data-region="global"] .tw-stream-signal')).toHaveText('回到高檔');
+  await page.goto('stream-planning.html?state=twitch_new');
+  // Twenty Chinese viewers everywhere: no Chinese heat, so every card shows both regions.
+  const cooled = page.locator('.tw-plan-card[data-game="3"]');
+  await expect(cooled).toHaveAttribute('data-group', 'cooled');
+  const global = cooled.locator('.tw-plan-region[data-region="global"]');
+  await expect(global.locator('.tw-verdict-chip')).toHaveText('已退燒');
+  await expect(global.locator('.tw-plan-why')).toHaveText(/^11\/07 確認退燒：每天約 \d+ 人，不到自己高峰 2,000 人的 25%。$/);
+  await expect(cooled.locator('.tw-plan-extra p')).toHaveText(['掉得比同齡快：上市第 10 天剩首日的 4%，同齡遊戲一般還有 12%。']);
+  const lasting = page.locator('.tw-plan-card[data-game="4"]');
+  await expect(lasting).toHaveAttribute('data-group', 'hot');
+  await expect(lasting.locator('.tw-plan-region[data-region="global"] .tw-verdict-chip')).toHaveText('值得開');
+  await expect(lasting.locator('.tw-plan-extra p')).toHaveText(['比同齡撐得久：上市第 10 天還有首日的 68%，同齡遊戲一般剩 12%。']);
+  await expect(page.locator('.tw-plan-card[data-game="5"] .tw-plan-region[data-region="global"] .tw-plan-why')).toHaveText(/熱度回來了。$/);
   // Streamed before its release date: heat from the viewers observed, marked as not yet released.
-  const beta = page.locator('.tw-stream-game[data-game="6"]');
-  await expect(beta.locator('[data-region="global"] .tw-stream-signal')).toHaveText('有熱度');
-  await expect(beta.locator('[data-region="global"] .tw-stream-reason')).toContainText('11/10 日中位數 4,000 人');
-  await expect(beta.locator('.tw-stream-release')).toHaveText('上市參考 2027/01/20 · 還沒上市');
-  await expect(beta.locator('.tw-stream-launch-line')).toHaveCount(0);
-  await page.locator('.tw-stream-method summary').click();
+  const beta = page.locator('.tw-plan-card[data-game="6"]');
+  await expect(beta).toHaveAttribute('data-group', 'hot');
+  await expect(beta.locator('.tw-plan-meta')).toHaveText('還沒上市・2027/01/20 上市');
+  await expect(beta.locator('.tw-plan-extra')).toHaveCount(0);
+  // The worldwide tile: the last three days and their trend, with seven days of line.
+  await expect(lasting.locator('.tw-plan-tile[data-region="global"] strong')).toHaveText('3,500');
+  await expect(lasting.locator('.tw-plan-tile[data-region="global"] .tw-plan-trend')).toHaveText('↓ 比前 3 天少 8%');
+  await expect(lasting.locator('.tw-spark polyline')).toHaveAttribute('points', /^(\S+ ){6}\S+$/);
+  // Grouping by the Chinese region puts every game in 先不用排.
+  await page.locator('#audienceRegion').selectOption('zh');
+  await expect(page).toHaveURL(/region=zh/);
+  await expect(page.locator('.tw-plan-more[data-group="skip"] .tw-plan-card')).toHaveCount(5);
+  await page.locator('#planInfoButton').click();
+  await expect(page.locator('#planInfoGrouping')).toContainText('分組照中文區的建議');
+  await page.locator('#planInfo .tw-info-more summary').click();
   await expect(page.locator('#streamTrendRule')).toContainText('標示「回到高檔」：熱度回來了，但不代表還會繼續漲');
-  await expect(page.locator('#streamGlobalRule')).toContainText('連續 3 個可判定日低於自己高峰的 25%，也算已退燒');
+  await expect(page.locator('#streamGlobalRule')).toContainText('連續 3 個完整日低於自己高峰的 25%，也算已退燒');
   await expect(page.locator('#streamPeerRule')).toContainText('標「比同齡撐得久」');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#planInfo')).toBeHidden();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   expect(errors).toEqual([]);
 });
 
-test('the game page keeps the small-game advice and shows the own-peak cooldown and same-age lines', async ({ page }) => {
+test('the game page shows the own-peak cooldown and the same-age comparison', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await mockSignals(page);
-  await page.goto('twitch-game.html?game=3&region=global');
-  const action = page.locator('#heatOverview-global .tw-stream-action');
-  await expect(page.locator('#heatOverview-global .tw-heat-status')).toHaveText('已退燒（低於自己高峰的 25%）');
-  await expect(action.locator('h3')).toHaveText('先不用排');
-  await expect(action.locator('.tw-launch-flag[data-flag="peer-fading"]')).toHaveText(
-    '掉得比同齡快：上市第 10 天剩首日的 4%，同齡遊戲一般還有 12%。');
-  await expect(action.locator('.tw-launch-flag[data-flag="peak-cooled"]')).toContainText('已退燒：連續');
-  await expect(action.locator('.tw-launch-flag[data-flag="peak-cooled"]')).toContainText('低於自己高峰（2,000 人）的 25%（500 人）');
-  await expect(page.locator('#heatOverview-global [data-heat="cooled"] small')).toContainText('連續第三天低於自己高峰（2,000 人）的 25%');
+  await page.goto('twitch-game.html?game=3');
+  const global = page.locator('#verdictPanel .tw-verdict-region[data-region="global"]');
+  await expect(global.locator('.tw-verdict-chip')).toHaveText('已退燒');
+  await expect(global.locator('strong')).toHaveText('建議收尾或換題');
+  await expect(global.locator('p')).toContainText('不到自己高峰 2,000 人的 25%');
+  await expect(page.locator('#verdictPanel .tw-split-chip')).toHaveText('兩區建議不同');
+  await expect(page.locator('#nextPanel .tw-next-peer')).toHaveText('掉得比同齡快：上市第 10 天只剩首日的 4%，同齡遊戲一般還有 12%。');
+  await expect(page.locator('#dailyPanel .tw-daily-cooled-label')).toHaveText('11/07 確認退燒');
+  // 看每天的紀錄 opens the cooldown section.
+  await page.locator('#verdictPanel .tw-info').click();
+  await page.locator('#verdictInfo .tw-text-link').click();
+  await expect(page.locator('#moreCooldown')).toHaveAttribute('open', '');
   await expect(page.locator('#cooldownStatus')).toHaveText('已退燒（低於自己高峰的 25%）');
   await expect(page.locator('#historyCooldown')).toHaveAttribute('data-cooldown-status', 'cooled');
   await expect(page.locator('#cooldownPeakRule')).toContainText('跟自己高峰比');
-  await page.goto('twitch-game.html?game=4&region=global');
-  await expect(page.locator('#heatOverview-global .tw-launch-flag[data-flag="peer-outlasting"]')).toHaveText(
-    '比同齡撐得久：上市第 10 天還有首日的 68%，同齡遊戲一般剩 12%。');
-  await expect(page.locator('#heatOverview-global .tw-stream-action h3')).toHaveText('可先續播一場');
+  await page.goto('twitch-game.html?game=4');
+  await expect(page.locator('#nextPanel .tw-next-peer')).toHaveText('比同齡撐得久：上市第 10 天還有首日的 68%，同齡遊戲一般剩 12%。');
+  await expect(page.locator('#verdictPanel .tw-verdict-region[data-region="global"] strong')).toHaveText('可以繼續播');
   expect(errors).toEqual([]);
 });
 
 test('an Early Access game counts from its full release and compares the two peaks', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await mockSignals(page);
-  await page.goto('stream-planning.html?sort=viewers');
-  await page.locator('#streamSource').selectOption('twitch_new');
-  const card = page.locator('.tw-stream-game[data-game="7"]');
-  await expect(card.locator('.tw-stream-release')).toHaveText('搶先體驗 2026/10/20 · 正式上市 2026/11/05');
-  const peak = card.locator('.tw-stream-launch-line[data-launch="full-release-peak"]');
-  await expect(peak.locator('strong')).toHaveText('正式上市新高峰');
-  await expect(peak.locator('span')).toHaveText('正式上市後最高 9,000 人，是搶先體驗時最高 3,000 人的 3.0 倍。');
+  await page.goto('stream-planning.html?state=twitch_new');
+  const card = page.locator('.tw-plan-card[data-game="7"]');
+  await expect(card.locator('.tw-plan-meta')).toHaveText('正式上市第 7 天・11/05 上市');
   // Same-age comparison from the full release: its sixth day against its first.
-  await expect(card.locator('.tw-stream-launch-line[data-launch="peer-outlasting"] span')).toHaveText('第 6 天是首日的 67% · 同齡一般 23%');
-  await page.goto('twitch-game.html?game=7&region=global');
-  await expect(page.locator('#heatOverview-global .tw-launch-flag[data-flag="full-release-peak"]')).toHaveText(
-    '正式上市後最高 9,000 人，是搶先體驗時最高 3,000 人的 3.0 倍。');
+  await expect(card.locator('.tw-plan-extra p')).toHaveText(['比同齡撐得久：上市第 6 天還有首日的 67%，同齡遊戲一般剩 23%。',
+    '正式上市後最高 9,000 人，是搶先體驗時最高 3,000 人的 3.0 倍。']);
+  await page.goto('twitch-game.html?game=7');
+  await expect(page.locator('#gameMeta')).toHaveText('Steam 11/05 正式上市・今天第 7 天');
+  await expect(page.locator('#nextPanel .tw-next-line')).toHaveText(['正式上市後最高 9,000 人，是搶先體驗時最高 3,000 人的 3.0 倍。']);
+  await page.locator('#moreCooldown > summary').click();
   await expect(page.locator('#cooldownReleaseSummary')).toContainText('搶先體驗 2026/10/20 · 正式上市 2026/11/05（第幾天從正式上市起算）');
+  expect(errors).toEqual([]);
+});
+
+test('the verdict chips and the search narrow the planning list, and the choice stays in the address', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await mockSignals(page);
+  await page.goto('stream-planning.html?state=twitch_new');
+  await expect(page.locator('.tw-plan-group[data-group="hot"] .tw-plan-card')).toHaveCount(4);
+  await page.locator('#verdictFilters [data-group="cooled"]').click();
+  await expect(page).toHaveURL(/group=cooled/);
+  await expect(page.locator('#verdictFilters [data-group="cooled"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.tw-plan-group')).toHaveCount(1);
+  await expect(page.locator('.tw-plan-card')).toHaveCount(1);
+  await expect(page.locator('.tw-plan-card')).toHaveAttribute('data-game', '3');
+  await page.locator('#verdictFilters [data-group="horse"]').click();
+  await expect(page.locator('.tw-plan-empty')).toHaveText('目前沒有「黑馬候選」的遊戲。');
+  await page.reload();
+  await expect(page.locator('#verdictFilters [data-group="horse"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('#verdictFilters [data-group="all"]').click();
+  await expect(page).not.toHaveURL(/group=/);
+  await page.locator('#gameSearch').fill('長青');
+  await expect(page).toHaveURL(/q=/);
+  await expect(page.locator('.tw-plan-card')).toHaveCount(1);
+  await expect(page.locator('.tw-plan-card')).toHaveAttribute('data-game', '4');
+  await page.locator('#gameSearch').fill('不存在的遊戲');
+  await expect(page.locator('.tw-plan-empty')).toHaveText('找不到遊戲，試試英文名稱或遊戲 ID。');
   expect(errors).toEqual([]);
 });

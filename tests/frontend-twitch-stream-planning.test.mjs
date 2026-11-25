@@ -4,11 +4,12 @@ import { dateStart, dayOf, detailHref, fullSeriesRows, HEAT_PROJECTION, streamPl
 import { projectRows } from '../src/features/twitch/region-views.js';
 import { CHINESE_MEASUREMENT_CHANGE_AT } from '../src/features/twitch/audience-region.js';
 import { latestHistorySnapshot } from '../src/features/twitch/history.js';
-import { compareTrialTimes, compareViewerTier, trialWindow } from '../src/features/twitch/stream-planning-model.js';
+import { trialWindow } from '../src/features/twitch/stream-planning-model.js';
+import { slotStats } from '../src/features/twitch/stream-slot-model.js';
 import { launchComparison, launchEntry, launchStatus, validCurves } from '../src/features/twitch/launch-curves.js';
 import { analyzeStreamHeat, remainingAudienceTrend, streamHeatDate } from '../src/features/twitch/stream-heat-model.js';
 import { analyzeCooldown } from '../src/features/twitch/cooldown-model.js';
-import { streamerAdvice } from '../src/features/twitch/heat-overview.js';
+import { globalVerdict } from '../src/features/twitch/trend-verdict.js';
 
 const now = Date.parse('2026-11-11T09:00:00+08:00');
 const iso = at => new Date(at).toISOString().replace('.000Z', 'Z');
@@ -21,15 +22,20 @@ test('trial windows use the selected Taipei hour across seven closed days', () =
   assert.equal(dayOf(midnight.end), '2026-11-10');
 });
 
-test('trial detail links carry the shared current filters and accept the previous region parameter', () => {
-  const link = new URL(detailHref('2', '?view=streamer&sort=streamers&stream_hour=0&stream_region=compare&stream_order=competition&stream_q=Game&stream_date=2026-11-10'), 'https://example.com/');
-  assert.equal(link.searchParams.get('region'), 'compare');
-  assert.equal(link.searchParams.get('back'), 'sort=streamers&view=streamer&stream_hour=0&stream_date=2026-11-10&region=compare&stream_q=Game');
+test('game page links carry the planning filters back and turn older planning parameters into the new ones', () => {
+  const link = new URL(detailHref('2', '?view=streamer&sort=change&group=cooled&region=zh&q=Game&stream_date=2026-11-10'), 'https://example.com/');
+  assert.equal(link.searchParams.get('region'), 'zh');
+  assert.equal(link.searchParams.get('back'), 'q=Game&sort=change&region=zh&view=streamer&stream_date=2026-11-10&group=cooled');
   const planning = new URL(streamPlanningHref(link.searchParams.get('back')), 'https://example.com/');
   assert.equal(planning.pathname, '/stream-planning.html');
   assert.equal(planning.searchParams.get('stream_date'), '2026-11-10');
-  assert.equal(planning.searchParams.get('sort'), 'streamers');
+  assert.equal(planning.searchParams.get('sort'), 'change');
+  assert.equal(planning.searchParams.get('group'), 'cooled');
   assert.equal(planning.searchParams.get('view'), null);
+  // Older planning links: an hour, a page size and a search of their own.
+  const older = new URL(streamPlanningHref('view=streamer&sort=streamers&stream_hour=0&stream_region=zh&stream_q=Game&stream_limit=48'), 'https://example.com/');
+  assert.deepEqual([...older.searchParams.keys()].sort(), ['q', 'region']);
+  assert.equal(older.searchParams.get('q'), 'Game');
 });
 
 test('planning replay selects the latest valid Taipei snapshot before the cutoff', () => {
@@ -192,7 +198,9 @@ function trialFixture(period, hours, counts, releaseDate) {
   return { index, chunks };
 }
 
-test('time comparison uses matched Taiwan dates across months and keeps regional coverage independent', () => {
+const hourSlot = hour => ({ start:hour, end:hour + 1 });
+
+test('a stream slot counts each region on its own days across months, from the release date', () => {
   const period = trialWindow(0, Date.parse('2026-11-04T09:00:00+08:00')), hours = [0, 22];
   const counts = [
     [[9000,12],[9000,14]], [[9000,12],[9000,14]],
@@ -200,59 +208,34 @@ test('time comparison uses matched Taiwan dates across months and keeps regional
     [[600,3,[10,1]],[500,6]], [[700,4,[20,1]],[500,8,[5,1]]],
   ];
   const { index, chunks } = trialFixture(period, hours, counts, '2026-10-30');
-  const global = compareTrialTimes(index, chunks, '1', period, hours, 'global');
-  assert.deepEqual(global.dates, ['2026-10-30', '2026-11-02', '2026-11-03']);
-  assert.deepEqual(global.slots, [
-    { hour:0, observed:4, viewers:600, streamers:3, strongerDays:2 },
-    { hour:22, observed:4, viewers:500, streamers:8, strongerDays:0 },
-  ]);
-  assert.equal(global.preferred.hour, 0);
-  const chinese = compareTrialTimes(index, chunks, '1', period, hours, 'zh');
-  assert.deepEqual(chinese.dates, ['2026-10-30','2026-11-03']);
-  assert.deepEqual(chinese.slots.map(slot => [slot.observed, slot.viewers]), [[4,null],[3,null]]);
-  assert.equal(chinese.preferred, null);
+  const midnight = slotStats(index, chunks, '1', period, hourSlot(0), 'global', 50);
+  assert.deepEqual(midnight.dates, ['2026-10-30', '2026-10-31', '2026-11-02', '2026-11-03']);
+  assert.deepEqual([midnight.viewers, midnight.streamers], [650, 3.5]);
+  const late = slotStats(index, chunks, '1', period, hourSlot(22), 'global', 50);
+  assert.deepEqual(late.dates, ['2026-10-30', '2026-11-01', '2026-11-02', '2026-11-03']);
+  assert.deepEqual([late.viewers, late.streamers], [500, 11.5]);
+  // Measured zero Chinese viewers count; a missing Chinese count does not.
+  const chinese = slotStats(index, chunks, '1', period, hourSlot(22), 'zh', 50);
+  assert.deepEqual(chinese.dates, ['2026-10-30', '2026-11-01', '2026-11-03']);
+  assert.equal(chinese.viewers, 5);
 });
 
-test('viewer tier ranking requires three days and preserves measured zero and old missing data', () => {
-  const period = trialWindow(0, now), hour = 11;
+test('the rank needs three days with the tier and keeps a measured zero', () => {
+  const period = trialWindow(0, now), slot = hourSlot(11);
   const counts = [[[900,10,[200,5]]], [[900,10,[200,5]]], [[900,10,[200,5]]], [[900,10,[200,5]]]];
-  const { index, chunks } = trialFixture(period, [hour], counts, '2026-11-05');
+  const { index, chunks } = trialFixture(period, [11], counts, '2026-11-05');
   const rows = Object.values(chunks['2026-11'].hours);
   for (const row of rows.slice(1)) row.streamer_counts_above_viewers = [5, 3, 2];
   rows[1].audience_regions.zh.streamer_counts_above_viewers = [2, 0, 0];
   rows[2].audience_regions.zh.streamer_counts_above_viewers = [2, 1, 0];
   rows[3].audience_regions.zh.streamer_counts_above_viewers = [2, 1, 0];
-  const lastHour = iso(period.slots[3] + hour * 3600000);
-  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 50, 'global'), {
-    sampledDays:3, ahead:3, latest:{ hour:lastHour, tiers:[5, 3, 2] },
-  });
-  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 100, 'zh'), {
-    sampledDays:3, ahead:0, latest:{ hour:lastHour, tiers:[2, 1, 0] },
-  });
+  assert.deepEqual(slotStats(index, chunks, '1', period, slot, 'global', 50).rank, { ahead:3, days:3 });
+  assert.deepEqual(slotStats(index, chunks, '1', period, slot, 'zh', 100).rank, { ahead:0, days:3 });
   rows[3].audience_regions.zh.streamer_counts_above_viewers = [50, 50, 50];
-  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 50, 'zh'), {
-    sampledDays:2, ahead:null, latest:{ hour:iso(period.slots[2] + hour * 3600000), tiers:[2, 1, 0] },
-  });
+  assert.equal(slotStats(index, chunks, '1', period, slot, 'zh', 50).rank, null);
 });
 
-test('viewer tiers read the 60-viewer tier from new hours and skip hours that lack it', () => {
-  const period = trialWindow(0, now), hour = 11;
-  const counts = [[[900,10,[200,5]]], [[900,10,[200,5]]], [[900,10,[200,5]]], [[900,10,[200,5]]]];
-  const { index, chunks } = trialFixture(period, [hour], counts, '2026-11-01');
-  const rows = Object.values(chunks['2026-11'].hours);
-  rows[0].streamer_counts_above_viewers = [5, 3, 2];
-  for (const row of rows.slice(1)) row.streamer_counts_above_viewers = [5, 3, 3, 2];
-  const lastHour = iso(period.slots[3] + hour * 3600000);
-  assert.deepEqual(compareViewerTier(index, chunks, '1', period, hour, 60, 'global'), {
-    sampledDays:3, ahead:3, latest:{ hour:lastHour, tiers:[5, 3, 3, 2] },
-  });
-  // Both layouts keep the tiers they share.
-  assert.equal(compareViewerTier(index, chunks, '1', period, hour, 100, 'global').sampledDays, 4);
-  rows[3].streamer_counts_above_viewers = [5, 3, 4, 2];
-  assert.equal(compareViewerTier(index, chunks, '1', period, hour, 60, 'global').sampledDays, 2);
-});
-
-test('viewer tiers use the Chinese collection active at the latest selected hour', () => {
+test('a Chinese slot uses the collection active at the end of the period', () => {
   const period = trialWindow(0, Date.parse('2026-11-16T09:00:00+08:00'));
   const counts = period.slots.map(() => [[900,10,[500,5]], [900,10,[500,5]]]);
   const { index, chunks } = trialFixture(period, [11, 22], counts, '2026-11-01');
@@ -264,15 +247,12 @@ test('viewer tiers use the Chinese collection active at the latest selected hour
   const hour = '2026-11-15T14:00:00Z';
   rows[hour].audience_regions.zh = { viewer_count:40, streamer_count:2,
     measurement_source:'helix_language_filter', streamer_counts_above_viewers:[1, 0, 0] };
-  assert.deepEqual(compareViewerTier(index, chunks, '1', period, 22, 50, 'zh'), {
-    sampledDays:1, ahead:null, latest:{ hour, tiers:[1, 0, 0] },
-  });
-  assert.equal(compareViewerTier(index, chunks, '1', period, 11, 50, 'zh').ahead, 4);
-  assert.equal(compareViewerTier(index, chunks, '1', period, 22, 50, 'global').sampledDays, 7);
+  // 22:00 on 11/15 comes after the switch to the language filter: only that hour counts.
+  assert.deepEqual(slotStats(index, chunks, '1', period, hourSlot(22), 'zh', 50).dates, ['2026-11-15']);
+  assert.deepEqual(slotStats(index, chunks, '1', period, hourSlot(11), 'zh', 50).rank, { ahead:4, days:7 });
+  assert.equal(slotStats(index, chunks, '1', period, hourSlot(22), 'global', 50).days, 7);
   delete rows[hour].audience_regions.zh.measurement_source;
-  assert.deepEqual(compareViewerTier(index, chunks, '1', period, 22, 50, 'zh'), {
-    sampledDays:0, ahead:null, latest:null,
-  });
+  assert.equal(slotStats(index, chunks, '1', period, hourSlot(22), 'zh', 50).days, 0);
 });
 
 // A launch entry of twitch-launch-curves.json (schema 2): days every 24 hours from its start.
@@ -377,26 +357,14 @@ test('Chinese launch heat retains exact hourly threshold decisions and matches p
   assert.equal(mixed.heat.hot, 4);
 });
 
-test('time comparison withholds a preferred hour when the median advantage lacks a majority of paired days', () => {
-  const period = trialWindow(0, now), hours = [20, 22];
-  const { index, chunks } = trialFixture(period, hours,
-    [[[10,2],[9,3]], [[11,2],[9,3]], [[5,2],[10,3]], [[200,9],[9,3]]], '2026-11-01');
-  const comparison = compareTrialTimes(index, chunks, '1', period, hours, 'global');
-  assert.equal(comparison.typicalLead.hour, 20);
-  assert.equal(comparison.typicalLead.strongerDays, 2);
-  assert.equal(comparison.preferred, null);
-});
-
-test('confirmed cooldown can suggest a wrap-up while stale and archived data prompt a fresh check', () => {
+test('a confirmed cooldown suggests wrapping up', () => {
   const rows = Array.from({ length:4*24+9 }, (_, i) => ({
     hour:iso(dateStart('2026-11-07')+i*3600000), status:'observed', viewer_count:i<24 ? 4000 : 1500,
   }));
   const data = analyzeCooldown(rows, { now });
   assert.equal(data.status, 'cooled');
-  const snapshot = { data, status:data.status, historical:false };
-  assert.equal(streamerAdvice(snapshot, now)[0], '考慮收尾或換題');
-  assert.equal(streamerAdvice(snapshot, now + 13*3600000)[0], '先等有效資料');
-  assert.equal(streamerAdvice({ ...snapshot, historical:true }, now)[0], '先核對近期表現');
+  const verdict = globalVerdict(heat(rows, '2026-11-11', { region:'global' }), { small:false });
+  assert.deepEqual([verdict.group, verdict.headline], ['cooled', '建議收尾或換題']);
 });
 
 // The Twitch backend's heat projection (twitch_series.heat_projection).
@@ -484,14 +452,15 @@ test('worldwide, a game cooled on its own peak is labelled cooled with that peak
   assert.equal(result.outlook.cooledBy, 'peak');
   assert.equal(result.outlook.peak, 1200);
   assert.equal(result.outlook.confirmedOn, '2026-11-11');
-  const data = analyzeCooldown(rows, { now, region:'global' });
-  const big = { data, status:'cooled', basis:'peak', historical:false };
-  assert.deepEqual(streamerAdvice(big, now).slice(0, 2), ['考慮收尾或換題',
-    '遊戲已連續 3 個可判定日低於自己高峰（1,200 人）的 25%（300 人）。如果你的同時段平均觀眾也低於平常，可以安排一場收尾或換題。']);
-  // A small game keeps the launch rules' advice; the cooldown shows beside it.
+  // A small game under 200 a day that fell under a quarter of its own peak has cooled.
   const launch = { small:true, stage:'skip', basis:'latest_day', latest:{ index:5, median:150 } };
-  assert.deepEqual(streamerAdvice({ ...big, launch }, now), ['先不用排',
-    '上市第 6 天中位數 150 人，不到 200 人。這類遊戲接下來一週，大多不到 100 人在看。', 'launch']);
+  const verdict = globalVerdict(result, launch);
+  assert.deepEqual([verdict.group, verdict.label], ['cooled', '已退燒']);
+  assert.match(verdict.reason, /^11\/11 確認退燒：每天約 \d+ 人，不到自己高峰 1,200 人的 25%。$/);
+  // Still 200 a day: the launch rules say it is worth a trial, the cooldown rides along.
+  const trial = globalVerdict(result, { small:true, stage:'trial', basis:'latest_day', first:800, third:600, trend:'holding', latest:{ index:5, median:250 } });
+  assert.equal(trial.group, 'trial');
+  assert.match(trial.reason, /已不到自己高峰 1,200 人的 25%。$/);
 });
 
 test('a rise of half again over three days is still a rise; a fall is never labelled worldwide either', () => {
