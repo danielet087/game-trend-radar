@@ -4,7 +4,7 @@
 // a single collapsed "資料來源與說明" list, each distinct note only once.
 import { playModes } from './overview.js';
 import { weekday } from './radar.js';
-import { priceText, discountText, taipeiTime } from './store.js';
+import { advanceAccessText, priceText, discountText, steamReleaseAt, taipeiTime } from './store.js';
 
 const VERSION_NAMES = { Steam: 'Steam 版', NS: 'Nintendo Switch 版', NS2: 'Nintendo Switch 2 版', PS5: 'PlayStation 5 版' };
 const PLATFORM_ORDER = ['Steam', 'NS', 'NS2', 'PS5'];
@@ -66,7 +66,15 @@ export function createDetailVersions(ctx, policy) {
     return row.region === 'taiwan' ? '台灣日期待確認' : `${regionDateLabel(row.region)}・台灣待確認`;
   }
 
-  function dateCell(rows, heroDate, listed) {
+  // Steam Advance Access under the Steam date: which editions play early, from when.
+  function earlyLines(game, access) {
+    const text = advanceAccessText(access, steamReleaseAt(game), ctx.now?.() ?? Date.now());
+    if (!text) return [];
+    const line = node('p', 'game-version-early', text);
+    return access.editions.length ? [line, node('p', 'game-version-meta', `適用：${access.editions.join('、')}`)] : [line];
+  }
+
+  function dateCell(rows, heroDate, listed, early = []) {
     const cell = node('td', 'game-version-dates');
     cell.dataset.label = '發售日（台灣）';
     if (!rows.length) {
@@ -89,6 +97,7 @@ export function createDetailVersions(ctx, policy) {
       if (row.date !== heroDate) line.append(node('span', 'game-version-countdown', releaseDayText(days(row.date))));
       cell.append(line);
     }
+    cell.append(...early);
     return cell;
   }
 
@@ -214,7 +223,7 @@ export function createDetailVersions(ctx, policy) {
   }
 
   // Provenance: each distinct sentence once, with the platforms it covers.
-  function sourceNotes(game, rowsByPlatform) {
+  function sourceNotes(game, rowsByPlatform, store = null) {
     const notes = new Map();
     const add = (key, platforms, build) => {
       if (!notes.has(key)) notes.set(key, { platforms: [], build });
@@ -283,6 +292,9 @@ export function createDetailVersions(ctx, policy) {
         link(`${code === 'PS5' ? 'PlayStation' : 'Nintendo'} 官方商品頁`, publicSourceURL(version.source_url)),
         `。${content}${unified ? '發售日期採 IGDB 平台資料。' : '發售日期對應上述版本與內容組合。'}${scope}`]);
     }
+    if (rowsByPlatform.has('Steam') && advanceAccessText(store?.advanceAccess, steamReleaseAt(game), ctx.now?.() ?? Date.now()))
+      add('early', ['Steam'], platforms => [prefix(platforms, '提前玩'),
+        '來源 Steam 台灣商店的 Advance Access：買標示的版本可以在正式上市前先玩，開始時間由 Steam 設定，換算成台灣時間（UTC+8）。']);
     const modes = playModes(game);
     if (modes.length) {
       const sources = [...new Set(modes.map(mode => mode.source === 'Steam' ? 'Steam 遊玩類別' : 'IGDB 遊戲模式'))].join('、');
@@ -315,7 +327,8 @@ export function createDetailVersions(ctx, policy) {
       const { cell, target } = storeCell(game, code, store);
       if (target) targets.push(target);
       const listed = (game.releases || []).some(row => row?.platform === code);
-      line.append(platformCell(game, code, badges.get(code)), dateCell(dates, heroDate, listed),
+      const early = code === 'Steam' ? earlyLines(game, store?.advanceAccess) : [];
+      line.append(platformCell(game, code, badges.get(code)), dateCell(dates, heroDate, listed, early),
         languageCell(game, code), modeCell(game, code), cell);
       return line;
     }));
@@ -323,7 +336,7 @@ export function createDetailVersions(ctx, policy) {
     $('gameVersionsAlso').hidden = !others.length;
     $('gameVersionsAlso').textContent = others.length
       ? `也在 ${others.join('、')} 推出；本站沒有追蹤${others.length > 1 ? '這些' : '這個'}平台的日期與語言。` : '';
-    $('gameVersionSourceList').replaceChildren(...sourceNotes(game, rowsByPlatform));
+    $('gameVersionSourceList').replaceChildren(...sourceNotes(game, rowsByPlatform, store));
     $('gameVersions').hidden = !platforms.length;
     return targets;
   }

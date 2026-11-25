@@ -1,6 +1,6 @@
-// Taiwan Steam price, CSRR rating and Steam Deck status for one game.
-// data/store_facts.json is checked four times a day by the content backend;
-// each game keeps the time Steam last confirmed its values.
+// Taiwan Steam price, CSRR rating, Steam Deck status and Advance Access for one
+// game. data/store_facts.json is checked four times a day by the content
+// backend; each game keeps the time Steam last confirmed its values.
 
 const RATINGS = { G: '普遍級', P6: '保護級', C12: '輔12級', C15: '輔15級', R: '限制級' };
 const DECK = { verified: '已驗證', playable: '可遊玩', unsupported: '不支援' };
@@ -37,6 +37,16 @@ function validRating(rating) {
   return { code: rating.code, label: rating.label, descriptors };
 }
 
+// Steam Advance Access: buyers of some editions play before the full release.
+function validAdvanceAccess(access) {
+  const startsAt = isRecord(access) ? time(access.starts_at) : null;
+  if (startsAt === null) return null;
+  const editions = Array.isArray(access.editions)
+    ? [...new Set(access.editions.filter(name => typeof name === 'string' && name.trim()).map(name => name.trim()))].slice(0, 6)
+    : [];
+  return { startsAt, editions };
+}
+
 export function storeFacts(document, appid) {
   if (!isRecord(document) || document.schema_version !== 1 || !isRecord(document.games)) return null;
   const entry = document.games[String(appid)];
@@ -46,8 +56,35 @@ export function storeFacts(document, appid) {
   const price = validPrice(entry.price);
   const rating = validRating(entry.rating);
   const steamDeck = DECK[entry.steam_deck] ? entry.steam_deck : null;
-  if (!price && !rating && !steamDeck) return null;
-  return { price, rating, steamDeck, checkedAt };
+  const advanceAccess = validAdvanceAccess(entry.advance_access);
+  if (!price && !rating && !steamDeck && !advanceAccess) return null;
+  return { price, rating, steamDeck, advanceAccess, checkedAt };
+}
+
+const DAY = 86400000, HOUR = 3600000;
+
+// The Steam release instant: the developer's time on the Taiwan day shown, or
+// that day's midnight in Taiwan.
+export function steamReleaseAt(game) {
+  const row = (Array.isArray(game?.releases) ? game.releases : []).find(release => release?.platform === 'Steam');
+  if (!row || typeof row.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(row.date)) return null;
+  const clock = time(row.time_utc);
+  return clock ?? time(`${row.date}T00:00:00+08:00`);
+}
+
+// "3 天" or, under a day, "5 小時".
+export function leadText(lead) {
+  return lead >= DAY ? `${Math.floor(lead / DAY)} 天` : `${Math.max(1, Math.floor(lead / HOUR))} 小時`;
+}
+
+// 「豪華版可提前 3 天玩（12/2 01:00 起）」 before the release, a past tense after it.
+export function advanceAccessText(access, releaseAt, now = Date.now()) {
+  if (!access || !Number.isFinite(releaseAt) || access.startsAt >= releaseAt) return '';
+  const lead = leadText(Math.round((releaseAt - access.startsAt) / HOUR) * HOUR);
+  const from = `${taipeiTime(access.startsAt)} 起`;
+  if (now >= releaseAt) return `豪華版曾提前 ${lead}開放（${from}）`;
+  if (now >= access.startsAt) return `豪華版已開放提前玩（${from}，比正式上市早 ${lead}）`;
+  return `豪華版可提前 ${lead}玩（${from}）`;
 }
 
 const parts = (value, options) => Object.fromEntries(
