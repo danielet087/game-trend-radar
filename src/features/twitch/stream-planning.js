@@ -16,6 +16,7 @@ import { readCurrentTwitchSnapshot, readPublishedJSON } from './load.js';
 import { normalize } from './snapshot.js';
 import { publicCatalog } from './model.js';
 import { launchAdvice, launchDays, launchInstant, steamAppOf } from './launch-model.js';
+import { currentLaunch, launchLine, launchPeakText, launchPeaks } from './launches.js';
 import { LAUNCH_RULE_TEXT, PEER_RULE_TEXT, launchAdviceShort, launchFlagShort, launchPeerShort } from './launch-advice.js';
 
 const comparisonRegions = regionsFor('compare');
@@ -232,8 +233,13 @@ export function initStreamPlanningPage() {
       }));
     }
     function renderHistory(record, date) {
-      const reference = record?.release_reference;
-      if (reference?.precision === 'day' && Number.isFinite(dateStart(reference.date))) {
+      const reference = record?.release_reference, twoLaunches = launchLine(record, date);
+      if (twoLaunches) {
+        // Early Access and the full release are two launches.
+        const release = node('p', 'tw-stream-release', twoLaunches);
+        release.dataset.launches = 'two';
+        copy.insertBefore(release, launchLines);
+      } else if (reference?.precision === 'day' && Number.isFinite(dateStart(reference.date))) {
         // Before the release the heat still follows the viewers observed.
         const before = dateStart(date) < dateStart(reference.date) ? ' · 還沒上市' : '';
         const release = node('time', 'tw-stream-release', `上市參考 ${reference.date.replaceAll('-', '/')}${before}`);
@@ -255,7 +261,8 @@ export function initStreamPlanningPage() {
       const flag = launch?.darkHorse ? [launch.darkHorse.kind, launchFlagShort(launch.darkHorse)]
         : [`peer-${launch?.peer?.verdict}`, launchPeerShort(launch?.peer)];
       const lines = [flag,
-        [launch?.stage === 'trial' ? `trial-${launch.trend ?? 'plain'}` : launch?.stage, advice]].filter(([, line]) => line);
+        [launch?.stage === 'trial' ? `trial-${launch.trend ?? 'plain'}` : launch?.stage, advice],
+        ['full-release-peak', launchPeakText(launch?.peaks)]].filter(([, line]) => line);
       launchLines.replaceChildren(...lines.map(([key, { label, text }]) => {
         const line = node('p', 'tw-stream-launch-line');
         line.dataset.launch = key;
@@ -291,9 +298,11 @@ export function initStreamPlanningPage() {
         analyzeStreamHeat(region === 'global' ? rows : projectRows(rows, region), { game:record, region, date, now })]));
       // As of the end of the chosen day, so a past date replays what was known then.
       const asOf = Math.min(now, dateStart(date) + 24 * HOUR), latest = days.global?.outlook.latest;
-      const releaseAt = launchInstant(record.release_reference, releaseTimes.get(steamAppOf(record) ?? ''));
+      // An Early Access game's full release is a launch of its own.
+      const releaseAt = launchInstant(currentLaunch(record, asOf), releaseTimes.get(steamAppOf(record) ?? ''));
       const launch = { ...launchAdvice({ days:launchDays(rows, releaseAt, asOf), releaseAt, now:asOf,
-        fallback:latest ? { date:latest.date, median:latest.median } : null }), small:!days.global?.popularAt };
+        fallback:latest ? { date:latest.date, median:latest.median } : null }), small:!days.global?.popularAt,
+        peaks:launchPeaks(rows, record, asOf) };
       return { days, launch };
     } catch { return { message:'逐時資料暫時無法讀取' }; }
   }

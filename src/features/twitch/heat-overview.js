@@ -4,6 +4,7 @@ import { HOUR } from './metrics.js';
 import { MIN_CONCENTRATION_HOURS, MIN_PAIRED_HEAT_HOURS, STREAM_HEAT_WEEK } from './stream-heat-model.js';
 import { LAUNCH_RULE_TEXT, launchAdviceText, launchFlagText, launchPeerText } from './launch-advice.js';
 import { PEAK_COOLDOWN } from './cooldown-model.js';
+import { launchPeakText } from './launches.js';
 
 // "低於自己高峰（12,000 人）的 25%（3,000 人）" for the own-peak cooldown.
 function belowPeak(rule) {
@@ -99,6 +100,8 @@ export function renderHeatOverview(root, snapshot) {
       : [`peer-${snapshot.launch?.peer?.verdict}`, launchPeerText(snapshot.launch?.peer, snapshot.region)],
     basis === 'launch' && snapshot.status === 'cooled' && snapshot.basis === 'peak'
       ? ['peak-cooled', `已退燒：連續 ${data.peakCooldown.lowDays} 個可判定日${belowPeak(data.peakCooldown)}。`] : [],
+    // After an Early Access game's full release: did it make a new peak?
+    ['full-release-peak', launchPeakText(snapshot.launch?.peaks)?.text],
   ];
   for (const [kind, text] of flags) {
     if (!text) continue;

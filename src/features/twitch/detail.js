@@ -14,6 +14,7 @@ import { remainingAudienceTrend } from './stream-heat-model.js';
 import { createTrialTimeComparison } from './trial-time-comparison.js';
 import { createLaunchCurves } from './launch-curves.js';
 import { launchAdvice, launchDays, launchInstant, steamAppOf } from './launch-model.js';
+import { currentLaunch, launchPeaks, waitingText } from './launches.js';
 
 export function initTwitchDetail() {
   const $ = id => document.getElementById(id);
@@ -49,12 +50,12 @@ export function initTwitchDetail() {
   function context(region) {
     return { gameName: (game.display_name || game.name) + ' · ' + regionNames[region], region, scope: regionNames[region],
       trackingStatus: game.tracking_status, lastHour: game.last_hour, latestHour: new Date(window.latest).toISOString(),
-      generatedAt: index.generated_at, releaseReference: game.release_reference };
+      generatedAt: index.generated_at, releaseReference: currentLaunch(game, Date.now()), launchRecord: game };
   }
   // Steam's release time to the hour lives in the game's own file; without it
   // the launch rules count from 00:00 Taiwan time of the release date.
   async function releaseInstant() {
-    const reference = game.release_reference, appid = steamAppOf(game);
+    const reference = currentLaunch(game, Date.now()), appid = steamAppOf(game);
     if (reference?.precision !== 'day') return null;
     if (appid && releaseTime?.appid !== appid) {
       const file = await RadarStorage.loadGame(appid, { allowStale: false }).catch(() => null);
@@ -184,7 +185,7 @@ export function initTwitchDetail() {
       const globalData = analyzeCooldown(globalRows, { region: 'global', now });
       const fallback = globalData.latest.complete ? { date: globalData.latest.day, median: globalData.latest.median } : null;
       const launch = { ...launchAdvice({ days: launchDays(globalRows, releaseAt, now), releaseAt, now, fallback }),
-        small: !globalData.popularAt };
+        small: !globalData.popularAt, peaks: launchPeaks(globalRows, game, now) };
       roots.forEach((root, region) => {
         // Every region judges heat on the viewers actually observed, before the release too.
         const scoped = projectRows(full, region);
@@ -283,7 +284,8 @@ export function initTwitchDetail() {
       const name = game.display_name || game.name;
       document.title = name + ' · Twitch 歷史趨勢｜Game Trend Radar'; $('pageTitle').textContent = name;
       $('historyCategory').textContent = 'TWITCH CATEGORY ' + id + ' · 各區塊可獨立比較全球與中文區';
-      $('historySpan').textContent = (game.tracking_status === 'ended' ? '已結束追蹤 · ' : '') + '已保存 ' + time(game.first_hour) + ' 至 ' + time(game.last_hour) + ' 的觀測紀錄（台灣時間）';
+      const waiting = game.tracking_status === 'ended' ? waitingText(game) : null;
+      $('historySpan').textContent = (game.tracking_status === 'ended' ? (waiting ? `${waiting} · ` : '已結束追蹤 · ') : '') + '已保存 ' + time(game.first_hour) + ' 至 ' + time(game.last_hour) + ' 的觀測紀錄（台灣時間）';
       $('historyUpdated').textContent = '資料更新 ' + time(index.generated_at) + '（台灣）';
       $('historyStart').value = dayOf(window.start); $('historyEnd').value = dayOf(window.end);
       $('historyStart').max = $('historyEnd').max = dayOf(window.latest);

@@ -1,4 +1,5 @@
 import { count, HOUR } from './metrics.js';
+import { gameLaunches } from './launches.js';
 import { dateStart, dayOf } from './series.js';
 import { analyzeCooldown, cooldownVerdict } from './cooldown-model.js';
 import { quantile } from './statistics-model.js';
@@ -170,7 +171,8 @@ export function analyzeStreamHeat(rows, { game, region = 'global', date, now = D
   date = streamHeatDate(date, now);
   const start = dateStart(date), end = start + DAY, open = now < end;
   const reference = game.release_reference;
-  const releaseDate = reference?.precision === 'day' ? reference.date : null;
+  // Before the first launch: an Early Access game launched when it began.
+  const releaseDate = gameLaunches(game)?.earlyAccess.date ?? (reference?.precision === 'day' ? reference.date : null);
   // Heat follows the viewers actually observed, before the release date too
   // (demos, betas, early access, a region launching first); only the launch
   // rules count from the release.

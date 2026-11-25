@@ -5,13 +5,16 @@ import { test, expect, type Page } from '@playwright/test';
 // up better than same-age launches, and a big game back up over three days.
 const HOUR = 3600000;
 const stamp = (at: number) => new Date(at).toISOString().replace('.000Z', 'Z');
-const games: Record<string, { name: string, appid: number, release: string, daily: number[], from?: string }> = {
+const games: Record<string, { name: string, appid: number, release: string, daily: number[], from?: string, full?: string }> = {
   '3': { name: '退燒小遊戲', appid: 99003, release: '2026-11-01', daily: [2000, 1500, 600, 300, 200, 150, 120, 100, 90, 80, 80] },
   '4': { name: '長青大作', appid: 99004, release: '2026-11-01', daily: [5000, 4500, 4200, 4000, 3900, 3800, 3700, 3600, 3500, 3400, 3400] },
   '5': { name: '回溫大作', appid: 99005, release: '2026-10-21',
     daily: [8000, 6000, 5000, 4200, 4000, 3800, 3600, 3400, 3200, 3100, 3000, 3000, 3000, 3000, 2000, 2000, 2000, 3500, 3600, 3700, 3700] },
   // A beta streamed for a week before its January release.
   '6': { name: '測試中大作', appid: 99006, release: '2027-01-20', from: '2026-11-04', daily: [6000, 5000, 4500, 4200, 4000, 4000, 4000, 4000] },
+  // Early Access from 10/20 at 3,000 viewers; the full release on 11/05 reaches 9,000.
+  '7': { name: '搶先體驗大作', appid: 99007, release: '2026-10-20', full: '2026-11-05',
+    daily: [...Array(16).fill(3000), 9000, 8000, 7500, 7000, 6500, 6000, 5500] },
 };
 const releaseAt = (date: string) => Date.parse(`${date}T01:00:00+08:00`);
 
@@ -53,7 +56,9 @@ async function mockSignals(page: Page) {
       tracking_status: 'active', months: Object.keys(chunks[id]), first_hour: stamp(releaseAt(game.from ?? game.release)), last_hour: '2026-11-11T03:00:00Z',
       sample_count: Object.values(chunks[id]).reduce((sum, hours) => sum + Object.keys(hours).length, 0),
       peak_viewer_count: Math.max(...game.daily),
-      release_reference: { date: game.release, precision: 'day', source: 'Steam 台灣商店', steam_appid: String(game.appid) } }])),
+      release_reference: { date: game.release, precision: 'day', source: 'Steam 台灣商店', steam_appid: String(game.appid) },
+      ...(game.full ? { launches: { early_access: { date: game.release, source: 'Steam 台灣商店', source_type: 'steam_early_access' },
+        full_release: { date: game.full, source: 'Steam 台灣商店', source_type: 'steam_full_release' } } } : {}) }])),
   } }));
   for (const id of Object.keys(games)) for (const month of Object.keys(chunks[id])) {
     await page.route(`**/data/twitch_series/${id}/${month}-heat.json`, route => route.fulfill({ status: 404, body: '{}' }));
@@ -110,5 +115,24 @@ test('the game page keeps the small-game advice and shows the own-peak cooldown 
   await expect(page.locator('#heatOverview-global .tw-launch-flag[data-flag="peer-outlasting"]')).toHaveText(
     '比同齡撐得久：上市第 10 天還有首日的 68%，同齡遊戲一般剩 13%。');
   await expect(page.locator('#heatOverview-global .tw-stream-action h3')).toHaveText('可先續播一場');
+  expect(errors).toEqual([]);
+});
+
+test('an Early Access game counts from its full release and compares the two peaks', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await mockSignals(page);
+  await page.goto('stream-planning.html?sort=viewers');
+  await page.locator('#streamSource').selectOption('twitch_new');
+  const card = page.locator('.tw-stream-game[data-game="7"]');
+  await expect(card.locator('.tw-stream-release')).toHaveText('搶先體驗 2026/10/20 · 正式上市 2026/11/05');
+  const peak = card.locator('.tw-stream-launch-line[data-launch="full-release-peak"]');
+  await expect(peak.locator('strong')).toHaveText('正式上市新高峰');
+  await expect(peak.locator('span')).toHaveText('正式上市後最高 9,000 人，是搶先體驗時最高 3,000 人的 3.0 倍。');
+  // Same-age comparison from the full release: its sixth day against its first.
+  await expect(card.locator('.tw-stream-launch-line[data-launch="peer-outlasting"] span')).toHaveText('第 6 天是首日的 67% · 同齡一般 25%');
+  await page.goto('twitch-game.html?game=7&region=global');
+  await expect(page.locator('#heatOverview-global .tw-launch-flag[data-flag="full-release-peak"]')).toHaveText(
+    '正式上市後最高 9,000 人，是搶先體驗時最高 3,000 人的 3.0 倍。');
+  await expect(page.locator('#cooldownReleaseSummary')).toContainText('搶先體驗 2026/10/20 · 正式上市 2026/11/05（第幾天從正式上市起算）');
   expect(errors).toEqual([]);
 });

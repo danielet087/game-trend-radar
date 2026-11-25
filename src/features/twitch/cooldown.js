@@ -1,4 +1,5 @@
 import { analyzeCooldown, CHINESE_DAILY_HEAT_HITS, cooldownThreshold, cooldownVerdict, PEAK_COOLDOWN } from './cooldown-model.js';
+import { launchLine } from './launches.js';
 
 const NS = 'http://www.w3.org/2000/svg', HOUR = 3600000;
 const finite = value => typeof value === 'number' && Number.isFinite(value);
@@ -126,7 +127,11 @@ export function createCooldown(root, { onSummary = () => {}, idPrefix = '' } = {
     releaseSummary.append(el('strong', '', point ? `${label}起 ${lowRule()}` : '以上市日 Day 0 對齊觀測'));
     if (episode?.confirmedAt) releaseSummary.append(el('p', '', `${dayHint(episode.confirmedAt)}確認退燒；確認時間 ${at(episode.confirmedAt)}。`));
     else if (point) releaseSummary.append(el('p', '', '尚未累積滿 3 個有效統計日，暫不確認退燒。'));
-    releaseSummary.append(el('p', '', `上市日 ${date.replaceAll('-', '/')}（${context.releaseReference.source || '已保存的上市日期'}）`));
+    // An Early Access game launches twice; its days count from the latest launch.
+    const both = launchLine(context.launchRecord, new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Taipei' }).format(Date.now()));
+    releaseSummary.append(el('p', '', both
+      ? `${both}（第幾天從${context.releaseReference?.kind === 'full_release' ? '正式上市' : '搶先體驗開始'}起算）`
+      : `上市日 ${date.replaceAll('-', '/')}（${context.releaseReference.source || '已保存的上市日期'}）`));
     if (firstDay > 0) releaseSummary.append(el('p', 'tw-cooldown-coverage-warning', `上市後第 ${firstDay} 天才開始觀測，無法確認上市至收集前的熱度持續時間。`));
   }
 

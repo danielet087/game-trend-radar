@@ -3,6 +3,7 @@
 import { RadarInsights as I } from '../insights/metrics.js';
 import { dailyFollowerPoints, followerDay } from '../../domain/followers.mjs';
 import { leadText, steamReleaseAt, taipeiTime } from './store.js';
+import { waitingText } from '../twitch/launches.js';
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 const CHART_DAYS = 120;
@@ -225,15 +226,17 @@ export function createDetailRadar(ctx) {
       $('gameTwitchText').textContent = (peak
         ? `雷達記錄到的最高觀看是 ${peak} 人${first && last ? `（${first.replaceAll('-', '/')}～${last.replaceAll('-', '/')}，${number.format(entry.sample_count || 0)} 個小時）` : ''}。`
         : '雷達有這款遊戲的 Twitch 每小時紀錄。') + prelaunchText(entry, isNativeConsole(game) ? null : steamReleaseAt(game));
-      status.textContent = entry.tracking_status === 'active' ? '目前：每小時記錄中' : '目前：已停止記錄';
-      status.dataset.state = entry.tracking_status === 'active' ? 'active' : 'ended';
+      // A game between two launches waits; it resumes before the next one.
+      const waiting = entry.tracking_status === 'active' ? null : waitingText(entry);
+      status.textContent = entry.tracking_status === 'active' ? '目前：每小時記錄中' : waiting ? `目前：${waiting}` : '目前：已停止記錄';
+      status.dataset.state = entry.tracking_status === 'active' ? 'active' : waiting ? 'waiting' : 'ended';
       link.href = `./twitch-game.html?game=${id}`;
       link.textContent = '看 Twitch 每小時紀錄 ↗';
       return;
     }
     $('gameTwitchText').textContent = isNativeConsole(game)
       ? 'Twitch 觀看人數達到 7,000 人、而且確認是新作的遊戲，會開始每小時記錄觀看人數與實況主數。'
-      : 'Steam 上市前 14 天到上市後 30 天，或 Twitch 觀看人數達到 7,000 人的新作，會每小時記錄觀看人數與實況主數。';
+      : 'Steam 上市前 14 天到上市後 30 天，或 Twitch 觀看人數達到 7,000 人的新作，會每小時記錄觀看人數與實況主數；搶先體驗和正式上市各記一段。';
     status.textContent = twitchIndex === null ? '目前：Twitch 資料暫時讀不到' : twitchIndex ? '目前：還沒有紀錄' : '正在讀取 Twitch 紀錄…';
     status.dataset.state = 'waiting';
   }
