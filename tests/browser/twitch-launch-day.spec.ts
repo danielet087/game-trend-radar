@@ -73,7 +73,6 @@ test('the planning list calls both launches from their first hours', async ({ pa
   await expect(big).toHaveAttribute('data-group', 'hot');
   // Both regions agree (five Chinese hours over 100): one advice for the card.
   await expect(big.locator('.tw-chip-advice')).toHaveText('首日熱門');
-  await expect(big.locator('.tw-plan-reason')).toHaveText('剛上市就很熱，而且很多台一起在播，不是靠一兩台撐的；中文區也有熱度。');
   // No whole day yet: the tiles show the hours so far instead of a blank.
   const bigTile = big.locator('.tw-plan-tile[data-region="global"]');
   await expect(bigTile.locator('.tw-plan-tile-label')).toHaveText('全球・每小時');
@@ -86,10 +85,10 @@ test('the planning list calls both launches from their first hours', async ({ pa
   await expect(small).toHaveAttribute('data-group', 'trial');
   // The Chinese region has just started recording: the worldwide call stands alone.
   await expect(small.locator('.tw-chip-advice')).toHaveText('首日大概過關');
-  await expect(small.locator('.tw-plan-reason')).toHaveText('剛上市就有一定人氣，也有不少台在播，第 3 天再決定要不要長播。');
   await expect(small.locator('.tw-plan-tile[data-region="global"] strong')).toHaveText('610');
   await expect(small.locator('.tw-plan-tile[data-region="global"] .tw-plan-trend')).toHaveText('24 台在播');
-  for (const text of await page.locator('.tw-plan-why, .tw-plan-reason').allTextContents()) expect(text).not.toMatch(/\d[\d,.]*\s*(萬|人|%|倍)/);
+  // A card gives the conclusion only: no sentences.
+  await expect(page.locator('.tw-plan-card p')).toHaveCount(0);
   await page.locator('#planInfoButton').click();
   await page.locator('#planInfo .tw-info-more summary').click();
   await expect(page.locator('#planInfoHours')).toContainText('標「每小時」');

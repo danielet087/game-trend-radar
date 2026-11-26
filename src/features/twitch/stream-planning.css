@@ -1,8 +1,8 @@
 /* 開台選題: games grouped by whether they are worth streaming now, one card
-   each with a verdict, a plain reason and the worldwide and Chinese numbers. */
+   each with a verdict, its tags and the worldwide and Chinese numbers. */
 @import './verdict.css';
 .tw-plan {
-  --plan-columns:minmax(240px,1fr) minmax(300px,2fr) 170px 120px;
+  --plan-columns:minmax(260px,2fr) minmax(180px,1fr) 170px 120px;
   display:flex; flex-direction:column; gap:16px; max-width:1200px; margin:0 auto; color:var(--ink);
 }
 
@@ -45,6 +45,8 @@
 
 .tw-plan-card { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-areas:"game game" "advice advice" "global zh" "links links";
   gap:10px 8px; padding:14px; border:1px solid var(--line); border-radius:var(--radius-lg); background:var(--white); }
+.tw-plan-card[data-advice="chip"] { grid-template-areas:"game game" "global zh" "links links"; }
+.tw-plan-card[data-advice="chip"] .tw-plan-advice { display:none; }
 .tw-plan-plain { grid-template-areas:"game game" "links links"; }
 .tw-plan-game { grid-area:game; display:flex; align-items:flex-start; gap:12px; min-width:0; }
 .tw-plan-cover { flex:none; display:grid; place-items:center; width:44px; height:58px; border-radius:var(--radius-sm); object-fit:cover;
@@ -55,12 +57,11 @@
 .tw-plan-meta { color:var(--muted); font-size:var(--text-xs); line-height:1.5; }
 .tw-chip-advice,.tw-split-label { display:none; }
 .tw-plan-advice { grid-area:advice; display:flex; flex-direction:column; gap:8px; min-width:0; }
-.tw-plan-reason { margin:0; font-size:var(--text-md); line-height:1.6; overflow-wrap:anywhere; }
 .tw-plan-region { display:grid; grid-template-columns:44px minmax(0,1fr); align-items:center; gap:4px 8px; }
 .tw-plan-region-name { color:var(--muted); font-size:var(--text-xs); }
-.tw-plan-why { grid-column:2; margin:0; font-size:var(--text-sm); line-height:1.55; overflow-wrap:anywhere; }
-.tw-plan-extra { display:grid; gap:4px; padding:8px 10px; border-radius:var(--radius-md); background:var(--violet-94); }
-.tw-plan-extra p { margin:0; color:var(--blue-34); font-size:var(--text-sm); line-height:1.6; overflow-wrap:anywhere; }
+.tw-plan-tags { display:flex; flex-wrap:wrap; gap:6px; }
+.tw-plan-tag { padding:2px 9px; border:1px solid var(--sand-78); border-radius:var(--radius-pill); background:var(--white);
+  color:var(--blue-34); font-size:var(--text-xs); font-weight:700; line-height:1.5; white-space:nowrap; }
 .tw-plan-tile { display:flex; flex-direction:column; gap:2px; min-width:0; padding:10px 12px; border-radius:var(--radius-md); background:var(--gray-95); }
 .tw-plan-tile[data-region="global"] { grid-area:global; }
 .tw-plan-tile[data-region="zh"] { grid-area:zh; }
@@ -99,7 +100,7 @@
 }
 @media (min-width:1024px) {
   .tw-plan-columns { display:grid; grid-template-columns:var(--plan-columns); gap:16px; padding:0 17px; color:var(--muted); font-size:var(--text-xs); }
-  .tw-plan-card { grid-template-columns:var(--plan-columns); grid-template-areas:"game advice global zh" "links advice global zh";
+  .tw-plan-card,.tw-plan-card[data-advice="chip"] { grid-template-columns:var(--plan-columns); grid-template-areas:"game advice global zh" "links advice global zh";
     grid-template-rows:auto 1fr; align-items:start; gap:4px 16px; padding:16px; }
   .tw-plan-plain { grid-template-areas:"game . . ." "links . . ."; }
   .tw-plan-cover { width:48px; height:64px; }
@@ -107,9 +108,7 @@
   .tw-chip-advice { display:inline-flex; }
   .tw-split-label { display:block; color:var(--muted); font-size:var(--text-xs); font-weight:700; }
   .tw-plan-links { padding-left:60px; gap:0 14px; }
-  .tw-plan-region { grid-template-columns:44px auto minmax(0,1fr); align-items:baseline; }
-  .tw-plan-why { grid-column:auto; font-size:var(--text-md); line-height:1.6; }
-  .tw-plan-extra { padding:0; background:none; }
+  .tw-plan-card[data-advice="chip"] .tw-plan-advice { display:flex; }
   .tw-plan-tile { padding:0; background:none; }
   .tw-plan-tile-label { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
   .tw-plan-tile[data-per="hour"] .tw-plan-tile-label { position:static; width:auto; height:auto; overflow:visible; clip:auto; }

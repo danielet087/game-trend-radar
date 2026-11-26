@@ -14,13 +14,12 @@ import { latestHistorySnapshot } from './history.js';
 import { readCurrentTwitchSnapshot, readPublishedJSON } from './load.js';
 import { normalize } from './snapshot.js';
 import { publicCatalog } from './model.js';
-import { forecastModel, launchAdvice, launchAnchor, launchDays, launchForecast, steamAppOf } from './launch-model.js';
+import { launchAdvice, launchAnchor, launchDays, steamAppOf } from './launch-model.js';
 import { launchPeaks } from './launches.js';
-import { LAUNCH_RULE_TEXT, PEER_RULE_TEXT, forecastRuleText } from './launch-advice.js';
-import { validCurves } from './launch-curves.js';
+import { LAUNCH_RULE_TEXT, PEER_RULE_TEXT } from './launch-advice.js';
 import { formatCount as fmt } from './number-format.js';
 import { bindInfoNotes, infoHeading } from './info-notes.js';
-import { GROUP_ORDER, VERDICT_GROUPS, chineseVerdict, combineVerdicts, extraLines, globalVerdict, launchMeta, recentHours, regionChipText,
+import { GROUP_ORDER, VERDICT_GROUPS, chineseVerdict, combineVerdicts, extraTags, globalVerdict, launchMeta, recentHours,
   regionTile, shortDate, sortEntries } from './trend-verdict.js';
 
 const REGIONS = ['global', 'zh'];
@@ -185,23 +184,26 @@ export function initStreamPlanningPage() {
     name.append(titleRow);
     if (entry.meta) name.append(node('span', 'tw-plan-meta', entry.meta));
     head.append(cover(game), name);
+    // The conclusion only: the verdict and its tags. Why, and the numbers
+    // behind the tags, are on the game page (詳細分析).
     const advice = node('div', 'tw-plan-advice');
     if (combined.split) {
       advice.append(node('span', 'tw-split-label', '兩區建議不同'));
       for (const key of [region, REGIONS.find(other => other !== region)]) {
         const verdict = entry.verdicts[key], row = node('div', 'tw-plan-region');
         row.dataset.region = key;
-        row.append(node('span', 'tw-plan-region-name', REGION_NAMES[key]), chip(verdict, regionChipText(verdict)),
-          node('p', 'tw-plan-why', verdict.reason));
+        row.append(node('span', 'tw-plan-region-name', REGION_NAMES[key]), chip(verdict));
         advice.append(row);
       }
     } else {
-      advice.append(chip(main, main.label, 'tw-chip-advice'), node('p', 'tw-plan-reason', combined.reason));
+      advice.append(chip(main, main.label, 'tw-chip-advice'));
+      // On a phone that chip sits beside the title, so nothing else here leaves the row out.
+      if (!entry.tags.length) card.dataset.advice = 'chip';
     }
-    if (entry.extras.length) {
-      const extra = node('div', 'tw-plan-extra');
-      extra.append(...entry.extras.map(line => node('p', '', line)));
-      advice.append(extra);
+    if (entry.tags.length) {
+      const tags = node('div', 'tw-plan-tags');
+      tags.append(...entry.tags.map(label => node('span', 'tw-plan-tag', label)));
+      advice.append(tags);
     }
     const links = node('div', 'tw-plan-links');
     const profile = profileLink(entry);
@@ -325,7 +327,7 @@ export function initStreamPlanningPage() {
       : `${when}・${fmt(count)} 款・趨勢算到 ${shortDate(data.through)}`;
   }
 
-  async function observeGame(id, record, archive, date, now, releaseTimes, model) {
+  async function observeGame(id, record, archive, date, now, releaseTimes) {
     if (!archive) return { message: '逐時資料暫時無法讀取' };
     if (!Array.isArray(record?.months) || !record.months.length) return { message: '尚無逐時紀錄' };
     try {
@@ -352,7 +354,7 @@ export function initStreamPlanningPage() {
       const anchor = launchAnchor(record, rows, asOf, releaseTimes.get(steamAppOf(record) ?? '')), startAt = anchor?.startAt ?? null;
       const launch = { ...launchAdvice({ days: launchDays(rows, startAt, asOf), releaseAt: startAt, now: asOf, rows,
         fallback: latest ? { date: latest.date, median: latest.median } : null }), small: !days.global?.popularAt,
-        peaks: launchPeaks(rows, record, asOf), anchor, forecast: launchForecast(rows, startAt, asOf, model) };
+        peaks: launchPeaks(rows, record, asOf), anchor };
       // The tiles' numbers before the first whole day: the hours since the launch, or of the last day.
       const from = launch.stage === 'first' && Number.isFinite(startAt) ? startAt : asOf - 24 * HOUR;
       const sofar = Object.fromEntries(REGIONS.map(region => [region, recentHours(region === 'global' ? rows : projectRows(rows, region), asOf, from)]));
@@ -386,10 +388,7 @@ export function initStreamPlanningPage() {
       source = pending;
     }
     try {
-      const [snapshotData, archive, curves] = await Promise.all([getSnapshot(date, today, force), source,
-        read('./data/twitch-launch-curves.json', validCurves, force).catch(() => null)]);
-      const model = forecastModel(curves?.forecast);
-      $('streamForecastRule').textContent = forecastRuleText(model && { checkpoint: 48, backtest: model.backtest?.['48'] });
+      const [snapshotData, archive] = await Promise.all([getSnapshot(date, today, force), source]);
       if (!active()) return;
       loaded = archive;
       if (!snapshotData) {
@@ -434,7 +433,7 @@ export function initStreamPlanningPage() {
       const worker = async () => {
         while (next < order.length && active()) {
           const entry = order[next++];
-          const result = await observeGame(entry.game.game_id, entry.record, archive, date, now, releaseTimes, model);
+          const result = await observeGame(entry.game.game_id, entry.record, archive, date, now, releaseTimes);
           if (!active()) return;
           done++;
           if (result.days) {
@@ -442,7 +441,7 @@ export function initStreamPlanningPage() {
               verdicts: { global: globalVerdict(result.days.global, result.launch), zh: chineseVerdict(result.days.zh) },
               tiles: { global: regionTile(result.days.global, 'global', result.sofar.global), zh: regionTile(result.days.zh, 'zh', result.sofar.zh) },
               meta: launchMeta(entry.record, date) });
-            entry.extras = extraLines(result.launch, entry.verdicts.global);
+            entry.tags = extraTags(result.launch, entry.verdicts.global);
           } else Object.assign(entry, { state: 'none', message: result.message });
           schedule();
         }

@@ -3,14 +3,15 @@ import { dateStart } from './series.js';
 import { count, HOUR } from './metrics.js';
 import { quantile } from './statistics-model.js';
 import { gameLaunches, launchPeakText } from './launches.js';
-import { EARLY_RULES, FORECAST_RULES } from './launch-model.js';
+import { EARLY_RULES } from './launch-model.js';
 import { STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS } from './stream-heat-model.js';
-import { chance, launchFlagText, launchPeerText } from './launch-advice.js';
+import { launchFlagShort, launchPeerShort } from './launch-advice.js';
 
 // One verdict per region for the planning list and the game page: which
 // group a game falls in, a short label, one plain sentence why, and the
-// game page's headline. A reason says why in plain words; the numbers are in
-// the tiles (regionTile), not repeated in the sentence. Worldwide, games that
+// game page's headline. A planning card shows only the label; the game page
+// adds the reason, in plain words. The numbers are in the tiles (regionTile),
+// not repeated in the sentence. Worldwide, games that
 // reached 3,000 a day follow the
 // cooldown rules and small games the launch rules (on the launch day, the
 // hours so far); the Chinese region follows its hourly heat (four hours at 100
@@ -31,9 +32,6 @@ export function compactCount(value) {
   const rounded = Math.round(value / step) * step;
   return rounded >= 10000 ? `${formatCount(rounded / 10000)} 萬` : formatCount(rounded);
 }
-// "2,200 人" but "57 萬人".
-const people = value => { const text = compactCount(value); return `${text}${text.endsWith('萬') ? '' : ' '}人`; };
-
 // The region's daily number: worldwide the median hour, in the Chinese region
 // the fourth-busiest hour (the hour behind "four hours at 100 viewers").
 export const dailyValue = (day, region) => region === 'zh' ? day?.fourthHighestViewers ?? null : day?.median ?? null;
@@ -214,8 +212,6 @@ export function chineseVerdict(day) {
   }
 }
 
-const ALSO = { hot: '也有熱度', cooled: '也已退燒', skip: '也還沒有熱度' };
-
 /**
  * How a list shows both regions, grouped by `region`: one verdict when the
  * groups agree (or the other region has no data), otherwise both.
@@ -223,13 +219,8 @@ const ALSO = { hot: '也有熱度', cooled: '也已退燒', skip: '也還沒有�
 export function combineVerdicts(verdicts, region = 'global') {
   const other = region === 'zh' ? 'global' : 'zh', main = verdicts[region], second = verdicts[other];
   const split = main.group !== 'unknown' && second.group !== 'unknown' && main.group !== second.group;
-  const also = !split && main.group === second.group ? ALSO[main.group] : null;
-  const name = other === 'zh' ? '中文區' : '全球';
-  return { ...verdicts, main, split, reason: also ? `${main.reason.replace(/。$/, '')}；${name}${also}。` : main.reason };
+  return { ...verdicts, main, split };
 }
-
-/** A region row's chip: the group's name, but a cooling game says so. */
-export const regionChipText = verdict => verdict.label === '開始降溫' ? verdict.label : VERDICT_GROUPS[verdict.group] ?? verdict.label;
 
 /** The sparkline's points in a 120×32 box, oldest first; null with fewer than two values. */
 export function sparkPoints(values) {
@@ -278,21 +269,14 @@ export function recentHours(rows, now, from = now - DAY) {
   return viewers.length ? { hours: viewers.length, viewers: quantile(viewers, .5), channels: quantile(channels, .5) } : null;
 }
 
-/** The forecast in one line, naming the largest threshold it reaches. */
-export function forecastLine(forecast) {
-  if (!forecast) return null;
-  const reached = FORECAST_RULES.thresholds.filter(threshold => threshold <= forecast.median);
-  const threshold = reached.at(-1) ?? FORECAST_RULES.thresholds[0];
-  const odds = chance(forecast.probabilities[threshold]);
-  return `第 7～9 天預估約 ${people(forecast.median)}；還有 ${formatCount(threshold)} 人以上的機率${/^\d/.test(odds) ? ' ' : ''}${odds}。`;
-}
-
-/** At most two extra lines for a card: the forecast, then the same-age comparison or the full release's peak. */
-export function extraLines(launch, global) {
+/**
+ * The labels a card adds after its verdict: the same-age comparison, the full
+ * release's peak and the dark horse. Their numbers are on the game page.
+ */
+export function extraTags(launch, global) {
   if (!launch) return [];
-  const lines = [forecastLine(launch.forecast), launchPeerText(launch.peer), launchPeakText(launch.peaks)?.text,
-    global?.group !== 'horse' ? launchFlagText(launch.darkHorse) : null];
-  return lines.filter(Boolean).slice(0, 2);
+  return [launchPeerShort(launch.peer)?.label, launchPeakText(launch.peaks)?.label,
+    global?.group !== 'horse' ? launchFlagShort(launch.darkHorse)?.label : null].filter(Boolean);
 }
 
 // Within a group: stronger labels first, then the busier games.
