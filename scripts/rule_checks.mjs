@@ -5,7 +5,7 @@
 import { HOUR } from '../src/features/twitch/metrics.js';
 import { dateStart } from '../src/features/twitch/series.js';
 import { analyzeCooldown } from '../src/features/twitch/cooldown-model.js';
-import { LAUNCH_RULES, PEER_CURVE, peerComparison } from '../src/features/twitch/launch-model.js';
+import { LAUNCH_RULES, PEER_CURVE, earlyCall, peerComparison } from '../src/features/twitch/launch-model.js';
 import { quantile } from '../src/features/twitch/statistics-model.js';
 
 const DAY = 24 * HOUR;
@@ -31,6 +31,27 @@ export function ruleOutcome(small, test) {
   const flagged = small.filter(test), rest = small.filter(l => !test(l));
   return { small: small.length, flagged: flagged.length, held: flagged.filter(stillWatched).length,
     rest: rest.length, restHeld: rest.filter(stillWatched).length };
+}
+
+/**
+ * The launch-day calls (EARLY_RULES) replayed hour by hour over each launch's
+ * first 24 hours, as the pages would have shown them: the first call stands
+ * and is checked against the first day (hot: 3,000 or more, pass: 300 or
+ * more, fail: under 300). `open` launches had no call within 24 hours.
+ */
+export function earlyOutcome(launches) {
+  const known = launches.filter(l => l.value(0) !== null && Number.isFinite(l.launchAt));
+  const calls = { hot: { said: 0, right: 0 }, pass: { said: 0, right: 0 }, fail: { said: 0, right: 0 } };
+  const right = { hot: first => first >= LAUNCH_RULES.popular, pass: first => first >= LAUNCH_RULES.firstDay, fail: first => first < LAUNCH_RULES.firstDay };
+  let open = 0;
+  for (const l of known) {
+    let call = null;
+    for (let now = l.launchAt + HOUR; now < l.launchAt + DAY && !call; now += HOUR) call = earlyCall(l.rows, l.launchAt, now)?.call ?? null;
+    if (!call) { open++; continue; }
+    calls[call].said++;
+    if (right[call](l.value(0))) calls[call].right++;
+  }
+  return { launches: known.length, open, ...calls };
 }
 
 /** Launches watched two weeks (or that already doubled), each marked a dark horse when a later day doubled the first. */

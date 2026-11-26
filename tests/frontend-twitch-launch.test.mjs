@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dateStart } from '../src/features/twitch/series.js';
-import { LAUNCH_RULES, launchAdvice, launchDays, launchInstant, steamAppOf } from '../src/features/twitch/launch-model.js';
+import { EARLY_RULES, LAUNCH_RULES, earlyCall, launchAdvice, launchDays, launchInstant, steamAppOf } from '../src/features/twitch/launch-model.js';
 import { launchAdviceShort, launchAdviceText, launchFlagShort, launchFlagText } from '../src/features/twitch/launch-advice.js';
 import { globalVerdict } from '../src/features/twitch/trend-verdict.js';
 import { analyzeStreamHeat } from '../src/features/twitch/stream-heat-model.js';
@@ -57,6 +57,34 @@ test('small games pass two gates: 300 in the first 24 hours, then 200 on the lat
   assert.equal(advise([1000, 600, 300, 150], 4, { skip: day => day === 3 }).latest.median, 300);
   // After two weeks the trend label is dropped.
   assert.equal(advise([400, 300, 300, ...Array(13).fill(250)]).trend, null);
+});
+
+// The first hours after the release: [viewers, channels] per hour.
+const opening = hours => hours.map(([viewers, channels], hour) => ({ hour: iso(release + hour * HOUR),
+  generated_at: iso(release + hour * HOUR + 600000), status: 'observed', viewer_count: viewers, streamer_count: channels }));
+const callAfter = (hours, at = hours.length) => earlyCall(opening(hours), release, release + at * HOUR);
+
+test('the launch day calls the first day from three hours of viewers and channels', () => {
+  assert.deepEqual(EARLY_RULES, { minHours: 3, failHours: 6, hot: { viewers: 6000, channels: 150 }, pass: { viewers: 450, channels: 15 }, fail: { viewers: 150 } });
+  assert.deepEqual(callAfter([[500, 20], [600, 25], [450, 15]]), { hours: 3, viewers: 500, channels: 20, call: 'pass' });
+  assert.equal(callAfter([[7000, 200], [9000, 190], [6500, 160]]).call, 'hot');
+  // Two hours are too few, however busy.
+  assert.equal(callAfter([[9000, 300], [9000, 300]]).call, null);
+  // One big streamer is not heat: thousands of viewers on a few channels.
+  const carried = callAfter([[11593, 4], [13055, 11], [4433, 10]]);
+  assert.deepEqual([carried.call, carried.viewers, carried.channels], [null, 11593, 10]);
+  // Under 150 viewers calls a quiet first day only after six hours.
+  const quiet = [[40, 3], [80, 5], [120, 6], [90, 4], [60, 3]];
+  assert.equal(callAfter(quiet).call, null);
+  assert.equal(callAfter([...quiet, [70, 4]]).call, 'fail');
+  // Only hours published by `now` count; nothing before the release or after its first day.
+  assert.deepEqual(callAfter([[500, 20], [600, 25], [450, 15]], 2.05), { hours: 2, viewers: 550, channels: 22.5, call: null });
+  assert.equal(earlyCall(opening([[500, 20]]), release, release - HOUR), null);
+  assert.equal(earlyCall(opening([[500, 20]]), release, release + 24 * HOUR), null);
+  assert.deepEqual(earlyCall([], release, release + HOUR), { hours: 0, viewers: null, channels: null, call: null });
+  // The advice carries the call while the first day runs.
+  const advice = launchAdvice({ days: [], releaseAt: release, now: release + 3 * HOUR, rows: opening([[500, 20], [600, 25], [450, 15]]) });
+  assert.deepEqual([advice.stage, advice.early.call], ['first', 'pass']);
 });
 
 test('a missing first day or release time falls back to the latest day only', () => {

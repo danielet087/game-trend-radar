@@ -183,11 +183,11 @@ export function initTwitchDetail() {
         zh: analyzeStreamHeat(projectRows(full, 'zh'), { game, region: 'zh', date, now }) };
       const latest = days.global.outlook.latest;
       const anchor = launchAnchor(game, globalRows, now, releaseTimeUtc), startAt = anchor?.startAt ?? null;
-      const launch = { ...launchAdvice({ days: launchDays(globalRows, startAt, now), releaseAt: startAt, now,
+      const launch = { ...launchAdvice({ days: launchDays(globalRows, startAt, now), releaseAt: startAt, now, rows: globalRows,
         fallback: latest ? { date: latest.date, median: latest.median } : null }), small: !days.global.popularAt,
         peaks: launchPeaks(globalRows, game, now), anchor, forecast: launchForecast(globalRows, startAt, now, model) };
       heat = { full, days, launch };
-      verdict.update({ days, launch, record: game, now });
+      verdict.update({ days, launch, record: game, now, rows: full });
       renderRemaining();
       pageStatus('');
     } catch {

@@ -22,6 +22,22 @@ export const LAUNCH_RULES = Object.freeze({
   minHours: 12,
 });
 
+// Launch-day calls, before the first 24 hours are over (2026-10/11 backtest:
+// 102 launches with a known first day, every hour of each first day replayed
+// with the hours known by then). With three hours of data, a median hour of
+// 6,000 viewers on 150 channels called a first day over 3,000 (15 of 15) and
+// 450 viewers on 15 channels one over 300 (43 of 46); with six hours, a
+// median under 150 viewers called one under 300 (34 of 34). Channels count
+// because right after a launch one big streamer can carry the total: ALYSSA
+// had 11,593 viewers on four channels and a first day of 41. Recompute with
+// scripts/backtest_launch_advice.mjs before changing them.
+export const EARLY_RULES = Object.freeze({
+  minHours: 3, failHours: 6,
+  hot: { viewers: 6000, channels: 150 },
+  pass: { viewers: 450, channels: 15 },
+  fail: { viewers: 150 },
+});
+
 // Same-age launches: each later day's median as a share of the first 24 hours,
 // as [lower quartile, median, upper quartile] by 0-based day index (2026-10/11,
 // 88 launches with at least 50 viewers in the first 24 hours, days counted from
@@ -232,6 +248,30 @@ export function launchForecast(rows, startAt, now, model) {
   };
 }
 
+/**
+ * The first 24 hours so far, at `now`: the hours with data, their median
+ * viewers and channels, and the launch-day call (EARLY_RULES): 'hot' (over
+ * 3,000), 'pass' (over 300), 'fail' (under 300) or null while it is unclear.
+ * Null outside the first 24 hours.
+ */
+export function earlyCall(rows, startAt, now) {
+  if (!Number.isFinite(startAt) || !(now >= startAt) || now >= startAt + DAY) return null;
+  const viewers = [], channels = [];
+  for (const row of rows || []) {
+    const at = Date.parse(row?.hour), value = observedViewers(row, now);
+    if (value === null || !(at >= startAt && at < startAt + DAY)) continue;
+    viewers.push(value);
+    channels.push(count(row.streamer_count) ?? 0);
+  }
+  if (!viewers.length) return { hours: 0, viewers: null, channels: null, call: null };
+  const rule = EARLY_RULES, hours = viewers.length, median = quantile(viewers, .5), streams = quantile(channels, .5);
+  const call = hours < rule.minHours ? null
+    : median >= rule.hot.viewers && streams >= rule.hot.channels ? 'hot'
+      : median >= rule.pass.viewers && streams >= rule.pass.channels ? 'pass'
+        : hours >= rule.failHours && median < rule.fail.viewers ? 'fail' : null;
+  return { hours, viewers: median, channels: streams, call };
+}
+
 /** Whole 24-hour days since release; a day needs 12 observed hours for a median. */
 export function launchDays(rows, releaseAt, now) {
   if (!Number.isFinite(releaseAt) || !Number.isFinite(now) || now < releaseAt + DAY) return [];
@@ -269,15 +309,18 @@ function darkHorse(days, first) {
  * Trial advice for a game that never reached the popular threshold, and the
  * dark-horse label for any launch: first 24 hours, then the latest whole day.
  * Without a release instant, `fallback` (the latest whole Taiwan day) decides.
+ * Inside the first 24 hours, `rows` (hourly, worldwide) give the launch-day
+ * call as `early` (earlyCall).
  */
-export function launchAdvice({ days = [], releaseAt = null, now, fallback = null } = {}) {
+export function launchAdvice({ days = [], releaseAt = null, now, fallback = null, rows = null } = {}) {
   const rule = LAUNCH_RULES;
   if (!Number.isFinite(releaseAt)) {
     if (!Number.isFinite(fallback?.median)) return { stage: 'insufficient', darkHorse: null };
     return { stage: fallback.median >= rule.trialDay ? 'trial' : 'skip', basis: 'taiwan_day', latest: fallback, darkHorse: null };
   }
   if (now < releaseAt) return { stage: 'prelaunch', darkHorse: null };
-  if (!days.length) return { stage: 'first', darkHorse: null };
+  // Before the first 24 hours are over, the hours so far may already call it.
+  if (!days.length) return { stage: 'first', early: earlyCall(rows, releaseAt, now), darkHorse: null };
   const first = days[0].median, third = days[2]?.median ?? null;
   const latest = days.findLast(day => day.index >= (first === null ? 1 : 2) && day.median !== null) ?? null;
   if (first === null) {

@@ -1,5 +1,5 @@
 import { fmt } from './presentation.js';
-import { FORECAST_RULES as F, LAUNCH_RULES as R, START_RULES as S, leadText, startLead, taipeiHour } from './launch-model.js';
+import { EARLY_RULES as E, FORECAST_RULES as F, LAUNCH_RULES as R, START_RULES as S, leadText, startLead, taipeiHour } from './launch-model.js';
 
 // Days are counted every 24 hours from release, 1-based like the launch curves:
 // 上市第 1 天 is the first 24 hours, 上市第 3 天 is hours 48-72.
@@ -12,10 +12,18 @@ const times = value => `${fmt(Math.round(value * 10) / 10)} 倍`;
 export const START_RULE_TEXT = `從上市時間起每 24 小時算一天；上市前就已經有上市後首 24 小時中位數四分之一以上（至少 ${fmt(S.floor)} 人）的觀眾、`
   + '而且一路播到上市的（例如豪華版提前玩），從那時候起算；零星的搶先直播不算。';
 
+// The launch-day call, in one paragraph shared by both pages.
+export const EARLY_RULE_TEXT = `上市頭 24 小時，先用到目前為止每小時的中位數提早判斷：有紀錄滿 ${E.minHours} 小時、`
+  + `${fmt(E.pass.viewers)} 人以上而且 ${fmt(E.pass.channels)} 台以上在播，標「首日大概過關」；${fmt(E.hot.viewers)} 人以上而且 `
+  + `${fmt(E.hot.channels)} 台以上，標「首日熱門」（算值得開）；滿 ${E.failHours} 小時還不到 ${fmt(E.fail.viewers)} 人，標「先不用排」。`
+  + '剛上市的人數常常是一兩個大實況主帶起來的，所以也看台數。2026 年 10～11 月 102 次上市逐小時重播：'
+  + `說首日會過 ${fmt(R.firstDay)} 人的 46 次對 43 次，說熱門的 15 次全對，說不到 ${fmt(R.firstDay)} 人的 34 次全對。`;
+
 export const LAUNCH_RULE_TEXT = `小遊戲（全球每日觀眾中位數沒到過 ${fmt(R.popular)} 人）用全球觀眾判斷，${START_RULE_TEXT}`
   + `首 24 小時有 ${fmt(R.firstDay)} 人、最近一天有 ${fmt(R.trialDay)} 人以上才標「值得試播」，否則「先不用排」。`
   + `上市第 3 天（48～72 小時）不低於首日、最近一天也不低於首日，標「黑馬候選」；一週後仍是首日 ${R.burning} 倍以上，標「延燒中」。`
-  + '2026 年 10～11 月 54 款小遊戲回測：兩關都過的 24 款，19 款接下來一週還有 100 人在看；其他 30 款只有 2 款。';
+  + '2026 年 10～11 月 54 款小遊戲回測：兩關都過的 24 款，19 款接下來一週還有 100 人在看；其他 30 款只有 2 款。'
+  + EARLY_RULE_TEXT;
 
 export const PEER_RULE_TEXT = `上市第 3～21 天、首 24 小時有 ${fmt(R.firstDay)} 人以上的遊戲，最近一天跟同齡遊戲比（全球觀眾，每 24 小時算一天，起算方式同上）：`
   + '剩下的觀眾比例比四分之三的同齡遊戲多，標「比同齡撐得久」；比四分之三的同齡遊戲少，標「掉得比同齡快」。'

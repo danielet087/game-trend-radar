@@ -3,15 +3,16 @@ import { dateStart } from './series.js';
 import { HOUR } from './metrics.js';
 import { gameLaunches, launchPeakText } from './launches.js';
 import { CHINESE_DAILY_HEAT_HITS, PEAK_COOLDOWN, cooldownThreshold } from './cooldown-model.js';
-import { FORECAST_RULES, LAUNCH_RULES } from './launch-model.js';
+import { EARLY_RULES, FORECAST_RULES, LAUNCH_RULES } from './launch-model.js';
 import { STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS } from './stream-heat-model.js';
 import { chance, launchFlagText, launchPeerText } from './launch-advice.js';
 
 // One verdict per region for the planning list and the game page: which
 // group a game falls in, a short label, one plain sentence why, and the
 // game page's headline. Worldwide, games that reached 3,000 a day follow the
-// cooldown rules and small games the launch rules; the Chinese region follows
-// its hourly heat (four hours at 100 viewers).
+// cooldown rules and small games the launch rules (on the launch day, the
+// hours so far); the Chinese region follows its hourly heat (four hours at 100
+// viewers).
 
 const DAY = 24 * HOUR;
 export const VERDICT_GROUPS = Object.freeze({
@@ -140,6 +141,27 @@ function launchWhere(latest) {
   return Number.isInteger(latest?.index) ? `上市第 ${latest.index + 1} 天` : `最近一天（${shortDate(latest?.date)}）`;
 }
 
+// The launch day, from the hours so far (EARLY_RULES); the first 24 hours
+// decide once they are over.
+function earlyVerdict(early) {
+  const hours = early?.hours ?? 0, first = formatCount(LAUNCH_RULES.firstDay);
+  if (!hours) return verdict('trial', '等首日數據', `上市未滿 24 小時，還沒有每小時紀錄；有紀錄滿 ${EARLY_RULES.minHours} 小時就先判斷首日。`);
+  const channels = formatCount(Math.round(early.channels)), seen = `上市後 ${hours} 個小時的紀錄：`;
+  if (hours < EARLY_RULES.minHours)
+    return verdict('trial', '等首日數據', `${seen}每小時約 ${people(early.viewers)}、${channels} 台在播；有紀錄滿 ${EARLY_RULES.minHours} 小時再判斷首日。`);
+  const level = `${seen}每小時中位數約 ${people(early.viewers)}`, both = `${level}、${channels} 台在播`;
+  switch (early.call) {
+    case 'hot': return verdict('hot', '首日熱門', `${both}；過去這樣的新作，首日都過 ${formatCount(LAUNCH_RULES.popular)} 人。`, '值得開');
+    case 'pass': return verdict('trial', '首日大概過關', `${both}，首日大概會過 ${first} 人；要不要長播，第 3 天再確認。`, '可以先試播一場');
+    case 'fail': return verdict('skip', '先不用排', `${level}，首日大概不到 ${first} 人。`);
+    default:
+      // A big total on a few channels is one or two big streamers, not heat yet.
+      if (early.viewers >= EARLY_RULES.pass.viewers && early.channels < EARLY_RULES.pass.channels)
+        return verdict('trial', '等首日數據', `${level}，但只有 ${channels} 台在播：觀眾集中在少數幾台，還不能算熱度。`);
+      return verdict('trial', '等首日數據', `${both}，還看不出首日能不能過 ${first} 人。`);
+  }
+}
+
 function smallVerdict(outlook, launch, recent) {
   const horse = launch?.darkHorse;
   if (horse) {
@@ -166,7 +188,7 @@ function smallVerdict(outlook, launch, recent) {
     case 'wait':
       return verdict('trial', '第 3 天後再確認', `首日約 ${people(first)}，過了第一關；第 3 天還有 ${formatCount(LAUNCH_RULES.trialDay)} 人以上就值得試播。`);
     case 'first':
-      return verdict('trial', '等首日數據', `上市未滿 24 小時；首日要有 ${formatCount(LAUNCH_RULES.firstDay)} 人才看下一關。`);
+      return earlyVerdict(launch.early);
     case 'prelaunch':
       return verdict('skip', '還沒上市', `還沒上市；上市後先看首日有沒有 ${formatCount(LAUNCH_RULES.firstDay)} 人。`, '等上市後再看');
     default:
@@ -291,8 +313,8 @@ export function extraLines(launch, global) {
 }
 
 // Within a group: stronger labels first, then the busier games.
-const STRENGTH = { 還很熱: 0, 有熱度: 0, 回到高檔: 1, 熱度回升: 2, 延燒中: 0, 黑馬候選: 1,
-  值得試播: 0, '值得試播，趁早': 1, '第 3 天後再確認': 2, 等首日數據: 3, 開始降溫: 4 };
+const STRENGTH = { 還很熱: 0, 有熱度: 0, 首日熱門: 0, 回到高檔: 1, 熱度回升: 2, 延燒中: 0, 黑馬候選: 1,
+  值得試播: 0, '值得試播，趁早': 1, '第 3 天後再確認': 2, 首日大概過關: 3, 等首日數據: 4, 開始降溫: 4 };
 
 /** Sort entries ({ verdict, tile }) inside a group by advice, viewers or the recent change. */
 export function sortEntries(entries, sort, region) {
