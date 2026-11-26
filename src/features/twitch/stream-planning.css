@@ -112,6 +112,7 @@
   .tw-plan-extra { padding:0; background:none; }
   .tw-plan-tile { padding:0; background:none; }
   .tw-plan-tile-label { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+  .tw-plan-tile[data-per="hour"] .tw-plan-tile-label { position:static; width:auto; height:auto; overflow:visible; clip:auto; }
   .tw-plan-tile strong { font-size:var(--text-xl); }
   .tw-spark { width:150px; height:34px; }
 }

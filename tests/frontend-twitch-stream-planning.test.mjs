@@ -456,11 +456,11 @@ test('worldwide, a game cooled on its own peak is labelled cooled with that peak
   const launch = { small:true, stage:'skip', basis:'latest_day', latest:{ index:5, median:150 } };
   const verdict = globalVerdict(result, launch);
   assert.deepEqual([verdict.group, verdict.label], ['cooled', '已退燒']);
-  assert.match(verdict.reason, /^11\/11 確認退燒：每天約 \d+ 人，不到自己高峰 1,200 人的 25%。$/);
+  assert.equal(verdict.reason, '跟最熱的時候比，現在看的人少很多，已經退燒。');
   // Still 200 a day: the launch rules say it is worth a trial, the cooldown rides along.
   const trial = globalVerdict(result, { small:true, stage:'trial', basis:'latest_day', first:800, third:600, trend:'holding', latest:{ index:5, median:250 } });
   assert.equal(trial.group, 'trial');
-  assert.match(trial.reason, /已不到自己高峰 1,200 人的 25%。$/);
+  assert.match(trial.reason, /不過已經比最熱的時候少很多。$/);
 });
 
 test('a rise of half again over three days is still a rise; a fall is never labelled worldwide either', () => {

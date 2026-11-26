@@ -5,7 +5,7 @@ import { projectRows } from '../src/features/twitch/region-views.js';
 import { launchAdvice, launchDays, launchAnchor } from '../src/features/twitch/launch-model.js';
 import { launchPeaks } from '../src/features/twitch/launches.js';
 import { chineseVerdict, combineVerdicts, compactCount, extraLines, forecastLine, gameMeta, globalVerdict, lastDays, launchMeta,
-  regionTile, sortEntries, sparkPoints, trendOf } from '../src/features/twitch/trend-verdict.js';
+  recentHours, regionTile, sortEntries, sparkPoints, trendOf } from '../src/features/twitch/trend-verdict.js';
 import { busiestSlot, channelsAboveRange, latestRanks, slotHours, slotLabel, slotOf, slotPeriod, slotStats } from '../src/features/twitch/stream-slot-model.js';
 import { trialWindow } from '../src/features/twitch/stream-planning-model.js';
 
@@ -55,8 +55,8 @@ test('trends compare the last three days with the three before, holding small ch
 
 test('a popular game still above 3,000 a day is worth streaming', () => {
   const { global, days } = judge([8000, 7000, 6500, 6000, 6000, 5800, 5600, 5500, 5400, 5300, 5200]);
-  assert.deepEqual(global, { group: 'hot', label: '還很熱', headline: '可以繼續播',
-    reason: '每天還有約 5,400 人在看，比前 3 天少 7%，仍高於 3,000 人的熱門線。' });
+  // The reason in words; the numbers are the tile's.
+  assert.deepEqual(global, { group: 'hot', label: '還很熱', headline: '可以繼續播', reason: '還是很多人在看，雖然比前幾天少一些。' });
   const tile = regionTile(days.global, 'global');
   assert.equal(tile.value, '5,400');
   assert.equal(tile.trend, '↓ 比前 3 天少 7%');
@@ -66,25 +66,26 @@ test('a popular game still above 3,000 a day is worth streaming', () => {
 
 test('a popular game three days under 3,000 has cooled, by the fixed line or its own peak', () => {
   const cooled = judge([8000, 6000, 4000, 2500, 2400, 2300, 2200, 2100, 2000, 1900, 1800]).global;
-  assert.deepEqual(cooled, { group: 'cooled', label: '已退燒', headline: '建議收尾或換題', reason: '11/07 確認退燒，每天約 2,000 人。' });
+  assert.deepEqual(cooled, { group: 'cooled', label: '已退燒', headline: '建議收尾或換題', reason: '連續幾天都掉到熱門線以下，已經退燒。' });
   const suspected = judge([8000, 7000, 6500, 6000, 6000, 5800, 5600, 5500, 5400, 2900, 2800]).global;
   assert.equal(suspected.label, '開始降溫');
-  assert.equal(suspected.reason, '最近 1 天每天不到 3,000 人；連續 3 天就算退燒。');
+  assert.equal(suspected.reason, '這幾天掉到熱門線以下，再這樣幾天就算退燒。');
 });
 
 test('small games follow the launch rules and an own-peak cooldown', () => {
   const faded = judge([2000, 1500, 600, 300, 200, 150, 120, 100, 90, 80, 80]);
   assert.equal(faded.launch.stage, 'skip');
   assert.deepEqual(faded.global, { group: 'cooled', label: '已退燒', headline: '建議收尾或換題',
-    reason: '11/07 確認退燒：每天約 90 人，不到自己高峰 2,000 人的 25%。' });
+    reason: '跟最熱的時候比，現在看的人少很多，已經退燒。' });
   const holding = judge([400, 380, 350, 330, 300, 290, 280, 270, 260, 250, 240]).global;
-  assert.deepEqual(holding, { group: 'trial', label: '值得試播', headline: '值得試播一場',
-    reason: '上市第 10 天約 250 人，第 3 天還有首日的 88%，觀眾還在。' });
+  assert.deepEqual(holding, { group: 'trial', label: '值得試播', headline: '值得試播一場', reason: '首日過關，到第 3 天觀眾還留著。' });
   const small = judge([120, 110, 100, 90, 80, 80, 80, 80, 80, 80, 80]).global;
-  assert.deepEqual(small, { group: 'skip', label: '先不用排', headline: '先不用排', reason: '首日約 120 人，不到 300 人。' });
+  assert.deepEqual(small, { group: 'skip', label: '先不用排', headline: '先不用排', reason: '首日看的人不多，沒過第一關。' });
   const horse = judge([400, 450, 500, 520, 530, 540, 560], { from: '2026-11-05' }).global;
   assert.deepEqual(horse, { group: 'horse', label: '黑馬候選', headline: '可以趁早試播',
-    reason: '第 3 天是首日的 1.3 倍，一般遊戲這時只剩約 34%。' });
+    reason: '第 3 天看的人沒有比首日少，一般新作這時已經掉很多。' });
+  // No reason names viewers, a share or a multiple: those are the tiles'.
+  for (const verdict of [faded.global, holding, small, horse]) assert.doesNotMatch(verdict.reason, /\d[\d,.]*\s*(萬|人|%|倍)/);
 });
 
 // A launch at 00:00 on 11-11 seen at 12:00: [viewers, channels] for its first hours.
@@ -100,15 +101,15 @@ function launchDay(hours) {
 
 test('on the launch day the hours so far call the first day', () => {
   assert.deepEqual(launchDay([[500, 20], [600, 25], [700, 30], [650, 28]]), { group: 'trial', label: '首日大概過關', headline: '可以先試播一場',
-    reason: '上市後 4 個小時的紀錄：每小時中位數約 630 人、27 台在播，首日大概會過 300 人；要不要長播，第 3 天再確認。' });
+    reason: '剛上市就有一定人氣，也有不少台在播，第 3 天再決定要不要長播。' });
   assert.deepEqual(launchDay([[7800, 129], [11900, 186], [9000, 200], [9400, 195], [6700, 204]]), { group: 'hot', label: '首日熱門', headline: '值得開',
-    reason: '上市後 5 個小時的紀錄：每小時中位數約 9,000 人、195 台在播；過去這樣的新作，首日都過 3,000 人。' });
+    reason: '剛上市就很熱，而且很多台一起在播，不是靠一兩台撐的。' });
   assert.deepEqual(launchDay([[40, 3], [80, 5], [120, 6], [90, 4], [60, 3], [70, 4]]), { group: 'skip', label: '先不用排', headline: '先不用排',
-    reason: '上市後 6 個小時的紀錄：每小時中位數約 75 人，首日大概不到 300 人。' });
+    reason: '上市好幾個小時都沒什麼人看，首日大概過不了關。' });
   assert.deepEqual(launchDay([[11593, 4], [13055, 11], [4433, 10]]), { group: 'trial', label: '等首日數據', headline: '等首日數據',
-    reason: '上市後 3 個小時的紀錄：每小時中位數約 1.2 萬人，但只有 10 台在播：觀眾集中在少數幾台，還不能算熱度。' });
-  assert.equal(launchDay([[300, 12], [320, 13], [280, 11]]).reason, '上市後 3 個小時的紀錄：每小時中位數約 300 人、12 台在播，還看不出首日能不能過 300 人。');
-  assert.equal(launchDay([[500, 20]]).reason, '上市後 1 個小時的紀錄：每小時約 500 人、20 台在播；有紀錄滿 3 小時再判斷首日。');
+    reason: '人數大多是一兩台大實況主帶起來的，其他台很少，還不能算熱度。' });
+  assert.equal(launchDay([[300, 12], [320, 13], [280, 11]]).reason, '剛上市，人氣不上不下，還看不出首日會不會過關。');
+  assert.equal(launchDay([[500, 20]]).reason, '剛上市，紀錄還不夠，再等一兩個小時。');
   // The list sorts a launch-day pass after the games that passed the whole first day.
   const entry = (label, viewers) => ({ verdicts: { global: { label } }, tiles: { global: { raw: viewers } } });
   assert.deepEqual(sortEntries([entry('等首日數據', 900), entry('首日大概過關', 500), entry('第 3 天後再確認', 400)], 'advice', 'global')
@@ -118,14 +119,17 @@ test('on the launch day the hours so far call the first day', () => {
 test('the Chinese region needs four hours at 100 viewers in a day', () => {
   const daily = Array(11).fill(5000);
   const hot = judge(daily, { zh: (day, hour) => hour < 5 ? { viewer_count: 150, streamer_count: 2 } : { viewer_count: 10, streamer_count: 1 } });
-  assert.deepEqual(hot.zh, { group: 'hot', label: '有熱度', headline: '中文台可以繼續播', reason: '最近 7 天每天都有 4 個小時過 100 人。' });
+  assert.deepEqual(hot.zh, { group: 'hot', label: '有熱度', headline: '中文台可以繼續播', reason: '最近每天中文台都有熱度。' });
   assert.equal(regionTile(hot.days.zh, 'zh').value, '150');
+  const hotOn = days => (day, hour) => days(day) && hour < 5 ? { viewer_count: 150, streamer_count: 2 } : { viewer_count: 10, streamer_count: 1 };
+  assert.equal(judge(daily, { zh: hotOn(day => day !== 8) }).zh.reason, '最近大部分的日子中文台都有熱度。');
+  assert.equal(judge(daily, { zh: hotOn(day => [6, 8, 10].includes(day)) }).zh.reason, '最近有幾天中文台有熱度。');
   const sporadic = judge(daily, { zh: (day, hour) => hour < 2 ? { viewer_count: 150, streamer_count: 2 } : { viewer_count: 10, streamer_count: 1 } });
   assert.deepEqual(sporadic.zh, { group: 'skip', label: '零星有熱度', headline: '中文台先不用排',
-    reason: '最近 7 天沒有一天達標，只偶爾有幾個小時過 100 人。' });
+    reason: '中文台只偶爾有幾個小時比較多人看，還不算有熱度。' });
   const cooled = judge(daily, { zh: (day, hour) => day < 6 && hour < 5 ? { viewer_count: 150, streamer_count: 2 } : { viewer_count: 0, streamer_count: 0 } });
   assert.deepEqual(cooled.zh, { group: 'cooled', label: '已退燒', headline: '中文台建議收尾或換題',
-    reason: '11/10 確認退燒；最近一天沒有一個小時過 100 人。' });
+    reason: '中文區已經退燒，最近都沒什麼人看。' });
 });
 
 test('one verdict shows when both regions agree, both when they differ', () => {
@@ -133,7 +137,7 @@ test('one verdict shows when both regions agree, both when they differ', () => {
   const same = judge([8000, 7000, 6500, 6000, 6000, 5800, 5600, 5500, 5400, 5300, 5200], { zh: zhHot });
   const both = combineVerdicts({ global: same.global, zh: same.zh });
   assert.equal(both.split, false);
-  assert.equal(both.reason, '每天還有約 5,400 人在看，比前 3 天少 7%，仍高於 3,000 人的熱門線；中文區也有熱度。');
+  assert.equal(both.reason, '還是很多人在看，雖然比前幾天少一些；中文區也有熱度。');
   const differ = judge([8000, 6000, 4000, 2500, 2400, 2300, 2200, 2100, 2000, 1900, 1800], { zh: zhHot });
   const split = combineVerdicts({ global: differ.global, zh: differ.zh });
   assert.equal(split.split, true);
@@ -234,6 +238,21 @@ test('without three days of slot records, the latest hour gives 現在開的話 
   assert.deepEqual(latestRanks(index, chunks, '1', now, 70).global, { low: 2, high: 4, exact: false });
   assert.equal(latestRanks(index, chunks, '1', now + 4 * HOUR, 60), null);
   assert.equal(latestRanks({ ...index, games: { '1': { ...index.games['1'], tracking_status: 'ended' } } }, chunks, '1', now, 60), null);
+});
+
+test('before the first whole day the tiles show the hours so far instead of a blank', () => {
+  const start = Date.parse('2026-11-11T08:00:00+08:00'), at = start + 5 * HOUR + 300000;
+  const rows = [[7800, 129], [11900, 186], [9000, 200], [9400, 195], [6700, 204], [8400, 190]].map(([viewers, channels], hour) => ({
+    hour: iso(start + hour * HOUR), generated_at: iso(start + hour * HOUR + 600000), status: 'observed', viewer_count: viewers, streamer_count: channels }));
+  const hours = recentHours(rows, at, start);
+  // At 13:05 the 13:00 hour is not published yet (13:10).
+  assert.deepEqual(hours, { hours: 5, viewers: 9000, channels: 195 });
+  assert.deepEqual(regionTile(null, 'global', hours), { per: '每小時', value: '9,000', raw: 9000, trend: '195 台在播', direction: null, change: null, spark: null });
+  // Only the last 24 hours, and a whole day keeps the daily tile.
+  assert.equal(recentHours(rows, start + 40 * HOUR, start), null);
+  assert.equal(regionTile(null, 'global', null).value, '—');
+  const { days } = judge([8000, 7000, 6500, 6000, 6000, 5800, 5600, 5500, 5400, 5300, 5200]);
+  assert.equal(regionTile(days.global, 'global', hours).per, '每天');
 });
 
 test('before two whole days the daily chart draws the last 48 hours, from the first hour anyone streamed', async () => {

@@ -81,3 +81,7 @@ The per-game history table is replaced by a responsive native SVG line chart, pl
 ### Candidate admission correction
 
 The Twitch page defaults to positive NEW evidence: a dated official NEW observation or an explicitly positive Twitch/IGDB date prediction. Popularity alone, unknown status and a negative date prediction cannot admit a game into that view. All-candidate and pending views require explicit selection, use contextual headings and explain their verification status. Legacy samples remain excluded even through shared all-candidate/search URLs. Predictions retain their experimental source labels; no backend thresholds or historical records are changed. Regression checks cover League of Legends as a popular, unverified candidate with an older IGDB date.
+
+### Verdict wording (2026-11-26)
+
+On 開台選題 cards and the game page's 現在還值得播嗎, a reason says why in plain words, with no viewer counts, percentages or multiples; the numbers sit in the tiles beside it. Before a game's first whole day, a tile shows the hours since launch (the middle hour and the channels streaming), labelled 每小時, never a blank.

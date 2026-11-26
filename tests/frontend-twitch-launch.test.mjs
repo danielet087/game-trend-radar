@@ -134,7 +134,7 @@ test('the verdicts use the launch rules only for games never popular worldwide',
   const launch = { stage: 'trial', basis: 'latest_day', first: 400, third: 250, trend: 'holding', latest: { index: 2, median: 250 }, darkHorse: null };
   const small = { popularAt: null, days, outlook: { signal: 'low', comparison: null, latest: { date: '2026-11-07', median: 250 } } };
   assert.deepEqual(globalVerdict(small, { ...launch, small: true }), { group: 'trial', label: '值得試播', headline: '值得試播一場',
-    reason: '上市第 3 天約 250 人，第 3 天還有首日的 63%，觀眾還在。' });
+    reason: '首日過關，到第 3 天觀眾還留著。' });
   const popular = { ...small, popularAt: '2026-11-05T16:00:00Z', outlook: { ...small.outlook, signal: 'hot', latest: { date: '2026-11-07', median: 4000 } } };
   assert.equal(globalVerdict(popular, { ...launch, small: false }).label, '還很熱');
 });

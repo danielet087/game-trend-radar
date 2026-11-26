@@ -20,8 +20,8 @@ import { LAUNCH_RULE_TEXT, PEER_RULE_TEXT, forecastRuleText } from './launch-adv
 import { validCurves } from './launch-curves.js';
 import { formatCount as fmt } from './number-format.js';
 import { bindInfoNotes, infoHeading } from './info-notes.js';
-import { GROUP_ORDER, VERDICT_GROUPS, chineseVerdict, combineVerdicts, extraLines, globalVerdict, launchMeta, regionChipText, regionTile,
-  shortDate, sortEntries } from './trend-verdict.js';
+import { GROUP_ORDER, VERDICT_GROUPS, chineseVerdict, combineVerdicts, extraLines, globalVerdict, launchMeta, recentHours, regionChipText,
+  regionTile, shortDate, sortEntries } from './trend-verdict.js';
 
 const REGIONS = ['global', 'zh'];
 const REGION_NAMES = { global: '全球', zh: '中文區' };
@@ -103,7 +103,9 @@ function chip(verdict, label = verdict.label, className = '') {
 function tile(region, value) {
   const box = node('div', 'tw-plan-tile');
   box.dataset.region = region;
-  box.append(node('span', 'tw-plan-tile-label', `${REGION_NAMES[region]}・每天`), node('strong', '', value?.value ?? '—'));
+  // Hours instead of days: the label shows even where the column heads name the day.
+  if (value?.per === '每小時') box.dataset.per = 'hour';
+  box.append(node('span', 'tw-plan-tile-label', `${REGION_NAMES[region]}・${value?.per ?? '每天'}`), node('strong', '', value?.value ?? '—'));
   const trend = node('span', 'tw-plan-trend', value?.trend ?? '');
   if (value?.direction) trend.dataset.direction = value.direction;
   box.append(trend);
@@ -351,7 +353,10 @@ export function initStreamPlanningPage() {
       const launch = { ...launchAdvice({ days: launchDays(rows, startAt, asOf), releaseAt: startAt, now: asOf, rows,
         fallback: latest ? { date: latest.date, median: latest.median } : null }), small: !days.global?.popularAt,
         peaks: launchPeaks(rows, record, asOf), anchor, forecast: launchForecast(rows, startAt, asOf, model) };
-      return { days, launch };
+      // The tiles' numbers before the first whole day: the hours since the launch, or of the last day.
+      const from = launch.stage === 'first' && Number.isFinite(startAt) ? startAt : asOf - 24 * HOUR;
+      const sofar = Object.fromEntries(REGIONS.map(region => [region, recentHours(region === 'global' ? rows : projectRows(rows, region), asOf, from)]));
+      return { days, launch, sofar };
     } catch { return { message: '逐時資料暫時無法讀取' }; }
   }
 
@@ -435,7 +440,7 @@ export function initStreamPlanningPage() {
           if (result.days) {
             Object.assign(entry, { state: 'ready', days: result.days, launch: result.launch,
               verdicts: { global: globalVerdict(result.days.global, result.launch), zh: chineseVerdict(result.days.zh) },
-              tiles: { global: regionTile(result.days.global, 'global'), zh: regionTile(result.days.zh, 'zh') },
+              tiles: { global: regionTile(result.days.global, 'global', result.sofar.global), zh: regionTile(result.days.zh, 'zh', result.sofar.zh) },
               meta: launchMeta(entry.record, date) });
             entry.extras = extraLines(result.launch, entry.verdicts.global);
           } else Object.assign(entry, { state: 'none', message: result.message });
