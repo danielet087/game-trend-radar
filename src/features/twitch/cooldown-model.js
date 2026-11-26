@@ -130,11 +130,11 @@ export function analyzeCooldown(rows, { now = Date.now(), region, releaseDate } 
     const thresholdHits = values.filter(value => value >= threshold).length;
     const sorted = isClosed && values.length >= MIN_VALID_HOURS ? values.sort((a, b) => a - b) : null;
     const value = sorted ? median(sorted) : null;
-    const fourthHighestViewers = minimumHits && sorted ? sorted.at(-minimumHits) : null;
+    const fourthHighestViewers = minimumHits && sorted ? sorted.at(-minimumHits) : null, highestViewers = sorted ? sorted.at(-1) : null;
     const high = minimumHits ? thresholdHits >= minimumHits : value !== null && value >= threshold;
     const complete = isClosed && (minimumHits ? high || thresholdHits + missingHours < minimumHits : value !== null);
     const day = { date: iso(at + TAIPEI_OFFSET).slice(0, 10), startAt: iso(at), endAt: iso(at + DAY),
-      median: value, fourthHighestViewers, thresholdHits, validHours: values.length, missingHours, totalHours: 24,
+      median: value, fourthHighestViewers, highestViewers, thresholdHits, validHours: values.length, missingHours, totalHours: 24,
       complete, isClosed, belowThreshold: complete ? !high : null, status, lowDays };
 
     // Today's unfinished observations neither confirm nor reset yesterday's run.

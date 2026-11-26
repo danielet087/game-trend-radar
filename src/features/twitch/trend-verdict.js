@@ -35,10 +35,11 @@ export function compactCount(value) {
 // The region's daily number: worldwide the median hour, in the Chinese region
 // the fourth-busiest hour (the hour behind "four hours at 100 viewers").
 export const dailyValue = (day, region) => region === 'zh' ? day?.fourthHighestViewers ?? null : day?.median ?? null;
+// "8,400 人" but "1.4 萬人".
+const people = value => { const text = compactCount(value); return `${text}${text.endsWith('萬') ? '' : ' '}人`; };
 
 /** Change over the last three days against the three before, as text and a direction. */
 export function trendOf(comparison, region) {
-  if (!comparison) return { text: '還不能比較', direction: null };
   const long = region !== 'zh';
   const absolute = comparison.change === null || (region === 'zh' && comparison.previous < STREAM_HEAT_FLOORS.zh);
   const delta = absolute ? Math.round(comparison.recent - comparison.previous) : Math.round(comparison.change);
@@ -248,7 +249,10 @@ export function regionTile(day, region, hours = null) {
   // Before the first whole day (the launch day, a game just picked up), the hours so far.
   if (!Number.isFinite(value) && hours) return { per: '每小時', value: compactCount(hours.viewers), raw: hours.viewers,
     trend: `${formatCount(Math.round(hours.channels))} 台在播`, direction: null, change: null, spark: null };
-  const trend = trendOf(comparison, region);
+  // Under six days of records there is no three days against three: the
+  // busiest hour of the same day instead.
+  const trend = comparison ? trendOf(comparison, region)
+    : { text: Number.isFinite(latest?.highestViewers) ? `最高 ${people(latest.highestViewers)}` : '', direction: null };
   return { per: '每天', value: compactCount(value), raw: Number.isFinite(value) ? value : null, trend: trend.text, direction: trend.direction,
     change: comparison?.change ?? null, spark: region === 'global' ? sparkPoints(lastDays(day, region)) : null };
 }
