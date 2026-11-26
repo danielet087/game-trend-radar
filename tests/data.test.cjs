@@ -229,7 +229,9 @@ test("Store title priority is Traditional > converted Simplified > English, inde
       other_languages: ["日文", "法文"],
     },
   }));
-  assert.equal(other.languageBadge, "支援日文");
+  // Neither Chinese nor English: one label, without naming the language.
+  assert.equal(other.languageBadge, "其他語言");
+  assert.deepEqual(other.languageBadges, [{ label: "其他語言", status: "other" }]);
   const noKnownLanguage = D.normalize(game({
     ...base,
     language_support: { tchinese: false, schinese: false, english: false },
