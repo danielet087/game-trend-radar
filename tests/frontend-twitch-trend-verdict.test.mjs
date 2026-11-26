@@ -50,7 +50,14 @@ test('trends compare the last three days with the three before, holding small ch
   assert.deepEqual(trendOf({ previous: 100, recent: 98, change: -2 }, 'global'), { text: '持平', direction: 'flat' });
   // Below 50 Chinese viewers the change is in viewers, not percent.
   assert.deepEqual(trendOf({ previous: 20, recent: 35, change: 75 }, 'zh'), { text: '↑ 多 15 人', direction: 'up' });
-  assert.deepEqual(trendOf(null, 'global'), { text: '還不能比較', direction: null });
+});
+
+test('under six days of records a tile shows the busiest hour of the same day instead of the trend', () => {
+  const fresh = judge([20000, 20000, 20000], { from: '2026-11-09',
+    zh: (day, hour) => ({ viewer_count: hour === 5 ? 14000 : hour < 5 ? 150 : 10, streamer_count: 2 }) });
+  assert.deepEqual([regionTile(fresh.days.global, 'global').trend, regionTile(fresh.days.zh, 'zh').trend], ['最高 2 萬人', '最高 1.4 萬人']);
+  assert.equal(regionTile(fresh.days.zh, 'zh').value, '150');
+  assert.equal(regionTile(fresh.days.zh, 'zh').direction, null);
 });
 
 test('a popular game still above 3,000 a day is worth streaming', () => {

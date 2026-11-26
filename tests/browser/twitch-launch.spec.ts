@@ -65,6 +65,9 @@ test('the planning list marks a small game worth a trial and a popular dark hors
   const global = small.locator('.tw-plan-region[data-region="global"]');
   await expect(global.locator('.tw-verdict-chip')).toHaveText('值得試播');
   await expect(small.locator('.tw-plan-region[data-region="zh"] .tw-verdict-chip')).toHaveText('熱度偏低');
+  // Under six days of records: the busiest hour instead of the three-day trend.
+  await expect(small.locator('.tw-plan-tile[data-region="global"] .tw-plan-trend')).toHaveText(/^最高 [\d,]+ 人$/);
+  await expect(page.locator('.tw-plan-trend', { hasText: '還不能比較' })).toHaveCount(0);
   // A card gives the conclusion only: no sentences.
   await expect(page.locator('.tw-plan-card p')).toHaveCount(0);
   // A dark horse past 3,000 a day is worth streaming; the label rides along.
