@@ -4,7 +4,7 @@ import { analyzeStreamHeat } from '../src/features/twitch/stream-heat-model.js';
 import { projectRows } from '../src/features/twitch/region-views.js';
 import { launchAdvice, launchDays, launchAnchor } from '../src/features/twitch/launch-model.js';
 import { launchPeaks } from '../src/features/twitch/launches.js';
-import { chineseVerdict, combineVerdicts, compactCount, extraLines, forecastLine, gameMeta, globalVerdict, lastDays, launchMeta,
+import { chineseVerdict, combineVerdicts, compactCount, extraTags, gameMeta, globalVerdict, lastDays, launchMeta,
   recentHours, regionTile, sortEntries, sparkPoints, trendOf } from '../src/features/twitch/trend-verdict.js';
 import { busiestSlot, channelsAboveRange, latestRanks, slotHours, slotLabel, slotOf, slotPeriod, slotStats } from '../src/features/twitch/stream-slot-model.js';
 import { trialWindow } from '../src/features/twitch/stream-planning-model.js';
@@ -137,7 +137,7 @@ test('one verdict shows when both regions agree, both when they differ', () => {
   const same = judge([8000, 7000, 6500, 6000, 6000, 5800, 5600, 5500, 5400, 5300, 5200], { zh: zhHot });
   const both = combineVerdicts({ global: same.global, zh: same.zh });
   assert.equal(both.split, false);
-  assert.equal(both.reason, '還是很多人在看，雖然比前幾天少一些；中文區也有熱度。');
+  assert.equal(both.main, same.global);
   const differ = judge([8000, 6000, 4000, 2500, 2400, 2300, 2200, 2100, 2000, 1900, 1800], { zh: zhHot });
   const split = combineVerdicts({ global: differ.global, zh: differ.zh });
   assert.equal(split.split, true);
@@ -167,12 +167,14 @@ test('the launch line counts Taiwan calendar days from each launch', () => {
   assert.equal(gameMeta(earlyAccess, '2026-11-01'), '10/20 開始搶先體驗・今天第 13 天');
 });
 
-test('cards add the forecast and the same-age comparison as extra lines', () => {
-  const forecast = { median: 490000, probabilities: { 100: 1, 1000: 1, 3000: 0.97 } };
-  assert.equal(forecastLine(forecast), '第 7～9 天預估約 49 萬人；還有 3,000 人以上的機率超過 95%。');
-  assert.equal(forecastLine({ median: 400, probabilities: { 100: 0.62, 1000: 0.2, 3000: 0 } }), '第 7～9 天預估約 400 人；還有 100 人以上的機率 60%。');
-  const lines = extraLines({ forecast, peer: { verdict: 'outlasting', day: 19, ratio: 5.7, typical: 0.05 } }, { group: 'hot' });
-  assert.deepEqual(lines, [forecastLine(forecast), '比同齡撐得久：上市第 20 天還有首日的 5.7 倍，同齡遊戲一般剩 5%。']);
+test('cards add the same-age, peak and dark-horse labels as tags, without their numbers', () => {
+  assert.deepEqual(extraTags({ peer: { verdict: 'outlasting', day: 19, ratio: 5.7, typical: 0.05 } }, { group: 'hot' }), ['比同齡撐得久']);
+  assert.deepEqual(extraTags({ peer: { verdict: 'fading', day: 9, ratio: 0.03, typical: 0.125 },
+    peaks: { earlyAccess: 2000, fullRelease: 5000, ratio: 2.5, newPeak: true }, darkHorse: { kind: 'horse', ratio: 1.5 } }, { group: 'trial' }),
+  ['掉得比同齡快', '正式上市新高峰', '黑馬候選']);
+  // The dark horse's own verdict already says so.
+  assert.deepEqual(extraTags({ darkHorse: { kind: 'burning', ratio: 11.5, day: 7 } }, { group: 'horse' }), []);
+  assert.deepEqual(extraTags(null, { group: 'hot' }), []);
   assert.equal(sparkPoints([1, null]), null);
   assert.equal(sparkPoints([2, 2, 2]), '4.0,16.0 60.0,16.0 116.0,16.0');
 });

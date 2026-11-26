@@ -76,20 +76,19 @@ test('the planning list groups an own-peak cooldown, a game holding up and a ris
   await expect(cooled).toHaveAttribute('data-group', 'cooled');
   const global = cooled.locator('.tw-plan-region[data-region="global"]');
   await expect(global.locator('.tw-verdict-chip')).toHaveText('已退燒');
-  await expect(global.locator('.tw-plan-why')).toHaveText('跟最熱的時候比，現在看的人少很多，已經退燒。');
-  // Reasons are plain words; the numbers are in the tiles.
-  for (const text of await page.locator('.tw-plan-why, .tw-plan-reason').allTextContents()) expect(text).not.toMatch(/\d[\d,.]*\s*(萬|人|%|倍)/);
-  await expect(cooled.locator('.tw-plan-extra p')).toHaveText(['掉得比同齡快：上市第 10 天剩首日的 4%，同齡遊戲一般還有 12%。']);
+  // A card gives the conclusion only: no sentences.
+  await expect(page.locator('.tw-plan-card p')).toHaveCount(0);
+  await expect(cooled.locator('.tw-plan-tag')).toHaveText(['掉得比同齡快']);
   const lasting = page.locator('.tw-plan-card[data-game="4"]');
   await expect(lasting).toHaveAttribute('data-group', 'hot');
-  await expect(lasting.locator('.tw-plan-region[data-region="global"] .tw-verdict-chip')).toHaveText('值得開');
-  await expect(lasting.locator('.tw-plan-extra p')).toHaveText(['比同齡撐得久：上市第 10 天還有首日的 68%，同齡遊戲一般剩 12%。']);
-  await expect(page.locator('.tw-plan-card[data-game="5"] .tw-plan-region[data-region="global"] .tw-plan-why')).toHaveText(/熱度回來了。$/);
+  await expect(lasting.locator('.tw-plan-region[data-region="global"] .tw-verdict-chip')).toHaveText('還很熱');
+  await expect(lasting.locator('.tw-plan-tag')).toHaveText(['比同齡撐得久']);
+  await expect(page.locator('.tw-plan-card[data-game="5"] .tw-plan-region[data-region="global"] .tw-verdict-chip')).toHaveText('回到高檔');
   // Streamed before its release date: heat from the viewers observed, marked as not yet released.
   const beta = page.locator('.tw-plan-card[data-game="6"]');
   await expect(beta).toHaveAttribute('data-group', 'hot');
   await expect(beta.locator('.tw-plan-meta')).toHaveText('還沒上市・2027/01/20 上市');
-  await expect(beta.locator('.tw-plan-extra')).toHaveCount(0);
+  await expect(beta.locator('.tw-plan-tags')).toHaveCount(0);
   // The worldwide tile: the last three days and their trend, with seven days of line.
   await expect(lasting.locator('.tw-plan-tile[data-region="global"] strong')).toHaveText('3,500');
   await expect(lasting.locator('.tw-plan-tile[data-region="global"] .tw-plan-trend')).toHaveText('↓ 比前 3 天少 8%');
@@ -143,8 +142,7 @@ test('an Early Access game counts from its full release and compares the two pea
   const card = page.locator('.tw-plan-card[data-game="7"]');
   await expect(card.locator('.tw-plan-meta')).toHaveText('正式上市第 7 天・11/05 上市');
   // Same-age comparison from the full release: its sixth day against its first.
-  await expect(card.locator('.tw-plan-extra p')).toHaveText(['比同齡撐得久：上市第 6 天還有首日的 67%，同齡遊戲一般剩 23%。',
-    '正式上市後最高 9,000 人，是搶先體驗時最高 3,000 人的 3.0 倍。']);
+  await expect(card.locator('.tw-plan-tag')).toHaveText(['比同齡撐得久', '正式上市新高峰']);
   await page.goto('twitch-game.html?game=7');
   await expect(page.locator('#gameMeta')).toHaveText('Steam 11/05 正式上市・今天第 7 天');
   await expect(page.locator('#nextPanel .tw-next-line')).toHaveText(['正式上市後最高 9,000 人，是搶先體驗時最高 3,000 人的 3.0 倍。']);
