@@ -47,7 +47,7 @@ export function platformLanguageSupport(raw, platform = "NS") {
   if (expected.schinese === true) badges.push({ label: "支援簡中", status: "simplified" });
   if (expected.chinese === true && !badges.length) badges.push({ label: "中文（字體待確認）", status: "chinese" });
   if (!badges.length && expected.english === true) badges.push({ label: "支援英文", status: "english" });
-  if (!badges.length && rows.length) badges.push({ label: `支援${rows[0].name}`, status: "other" });
+  if (!badges.length && rows.length) badges.push({ label: "其他語言", status: "other" });
   return { status: raw.status, region: raw.region, languages: expected, supported_languages: rows, complete,
     source: raw.source.trim().slice(0, 120), source_url: sourceURL, checked_at: raw.checked_at,
     evidence_type: raw.evidence_type, ...(product ? { product_id: product.id } : {}),

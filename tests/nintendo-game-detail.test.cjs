@@ -638,8 +638,9 @@ test('merged language detail shows Steam and NS2 support separately, including c
   assert.deepEqual(languageChips(versionRow(e, 'Steam')), ['繁中', '簡中']);
   assert.deepEqual(languageChips(versionRow(e, 'NS2')), ['簡中']);
   const ns2 = versionCell(versionRow(e, 'NS2'), 'languages');
-  assert.equal(ns2.children[1].textContent, '共 2 種語言');
-  assert.doesNotMatch(ns2.textContent, /繁中/);
+  // The cell names Chinese and English only; the list is in 資料來源與說明.
+  assert.equal(ns2.children.length, 1);
+  assert.doesNotMatch(ns2.textContent, /繁中|種語言/);
   assert.match(sourceText(e), /Steam 版中文：Steam 商店標示同時支援繁中與簡中/);
   assert.match(sourceText(e), /Nintendo Switch 2 版中文：台灣版本，來源 Nintendo 台灣（10\/04 確認）。已公布語言：簡體中文、英文。官方完整語言列表未列繁體中文。/);
   assert.equal(sourceLinks(e).find(link => link.textContent === 'Nintendo 台灣').href, 'https://www.nintendo.com/tw/games/switch2/example/');
@@ -656,6 +657,30 @@ test('partial generic Chinese never invents a script or unsupported language cla
   assert.match(sourceText(e), /Nintendo Switch 2 版中文：台灣版本，來源 Nintendo 台灣（10\/04 確認）。已公布語言：中文。官方僅標示中文，尚未區分繁體／簡體字體。/);
   assert.doesNotMatch(versionCell(versionRow(e, 'NS2'), 'languages').textContent, /繁中|簡中|無中文/);
   assert.doesNotMatch(sourceText(e), /未列繁體|未列簡體|繁中|簡中/);
+});
+
+test('a version names Chinese and English only and calls any other list 其他語言', async () => {
+  const japanese = [{ code: 'ja', name: '日文' }, { code: 'ko', name: '韓文' }];
+  const complete = languageSupport({ supported_languages: japanese,
+    languages: { tchinese: false, schinese: false, english: false, chinese: false } });
+  const partial = languageSupport({ status: 'partial', complete: false, supported_languages: japanese,
+    languages: { tchinese: null, schinese: null, english: null, chinese: null } });
+  // The Hong Kong eShop JSON-LD's two "zh": both scripts in a partial list.
+  const scripts = languageSupport({ status: 'partial', complete: false, region: 'hong_kong', source: '任天堂 eShop 香港',
+    source_url: 'https://ec.nintendo.com/HK/zh/titles/70010000132540',
+    languages: { tchinese: true, schinese: true, english: true, chinese: true },
+    supported_languages: [{ code: 'ja', name: '日文' }, { code: 'en', name: '英文' }, { code: 'ko', name: '韓文' },
+      { code: 'zh-Hans', name: '簡體中文' }, { code: 'zh-Hant', name: '繁體中文' }] });
+  for (const [row, chips] of [[complete, ['其他語言']], [partial, ['其他語言（中文待確認）']], [scripts, ['繁中', '簡中']]]) {
+    const { elements: e } = await display('?igdb=366896', sample({ platform_language_support: { NS2: row } }));
+    assert.deepEqual(languageChips(versionRow(e, 'NS2')), chips);
+    assert.doesNotMatch(versionCell(versionRow(e, 'NS2'), 'languages').textContent, /種語言|日文|韓文/);
+  }
+  const catalog = steamCatalog();
+  catalog.games[0].language_support = { tchinese: false, schinese: false, english: false, other_languages: ['日文'] };
+  const { elements: steam } = await display('?appid=632950', null, catalog);
+  assert.deepEqual(languageChips(versionRow(steam, 'Steam')), ['其他語言']);
+  assert.match(sourceText(steam), /Steam 版中文：Steam 商店未標示支援繁中、簡中或英文/);
 });
 
 test('separate NS and NS2 versions retain platform-specific official language sources', async () => {

@@ -38,6 +38,7 @@ function languageBadge(game: CatalogGame) {
   if (languages.tchinese === true) return { label: '支援繁中', tone: 'tchinese' };
   if (languages.schinese === true) return { label: '支援簡中', tone: 'schinese' };
   if (languages.english === true) return { label: '支援英文', tone: 'english' };
+  if (game.languageStatus === 'other') return { label: '其他語言', tone: 'other' };
   return null;
 }
 

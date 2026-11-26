@@ -115,17 +115,16 @@ export function createDetailVersions(ctx, policy) {
     // partial list only says Chinese is unconfirmed.
     const noChinese = info.steam ? info.complete : info.complete === true && info.languages?.chinese === false;
     const chips = node('div', 'game-version-chips');
+    // Only Chinese and English are named; any other list is 「其他語言」.
     chips.append(...(info.languageBadges || []).map(badge => {
-      const other = badge.label.replace(/^支援/, '');
       const text = badge.status === 'traditional' ? '繁中' : badge.status === 'simplified' ? '簡中'
         : badge.status === 'chinese' ? '中文（字體待確認）'
           : badge.status === 'unknown' ? '語言待確認'
-            : noChinese ? `無中文（有${other}）` : `${other}（中文待確認）`;
+            : badge.status === 'english' ? noChinese ? '無中文（有英文）' : '英文（中文待確認）'
+              : noChinese ? '其他語言' : '其他語言（中文待確認）';
       return node('span', `game-version-lang is-${badge.status}`, text);
     }));
     cell.append(chips);
-    if (!info.steam && info.status !== 'unknown' && info.supported_languages?.length)
-      cell.append(node('p', 'game-version-meta', `共 ${info.supported_languages.length} 種語言`));
     return cell;
   }
 

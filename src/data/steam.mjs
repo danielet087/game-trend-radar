@@ -214,10 +214,7 @@ function steamRow(raw, { appid, date, followers, recent, translated, twitchQuali
       languageBadges.push({ label: "支援英文", status: "english" });
     else if (Array.isArray(languages?.other_languages) &&
       languages.other_languages.length)
-      languageBadges.push({
-        label: `支援${String(languages.other_languages[0]).trim()}`,
-        status: "other",
-      });
+      languageBadges.push({ label: "其他語言", status: "other" });
     else
       languageBadges.push({
         label: "語言支援待確認",
