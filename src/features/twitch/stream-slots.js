@@ -4,7 +4,7 @@ import { setInfoLines } from './info-notes.js';
 import { dayOf, monthsFor } from './series.js';
 import { HOUR } from './metrics.js';
 import { compactCount, shortDate } from './trend-verdict.js';
-import { SLOT_DEFAULTS, VIEWER_CHOICES, busiestSlot, slotHours, slotLabel, slotOf, slotPeriod, slotStats } from './stream-slot-model.js';
+import { SLOT_DEFAULTS, VIEWER_CHOICES, busiestSlot, latestRanks, slotHours, slotLabel, slotOf, slotPeriod, slotStats } from './stream-slot-model.js';
 import { TRIAL_MIN_DAYS } from './stream-planning-model.js';
 
 // 什麼時候開: the viewer's usual audience and stream slot (60 viewers and
@@ -19,6 +19,15 @@ function rankText(rank) {
   if (!rank) return null;
   return rank.ahead !== undefined ? `第 ${fmt(rank.ahead + 1)} 名` : `第 ${fmt(rank.low + 1)}～${fmt(rank.high + 1)} 名`;
 }
+
+/** One hour's place from channelsAboveRange: "第 9 名", or "第 6～9 名" between two tiers. */
+export function placeText(range) {
+  if (!range) return null;
+  return range.low === range.high ? `第 ${fmt(range.low + 1)} 名` : `第 ${fmt(range.low + 1)}～${fmt(range.high + 1)} 名`;
+}
+
+/** "14:00" in Taiwan time. */
+export const hourText = at => new Date(at + 8 * HOUR).toISOString().slice(11, 16);
 
 function options(select, values, label) {
   select.replaceChildren(...values.map(value => {
@@ -76,6 +85,7 @@ export function createStreamSlots({ $, params, onChange, onRank }) {
       '你的位置：平常觀眾跟你差不多的台，在這段時間開時常見排第幾；觀眾一樣多的算並列。',
       '比較：預設找不跟你重疊、看的人最多的同長度時段。',
       '60 人這一級從 11/26 起才有；之前的日子先用 50 人和 100 人推估範圍。',
+      `紀錄還不到 ${TRIAL_MIN_DAYS} 天時（例如上市頭幾天），先看最近一個小時：那小時觀眾比你平常人數多的台數＋1。`,
     ]);
   }
 
@@ -98,12 +108,14 @@ export function createStreamSlots({ $, params, onChange, onRank }) {
     }
     tiles.replaceChildren(...parts);
     const place = rankText(own.rank);
+    const latest = own.rank ? null : latestRanks(index, chunks, gameId, period.now, viewers);
+    const now = latest ? `${hourText(latest.at)} 那小時開的話：全球${placeText(latest.global)}${latest.zh ? `、中文區${placeText(latest.zh)}` : ''}。` : '';
     rankLine.textContent = own.rank ? own.rank.ahead !== undefined
       ? `平常 ${fmt(viewers)} 人的台，${label} 開常見排${place}，通常有 ${fmt(own.rank.ahead)} 台比你多。`
       : `平常 ${fmt(viewers)} 人的台，${label} 開大約排${place}（這一級的名次還在累積，先用前後兩級推估）。`
-      : `最近 7 天這段時間的名次紀錄不到 ${TRIAL_MIN_DAYS} 天，還不能算。`;
+      : `最近 7 天這段時間的名次紀錄不到 ${TRIAL_MIN_DAYS} 天，還不能算。${now}`;
     status.textContent = `${shortDate(dayOf(period.start))}～${shortDate(dayOf(period.end))} 有 ${own.days}／${own.totalDays} 天紀錄・${region === 'zh' ? '中文區' : '全球'}`;
-    onRank({ rank: own.rank, viewers, label });
+    onRank({ rank: own.rank, viewers, label, latest });
   }
 
   function change(key, value, fallback) {

@@ -348,7 +348,7 @@ export function initStreamPlanningPage() {
       // An Early Access game's full release is a launch of its own; streams at
       // launch level just before a launch move where its days start.
       const anchor = launchAnchor(record, rows, asOf, releaseTimes.get(steamAppOf(record) ?? '')), startAt = anchor?.startAt ?? null;
-      const launch = { ...launchAdvice({ days: launchDays(rows, startAt, asOf), releaseAt: startAt, now: asOf,
+      const launch = { ...launchAdvice({ days: launchDays(rows, startAt, asOf), releaseAt: startAt, now: asOf, rows,
         fallback: latest ? { date: latest.date, median: latest.median } : null }), small: !days.global?.popularAt,
         peaks: launchPeaks(rows, record, asOf), anchor, forecast: launchForecast(rows, startAt, asOf, model) };
       return { days, launch };

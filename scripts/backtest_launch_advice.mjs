@@ -6,13 +6,15 @@
 //   catalog.json and store_facts.json, laid out like the site's ./data/.
 //
 // Prints, for launches whose first 24 hours are known:
+//   - the launch-day calls (EARLY_RULES) replayed hour by hour against the
+//     first day;
 //   - small games (first day 50-2,999): the trial rule against the next week
 //     (days 4-10, 1-based) still having a median of 100 viewers;
 //   - all launches (first day 50+) watched for two weeks: the dark-horse rule
 //     against a later day reaching twice the first day.
 import { LAUNCH_RULES } from '../src/features/twitch/launch-model.js';
 import { readLaunches } from './launch_sample.mjs';
-import { darkHorseLaunches, darkHorseOutcome, ruleOutcome, smallLaunches, stillWatched as alive, trialRule as trial } from './rule_checks.mjs';
+import { darkHorseLaunches, darkHorseOutcome, earlyOutcome, ruleOutcome, smallLaunches, stillWatched as alive, trialRule as trial } from './rule_checks.mjs';
 
 const dir = process.argv[2];
 if (!dir) {
@@ -25,6 +27,11 @@ const all = readLaunches(dir).launches;
 const launches = all.filter(l => l.value(0) !== null);
 console.log(`launches with a known first day: ${launches.length} (${launches.filter(l => l.kind === 'full_release').length} full releases,`
   + ` ${launches.filter(l => l.basis === 'pre_launch').length} starting before the launch)`);
+
+// The launch-day calls, as the pages would have made them hour by hour.
+const early = earlyOutcome(launches);
+console.log(`launch-day calls over ${early.launches} launches: hot ${early.hot.right}/${early.hot.said} reached 3,000,`
+  + ` pass ${early.pass.right}/${early.pass.said} reached 300, fail ${early.fail.right}/${early.fail.said} stayed under 300; ${early.open} open at 24 h`);
 
 // Small games: the trial rule against the following week.
 const small = smallLaunches(launches);

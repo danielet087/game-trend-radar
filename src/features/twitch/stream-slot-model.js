@@ -105,6 +105,27 @@ export function slotStats(index, chunks, gameId, period, slot, region, viewers) 
     perStream: typicalStreamers > 0 ? typicalViewers / typicalStreamers : null, rank };
 }
 
+// 現在開的話: until the slot has three days of records (the launch days, a
+// game just picked up), the latest collected hour within the last three hours
+// and the channels above `viewers` in each region then.
+export const LATEST_HOURS = 3;
+
+/** The latest hour's rank in both regions ({ at, global, zh }, each a channelsAboveRange), or null. */
+export function latestRanks(index, chunks, gameId, now, viewers) {
+  if (index.games[gameId]?.tracking_status === 'ended' || !Number.isFinite(now)) return null;
+  const top = now - now % HOUR;
+  for (let at = top; at > top - LATEST_HOURS * HOUR; at -= HOUR) {
+    const [row] = seriesRows(index, chunks, gameId, at, at, 'global');
+    if (!counts(row) || !(Date.parse(row.generated_at) <= now)) continue;
+    const global = channelsAboveRange(row.streamer_counts_above_viewers, viewers);
+    if (!global) continue;
+    const [zh] = seriesRows(index, chunks, gameId, at, at, 'zh');
+    const chinese = counts(zh) ? channelsAboveRange(zh.streamer_counts_above_viewers, viewers) : null;
+    return { at, global, zh: chinese };
+  }
+  return null;
+}
+
 /** The busiest slot of the same length that does not overlap `slot`, for the comparison. */
 export function busiestSlot(index, chunks, gameId, period, slot, region, viewers) {
   const length = slotHours(slot).length, own = new Set(slotHours(slot).map(hour => hour % 24));

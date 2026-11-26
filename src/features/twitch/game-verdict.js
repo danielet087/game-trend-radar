@@ -6,7 +6,9 @@ import { FORECAST_RULES, LAUNCH_RULES } from './launch-model.js';
 import { LAUNCH_RULE_TEXT, PEER_RULE_TEXT, chance, forecastRuleText, launchFlagText } from './launch-advice.js';
 import { currentLaunch, launchPeakText } from './launches.js';
 import { dateStart, dayOf } from './series.js';
-import { HOUR } from './metrics.js';
+import { count, HOUR } from './metrics.js';
+import { projectRows } from './region-views.js';
+import { hourText, placeText } from './stream-slots.js';
 import { chineseVerdict, compactCount, dailyValue, globalVerdict, shortDate } from './trend-verdict.js';
 
 // The Twitch game page's top: 現在還值得播嗎 (both regions' verdicts, the
@@ -36,6 +38,30 @@ const closedDays = (day, region) => (day?.days ?? []).filter(item => item.isClos
 
 function latestDay(day, region) {
   return closedDays(day, region).findLast(item => item.value !== null) ?? null;
+}
+
+// "2026-11-26 14:00": an hour named like a day, so shortDate gives "11/26 14:00".
+const hourName = at => `${dayOf(at)} ${hourText(at)}`;
+
+/**
+ * The last 48 hours, one point per hour from the first hour anyone streamed:
+ * a collection without the game is 0, a missing or later one a gap. For the
+ * launch days and a game just picked up, before two whole days exist.
+ */
+export function hourlyPoints(rows, region, now) {
+  if (!Number.isFinite(now)) return [];
+  const end = now - now % HOUR, start = end - 47 * HOUR, byHour = new Map();
+  for (const row of region === 'global' ? rows ?? [] : projectRows(rows ?? [], region)) {
+    const at = Date.parse(row?.hour);
+    if (at >= start && at <= end) byHour.set(at, row);
+  }
+  const points = [];
+  for (let at = start; at <= end; at += HOUR) {
+    const row = byHour.get(at), known = row && Date.parse(row.generated_at) <= now;
+    points.push({ date: hourName(at), value: !known ? null : row.status === 'absent' ? 0 : row.status === 'observed' ? count(row.viewer_count) : null });
+  }
+  const first = points.findIndex(item => item.value > 0), last = points.findLastIndex(item => item.value !== null);
+  return first < 0 ? [] : points.slice(first, last + 1);
 }
 
 function peakOf(points) {
@@ -132,13 +158,14 @@ function tileItem(label, value, sub, href) {
   return item;
 }
 
-function gameLine(days, verdicts) {
+function gameLine(days, verdicts, launch) {
   const outlook = days.global?.outlook;
   if (verdicts.global.group === 'cooled' && outlook?.confirmedOn) {
     return outlook.cooledBy === 'peak' ? `這款 ${shortDate(outlook.confirmedOn)} 確認退燒：連續 3 天不到自己高峰 ${people(outlook.peak)}的 ${share}%。`
       : `這款 ${shortDate(outlook.confirmedOn)} 確認退燒：連續 3 天每天不到 ${globalLine} 人。`;
   }
   if (days.global?.popularAt) return `這款每天到過 ${globalLine} 人，看退燒的規則。`;
+  if (launch?.stage === 'first') return `上市頭 24 小時，全球先用到目前為止每小時的人數和台數提早判斷首日；滿 24 小時後看首日 ${fmt(LAUNCH_RULES.firstDay)} 人、最近一天 ${fmt(LAUNCH_RULES.trialDay)} 人。`;
   return `這款每天沒到過 ${globalLine} 人，全球看小遊戲的規則：首日 ${fmt(LAUNCH_RULES.firstDay)} 人、最近一天 ${fmt(LAUNCH_RULES.trialDay)} 人。`;
 }
 
@@ -162,7 +189,7 @@ export function createGameVerdict({ $, onOpenRecord, signal }) {
     const record = node('button', 'tw-text-link', '看每天的紀錄 →');
     record.type = 'button';
     record.addEventListener('click', onOpenRecord);
-    const line = node('p', '', gameLine(days, verdicts));
+    const line = node('p', '', gameLine(days, verdicts, state.launch));
     line.append(' ', record);
     const rules = node('details', 'tw-info-more');
     rules.append(node('summary', '', '小遊戲的完整規則'), node('div', '', LAUNCH_RULE_TEXT));
@@ -180,9 +207,13 @@ export function createGameVerdict({ $, onOpenRecord, signal }) {
     const ratio = latest && peak?.value > 0 ? latest.value / peak.value : null;
     tiles.append(tileItem(`${when}${REGION_NAMES[region]}`, latest ? `約 ${people(latest.value)}` : '—',
       ratio === null ? '還沒有完整的一天' : latest.date === peak.date ? '就是目前的高峰' : `高峰的 ${percent(ratio)}`));
-    const place = !rank ? ['還在算', ''] : rank.rank?.ahead !== undefined ? [`常見第 ${fmt(rank.rank.ahead + 1)} 名`]
-      : rank.rank ? [`常見第 ${fmt(rank.rank.low + 1)}～${fmt(rank.rank.high + 1)} 名`] : ['還不能算'];
-    tiles.append(tileItem('你的位置', place[0], rank ? `平常 ${fmt(rank.viewers)} 人・${rank.label} 開` : '', '#slotPanel'));
+    // Without three days of slot records, the latest hour: 現在開的話.
+    const hourly = rank && !rank.rank && rank.latest?.[region] ? rank.latest : null;
+    const place = !rank ? '還在算' : rank.rank?.ahead !== undefined ? `常見第 ${fmt(rank.rank.ahead + 1)} 名`
+      : rank.rank ? `常見第 ${fmt(rank.rank.low + 1)}～${fmt(rank.rank.high + 1)} 名`
+        : hourly ? placeText(hourly[region]) : '還不能算';
+    const sub = !rank ? '' : hourly ? `${hourText(hourly.at)} 那小時・平常 ${fmt(rank.viewers)} 人` : `平常 ${fmt(rank.viewers)} 人・${rank.label} 開`;
+    tiles.append(tileItem(hourly ? '現在開的話' : '你的位置', place, sub, '#slotPanel'));
     verdictPanel.dataset.group = verdicts[region].group;
     verdictPanel.replaceChildren(wrap, regions, tiles);
     verdictPanel.hidden = false;
@@ -192,18 +223,27 @@ export function createGameVerdict({ $, onOpenRecord, signal }) {
     const { days, record } = state, day = days[region];
     const points = closedDays(day, region);
     const first = points.findIndex(item => item.value !== null);
-    const shown = first < 0 ? [] : points.slice(first);
-    const launch = currentLaunch(record, state.now)?.date ?? null;
-    const title = launch && shown[0]?.date >= launch ? '上市後每天有多少人在看' : '每天有多少人在看';
-    const { wrap } = infoHeading('h2', title, { id: 'dailyInfo', label: '每天的人數怎麼算', className: 'tw-game-card-head', lines: [
+    const closed = first < 0 ? [] : points.slice(first);
+    const current = currentLaunch(record, state.now), launch = current?.date ?? null;
+    // Until two whole days exist (the launch days, a game just picked up), every hour of the last two days.
+    const hourly = closed.length < 2 ? hourlyPoints(state.rows, region, state.now) : null;
+    const shown = hourly ?? closed;
+    const title = `${launch && shown[0]?.date >= launch ? '上市後' : ''}每${hourly ? '小時' : '天'}有多少人在看`;
+    const { wrap } = infoHeading('h2', title, { id: 'dailyInfo', label: '人數怎麼算', className: 'tw-game-card-head', lines: hourly ? [
+      '還沒有兩個完整的一天，先畫最近 48 小時每小時的同時觀看人數；有兩個完整的一天後改畫每天。',
+      `虛線是熱門線：全球每天 ${globalLine} 人；中文區一天要有 ${hours} 個小時過 ${zhLine} 人。`] : [
       '每天約多少人在看：一天裡每小時同時觀看人數的中間值。', `虛線是熱門線：全球每天 ${globalLine} 人。`,
       `切到中文區時只算中文直播，取一天裡第 ${hours} 多人的那一小時；虛線是 ${zhLine} 人。`] });
     dailyPanel.replaceChildren(wrap);
     dailyPanel.hidden = false;
     if (shown.length < 2) { dailyPanel.append(node('p', 'tw-game-empty', '還沒有兩個完整的一天，畫不出走勢。')); return; }
-    const threshold = cooldownThreshold(region), cooledOn = day.outlook?.signal === 'cooled' ? day.outlook.confirmedOn : null;
-    dailyPanel.append(dailyChart(shown, { threshold, cooledOn, launchOn: launch, region, title, compact: narrow.matches }));
+    const threshold = cooldownThreshold(region), cooledOn = !hourly && day.outlook?.signal === 'cooled' ? day.outlook.confirmedOn : null;
+    // On the hourly chart the launch is marked at its hour when Steam gives one.
+    const launchAt = state.launch?.anchor?.launchAt;
+    const launchOn = hourly && Number.isFinite(launchAt) && launchAt !== dateStart(dayOf(launchAt)) ? hourName(launchAt) : launch;
+    dailyPanel.append(dailyChart(shown, { threshold, cooledOn, launchOn, region, title, compact: narrow.matches }));
     const last = shown.findLast(item => item.value !== null);
+    if (hourly) { dailyPanel.append(node('p', 'tw-game-caption', `${shortDate(last.date)} 約 ${people(last.value)}。`)); return; }
     const where = last.value >= threshold ? '在熱門線上'
       : hotLineShown(shown.map(item => item.value).filter(value => value !== null), threshold) ? '還在熱門線下'
         : `離熱門線 ${region === 'zh' ? `${hours} 小時 ${zhLine} 人` : `${globalLine} 人`}還很遠`;

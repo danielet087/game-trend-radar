@@ -11,9 +11,9 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { LAUNCH_RULES, PEER_CURVE } from '../src/features/twitch/launch-model.js';
+import { EARLY_RULES, LAUNCH_RULES, PEER_CURVE } from '../src/features/twitch/launch-model.js';
 import { readLaunches } from './launch_sample.mjs';
-import { cooldownOutcome, darkHorseLaunches, darkHorseOutcome, ruleOutcome, sameAgeCurve, sameAgeOutcome,
+import { cooldownOutcome, darkHorseLaunches, darkHorseOutcome, earlyOutcome, ruleOutcome, sameAgeCurve, sameAgeOutcome,
   smallLaunches, trialRule } from './rule_checks.mjs';
 
 // When a rule needs another look, and how many cases it takes to say so.
@@ -24,6 +24,7 @@ export const REVIEW_RULES = Object.freeze({
   sameAge: { min: 50, outlasting: 0.8, fading: 0.15 },
   curve: { min: 30, drift: 0.3, days: [2, 6, 13] },
   forecast: { min: 30, within: 0.55, likely: 5, hit: 0.7 },
+  early: { min: 10, pass: 0.9, sure: 0.95 },
 });
 
 // What each rule was validated on (11-25, with each launch's start as #122 counts it).
@@ -35,13 +36,14 @@ export const BASELINES = Object.freeze({
   sameAge: '11-25：標「撐得久」的 214 個遊戲日 96% 仍高於同齡；標「掉得快」的 147 個只有 2%。',
   curve: '網站的同齡曲線是 11-25 用 88 款算的：第 3 天一般剩 34%、第 7 天 16%、第 14 天 8%。',
   forecast: '11-25：回測 47 款，差距中位數 2.7 倍，64% 落在八成範圍內；說「還有 1,000 人」機率過半的 7 款，6 款真的有。',
+  early: '11-26：重播 102 次上市，說首日會過 300 人的 46 次對 43 次，說熱門的 15 次全對，說不到 300 人的 34 次全對；7 次到 24 小時還看不出來。',
 });
 
 const pct = (part, whole) => whole ? `${Math.round(part / whole * 100)}%` : '—';
 const status = (enough, drifted) => !enough ? 'few' : drifted ? 'watch' : 'ok';
 
 /** The checks, each with its status and a one-line Chinese summary, from the computed outcomes. */
-export function reviewChecks({ trial, dark, cooldown, sameAge, curve, forecast }) {
+export function reviewChecks({ trial, dark, cooldown, sameAge, curve, forecast, early }) {
   const R = REVIEW_RULES, checks = [];
   checks.push({ id: 'trial', title: '小遊戲試播標準',
     rule: `首 24 小時 ${LAUNCH_RULES.firstDay} 人以上、最近一天還有 ${LAUNCH_RULES.trialDay} 人以上 → 值得試播（回測看上市第 3 天）`,
@@ -88,6 +90,16 @@ export function reviewChecks({ trial, dark, cooldown, sameAge, curve, forecast }
       + `說「還有 1,000 人」機率過半的 ${likely?.likely ?? 0} 款，${likely?.likely_reached ?? 0} 款真的有。` : '還沒有預估的回測。',
     baseline: BASELINES.forecast,
     advice: '落在八成範圍內的不到 55%，或「還有 1,000 人」說中的不到七成時，預估方法要重看。' });
+  const E = EARLY_RULES, rate = side => side.said ? side.right / side.said : 1;
+  checks.push({ id: 'early_call', title: '上市當天提早判斷',
+    rule: `上市頭 24 小時，到目前為止每小時的中位數：滿 ${E.minHours} 小時、${E.pass.viewers} 人以上且 ${E.pass.channels} 台以上 → 首日大概過關；`
+      + `${E.hot.viewers.toLocaleString('en')} 人以上且 ${E.hot.channels} 台以上 → 首日熱門；滿 ${E.failHours} 小時不到 ${E.fail.viewers} 人 → 先不用排`,
+    status: early ? status(early.pass.said >= R.early.min, rate(early.pass) < R.early.pass
+      || (early.hot.said >= R.early.min && rate(early.hot) < R.early.sure) || (early.fail.said >= R.early.min && rate(early.fail) < R.early.sure)) : 'few',
+    summary: early ? `重播 ${early.launches} 次上市：說首日會過 300 人 ${early.pass.said} 次、對 ${early.pass.right} 次；說熱門 ${early.hot.said} 次、對 ${early.hot.right} 次；`
+      + `說不到 300 人 ${early.fail.said} 次、對 ${early.fail.right} 次；${early.open} 次到 24 小時還看不出來。` : '還沒有提早判斷的重播。',
+    baseline: BASELINES.early,
+    advice: '說會過關的對不到九成，或說熱門、說不到 300 人的對不到九成五時，提早判斷的門檻要重算。' });
   return checks;
 }
 
@@ -105,6 +117,7 @@ export function ruleReview(dir, generatedAt) {
     sameAge: sameAgeOutcome(all),
     curve: sameAgeCurve(all),
     forecast,
+    early: earlyOutcome(all),
   });
   return { schema_version: 1, generated_at: generatedAt, data_through: index.generated_at ?? null,
     launches: launches.length, attention: checks.filter(check => check.status === 'watch').length, checks };

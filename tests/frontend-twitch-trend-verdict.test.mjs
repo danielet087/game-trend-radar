@@ -6,7 +6,7 @@ import { launchAdvice, launchDays, launchAnchor } from '../src/features/twitch/l
 import { launchPeaks } from '../src/features/twitch/launches.js';
 import { chineseVerdict, combineVerdicts, compactCount, extraLines, forecastLine, gameMeta, globalVerdict, lastDays, launchMeta,
   regionTile, sortEntries, sparkPoints, trendOf } from '../src/features/twitch/trend-verdict.js';
-import { busiestSlot, channelsAboveRange, slotHours, slotLabel, slotOf, slotPeriod, slotStats } from '../src/features/twitch/stream-slot-model.js';
+import { busiestSlot, channelsAboveRange, latestRanks, slotHours, slotLabel, slotOf, slotPeriod, slotStats } from '../src/features/twitch/stream-slot-model.js';
 import { trialWindow } from '../src/features/twitch/stream-planning-model.js';
 
 const HOUR = 3600000;
@@ -85,6 +85,34 @@ test('small games follow the launch rules and an own-peak cooldown', () => {
   const horse = judge([400, 450, 500, 520, 530, 540, 560], { from: '2026-11-05' }).global;
   assert.deepEqual(horse, { group: 'horse', label: '黑馬候選', headline: '可以趁早試播',
     reason: '第 3 天是首日的 1.3 倍，一般遊戲這時只剩約 34%。' });
+});
+
+// A launch at 00:00 on 11-11 seen at 12:00: [viewers, channels] for its first hours.
+function launchDay(hours) {
+  const game = { release_reference: { date: '2026-11-11', precision: 'day' } }, start = Date.parse('2026-11-11T00:00:00+08:00');
+  const rows = hours.map(([viewers, channels], hour) => ({ hour: iso(start + hour * HOUR), generated_at: iso(start + hour * HOUR + 600000),
+    status: 'observed', viewer_count: viewers, streamer_count: channels, audience_regions: { zh: { viewer_count: 0, streamer_count: 0 } } }));
+  const day = analyzeStreamHeat(rows, { game, region: 'global', date: '2026-11-11', now });
+  const anchor = launchAnchor(game, rows, now, null);
+  const launch = launchAdvice({ days: launchDays(rows, anchor.startAt, now), releaseAt: anchor.startAt, now, rows });
+  return globalVerdict(day, launch);
+}
+
+test('on the launch day the hours so far call the first day', () => {
+  assert.deepEqual(launchDay([[500, 20], [600, 25], [700, 30], [650, 28]]), { group: 'trial', label: '首日大概過關', headline: '可以先試播一場',
+    reason: '上市後 4 個小時的紀錄：每小時中位數約 630 人、27 台在播，首日大概會過 300 人；要不要長播，第 3 天再確認。' });
+  assert.deepEqual(launchDay([[7800, 129], [11900, 186], [9000, 200], [9400, 195], [6700, 204]]), { group: 'hot', label: '首日熱門', headline: '值得開',
+    reason: '上市後 5 個小時的紀錄：每小時中位數約 9,000 人、195 台在播；過去這樣的新作，首日都過 3,000 人。' });
+  assert.deepEqual(launchDay([[40, 3], [80, 5], [120, 6], [90, 4], [60, 3], [70, 4]]), { group: 'skip', label: '先不用排', headline: '先不用排',
+    reason: '上市後 6 個小時的紀錄：每小時中位數約 75 人，首日大概不到 300 人。' });
+  assert.deepEqual(launchDay([[11593, 4], [13055, 11], [4433, 10]]), { group: 'trial', label: '等首日數據', headline: '等首日數據',
+    reason: '上市後 3 個小時的紀錄：每小時中位數約 1.2 萬人，但只有 10 台在播：觀眾集中在少數幾台，還不能算熱度。' });
+  assert.equal(launchDay([[300, 12], [320, 13], [280, 11]]).reason, '上市後 3 個小時的紀錄：每小時中位數約 300 人、12 台在播，還看不出首日能不能過 300 人。');
+  assert.equal(launchDay([[500, 20]]).reason, '上市後 1 個小時的紀錄：每小時約 500 人、20 台在播；有紀錄滿 3 小時再判斷首日。');
+  // The list sorts a launch-day pass after the games that passed the whole first day.
+  const entry = (label, viewers) => ({ verdicts: { global: { label } }, tiles: { global: { raw: viewers } } });
+  assert.deepEqual(sortEntries([entry('等首日數據', 900), entry('首日大概過關', 500), entry('第 3 天後再確認', 400)], 'advice', 'global')
+    .map(item => item.verdicts.global.label), ['第 3 天後再確認', '首日大概過關', '等首日數據']);
 });
 
 test('the Chinese region needs four hours at 100 viewers in a day', () => {
@@ -192,4 +220,32 @@ test('the comparison takes the busiest slot of the same length that does not ove
   const best = busiestSlot(index, chunks, '1', period, { start: 11, end: 15 }, 'global', 60);
   assert.deepEqual(best.slot, { start: 20, end: 24 });
   assert.equal(best.viewers, 3150);
+});
+
+test('without three days of slot records, the latest hour gives 現在開的話 in both regions', () => {
+  const { index, chunks } = slotFixture();
+  // 11:00 was collected at 11:01; the 12:00 hour is not in yet at 12:00.
+  const latest = latestRanks(index, chunks, '1', now, 60);
+  assert.equal(iso(latest.at), '2026-11-11T03:00:00Z');
+  assert.deepEqual(latest.global, { low: 4, high: 4, exact: true });
+  // The fixture has no Chinese counts.
+  assert.equal(latest.zh, null);
+  // Between tiers the place is a range; an hour older than three hours or an ended game gives none.
+  assert.deepEqual(latestRanks(index, chunks, '1', now, 70).global, { low: 2, high: 4, exact: false });
+  assert.equal(latestRanks(index, chunks, '1', now + 4 * HOUR, 60), null);
+  assert.equal(latestRanks({ ...index, games: { '1': { ...index.games['1'], tracking_status: 'ended' } } }, chunks, '1', now, 60), null);
+});
+
+test('before two whole days the daily chart draws the last 48 hours, from the first hour anyone streamed', async () => {
+  const { hourlyPoints } = await import('../src/features/twitch/game-verdict.js');
+  const start = Date.parse('2026-11-11T08:00:00+08:00');
+  const row = (hour, status, viewers, zh = 0) => ({ hour: iso(start + hour * HOUR), generated_at: iso(start + hour * HOUR + 600000), status,
+    viewer_count: viewers, streamer_count: viewers === null ? null : 10, audience_regions: { zh: { viewer_count: zh, streamer_count: zh ? 2 : 0 } } });
+  const rows = [row(0, 'absent', null), row(1, 'observed', 500, 120), row(2, 'missing', null), row(3, 'absent', null, 0), row(4, 'observed', 800, 300)];
+  // At 12:05 the 12:00 hour is not published yet: the line ends at the last known hour.
+  assert.deepEqual(hourlyPoints(rows, 'global', start + 4 * HOUR + 300000), [
+    { date: '2026-11-11 09:00', value: 500 }, { date: '2026-11-11 10:00', value: null }, { date: '2026-11-11 11:00', value: 0 }]);
+  assert.deepEqual(hourlyPoints(rows, 'global', start + 5 * HOUR).map(point => point.value), [500, null, 0, 800]);
+  assert.deepEqual(hourlyPoints(rows, 'zh', start + 5 * HOUR).map(point => point.value), [120, null, 0, 300]);
+  assert.deepEqual(hourlyPoints([], 'global', start), []);
 });
