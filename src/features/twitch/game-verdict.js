@@ -9,7 +9,7 @@ import { dateStart, dayOf } from './series.js';
 import { count, HOUR } from './metrics.js';
 import { projectRows } from './region-views.js';
 import { hourText, placeText } from './stream-slots.js';
-import { chineseVerdict, compactCount, dailyValue, globalVerdict, shortDate } from './trend-verdict.js';
+import { chineseVerdict, compactCount, dailyValue, globalVerdict, recentHours, shortDate } from './trend-verdict.js';
 
 // The Twitch game page's top: 現在還值得播嗎 (both regions' verdicts, the
 // latest day and the viewer's rank), 上市後每天有多少人在看 (a daily chart
@@ -196,6 +196,7 @@ export function createGameVerdict({ $, onOpenRecord, signal }) {
     const { wrap } = infoHeading('h2', '現在還值得播嗎', { id: 'verdictInfo', label: '怎麼判斷值不值得播', className: 'tw-game-card-head', lines: [
       `全球：到過每天 ${globalLine} 人後，連續 3 天低於 ${globalLine} 人就算退燒；高峰到過 ${fmt(PEAK_COOLDOWN.minPeak)} 人的遊戲，連續 3 天低於自己高峰的 ${share}% 也算。`,
       `中文區：一天裡至少 ${hours} 個小時有 ${zhLine} 人以上算有熱度，1～${hours - 1} 個小時算零星有熱度。`, line,
+      '還沒有完整的一天時（例如上市當天），格子先放上市以來每小時的中間值和在播台數。',
       days.global?.popularAt ? null : rules] });
     if (split) wrap.append(node('span', 'tw-split-chip', '兩區建議不同'));
     const regions = node('div', 'tw-verdict-regions');
@@ -205,8 +206,12 @@ export function createGameVerdict({ $, onOpenRecord, signal }) {
     const yesterday = dayOf(state.now - DAY);
     const when = latest ? (latest.date === yesterday ? `昨天（${shortDate(latest.date)}）` : shortDate(latest.date)) : '最近一天';
     const ratio = latest && peak?.value > 0 ? latest.value / peak.value : null;
-    tiles.append(tileItem(`${when}${REGION_NAMES[region]}`, latest ? `約 ${people(latest.value)}` : '—',
-      ratio === null ? '還沒有完整的一天' : latest.date === peak.date ? '就是目前的高峰' : `高峰的 ${percent(ratio)}`));
+    // Before the first whole day, the hours since the launch (or of the last day): their middle hour and channels.
+    const start = state.launch?.stage === 'first' && Number.isFinite(state.launch.anchor?.startAt) ? state.launch.anchor.startAt : state.now - DAY;
+    const sofar = latest ? null : recentHours(region === 'global' ? state.rows : projectRows(state.rows ?? [], region), state.now, start);
+    tiles.append(sofar ? tileItem(`${REGION_NAMES[region]}・每小時`, `約 ${people(sofar.viewers)}`, `${fmt(Math.round(sofar.channels))} 台在播`)
+      : tileItem(`${when}${REGION_NAMES[region]}`, latest ? `約 ${people(latest.value)}` : '—',
+        ratio === null ? '還沒有完整的一天' : latest.date === peak.date ? '就是目前的高峰' : `高峰的 ${percent(ratio)}`));
     // Without three days of slot records, the latest hour: 現在開的話.
     const hourly = rank && !rank.rank && rank.latest?.[region] ? rank.latest : null;
     const place = !rank ? '還在算' : rank.rank?.ahead !== undefined ? `常見第 ${fmt(rank.rank.ahead + 1)} 名`

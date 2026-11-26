@@ -1,15 +1,17 @@
 import { formatCount } from './number-format.js';
 import { dateStart } from './series.js';
-import { HOUR } from './metrics.js';
+import { count, HOUR } from './metrics.js';
+import { quantile } from './statistics-model.js';
 import { gameLaunches, launchPeakText } from './launches.js';
-import { CHINESE_DAILY_HEAT_HITS, PEAK_COOLDOWN, cooldownThreshold } from './cooldown-model.js';
-import { EARLY_RULES, FORECAST_RULES, LAUNCH_RULES } from './launch-model.js';
+import { EARLY_RULES, FORECAST_RULES } from './launch-model.js';
 import { STREAM_HEAT_DAYS, STREAM_HEAT_FLOORS } from './stream-heat-model.js';
 import { chance, launchFlagText, launchPeerText } from './launch-advice.js';
 
 // One verdict per region for the planning list and the game page: which
 // group a game falls in, a short label, one plain sentence why, and the
-// game page's headline. Worldwide, games that reached 3,000 a day follow the
+// game page's headline. A reason says why in plain words; the numbers are in
+// the tiles (regionTile), not repeated in the sentence. Worldwide, games that
+// reached 3,000 a day follow the
 // cooldown rules and small games the launch rules (on the launch day, the
 // hours so far); the Chinese region follows its hourly heat (four hours at 100
 // viewers).
@@ -19,11 +21,6 @@ export const VERDICT_GROUPS = Object.freeze({
   hot: '值得開', trial: '值得試播', horse: '黑馬候選', cooled: '已退燒', skip: '先不用排',
 });
 export const GROUP_ORDER = Object.freeze(['hot', 'trial', 'horse', 'cooled', 'skip']);
-const share = Math.round(PEAK_COOLDOWN.share * 100);
-const globalLine = formatCount(cooldownThreshold('global'));
-const chineseLine = formatCount(cooldownThreshold('zh'));
-const percent = value => `${Math.round(value * 100)}%`;
-const times = value => `${formatCount(Math.round(value * 10) / 10)} 倍`;
 export const shortDate = date => typeof date === 'string' ? date.slice(5).replace('-', '/') : '';
 
 /** Two significant figures, in 萬 from 10,000: 57 萬, 3.6 萬, 2,200, 170, 28. */
@@ -53,10 +50,11 @@ export function trendOf(comparison, region) {
   return { text: `${delta > 0 ? '↑' : '↓'} ${long ? `比前 ${STREAM_HEAT_DAYS} 天` : ''}${word} ${amount}`, direction: delta > 0 ? 'up' : 'down' };
 }
 
-function changeClause(comparison) {
+// Against the three days before, in words: more, about the same, or fewer.
+function changeWords(comparison) {
   if (comparison?.change === null || comparison?.change === undefined) return '';
   const value = Math.round(comparison.change);
-  return Math.abs(value) < 5 ? `，跟前 ${STREAM_HEAT_DAYS} 天差不多` : `，比前 ${STREAM_HEAT_DAYS} 天${value > 0 ? '多' : '少'} ${Math.abs(value)}%`;
+  return Math.abs(value) < 5 ? '，跟前幾天差不多' : value > 0 ? '，而且比前幾天更多' : '，雖然比前幾天少一些';
 }
 
 /** Days 1-based from the launch's Taiwan date, counted on Taiwan calendar days. */
@@ -105,94 +103,77 @@ export function gameMeta(record, date) {
 const verdict = (group, label, reason, headline = label) => ({ group, label, reason, headline });
 const UNKNOWN = Object.freeze(verdict('unknown', '資料不足', '最近幾天缺資料，等下一個完整的一天再判斷。', '先等有效資料'));
 
-function cooledReason(outlook, recent) {
-  const on = outlook.confirmedOn ? `${shortDate(outlook.confirmedOn)} 確認退燒` : '已退燒';
-  if (outlook.cooledBy === 'peak' && Number.isFinite(outlook.peak))
-    return `${on}：每天約 ${people(recent)}，不到自己高峰 ${people(outlook.peak)}的 ${share}%。`;
-  return Number.isFinite(recent) ? `${on}，每天約 ${people(recent)}。` : `${on}。`;
+function cooledReason(outlook) {
+  return outlook.cooledBy === 'peak' ? '跟最熱的時候比，現在看的人少很多，已經退燒。' : '連續幾天都掉到熱門線以下，已經退燒。';
 }
 
-function popularVerdict(day, outlook, recent) {
-  const { comparison, latest } = outlook;
+function popularVerdict(day, outlook) {
+  const { comparison } = outlook;
   switch (outlook.signal) {
-    case 'cooled': return verdict('cooled', '已退燒', cooledReason(outlook, recent), '建議收尾或換題');
+    case 'cooled': return verdict('cooled', '已退燒', cooledReason(outlook), '建議收尾或換題');
     case 'suspected': {
-      const byPeak = latest?.status !== 'suspected' && latest?.peakStatus === 'suspected';
-      const days = byPeak ? latest.peakLowDays : latest?.lowDays;
-      const below = byPeak ? `不到自己高峰的 ${share}%` : `每天不到 ${globalLine} 人`;
-      return verdict('hot', '開始降溫', `最近 ${days ?? 1} 天${below}；連續 ${PEAK_COOLDOWN.confirmDays} 天就算退燒。`, '先暫緩加開場次');
+      const latest = outlook.latest, byPeak = latest?.status !== 'suspected' && latest?.peakStatus === 'suspected';
+      const below = byPeak ? '這幾天看的人比最熱的時候少很多' : '這幾天掉到熱門線以下';
+      return verdict('hot', '開始降溫', `${below}，再這樣幾天就算退燒。`, '先暫緩加開場次');
     }
-    case 'rising':
-      return verdict('hot', '回到高檔', `最近 ${STREAM_HEAT_DAYS} 天每天約 ${people(recent)}${changeClause(comparison)}，熱度回來了。`, '可以繼續播');
-    case 'recovered':
-      return verdict('hot', '熱度回升', Number.isFinite(recent) ? `退燒後熱度又回來了：最近每天約 ${people(recent)}。` : '退燒後熱度又回來了。', '可以安排回訪');
-    case 'hot': {
-      const label = day.prelaunch ? '有熱度' : '還很熱';
-      if (comparison) return verdict('hot', label, `每天還有約 ${people(recent)}在看${changeClause(comparison)}，仍高於 ${globalLine} 人的熱門線。`, '可以繼續播');
-      if (latest) return verdict('hot', label, `${shortDate(latest.date)} 約 ${people(latest.median)}在看，高於 ${globalLine} 人的熱門線。`, '可以繼續播');
-      return verdict('hot', label, `高於 ${globalLine} 人的熱門線。`, '可以繼續播');
-    }
-    case 'low': return verdict('skip', '熱度偏低', `最近一天不到 ${globalLine} 人。`, '先不用排');
+    case 'rising': return verdict('hot', '回到高檔', '最近幾天又變多，熱度回來了。', '可以繼續播');
+    case 'recovered': return verdict('hot', '熱度回升', '退燒後熱度又回來了。', '可以安排回訪');
+    case 'hot':
+      if (day.prelaunch) return verdict('hot', '有熱度', '還沒正式上市就很多人在看。', '可以繼續播');
+      return verdict('hot', '還很熱', `還是很多人在看${changeWords(comparison) || '，在熱門線以上'}。`, '可以繼續播');
+    case 'low': return verdict('skip', '熱度偏低', '最近一天掉到熱門線以下。', '先不用排');
     default: return UNKNOWN;
   }
 }
 
-function launchWhere(latest) {
-  return Number.isInteger(latest?.index) ? `上市第 ${latest.index + 1} 天` : `最近一天（${shortDate(latest?.date)}）`;
-}
-
 // The launch day, from the hours so far (EARLY_RULES); the first 24 hours
-// decide once they are over.
+// decide once they are over. The hours' numbers are in the tiles.
 function earlyVerdict(early) {
-  const hours = early?.hours ?? 0, first = formatCount(LAUNCH_RULES.firstDay);
-  if (!hours) return verdict('trial', '等首日數據', `上市未滿 24 小時，還沒有每小時紀錄；有紀錄滿 ${EARLY_RULES.minHours} 小時就先判斷首日。`);
-  const channels = formatCount(Math.round(early.channels)), seen = `上市後 ${hours} 個小時的紀錄：`;
-  if (hours < EARLY_RULES.minHours)
-    return verdict('trial', '等首日數據', `${seen}每小時約 ${people(early.viewers)}、${channels} 台在播；有紀錄滿 ${EARLY_RULES.minHours} 小時再判斷首日。`);
-  const level = `${seen}每小時中位數約 ${people(early.viewers)}`, both = `${level}、${channels} 台在播`;
+  if (!early?.hours) return verdict('trial', '等首日數據', '剛上市，還沒有每小時的紀錄。');
+  if (early.hours < EARLY_RULES.minHours) return verdict('trial', '等首日數據', '剛上市，紀錄還不夠，再等一兩個小時。');
   switch (early.call) {
-    case 'hot': return verdict('hot', '首日熱門', `${both}；過去這樣的新作，首日都過 ${formatCount(LAUNCH_RULES.popular)} 人。`, '值得開');
-    case 'pass': return verdict('trial', '首日大概過關', `${both}，首日大概會過 ${first} 人；要不要長播，第 3 天再確認。`, '可以先試播一場');
-    case 'fail': return verdict('skip', '先不用排', `${level}，首日大概不到 ${first} 人。`);
+    case 'hot': return verdict('hot', '首日熱門', '剛上市就很熱，而且很多台一起在播，不是靠一兩台撐的。', '值得開');
+    case 'pass': return verdict('trial', '首日大概過關', '剛上市就有一定人氣，也有不少台在播，第 3 天再決定要不要長播。', '可以先試播一場');
+    case 'fail': return verdict('skip', '先不用排', '上市好幾個小時都沒什麼人看，首日大概過不了關。');
     default:
       // A big total on a few channels is one or two big streamers, not heat yet.
       if (early.viewers >= EARLY_RULES.pass.viewers && early.channels < EARLY_RULES.pass.channels)
-        return verdict('trial', '等首日數據', `${level}，但只有 ${channels} 台在播：觀眾集中在少數幾台，還不能算熱度。`);
-      return verdict('trial', '等首日數據', `${both}，還看不出首日能不能過 ${first} 人。`);
+        return verdict('trial', '等首日數據', '人數大多是一兩台大實況主帶起來的，其他台很少，還不能算熱度。');
+      return verdict('trial', '等首日數據', '剛上市，人氣不上不下，還看不出首日會不會過關。');
   }
 }
 
-function smallVerdict(outlook, launch, recent) {
+function smallVerdict(outlook, launch) {
   const horse = launch?.darkHorse;
   if (horse) {
-    const reason = horse.kind === 'burning' ? `上市第 ${horse.day + 1} 天還是首日的 ${times(horse.ratio)}。`
-      : `第 3 天是首日的 ${times(horse.ratio)}，一般遊戲這時只剩約 ${percent(LAUNCH_RULES.typicalThirdDay)}。`;
+    const reason = horse.kind === 'burning' ? '上市一週後看的人還比首日多，越燒越旺。'
+      : '第 3 天看的人沒有比首日少，一般新作這時已經掉很多。';
     return verdict('horse', horse.kind === 'burning' ? '延燒中' : '黑馬候選', reason, '可以趁早試播');
   }
-  const { stage, basis, first, third, latest, trend } = launch ?? {};
+  const { stage, basis, trend } = launch ?? {};
   const cooled = outlook.signal === 'cooled';
   switch (stage) {
     case 'trial': {
-      let reason = basis === 'taiwan_day' ? `最近一天（${shortDate(latest.date)}）約 ${people(latest.median)}在看。`
-        : basis === 'no_first_day' ? `首日沒有完整資料；${launchWhere(latest)}約 ${people(latest.median)}。`
-          : `${launchWhere(latest)}約 ${people(latest.median)}${trend === 'holding' ? `，第 3 天還有首日的 ${percent(third / first)}，觀眾還在`
-            : trend === 'fading' ? `，第 3 天只剩首日的 ${percent(third / first)}，觀眾在退` : ''}。`;
-      if (cooled && outlook.cooledBy === 'peak' && Number.isFinite(outlook.peak)) reason += `已不到自己高峰 ${people(outlook.peak)}的 ${share}%。`;
+      let reason = basis === 'taiwan_day' ? '最近一天還有不少人在看。'
+        : basis === 'no_first_day' ? '首日沒有完整紀錄，但最近一天還有不少人在看。'
+          : trend === 'holding' ? '首日過關，到第 3 天觀眾還留著。'
+            : trend === 'fading' ? '首日過關，但到第 3 天觀眾在退，要播趁早。' : '首日過關，最近一天也還有不少人看。';
+      if (cooled && outlook.cooledBy === 'peak') reason += '不過已經比最熱的時候少很多。';
       return trend === 'fading' ? verdict('trial', '值得試播，趁早', reason, '值得試播一場，要播趁早')
         : verdict('trial', '值得試播', reason, '值得試播一場');
     }
     case 'skip':
-      if (cooled) return verdict('cooled', '已退燒', cooledReason(outlook, recent), '建議收尾或換題');
-      if (basis === 'first_day') return verdict('skip', '先不用排', `首日約 ${people(first)}，不到 ${formatCount(LAUNCH_RULES.firstDay)} 人。`);
-      return verdict('skip', '先不用排', `${launchWhere(latest)}約 ${people(latest.median)}，不到 ${formatCount(LAUNCH_RULES.trialDay)} 人。`);
+      if (cooled) return verdict('cooled', '已退燒', cooledReason(outlook), '建議收尾或換題');
+      if (basis === 'first_day') return verdict('skip', '先不用排', '首日看的人不多，沒過第一關。');
+      return verdict('skip', '先不用排', '最近一天看的人不多。');
     case 'wait':
-      return verdict('trial', '第 3 天後再確認', `首日約 ${people(first)}，過了第一關；第 3 天還有 ${formatCount(LAUNCH_RULES.trialDay)} 人以上就值得試播。`);
+      return verdict('trial', '第 3 天後再確認', '首日過了第一關，第 3 天還有人看就值得試播。');
     case 'first':
       return earlyVerdict(launch.early);
     case 'prelaunch':
-      return verdict('skip', '還沒上市', `還沒上市；上市後先看首日有沒有 ${formatCount(LAUNCH_RULES.firstDay)} 人。`, '等上市後再看');
+      return verdict('skip', '還沒上市', '還沒上市，上市後先看首日人氣。', '等上市後再看');
     default:
-      return cooled ? verdict('cooled', '已退燒', cooledReason(outlook, recent), '建議收尾或換題') : UNKNOWN;
+      return cooled ? verdict('cooled', '已退燒', cooledReason(outlook), '建議收尾或換題') : UNKNOWN;
   }
 }
 
@@ -203,49 +184,32 @@ const started = day => day.days?.some(item => item.complete);
 export function globalVerdict(day, launch) {
   if (!day?.outlook) return UNKNOWN;
   if (!started(day) && !day.popularAt && !launch?.stage?.match?.(/^(first|prelaunch)$/)) return STARTING;
-  const outlook = day.outlook, recent = outlook.comparison?.recent ?? outlook.latest?.median ?? null;
-  if (day.popularAt) return popularVerdict(day, outlook, recent);
-  return smallVerdict(outlook, launch, recent);
+  if (day.popularAt) return popularVerdict(day, day.outlook);
+  return smallVerdict(day.outlook, launch);
 }
 
-function weekText(week, hot) {
-  if (!week || week.unknown === week.total) return null;
-  return hot === week.total ? `最近 ${week.total} 天每天都` : hot ? `最近 ${week.total} 天有 ${hot} 天` : `最近 ${week.total} 天沒有一天`;
-}
 
 /** Chinese-region verdict: four hours at 100 viewers in a day is heat. */
 export function chineseVerdict(day) {
   if (!day?.outlook) return UNKNOWN;
   if (!started(day) && day.signal !== 'hot') return STARTING;
-  const outlook = day.outlook, week = day.week, hours = CHINESE_DAILY_HEAT_HITS;
-  const line = `${hours} 個小時過 ${chineseLine} 人`;
+  const outlook = day.outlook, week = day.week;
   switch (outlook.signal) {
     case 'hot': {
-      const span = weekText(week, week?.hot);
-      const reason = day.signal === 'hot' && !week?.hot ? `今天已經有 ${day.hits} 個小時過 ${chineseLine} 人。`
-        : span ? `${span}有 ${line}。` : `最近一天有 ${line}。`;
+      // Heat is a day with four busy hours (100 viewers or more).
+      const known = week && week.unknown !== week.total;
+      const reason = day.signal === 'hot' && !week?.hot ? '中文台今天已經熱起來了。'
+        : known && week.hot === week.total ? '最近每天中文台都有熱度。' : known && week.hot * 2 > week.total ? '最近大部分的日子中文台都有熱度。'
+          : known && week.hot ? '最近有幾天中文台有熱度。' : '最近一天中文台有熱度。';
       return verdict('hot', '有熱度', reason, '中文台可以繼續播');
     }
-    case 'rising': {
-      const trend = trendOf(outlook.comparison, 'zh');
-      return verdict('hot', '回到高檔', `最近 ${STREAM_HEAT_DAYS} 天比前 ${STREAM_HEAT_DAYS} 天${trend.text.replace(/^[↑↓] /, '')}，中文區熱度回來了。`, '中文台可以繼續播');
-    }
-    case 'recovered': return verdict('hot', '熱度回升', `退燒後又有 ${line}。`, '中文台可以安排回訪');
-    case 'suspected':
-      return verdict('hot', '開始降溫', `最近 ${outlook.latest?.lowDays ?? 1} 天不到 ${line}；連續 3 天就算退燒。`, '中文台先暫緩加開');
-    case 'cooled': {
-      const hits = outlook.latest?.thresholdHits ?? 0;
-      const on = outlook.confirmedOn ? `${shortDate(outlook.confirmedOn)} 確認退燒` : '已退燒';
-      return verdict('cooled', '已退燒', `${on}；最近一天${hits ? `只有 ${hits} 個小時` : '沒有一個小時'}過 ${chineseLine} 人。`, '中文台建議收尾或換題');
-    }
-    case 'sporadic': {
-      const span = weekText(week, week?.hot);
-      return verdict('skip', '零星有熱度', `${span ? `${span.replace('有 ', '只有 ')}達標` : '最近一天沒達標'}，只偶爾有幾個小時過 ${chineseLine} 人。`, '中文台先不用排');
-    }
-    case 'low': {
-      const span = weekText(week, week?.hot);
-      return verdict('skip', '熱度偏低', `${span ? `${span.replace('有 ', '只有 ')}有` : '最近一天沒有'} ${line}。`, '中文台先不用排');
-    }
+    case 'rising': return verdict('hot', '回到高檔', '中文區最近幾天又變熱，熱度回來了。', '中文台可以繼續播');
+    case 'recovered': return verdict('hot', '熱度回升', '中文區退燒後又熱起來了。', '中文台可以安排回訪');
+    case 'suspected': return verdict('hot', '開始降溫', '中文區這幾天變冷，再這樣幾天就算退燒。', '中文台先暫緩加開');
+    case 'cooled':
+      return verdict('cooled', '已退燒', outlook.latest?.thresholdHits ? '中文區已經退燒，最近只剩零星時段有人看。' : '中文區已經退燒，最近都沒什麼人看。', '中文台建議收尾或換題');
+    case 'sporadic': return verdict('skip', '零星有熱度', '中文台只偶爾有幾個小時比較多人看，還不算有熱度。', '中文台先不用排');
+    case 'low': return verdict('skip', '熱度偏低', '中文台最近看的人不多。', '中文台先不用排');
     default: return UNKNOWN;
   }
 }
@@ -286,13 +250,32 @@ export function lastDays(day, region, count = 7) {
 }
 
 /** The number, trend and sparkline of one region's tile. */
-export function regionTile(day, region) {
+export function regionTile(day, region, hours = null) {
   const comparison = day?.outlook?.comparison ?? null;
   const latest = day?.outlook?.latest;
   const value = comparison?.recent ?? dailyValue(latest, region);
+  // Before the first whole day (the launch day, a game just picked up), the hours so far.
+  if (!Number.isFinite(value) && hours) return { per: '每小時', value: compactCount(hours.viewers), raw: hours.viewers,
+    trend: `${formatCount(Math.round(hours.channels))} 台在播`, direction: null, change: null, spark: null };
   const trend = trendOf(comparison, region);
-  return { value: compactCount(value), raw: Number.isFinite(value) ? value : null, trend: trend.text, direction: trend.direction,
+  return { per: '每天', value: compactCount(value), raw: Number.isFinite(value) ? value : null, trend: trend.text, direction: trend.direction,
     change: comparison?.change ?? null, spark: region === 'global' ? sparkPoints(lastDays(day, region)) : null };
+}
+
+/**
+ * The hours with data from `from` (at most 24 hours back) to `now`: their
+ * median viewers and channels, for the tiles before the first whole day.
+ * Null without such hours.
+ */
+export function recentHours(rows, now, from = now - DAY) {
+  const viewers = [], channels = [], start = Math.max(from, now - DAY);
+  for (const row of rows ?? []) {
+    const at = Date.parse(row?.hour), value = row?.status === 'observed' ? count(row.viewer_count) : null;
+    if (value === null || !(at >= start && at <= now) || !(Date.parse(row.generated_at) <= now)) continue;
+    viewers.push(value);
+    channels.push(count(row.streamer_count) ?? 0);
+  }
+  return viewers.length ? { hours: viewers.length, viewers: quantile(viewers, .5), channels: quantile(channels, .5) } : null;
 }
 
 /** The forecast in one line, naming the largest threshold it reaches. */

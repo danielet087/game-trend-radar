@@ -129,9 +129,9 @@ test(`plans from the list to the game page with a past date, a stream slot and o
   await expect(card).toHaveAttribute('data-split', 'true');
   const globalRow = card.locator('.tw-plan-region[data-region="global"]'), chineseRow = card.locator('.tw-plan-region[data-region="zh"]');
   await expect(globalRow.locator('.tw-verdict-chip')).toHaveText('已退燒');
-  await expect(globalRow.locator('.tw-plan-why')).toHaveText('11/11 確認退燒，每天約 1,400 人。');
+  await expect(globalRow.locator('.tw-plan-why')).toHaveText('連續幾天都掉到熱門線以下，已經退燒。');
   await expect(chineseRow.locator('.tw-verdict-chip')).toHaveText('值得開');
-  await expect(chineseRow.locator('.tw-plan-why')).toHaveText('最近 6 天有 5 天有 4 個小時過 100 人。');
+  await expect(chineseRow.locator('.tw-plan-why')).toHaveText('最近大部分的日子中文台都有熱度。');
   const globalTile = card.locator('.tw-plan-tile[data-region="global"]'), chineseTile = card.locator('.tw-plan-tile[data-region="zh"]');
   await expect(globalTile.locator('strong')).toHaveText('1,400');
   await expect(globalTile.locator('.tw-plan-trend')).toHaveText('↓ 比前 3 天少 63%');
@@ -167,7 +167,7 @@ test(`plans from the list to the game page with a past date, a stream slot and o
   await expect(page.locator('#streamPlanStatus')).toContainText('23:18');
   await expect(page.locator('.tw-plan-card[data-game="99"]')).toHaveCount(1);
   await expect(page.locator('.tw-plan-card[data-game="25"]')).toHaveCount(0);
-  await expect(globalRow.locator('.tw-plan-why')).toHaveText('11/11 確認退燒，每天約 1,400 人。');
+  await expect(globalRow.locator('.tw-plan-why')).toHaveText('連續幾天都掉到熱門線以下，已經退燒。');
   await expect(chineseRow.locator('.tw-verdict-chip')).toHaveText('值得開');
   await date.fill('2026-11-04');
   await expect(page.locator('#streamPlanStatus')).toContainText('沒有已發布的觀測快照');

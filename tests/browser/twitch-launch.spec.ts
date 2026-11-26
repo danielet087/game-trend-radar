@@ -64,7 +64,7 @@ test('the planning list marks a small game worth a trial and a popular dark hors
   await expect(small).toHaveAttribute('data-split', 'true');
   const global = small.locator('.tw-plan-region[data-region="global"]');
   await expect(global.locator('.tw-verdict-chip')).toHaveText('值得試播');
-  await expect(global.locator('.tw-plan-why')).toHaveText('上市第 3 天約 250 人，第 3 天還有首日的 63%，觀眾還在。');
+  await expect(global.locator('.tw-plan-why')).toHaveText('首日過關，到第 3 天觀眾還留著。');
   await expect(small.locator('.tw-plan-region[data-region="zh"] .tw-verdict-chip')).toHaveText('先不用排');
   // A dark horse past 3,000 a day is worth streaming; the label rides along.
   const horse = page.locator('.tw-plan-card[data-game="2"]');
@@ -85,7 +85,7 @@ test('the game page explains the trial advice and the dark-horse label', async (
   const global = page.locator('#verdictPanel .tw-verdict-region[data-region="global"]');
   await expect(global.locator('.tw-verdict-chip')).toHaveText('值得試播');
   await expect(global.locator('strong')).toHaveText('值得試播一場');
-  await expect(global.locator('p')).toHaveText('上市第 3 天約 250 人，第 3 天還有首日的 63%，觀眾還在。');
+  await expect(global.locator('p')).toHaveText('首日過關，到第 3 天觀眾還留著。');
   await expect(page.locator('#verdictPanel .tw-verdict-region[data-region="zh"] strong')).toHaveText('中文台先不用排');
   await page.locator('#verdictPanel .tw-info').click();
   await page.locator('#verdictInfo .tw-info-more summary').click();

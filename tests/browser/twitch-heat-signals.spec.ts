@@ -76,7 +76,9 @@ test('the planning list groups an own-peak cooldown, a game holding up and a ris
   await expect(cooled).toHaveAttribute('data-group', 'cooled');
   const global = cooled.locator('.tw-plan-region[data-region="global"]');
   await expect(global.locator('.tw-verdict-chip')).toHaveText('已退燒');
-  await expect(global.locator('.tw-plan-why')).toHaveText(/^11\/07 確認退燒：每天約 \d+ 人，不到自己高峰 2,000 人的 25%。$/);
+  await expect(global.locator('.tw-plan-why')).toHaveText('跟最熱的時候比，現在看的人少很多，已經退燒。');
+  // Reasons are plain words; the numbers are in the tiles.
+  for (const text of await page.locator('.tw-plan-why, .tw-plan-reason').allTextContents()) expect(text).not.toMatch(/\d[\d,.]*\s*(萬|人|%|倍)/);
   await expect(cooled.locator('.tw-plan-extra p')).toHaveText(['掉得比同齡快：上市第 10 天剩首日的 4%，同齡遊戲一般還有 12%。']);
   const lasting = page.locator('.tw-plan-card[data-game="4"]');
   await expect(lasting).toHaveAttribute('data-group', 'hot');
@@ -115,7 +117,9 @@ test('the game page shows the own-peak cooldown and the same-age comparison', as
   const global = page.locator('#verdictPanel .tw-verdict-region[data-region="global"]');
   await expect(global.locator('.tw-verdict-chip')).toHaveText('已退燒');
   await expect(global.locator('strong')).toHaveText('建議收尾或換題');
-  await expect(global.locator('p')).toContainText('不到自己高峰 2,000 人的 25%');
+  await expect(global.locator('p')).toHaveText('跟最熱的時候比，現在看的人少很多，已經退燒。');
+  // How far below the peak is in the first tile.
+  await expect(page.locator('#verdictPanel .tw-verdict-tile').first().locator('dd span')).toHaveText(/^高峰的 \d+%$/);
   await expect(page.locator('#verdictPanel .tw-split-chip')).toHaveText('兩區建議不同');
   await expect(page.locator('#nextPanel .tw-next-peer')).toHaveText('掉得比同齡快：上市第 10 天只剩首日的 4%，同齡遊戲一般還有 12%。');
   await expect(page.locator('#dailyPanel .tw-daily-cooled-label')).toHaveText('11/07 確認退燒');
