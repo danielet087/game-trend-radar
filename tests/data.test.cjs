@@ -27,6 +27,32 @@ test("calendar dates must be real, exact days", () => {
   assert.equal(D.validDate("2028-02-29"), true);
   assert.equal(D.normalize(game({ release_precision: "month" })), null);
 });
+test("a game Steam moved to a later window keeps a page of its own but no day", () => {
+  // Never Be Alone, 11-26: listed on 12-08, Steam's time on 2027-03-31 (2027 Q1).
+  const moved = game({ appid: 2988120, followers: 11165, release_start: "2026-12-08", release_end: "2026-12-08",
+    release_time_utc: "2027-03-31T07:00:00Z", release_timestamp_taipei_date: "2027-03-31" });
+  assert.equal(D.normalize(moved), null);
+  const delayed = D.normalizeDelayed(moved, "2026-11-27");
+  assert.deepEqual(delayed.delayed, { from: "2026-12-08", to: "2027-03-31", precision: null });
+  assert.equal(delayed.date, null);
+  assert.deepEqual([delayed.releases, delayed.dateReleases], [[], []]);
+  assert.equal(delayed.name, "Test game");
+  // A listed day, one Taiwan-day move, a past new time or too few Followers is not a delay page.
+  assert.equal(D.normalizeDelayed(game({ release_start: "2026-12-08", release_time_utc: "2026-12-07T16:00:00Z" }), "2026-11-27"), null);
+  assert.equal(D.normalizeDelayed({ ...moved, release_time_utc: "2026-12-08T17:00:00Z", release_timestamp_taipei_date: "2026-12-09" }, "2026-11-27"), null);
+  assert.equal(D.normalizeDelayed(moved, "2027-04-01"), null);
+  assert.equal(D.normalizeDelayed({ ...moved, followers: 4999 }, "2026-11-27"), null);
+  assert.equal(D.normalizeDelayed({ ...moved, release_precision: "month" }, "2026-11-27"), null);
+});
+test("a later window reads at Steam's precision", () => {
+  assert.equal(D.releaseWindowText("2027-03-31", "quarter"), "2027 年第一季");
+  assert.equal(D.releaseWindowText("2027-12-31", "quarter"), "2027 年第四季");
+  assert.equal(D.releaseWindowText("2027-05-31", "month"), "2027 年 5 月");
+  assert.equal(D.releaseWindowText("2027-12-31", "year"), "2027 年");
+  assert.equal(D.releaseWindowText("2027-02-14", "day"), "2027/02/14");
+  assert.equal(D.releaseWindowText("2027-02-14", null), "日期未定");
+  assert.equal(D.releaseWindowText("2027-02-30", "day"), "日期未定");
+});
 test("upcoming keeps the inclusive 5,000 follower threshold and rejects missing data", () => {
   assert.ok(D.normalize(game({ followers: 5000 })));
   for (const followers of [4999, null, undefined, Infinity, "bad"])

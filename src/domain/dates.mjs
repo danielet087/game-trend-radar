@@ -20,6 +20,19 @@ export function todayInTaipei(now = new Date()) {
     .join("-");
 }
 
+const QUARTERS = ["一", "二", "三", "四"];
+/** Steam's later date at the precision it gave it: "2027/03/31", "2027 年 3 月",
+ *  "2027 年第一季", "2027 年"; a precision not known is "日期未定". A month,
+ *  quarter or year is given by its last day. */
+export function releaseWindowText(date, precision) {
+  if (!validDate(date)) return "日期未定";
+  const [year, month] = date.split("-").map(Number);
+  return precision === "day" ? date.replaceAll("-", "/")
+    : precision === "month" ? `${year} 年 ${month} 月`
+    : precision === "quarter" ? `${year} 年第${QUARTERS[Math.ceil(month / 3) - 1]}季`
+    : precision === "year" ? `${year} 年` : "日期未定";
+}
+
 export const offsetDate = (date, days) =>
   new Date(Date.parse(date + "T12:00:00Z") + days * DAY)
     .toISOString()

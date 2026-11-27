@@ -74,6 +74,15 @@ export function createDetailVersions(ctx, policy) {
     return access.editions.length ? [line, node('p', 'game-version-meta', `適用：${access.editions.join('、')}`)] : [line];
   }
 
+  // Steam moved the day: the new window, and the day it replaced.
+  function delayedCell(delay) {
+    const cell = node('td', 'game-version-dates');
+    cell.dataset.label = '發售日（台灣）';
+    cell.append(node('p', 'game-version-date is-unknown', `${D.releaseWindowText(delay.to, delay.precision)}（延期）`),
+      node('p', 'game-version-meta', `原定 ${delay.from.replaceAll('-', '/')}`));
+    return cell;
+  }
+
   function dateCell(rows, heroDate, listed, early = []) {
     const cell = node('td', 'game-version-dates');
     cell.dataset.label = '發售日（台灣）';
@@ -327,7 +336,8 @@ export function createDetailVersions(ctx, policy) {
       if (target) targets.push(target);
       const listed = (game.releases || []).some(row => row?.platform === code);
       const early = code === 'Steam' ? earlyLines(game, store?.advanceAccess) : [];
-      line.append(platformCell(game, code, badges.get(code)), dateCell(dates, heroDate, listed, early),
+      line.append(platformCell(game, code, badges.get(code)),
+        code === 'Steam' && game.delayed ? delayedCell(game.delayed) : dateCell(dates, heroDate, listed, early),
         languageCell(game, code), modeCell(game, code), cell);
       return line;
     }));

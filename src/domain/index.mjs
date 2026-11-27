@@ -1,4 +1,4 @@
-import { validDate, todayInTaipei, offsetDate } from './dates.mjs';
+import { validDate, todayInTaipei, offsetDate, releaseWindowText } from './dates.mjs';
 import { savedID, saveID, isSaved, gameKey, nintendoSteamIdentity } from './identity.mjs';
 import { nativePlatformIDs, nativePlatformOrder } from './constants.mjs';
 import { cardPlatformBadge, cardPlatformChips, platformFamily, platformFullNames } from './platforms.mjs';
@@ -11,15 +11,15 @@ import { detailURL, popularityCompare, calendarFeatured, unique, cardGames, sele
 import { consoleInterest, consoleInterestCompare, popscoreTop } from './interest.mjs';
 import { releaseEvidence, dayEvidence, releaseClock, releaseState, platformFirstReleases, platformsOnDate,
   otherPlatformReleases, releaseStatusGroups, releaseStateText, unlistedReleaseNote, shortReleaseDay, otherPlatformPhrases } from './release-display.mjs';
-import { imageURL, exactReleaseDate, hasTwitchAdmission, hasTaiwanStoreDateAuthority, isTwitchQualified, normalize } from '../data/steam.mjs';
+import { imageURL, exactReleaseDate, hasTwitchAdmission, hasTaiwanStoreDateAuthority, isTwitchQualified, normalize, normalizeDelayed } from '../data/steam.mjs';
 import { nintendoGames } from '../data/native.mjs';
 import { datasets } from '../data/datasets.mjs';
 
 // Migration facade: legacy pages can keep their established API while modules
 // and new views import individual domain rules without global dependencies.
 export const RadarData = {
-  validDate, todayInTaipei, offsetDate, imageURL, exactReleaseDate,
-  hasTwitchAdmission, hasTaiwanStoreDateAuthority, isTwitchQualified, normalize,
+  validDate, todayInTaipei, offsetDate, releaseWindowText, imageURL, exactReleaseDate,
+  hasTwitchAdmission, hasTaiwanStoreDateAuthority, isTwitchQualified, normalize, normalizeDelayed,
   savedID, saveID, isSaved, gameKey, nativePlatformIDs, nativePlatformOrder,
   cardPlatformBadge, cardPlatformChips, platformFamily, platformFullNames,
   cardMultiplayerBadge, nintendoSteamIdentity, nintendoURL,
@@ -36,8 +36,8 @@ export const RadarData = {
 };
 
 export {
-  validDate, todayInTaipei, offsetDate, imageURL, exactReleaseDate,
-  hasTwitchAdmission, hasTaiwanStoreDateAuthority, isTwitchQualified, normalize,
+  validDate, todayInTaipei, offsetDate, releaseWindowText, imageURL, exactReleaseDate,
+  hasTwitchAdmission, hasTaiwanStoreDateAuthority, isTwitchQualified, normalize, normalizeDelayed,
   savedID, saveID, isSaved, gameKey, nativePlatformIDs, nativePlatformOrder,
   cardPlatformBadge, cardPlatformChips, platformFamily, platformFullNames,
   cardMultiplayerBadge, nintendoSteamIdentity, nintendoURL,

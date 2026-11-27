@@ -8,7 +8,7 @@ const STATE_CLASS = { released: "released", today: "today", upcoming: "upcoming"
 export function createDetailMetadata(ctx) {
   const { $, node, D, today } = ctx;
   function renderHeroChips(game, days) {
-    const state = days === null ? ["日期未定", "unknown"] : days > 0 ? ["即將上市", "upcoming"]
+    const state = game.delayed ? ["延期", "unknown"] : days === null ? ["日期未定", "unknown"] : days > 0 ? ["即將上市", "upcoming"]
       : days === 0 ? ["今天發售", "today"] : ["已發售", "released"];
     // Platforms on different days each say where they stand: "Steam 已發售"、"NS2 即將上市".
     const groups = D.releaseStatusGroups?.(game, today) || [];

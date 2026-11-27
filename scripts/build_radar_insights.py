@@ -84,30 +84,59 @@ def taiwan_day_move(previous, row):
             and instant.astimezone(TAIPEI).date().isoformat() == row.get("release_start"))
 
 
-def accepted(rows):
-    result = {}
-    for row in rows:
-        aid, count = row.get("appid"), row.get("followers")
-        if (not isinstance(aid, int) or isinstance(aid, bool) or aid <= 0
-                or not day(row.get("release_start"))
-                or row.get("release_precision", "day") != "day"):
-            continue
-        # An explicit imported Twitch source is independent of Steam Followers.
-        # Verify the complete admission and Steam row before taking that branch.
-        instant = stamp(row.get("release_time_utc"))
-        release = row.get("release_start")
-        twitch_qualified = is_twitch_qualified(row)
-        if (not twitch_qualified and (row.get("release_date_conflict") is True
+def consistent_day(row):
+    """The listed day is the one every other date field of the row gives."""
+    instant = stamp(row.get("release_time_utc"))
+    release = row.get("release_start")
+    return not (row.get("release_date_conflict") is True
                 or (row.get("release_end") and row["release_end"] != release)
                 or (row.get("release_timestamp_taipei_date") and row["release_timestamp_taipei_date"] != release)
                 or (row.get("release_time_utc") is not None
-                    and (not instant or instant.astimezone(TAIPEI).date().isoformat() != release)))):
-            continue
-        if (not twitch_qualified and (type(count) is not int or count < 0 or (count < 5000
-                and not (count > 3000 and row.get("recent_source") in {"direct_release", "tracked_release"})))):
-            continue
-        result[str(aid)] = row
-    return result
+                    and (not instant or instant.astimezone(TAIPEI).date().isoformat() != release)))
+
+
+def admitted(row):
+    """Everything but the day's consistency: a valid listed day and the Followers rule."""
+    aid, count = row.get("appid"), row.get("followers")
+    if (not isinstance(aid, int) or isinstance(aid, bool) or aid <= 0
+            or not day(row.get("release_start"))
+            or row.get("release_precision", "day") != "day"):
+        return False
+    # An explicit imported Twitch source is independent of Steam Followers.
+    # Verify the complete admission and Steam row before taking that branch.
+    return is_twitch_qualified(row) or not (type(count) is not int or count < 0 or (count < 5000
+        and not (count > 3000 and row.get("recent_source") in {"direct_release", "tracked_release"})))
+
+
+def accepted(rows):
+    return {str(row["appid"]): row for row in rows
+            if admitted(row) and (is_twitch_qualified(row) or consistent_day(row))}
+
+
+# Steam's own display of a release date, by the precision it stands for.
+STEAM_RELEASE_DISPLAYS = {"date_full": "day", "date_month": "month", "date_quarter": "quarter", "date_year": "year"}
+
+
+def delayed_release(row, previous, store_facts=None):
+    """Steam's later day for a game it moved off the listed day, or None.
+
+    Steam's time on a day more than one day later is a delay; one day is a
+    Taiwan-day move (time zones). A month, quarter or year ends on its last
+    day, so the store facts (data/store_facts.json) say which it is.
+    """
+    instant = stamp(row.get("release_time_utc"))
+    later = (instant.astimezone(TAIPEI).date().isoformat() if instant
+             else row.get("release_timestamp_taipei_date"))
+    if not day(later) or not day(previous) or (day(later) - day(previous)).days <= 1:
+        return None
+    games = store_facts.get("games") if isinstance(store_facts, dict) else None
+    facts = games.get(str(row.get("appid"))) if isinstance(games, dict) else None
+    release = facts.get("release") if isinstance(facts, dict) else None
+    precision = STEAM_RELEASE_DISPLAYS.get(release.get("display")) if isinstance(release, dict) else None
+    shown = stamp(release.get("at")) if precision else None
+    if not shown or shown.astimezone(TAIPEI).date().isoformat() != later:
+        precision = None  # Steam's display of another time, or none: the precision is unknown.
+    return {"date": later, "precision": precision}
 
 
 def merge_measurement(record, observation, now):
@@ -613,13 +642,16 @@ def annotate_activity_origins(state, current, origin_ledger=None, nintendo_catal
         elif event.get("type") == "release_date":
             event["update_reason"] = "steam_metadata_refresh"
             event["update_context"] = {"basis": "steam_catalog_date_change"}
+        elif event.get("type") == "delayed":
+            event["update_reason"] = "steam_metadata_refresh"
+            event["update_context"] = {"basis": "steam_release_time"}
         else:
             event["update_reason"] = "legacy_unrecorded"
             event["update_context"] = {"basis": "missing_publication_receipt"}
 
 
 def update(previous, catalog, *, observed_at, measurements=None, nintendo_catalog=None, nintendo_receipt=None,
-           origin_ledger=None):
+           origin_ledger=None, store_facts=None):
     now = stamp(observed_at)
     if not now:
         raise ValueError("Timezone-aware observation time required")
@@ -648,11 +680,34 @@ def update(previous, catalog, *, observed_at, measurements=None, nintendo_catalo
         elif prior["release_date"] != row["release_start"] and not taiwan_day_move(prior["release_date"], row):
             event = {"type": "release_date", "previous_date": prior["release_date"]}
         prior.update(name=name, release_date=row["release_start"], active=True)
+        prior.pop("delayed", None)
         if event:
             event.update(appid=int(aid), name=name, date=row["release_start"], at=observed_at)
             event["id"] = hashlib.sha256(json.dumps(event, sort_keys=True).encode()).hexdigest()[:20]
             state["events"].append(event)
         merge_measurement(prior, row, now)
+    # A listed game Steam moved to a later day or window leaves the calendar and
+    # the growth list, but its page stays and the move is news. Once per move;
+    # it returns as an ordinary date change when a later day is listed.
+    today = now.astimezone(TAIPEI).date()
+    for row in rows:
+        aid = str(row.get("appid"))
+        prior = state["records"].get(aid)
+        if aid in current or not prior or not admitted(row) or not day(prior.get("release_date")):
+            continue
+        delay = (delayed_release(row, prior["release_date"], store_facts)
+                 if day(prior["release_date"]) >= today else None)
+        if delay is None:
+            prior.pop("delayed", None)
+            continue
+        if prior.get("delayed") == delay:
+            continue
+        prior["delayed"] = delay
+        event = {"type": "delayed", "appid": int(aid), "name": prior.get("name") or f"App {aid}",
+                 "previous_date": prior["release_date"], "date": delay["date"], "precision": delay["precision"],
+                 "at": observed_at}
+        event["id"] = hashlib.sha256(json.dumps(event, sort_keys=True).encode()).hexdigest()[:20]
+        state["events"].append(event)
     for observation in measurements or []:
         aid = str(observation.get("appid"))
         if aid in current and observation.get("source") == "steam_community":
@@ -677,7 +732,8 @@ def projections(state, today):
         instant = stamp(event.get("at"))
         record = (nintendo.get(event.get("game_id"), {}) if event.get("source") == "nintendo"
                   else records.get(str(event.get("appid")), {}))
-        if (record.get("active") and instant
+        shown = record.get("active") or (event.get("type") == "delayed" and record.get("delayed"))
+        if (shown and instant
                 and 0 <= (today - instant.astimezone(TAIPEI).date()).days <= 14):
             events.append({**event, "name": record["name"]})
     events.sort(key=lambda event: stamp(event["at"]))
@@ -919,7 +975,8 @@ def main():
                    observed_at=observed, measurements=observations,
                    nintendo_catalog=load(args.data_dir / "nintendo_upcoming.json"),
                    nintendo_receipt=load(args.data_dir / "nintendo_refresh_status.json"),
-                   origin_ledger=load(args.data_dir / "publication/activity_origins.json"))
+                   origin_ledger=load(args.data_dir / "publication/activity_origins.json"),
+                   store_facts=load(args.data_dir / "store_facts.json"))
     if args.measurements:
         state["collection"] = growth_collection(run, state, now, publication_now=datetime.now(timezone.utc))
     activity, growth = projections(state, now.astimezone(TAIPEI).date())

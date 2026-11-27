@@ -107,6 +107,22 @@ test('date changes retain their valid earlier release date for both source forma
   }
 });
 
+test('a delay keeps the day it replaced and says the new window at Steam\'s precision', () => {
+  const delayed = steam({ type: 'delayed', previous_date: '2026-12-08', date: '2027-03-31', precision: 'quarter' });
+  assert.deepEqual([I.activityEvent(delayed).previous_date, I.activityEvent(delayed).precision], ['2026-12-08', 'quarter']);
+  assert.equal(I.activityChange(delayed), '2026/12/08 → 2027 年第一季');
+  assert.equal(I.activityChange({ ...delayed, precision: 'day' }), '2026/12/08 → 2027/03/31');
+  assert.equal(I.activityChange({ ...delayed, precision: 'month' }), '2026/12/08 → 2027 年 3 月');
+  assert.equal(I.activityChange({ ...delayed, precision: 'year', date: '2027-12-31' }), '2026/12/08 → 2027 年');
+  assert.equal(I.activityChange({ ...delayed, precision: null }), '2026/12/08 → 日期未定');
+  // Only later, only Steam, only a known precision.
+  for (const change of [{ date: '2026-12-08' }, { date: '2026-11-30' }, { previous_date: undefined }, { precision: 'week' }])
+    assert.equal(I.activityEvent({ ...delayed, ...change }), null);
+  assert.equal(I.activityEvent(nintendo({ type: 'delayed', previous_date: '2026-10-30' })), null);
+  assert.equal(I.activityChange(steam({ type: 'release_date', previous_date: '2026-10-30' })), '2026/10/30 → 2026/11/05');
+  assert.equal(I.activityChange(steam()), '2026/11/05 上市');
+});
+
 test('mixed history is chronologically sorted, semantically deduplicated and bounded without mutating input', () => {
   const input = [steam(), nintendo(), nintendo({ at: '2026-10-04T10:30:00+08:00', id: 'different-hash' }),
     nintendo({ platforms: ['NS'], name: 'different platform' }),
@@ -189,6 +205,16 @@ test('actual ticker and history render safe mixed-source names with Taipei date 
   assert.match(rows[2].attributes['aria-label'], /更新原因：Twitch 排行榜；平台：Steam/);
   assert.equal(e.get('activityTrack').children[0].href, rows[0].href);
   assert.equal(e.get('activityMore').disabled, false);
+});
+
+test('the ticker names a delay and links to the game page', async () => {
+  const { elements: e } = await display([steam({ type: 'delayed', previous_date: '2026-12-08', date: '2027-03-31', precision: 'quarter',
+    update_reason: 'steam_metadata_refresh' })]);
+  const row = e.get('activityList').children[0].children[0];
+  assert.equal(row.href, './game.html?appid=42');
+  assert.equal(row.children[1].textContent, '延期');
+  assert.equal(row.children[1].className, 'activity-kind is-delay');
+  assert.equal(row.children.at(-1).textContent, '2026/12/08 → 2027 年第一季');
 });
 
 test('platform additions show their IGDB trigger and retain native platform context in accessible titles', async () => {

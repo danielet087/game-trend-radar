@@ -32,10 +32,10 @@ test('ES modules keep the public adapter API and read every published dataset co
     "hasTwitchAdmission", "imageURL", "isSaved", "isTwitchQualified", "nativeCardLanguages", "nativePlatformIDs",
     "nativePlatformOrder", "nativeReleaseAudited", "nintendoCardLanguages", "nintendoEdition", "nintendoGames",
     "nintendoHongKongDateURL", "nintendoLanguageSupport", "nintendoLanguageURL", "nintendoSteamIdentity",
-    "nintendoURL", "normalize", "officialTaiwanReleaseTime", "offsetDate", "otherPlatformPhrases", "otherPlatformReleases",
+    "nintendoURL", "normalize", "normalizeDelayed", "officialTaiwanReleaseTime", "offsetDate", "otherPlatformPhrases", "otherPlatformReleases",
     "platformEdition", "platformFamily", "platformFirstReleases", "platformFullNames", "platformLanguageSupport", "platformURL",
     "platformsOnDate", "popscoreTop", "popularityCompare", "releaseCardNames", "releaseClock", "releaseDisplayNames",
-    "releaseEditionBadges", "releaseEvidence", "releaseState", "releaseStateText", "releaseStatusGroups",
+    "releaseEditionBadges", "releaseEvidence", "releaseState", "releaseStateText", "releaseStatusGroups", "releaseWindowText",
     "saveID", "savedID", "selectGames", "shortReleaseDay", "storeLabel", "todayInTaipei", "unique", "unlistedReleaseNote", "validDate"]);
   const read = name => JSON.parse(fs.readFileSync(path.join(repo, 'tests', 'fixtures', 'site-data', name), 'utf8'));
   const official = read('steam_upcoming.json');
