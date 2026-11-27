@@ -2,6 +2,7 @@
 // Nothing here invents a measurement: missing history stays missing.
 import { RadarInsights as I } from '../insights/metrics.js';
 import { dailyFollowerPoints, followerDay } from '../../domain/followers.mjs';
+import { releaseWindowText } from '../../domain/dates.mjs';
 import { leadText, steamReleaseAt, taipeiTime } from './store.js';
 import { waitingText } from '../twitch/launches.js';
 
@@ -30,7 +31,7 @@ export function followerChanges(history, today) {
 export function newsItems({ game, record, history, activity, media, today, number }) {
   const items = [];
   const nintendo = game.source === 'nintendo';
-  const reasons = { added: '收錄', release_date: '發售日', platform_added: '平台' };
+  const reasons = { added: '收錄', release_date: '發售日', platform_added: '平台', delayed: '延期' };
   // A game with Steam and console versions keeps the console versions' news too.
   const igdbIds = game.igdbIds || (game.igdbId ? [game.igdbId] : []);
   const events = I.activityEvents(Array.isArray(activity?.events) ? activity.events : []).filter(event =>
@@ -41,6 +42,7 @@ export function newsItems({ game, record, history, activity, media, today, numbe
     if (!date || date > today) continue;
     const text = event.type === 'added' ? `收錄進雷達（${I.activityReason(event) || '來源未記錄'}）`
       : event.type === 'release_date' ? `發售日從 ${event.previous_date.replaceAll('-', '/')} 改成 ${event.date.replaceAll('-', '/')}`
+      : event.type === 'delayed' ? `延期：原定 ${event.previous_date.replaceAll('-', '/')}，Steam 改成 ${releaseWindowText(event.date, event.precision)}`
       : `新增平台：${(event.platforms || []).join('／')}`;
     items.push({ date, kind: event.type === 'added' ? 'added' : 'release', label: reasons[event.type], text, target: event.type === 'added' ? null : 'gameInfo' });
   }

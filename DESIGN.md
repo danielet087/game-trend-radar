@@ -85,3 +85,7 @@ The Twitch page defaults to positive NEW evidence: a dated official NEW observat
 ### Verdict wording (2026-11-26)
 
 A 開台選題 card gives the conclusion only: the verdict's label (首日熱門, 還很熱, …; one per region when the two differ) and the same-age, full-release peak and dark-horse labels as tags, with no sentences. The numbers sit in the tiles. Why, and the forecast for days 7-9, are on the game page (詳細分析), whose 現在還值得播嗎 keeps one plain sentence per region with no viewer counts, percentages or multiples. Before a game's first whole day, a tile shows the hours since launch (the middle hour and the channels streaming), labelled 每小時, never a blank. Under six days of records, where a tile cannot set the last three days against the three before, its second line gives the busiest hour of the same day (最高 N 人) instead of 還不能比較.
+
+### Delayed games (2026-11-27)
+
+When Steam moves a listed game to a later day, month, quarter or year (its time falls more than one day after the listed day; one day is a Taiwan-day move), the game leaves the calendar, the lists and the growth cohort, but keeps its page: the title card shows Steam's new window at Steam's own precision (from `store_facts.json`, e.g. 2027 年第一季) and the day it replaced. The insights record one 延期 event per move for the ticker and the page's news, kept while the game is off the calendar. When a later day is listed it returns as an ordinary date change.

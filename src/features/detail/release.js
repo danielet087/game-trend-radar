@@ -26,6 +26,7 @@ export function createReleasePresenter(ctx, policy) {
 
   /** Fills the title card's date block and returns the day count (null when undated). */
   function renderHeroRelease(game) {
+    if (game.delayed) return renderDelayed(game.delayed);
     const rows = detailReleaseRows(game);
     const row = rows[0];
     const date = row?.date || game.date;
@@ -60,6 +61,21 @@ export function createReleasePresenter(ctx, policy) {
     $("gameHeroNote").hidden = !$("gameHeroNote").textContent;
     renderOthers(others);
     return { days, date: valid ? date : "" };
+  }
+
+  // Steam moved the game to a later day, month, quarter or year.
+  function renderDelayed(delay) {
+    const window = D.releaseWindowText(delay.to, delay.precision);
+    $("gameHeroLabel").textContent = "延期・Steam";
+    $("gameHeroDate").textContent = window;
+    $("gameHeroDate").dateTime = delay.precision === "day" ? delay.to : "";
+    $("gameHeroWeekday").textContent = "";
+    $("gameHeroCountdown").textContent = "延期";
+    $("gameHeroCountdown").dataset.state = "unknown";
+    $("gameHeroNote").textContent = `原定 ${delay.from.replaceAll("-", ".")}；Steam 公布確定日期後才放回月曆`;
+    $("gameHeroNote").hidden = false;
+    renderOthers([]);
+    return { days: null, date: "" };
   }
 
   // The other platforms, so a later or earlier version is never read as this day;

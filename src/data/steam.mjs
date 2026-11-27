@@ -131,6 +131,35 @@ export function normalize(raw, recent = false, translated = null) {
   return steamRow(raw, { appid, date, followers, recent, translated, twitchQualified });
 }
 
+/**
+ * Steam's later day for a game it moved off the listed day: its time falls
+ * more than one day later (one day is a Taiwan-day move). The same rule as
+ * the insights' `delayed_release`.
+ */
+export function delayedRelease(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const from = raw.release_start;
+  if (!validDate(from) || (raw.release_precision && raw.release_precision !== "day")) return null;
+  const instant = awareTime(raw.release_time_utc);
+  const to = instant !== null ? todayInTaipei(new Date(instant)) : raw.release_timestamp_taipei_date;
+  if (!validDate(to)) return null;
+  return (Date.parse(to + "T12:00:00Z") - Date.parse(from + "T12:00:00Z")) / 86400000 > 1 ? { from, to } : null;
+}
+
+/**
+ * A listed game Steam has since moved to a later day or window, before that
+ * time: its own page stays, with no day of its own, so no calendar or list
+ * shows it. Otherwise the same admission as a listed game.
+ */
+export function normalizeDelayed(raw, today = todayInTaipei()) {
+  const delay = raw && !exactReleaseDate(raw) ? delayedRelease(raw) : null;
+  const appid = Number(raw?.appid);
+  const followers = raw?.followers == null ? null : Number(raw.followers);
+  if (!delay || delay.to < today || !Number.isInteger(appid) || appid <= 0 || !(followers >= 5000)) return null;
+  const row = steamRow(raw, { appid, date: null, followers, recent: false, translated: null, twitchQualified: false });
+  return { ...row, delayed: { ...delay, precision: null }, releases: [], dateReleases: [], releasePlatforms: [] };
+}
+
 export const REFERENCE_METHOD = "igdb_console_steam_link_v1";
 
 /** The Store page's day when it differs from the Taiwan day by a time zone (one day). */

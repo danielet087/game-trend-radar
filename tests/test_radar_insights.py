@@ -168,6 +168,43 @@ class InsightTests(unittest.TestCase):
         state = M.update(baseline, catalog(game(), shifted), observed_at="2026-10-05T12:00:00Z")
         self.assertEqual([e["type"] for e in state["events"]], ["release_date"])
 
+    def test_a_game_steam_moves_to_a_later_window_is_news_once_and_leaves_the_calendar(self):
+        # Never Be Alone, 11-26: listed on 12-08, Steam's time moved to 2027 Q1.
+        listed = game(9, release_start="2026-12-08", release_end="2026-12-08",
+                      release_time_utc="2026-12-07T16:00:00Z", release_timestamp_taipei_date="2026-12-08")
+        moved = {**listed, "release_time_utc": "2027-03-31T07:00:00Z", "release_timestamp_taipei_date": "2027-03-31"}
+        facts = {"games": {"9": {"release": {"at": "2027-03-31T07:00:00Z", "display": "date_quarter"}}}}
+        self.assertEqual(M.accepted([moved]), {})
+        baseline = M.update(None, catalog(game(), listed), observed_at="2026-11-25T00:00:00Z")
+        state = M.update(baseline, catalog(game(), moved), observed_at="2026-11-26T00:00:00Z", store_facts=facts)
+        self.assertEqual([(e["type"], e["previous_date"], e["date"], e["precision"]) for e in state["events"]],
+                         [("delayed", "2026-12-08", "2027-03-31", "quarter")])
+        self.assertEqual(state["events"][0]["update_reason"], "steam_metadata_refresh")
+        record = state["records"]["9"]
+        self.assertFalse(record["active"])
+        self.assertEqual(record["release_date"], "2026-12-08")
+        # The next run with the same move adds nothing.
+        again = M.update(state, catalog(game(), moved), observed_at="2026-11-26T01:00:00Z", store_facts=facts)
+        self.assertEqual(len(again["events"]), 1)
+        # Off the calendar and the growth list, but in the news.
+        activity, growth = M.projections(again, date(2026, 11, 26))
+        self.assertEqual([e["type"] for e in activity["events"]], ["delayed"])
+        self.assertNotIn(9, [g["appid"] for g in growth["games"]])
+        # Without store facts the window is unknown, not a day.
+        unknown = M.update(baseline, catalog(game(), moved), observed_at="2026-11-26T00:00:00Z")
+        self.assertIsNone(unknown["events"][0]["precision"])
+        # One day later is a Taiwan-day move, and a game already out is not delayed.
+        shifted = {**listed, "release_time_utc": "2026-12-08T17:00:00Z", "release_timestamp_taipei_date": "2026-12-09"}
+        self.assertEqual(M.update(baseline, catalog(game(), shifted), observed_at="2026-11-26T00:00:00Z")["events"], [])
+        self.assertEqual(M.update(baseline, catalog(game(), moved), observed_at="2026-12-09T00:00:00Z")["events"], [])
+        # Steam gives the day and the list follows: an ordinary date change, the delay cleared.
+        later = {**moved, "release_start": "2027-03-31", "release_end": "2027-03-31"}
+        back = M.update(again, catalog(game(), later), observed_at="2026-11-27T00:00:00Z", store_facts=facts)
+        self.assertEqual([(e["type"], e.get("previous_date"), e["date"]) for e in back["events"]][-1],
+                         ("release_date", "2026-12-08", "2027-03-31"))
+        self.assertTrue(back["records"]["9"]["active"])
+        self.assertNotIn("delayed", back["records"]["9"])
+
     def test_store_authority_cannot_be_forged_by_missing_proof_or_bad_date_audit(self):
         for fields in [{"release_date_normalization": None}, {"release_display_provider": "Steam Store cc=US"},
                 {"release_date_verified_at": None}, {"release_date_verified_at": "2026-10-03T13:00:00"},

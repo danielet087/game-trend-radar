@@ -124,6 +124,18 @@ export function createDetailLoader(ctx, render, favorites, related) {
     let rawGame = null, catalog = null, preview = null, references = null, followers = null, nintendo = null, growth = null, media = null, activity = null, store = null;
     let mediaDone = false;
     let catalogDone = false, nintendoDone = false, gameDone = false, shown = false;
+    // A listed game Steam has since moved to a later day or window keeps its
+    // page; the calendar and the lists leave it out until a day is listed.
+    function delayedGame(official) {
+      const delayed = D.normalizeDelayed?.(rawGame || official?.games?.find(row => Number(row.appid) === appid), today);
+      if (!delayed) return null;
+      // The same tags, genres and description as a listed game.
+      const game = R.enrich({ games: [delayed], recent: [] }, official, preview, references).games[0];
+      const steam = store?.release;
+      if (steam && D.todayInTaipei(new Date(steam.at)) === game.delayed.to)
+        game.delayed = { ...game.delayed, precision: steam.precision };
+      return game;
+    }
     function present() {
       if (!active()) return;
       if (!rawGame && !catalog && !preview) return;
@@ -133,7 +145,8 @@ export function createDetailLoader(ctx, render, favorites, related) {
       const matches = [...data.games, ...data.recent].filter(entry =>
         entry.appid === appid && (!requestedDate || entry.date === requestedDate),
       );
-      const game = matches.find(entry => entry.dateReleases?.some(row => row.platform === "Steam")) || matches[0];
+      const game = matches.find(entry => entry.dateReleases?.some(row => row.platform === "Steam")) || matches[0] ||
+        delayedGame(official);
       if (!game) {
         // The late catalog may remove an initially displayed old direct record.
         // Published recent/console references still pass through datasets above.

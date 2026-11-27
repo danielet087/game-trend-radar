@@ -47,6 +47,14 @@ function validAdvanceAccess(access) {
   return { startsAt, editions };
 }
 
+// Steam's display of the release date: the precision it stands for (a month,
+// quarter or year is given by its last day).
+const DISPLAYS = { date_full: 'day', date_month: 'month', date_quarter: 'quarter', date_year: 'year' };
+function validRelease(release) {
+  const at = isRecord(release) ? time(release.at) : null;
+  return at === null ? null : { at, precision: DISPLAYS[release.display] ?? null };
+}
+
 export function storeFacts(document, appid) {
   if (!isRecord(document) || document.schema_version !== 1 || !isRecord(document.games)) return null;
   const entry = document.games[String(appid)];
@@ -57,8 +65,9 @@ export function storeFacts(document, appid) {
   const rating = validRating(entry.rating);
   const steamDeck = DECK[entry.steam_deck] ? entry.steam_deck : null;
   const advanceAccess = validAdvanceAccess(entry.advance_access);
-  if (!price && !rating && !steamDeck && !advanceAccess) return null;
-  return { price, rating, steamDeck, advanceAccess, checkedAt };
+  const release = validRelease(entry.release);
+  if (!price && !rating && !steamDeck && !advanceAccess && !release) return null;
+  return { price, rating, steamDeck, advanceAccess, release, checkedAt };
 }
 
 const DAY = 86400000, HOUR = 3600000;

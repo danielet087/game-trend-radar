@@ -19,16 +19,15 @@ const { make } = helpers;
     const added = make("time", "activity-added-at", addedDay ? dateLabel(addedDay) : "日期未提供");
     if (addedDay) added.dateTime = addedDay;
     added.title = "這則動態的新增日期（台灣時間）";
-    const type = make("span", "activity-kind " + (event.type === "added" ? "is-new" : "is-date"),
-      event.type === "added" ? "新收錄" : event.type === "platform_added" ? "新增平台" : "日期更新");
+    const type = make("span", "activity-kind " + (event.type === "added" ? "is-new" : event.type === "delayed" ? "is-delay" : "is-date"),
+      event.type === "added" ? "新收錄" : event.type === "platform_added" ? "新增平台" : event.type === "delayed" ? "延期" : "日期更新");
     a.append(added, type);
     const reason = make("span", "activity-kind activity-origin", I.activityReason(event));
     reason.title = `更新原因：${I.activityReason(event)}；平台：${I.activityPlatform(event)}`;
     a.append(reason);
     a.append(make("span", "activity-kind activity-platform", I.activityPlatform(event)));
     a.append(make("span", "activity-name", event.name));
-    if (event.type === "release_date") a.append(make("span", "activity-change", `${dateLabel(event.previous_date)} → ${dateLabel(event.date)}`));
-    else a.append(make("span", "activity-change", dateLabel(event.date) + " 上市"));
+    a.append(make("span", "activity-change", I.activityChange(event)));
     a.title = [...a.children].map(child => child === reason ? reason.title : child.textContent).join(" · ");
     a.setAttribute("aria-label", a.title);
     if (clone) { a.tabIndex = -1; a.setAttribute("aria-hidden", "true"); }

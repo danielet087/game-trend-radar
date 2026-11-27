@@ -95,7 +95,7 @@ export function createReleasePolicy({ D, isNativeConsole }) {
     const platform = isNativeConsole(game)
       ? (game.releasePlatforms || game.platforms || []).find(code => nativePlatforms.includes(code))
       : "Steam";
-    return platform ? [{ platform, date: game.date, precision: "day", region: game.dateRegion,
+    return platform && D.validDate(game.date) ? [{ platform, date: game.date, precision: "day", region: game.dateRegion,
       source: game.dateSource || (platform === "Steam" ? "Steam" : "IGDB") }] : [];
   }
   return { nativePlatforms, releasePlatformOrder, regionLabel, regionDateLabel, publicSourceURL,

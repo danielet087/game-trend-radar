@@ -1,5 +1,6 @@
 /* Exact dated observations: missing history never becomes zero growth. */
 import { dailyFollowerPoints as points, followerDay as taipeiDay } from '../../domain/followers.mjs';
+import { releaseWindowText } from '../../domain/dates.mjs';
 const DAY = 86400000;
 const day = value => {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
@@ -34,12 +35,16 @@ function activityEvent(value) {
   if (!value || typeof value !== "object" || Array.isArray(value) ||
       typeof value.name !== "string" || !value.name.trim() || !day(value.date) || activityTime(value.at) === null) return null;
   const source = value.source === undefined ? "steam" : value.source;
-  if (!["steam", "nintendo"].includes(source) || !["added", "release_date", "platform_added"].includes(value.type)) return null;
+  if (!["steam", "nintendo"].includes(source) || !["added", "release_date", "platform_added", "delayed"].includes(value.type)) return null;
   if (value.type === "release_date" && (!day(value.previous_date) || value.previous_date === value.date)) return null;
+  // Steam moved a listed game to a later day, month, quarter or year (or one not known).
+  if (value.type === "delayed" && (source !== "steam" || !day(value.previous_date) || value.date <= value.previous_date ||
+      ![null, "day", "month", "quarter", "year"].includes(value.precision ?? null))) return null;
   const update_reason = typeof value.update_reason === "string" && Object.hasOwn(ACTIVITY_REASONS, value.update_reason)
     ? value.update_reason : value.update_reason === undefined && source === "nintendo" ? "igdb_update" : "legacy_unrecorded";
   const event = { source, type: value.type, name: value.name.trim(), date: value.date, at: value.at, update_reason };
-  if (value.type === "release_date") event.previous_date = value.previous_date;
+  if (value.type === "release_date" || value.type === "delayed") event.previous_date = value.previous_date;
+  if (value.type === "delayed") event.precision = value.precision ?? null;
   if (source === "nintendo") {
     if (!activityId(value.igdb_id) || value.game_id !== "igdb:" + value.igdb_id || value.appid !== undefined ||
         !Array.isArray(value.platforms) || !value.platforms.length || value.platforms.some(platform => !IGDB_ACTIVITY_PLATFORMS.includes(platform))) return null;
@@ -58,11 +63,20 @@ function activityEvents(values) {
   const seen = new Set();
   return events.filter(event => {
     const key = JSON.stringify([event.source, event.appid ?? event.game_id, event.type, event.date,
-      event.previous_date ?? null, event.platforms ?? null, activityTime(event.at)]);
+      event.previous_date ?? null, event.precision ?? null, event.platforms ?? null, activityTime(event.at)]);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   }).slice(0, 400);
+}
+/** The news line's change: the day it moved from and to, or its release day. */
+function activityChange(value) {
+  const event = activityEvent(value);
+  if (!event) return null;
+  const label = date => date.replaceAll("-", "/");
+  return event.type === "release_date" ? `${label(event.previous_date)} → ${label(event.date)}`
+    : event.type === "delayed" ? `${label(event.previous_date)} → ${releaseWindowText(event.date, event.precision)}`
+    : `${label(event.date)} 上市`;
 }
 function activityURL(value) {
   const event = activityEvent(value);
@@ -158,7 +172,7 @@ function comparisonWindow(games, span = 30, end, today) {
   });
   return { start, end, days, span, series };
 }
-const RadarInsights = { day, offset, taipeiDay, activityEvent, activityEvents, activityURL, activityPlatform, activityReason,
+const RadarInsights = { day, offset, taipeiDay, activityEvent, activityEvents, activityChange, activityURL, activityPlatform, activityReason,
   points, metric, tracking, comparisonIds, comparisonWindow };
 export { RadarInsights };
 export default RadarInsights;
